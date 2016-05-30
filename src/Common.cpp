@@ -50,5 +50,20 @@ namespace pacxx{
             return subject;
         }
 
+      // reads the content of a file into a string
+      std::string read_file(std::string filename) {
+        std::ifstream in(filename, std::ios::in | std::ios::binary);
+        if (in) {
+          std::string content;
+          in.seekg(0, std::ios::end);
+          content.resize(in.tellg());
+          in.seekg(0, std::ios::beg);
+          in.read(&content[0], content.size());
+          in.close();
+          return content;
+        }
+        return "";
+      }
+
     }
 }

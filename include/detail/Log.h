@@ -81,9 +81,7 @@ public:
     return the_log;
   }
 
-  Log()
-      : _no_newline(false), _c_return(false), _silent(false),
-        _no_warnings(false), _disable_info_label(false), output(std::cout) {
+  Log() : _silent(false), _no_warnings(false), output(std::cout) {
     _old_buffer = output.rdbuf();
     auto str = GetEnv("PACXX_LOG_LEVEL");
     log_level = 0;

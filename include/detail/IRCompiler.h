@@ -5,7 +5,6 @@
 #ifndef PACXX_V2_IRCOMPILER_H
 #define PACXX_V2_IRCOMPILER_H
 
-#include <memory>
 #include <string>
 
 namespace llvm
@@ -21,7 +20,7 @@ namespace pacxx
         {
         public:
             virtual void initialize() = 0;
-            virtual std::string compile(std::unique_ptr<llvm::Module>& M) = 0;
+            virtual std::string compile(llvm::Module& M) = 0;
         };
     }
 }

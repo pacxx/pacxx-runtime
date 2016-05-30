@@ -25,7 +25,7 @@ namespace pacxx {
             virtual ~PTXBackend() { }
 
             virtual void initialize () override;
-            virtual std::string compile(std::unique_ptr<llvm::Module>& M) override;
+            virtual std::string compile(llvm::Module& M) override;
 
         private:
             const llvm::Target* _target;
