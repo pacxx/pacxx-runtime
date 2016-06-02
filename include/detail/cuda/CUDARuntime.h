@@ -5,14 +5,18 @@
 #ifndef PACXX_V2_CUDARUNTIME_H
 #define PACXX_V2_CUDARUNTIME_H
 #include <string>
+#include <memory>
 #include <map>
-#include "IRRuntime.h"
-
+#include "detail/IRRuntime.h"
+#include "detail/cuda/CUDAKernel.h"
+#include "detail/cuda/CUDADeviceBuffer.h"
 // forward declarations of cuda driver structs
 struct CUctx_st;
 typedef struct CUctx_st* CUcontext;
 struct CUmod_st;
 typedef struct CUmod_st* CUmodule;
+
+
 
 namespace pacxx
 {
@@ -25,11 +29,14 @@ namespace pacxx
       virtual ~CUDARuntime();
 
       virtual void linkMC(const std::string& MC) override;
-      virtual void setArguments(std::vector<char> args) override;
+      virtual Kernel& getKernel(const std::string& name) override;
+      virtual DeviceBufferBase* allocateMemory(size_t bytes) override;
 
     private:
       CUcontext _context;
       CUmodule _mod;
+      std::map<std::string, std::unique_ptr<CUDAKernel>> _kernels;
+      std::vector<std::unique_ptr<DeviceBufferBase>> _memory;
     };
   }
 }

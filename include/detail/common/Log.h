@@ -59,7 +59,7 @@ static void __sprint(const char *file, int line, Params &&... args);
 #include "llvm/Support/SourceMgr.h"
 #include "llvm/Support/raw_ostream.h"
 
-#include "Common.h"
+#include "detail/common/Common.h"
 
 using namespace llvm;
 

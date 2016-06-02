@@ -12,8 +12,8 @@
 #include <llvm/Target/TargetLowering.h>
 #include <llvm/Target/TargetMachine.h>
 
-#include "detail/Exceptions.h"
-#include "detail/PTXBackend.h"
+#include "detail/common/Exceptions.h"
+#include "detail/cuda/PTXBackend.h"
 
 using namespace llvm;
 

@@ -2,10 +2,13 @@
 // Created by mhaidl on 30/05/16.
 //
 
-#include "detail/CUDARuntime.h"
-#include "detail/CUDAErrorDetection.h"
-#include "detail/Log.h"
+#include "detail/cuda/CUDARuntime.h"
+#include "detail/common/Log.h"
+#include "detail/cuda/CUDAErrorDetection.h"
 #include <cuda.h>
+#include <detail/Kernel.h>
+#include <detail/common/Exceptions.h>
+#include <detail/cuda/CUDADeviceBuffer.h>
 #include <string>
 
 namespace pacxx {
@@ -26,7 +29,9 @@ CUDARuntime::CUDARuntime(unsigned dev_id) : _context(nullptr) {
   }
 }
 
-CUDARuntime::~CUDARuntime() {}
+CUDARuntime::~CUDARuntime() {
+  __message("dtor of cuda runtime");
+}
 
 void CUDARuntime::linkMC(const std::string &MC) {
   float walltime;
@@ -37,10 +42,10 @@ void CUDARuntime::linkMC(const std::string &MC) {
   // Setup linker options
 
   CUjit_option lioptions[] = {
-      CU_JIT_WALL_TIME,                   // Return walltime from JIT compilation
-      CU_JIT_INFO_LOG_BUFFER,             // Pass a buffer for info messages
-      CU_JIT_INFO_LOG_BUFFER_SIZE_BYTES,  // Pass the size of the info buffer
-      CU_JIT_ERROR_LOG_BUFFER,            // Pass a buffer for error message
+      CU_JIT_WALL_TIME,                  // Return walltime from JIT compilation
+      CU_JIT_INFO_LOG_BUFFER,            // Pass a buffer for info messages
+      CU_JIT_INFO_LOG_BUFFER_SIZE_BYTES, // Pass the size of the info buffer
+      CU_JIT_ERROR_LOG_BUFFER,           // Pass a buffer for error message
       CU_JIT_ERROR_LOG_BUFFER_SIZE_BYTES, // Pass the size of the error buffer
       CU_JIT_LOG_VERBOSE                  // Make the linker verbose
   };
@@ -56,14 +61,30 @@ void CUDARuntime::linkMC(const std::string &MC) {
     __warning("Linker Output: \n", info_log);
 }
 
-  void CUDARuntime::setArguments(std::vector<char> args) {
-    std::vector<void*> launch_args;
-    size_t args_size = args.size();
-    launch_args.push_back(CU_LAUNCH_PARAM_BUFFER_POINTER);
-    launch_args.push_back(reinterpret_cast<void*>(args.data()));
-    launch_args.push_back(CU_LAUNCH_PARAM_BUFFER_SIZE);
-    launch_args.push_back(reinterpret_cast<void*>(&args_size));
-    launch_args.push_back(CU_LAUNCH_PARAM_END);
+Kernel &CUDARuntime::getKernel(const std::string &name) {
+  auto It = std::find_if(_kernels.begin(), _kernels.end(),
+                         [&](const auto &p) { return name == p.first; });
+  if (It == _kernels.end()) {
+
+    CUfunction ptr;
+    SEC_CUDA_CALL(cuModuleGetFunction(&ptr, _mod, name.c_str()));
+    if (!ptr)
+      throw common::generic_exception("Kernel function not found in module!");
+    auto kernel = new CUDAKernel(ptr);
+    _kernels[name].reset(kernel);
+
+    return *kernel;
+  } else {
+    return *It->second;
   }
+}
+
+DeviceBufferBase *CUDARuntime::allocateMemory(size_t bytes) {
+  CUDARawDeviceBuffer raw;
+  raw.allocate(bytes);
+  auto wrapped = new CUDADeviceBuffer<char>(std::move(raw));
+  _memory.push_back(std::unique_ptr<DeviceBufferBase>(static_cast<DeviceBufferBase*>(wrapped)));
+  return wrapped;
+}
 }
 }

@@ -7,24 +7,19 @@
 
 #include <string>
 
-namespace llvm
-{
-    class Module;
+namespace llvm {
+class Module;
 }
 
-namespace pacxx
-{
-    namespace v2
-    {
-        class IRCompiler
-        {
-        public:
-            virtual void initialize() = 0;
-            virtual std::string compile(llvm::Module& M) = 0;
-        };
-    }
+namespace pacxx {
+namespace v2 {
+class IRCompiler {
+public:
+  virtual ~IRCompiler() {};
+  virtual void initialize() = 0;
+  virtual std::string compile(llvm::Module &M) = 0;
+};
+}
 }
 
-
-
-#endif //PACXX_V2_IRCOMPILER_H
+#endif // PACXX_V2_IRCOMPILER_H

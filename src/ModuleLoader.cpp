@@ -11,7 +11,7 @@
 #include <llvm/IRReader/IRReader.h>
 
 #include "ModuleLoader.h"
-#include "detail/Common.h"
+#include "detail/common/Common.h"
 
 using namespace llvm;
 

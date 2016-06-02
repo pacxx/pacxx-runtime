@@ -3,9 +3,9 @@
 //
 #include <cuda.h>
 #include <cuda_runtime.h>
-#include "detail/CUDAErrorDetection.h"
-#include "detail/Common.h"
-#include "detail/Exceptions.h"
+#include "detail/cuda/CUDAErrorDetection.h"
+#include "detail/common/Common.h"
+#include "detail/common/Exceptions.h"
 
 namespace{
   static std::string _cudaGetErrorEnum(CUresult error) {

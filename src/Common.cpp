@@ -7,7 +7,7 @@
 #include <cstdlib>
 
 
-#include "detail/Common.h"
+#include "detail/common/Common.h"
 
 namespace pacxx{
     namespace common

@@ -7,6 +7,8 @@
 
 #include <string>
 #include <vector>
+#include "Kernel.h"
+#include "DeviceBuffer.h"
 
 namespace pacxx
 {
@@ -15,8 +17,11 @@ namespace pacxx
     class IRRuntime
     {
     public:
+      virtual ~IRRuntime() {};
       virtual void linkMC(const std::string& MC) = 0;
-      virtual void setArguments(std::vector<char> args) = 0;
+      virtual Kernel& getKernel(const std::string& name) = 0;
+
+      virtual DeviceBufferBase* allocateMemory(size_t bytes) = 0;
     };
   }
 }
