@@ -76,22 +76,14 @@ void dumpToLog(const T &V, std::string prefix = "", const char *file = "",
 
 class Log {
 public:
-  static Log &get() {
-    static Log the_log;
-    return the_log;
-  }
+  static Log &get();
 
-  Log() : _silent(false), _no_warnings(false), output(std::cout) {
-    _old_buffer = output.rdbuf();
-    auto str = GetEnv("PACXX_LOG_LEVEL");
-    log_level = 0;
-    if (str.length() > 0) {
-      log_level = std::stoi(str);
-    }
-  }
+private:
+  Log();
 
-  virtual ~Log() { resetStream(); }
+  virtual ~Log();
 
+public:
   void setStream(std::ostream &stream) { output.rdbuf(stream.rdbuf()); }
 
   void resetStream() { output.rdbuf(_old_buffer); }

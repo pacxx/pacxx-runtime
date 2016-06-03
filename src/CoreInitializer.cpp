@@ -6,7 +6,7 @@
 #include <llvm/CodeGen/LinkAllAsmWriterComponents.h>
 #include <llvm/CodeGen/LinkAllCodegenComponents.h>
 
-
+#include "detail/common/Log.h"
 #include "detail/CoreInitializer.h"
 
 using namespace llvm;
@@ -23,12 +23,17 @@ CoreInitializer::CoreInitializer() : _initialized(false) {}
 
 void CoreInitializer::initializeCore() {
   if (!_initialized) {
+    auto& log = common::Log::get();
     InitializeAllTargets();
     InitializeAllTargetMCs();
     InitializeAllAsmPrinters();
     InitializeAllAsmParsers();
     _initialized = true;
+    __verbose("Core components initialized!");
   }
 }
+  CoreInitializer::~CoreInitializer() {
+  }
+
 }
 }

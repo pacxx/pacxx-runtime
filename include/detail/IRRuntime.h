@@ -21,7 +21,10 @@ namespace pacxx
       virtual void linkMC(const std::string& MC) = 0;
       virtual Kernel& getKernel(const std::string& name) = 0;
 
+      virtual size_t getPreferedMemoryAlignment() = 0;
       virtual DeviceBufferBase* allocateMemory(size_t bytes) = 0;
+      virtual RawDeviceBuffer* allocateRawMemory(size_t bytes) = 0;
+      virtual void deleteRawMemory(RawDeviceBuffer* ptr) = 0;
     };
   }
 }

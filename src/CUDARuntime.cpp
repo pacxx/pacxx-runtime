@@ -29,9 +29,7 @@ CUDARuntime::CUDARuntime(unsigned dev_id) : _context(nullptr) {
   }
 }
 
-CUDARuntime::~CUDARuntime() {
-  __message("dtor of cuda runtime");
-}
+CUDARuntime::~CUDARuntime() { }
 
 void CUDARuntime::linkMC(const std::string &MC) {
   float walltime;
@@ -55,6 +53,7 @@ void CUDARuntime::linkMC(const std::string &MC) {
       reinterpret_cast<void *>(logSize),   reinterpret_cast<void *>(error_log),
       reinterpret_cast<void *>(logSize),   reinterpret_cast<void *>(1)};
 
+  __verbose(MC);
   SEC_CUDA_CALL(
       cuModuleLoadDataEx(&_mod, MC.c_str(), 6, lioptions, opt_values));
   if (info_log[0] != '\0')
@@ -79,12 +78,36 @@ Kernel &CUDARuntime::getKernel(const std::string &name) {
   }
 }
 
+size_t CUDARuntime::getPreferedMemoryAlignment() {
+  return 256; // on CUDA devices memory is best aligned at 256 bytes
+}
+
 DeviceBufferBase *CUDARuntime::allocateMemory(size_t bytes) {
   CUDARawDeviceBuffer raw;
   raw.allocate(bytes);
   auto wrapped = new CUDADeviceBuffer<char>(std::move(raw));
-  _memory.push_back(std::unique_ptr<DeviceBufferBase>(static_cast<DeviceBufferBase*>(wrapped)));
+  _memory.push_back(std::unique_ptr<DeviceBufferBase>(
+      static_cast<DeviceBufferBase *>(wrapped)));
   return wrapped;
 }
+
+RawDeviceBuffer *CUDARuntime::allocateRawMemory(size_t bytes) {
+  CUDARawDeviceBuffer raw;
+  raw.allocate(bytes);
+  auto wrapped = new CUDADeviceBuffer<char>(std::move(raw));
+  _memory.push_back(std::unique_ptr<DeviceBufferBase>(
+      static_cast<DeviceBufferBase *>(wrapped)));
+  return wrapped->getRawBuffer();
+}
+
+
+  void CUDARuntime::deleteRawMemory(RawDeviceBuffer* ptr)
+  {
+    auto It = std::find_if(_memory.begin(), _memory.end(), [&](const auto& uptr) { return uptr.get() == ptr;});
+    if (It != _memory.end())
+      _memory.erase(It);
+    __message("raw pointer deleted");
+  }
+
 }
 }

@@ -7,6 +7,7 @@
 #include <string>
 #include <memory>
 #include <map>
+#include <list>
 #include "detail/IRRuntime.h"
 #include "detail/cuda/CUDAKernel.h"
 #include "detail/cuda/CUDADeviceBuffer.h"
@@ -30,13 +31,17 @@ namespace pacxx
 
       virtual void linkMC(const std::string& MC) override;
       virtual Kernel& getKernel(const std::string& name) override;
+
+      virtual size_t getPreferedMemoryAlignment() override;
       virtual DeviceBufferBase* allocateMemory(size_t bytes) override;
+      virtual RawDeviceBuffer* allocateRawMemory(size_t bytes) override;
+      virtual void deleteRawMemory(RawDeviceBuffer* ptr) override;
 
     private:
       CUcontext _context;
       CUmodule _mod;
       std::map<std::string, std::unique_ptr<CUDAKernel>> _kernels;
-      std::vector<std::unique_ptr<DeviceBufferBase>> _memory;
+      std::list<std::unique_ptr<DeviceBufferBase>> _memory;
     };
   }
 }

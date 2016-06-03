@@ -21,23 +21,34 @@
 #include "detail/IRCompiler.h"
 #include "detail/common/Log.h"
 #include "detail/cuda/PTXBackend.h"
+#include "detail/MemoryManager.h"
 #include "detail/KernelConfiguration.h"
 
 namespace pacxx {
 namespace v2 {
 class Executor {
 public:
+
+   template <typename CompilerT, typename RuntimeT>
+   static auto& Create(std::unique_ptr<llvm::Module> M,
+           CodePolicy<CompilerT, RuntimeT> &&policy) {// TODO: make dynamic fo different devices
+
+    static Executor executor(std::move(M), std::forward<CodePolicy<CompilerT, RuntimeT>>(policy), 0);
+    return executor;
+  }
+
+private:
   template <typename CompilerT, typename RuntimeT>
   Executor(std::unique_ptr<llvm::Module> M,
-           CodePolicy<CompilerT, RuntimeT> &&policy)
+           CodePolicy<CompilerT, RuntimeT> &&policy, unsigned devID)
       : _M(std::move(M)), _compiler(std::make_unique<CompilerT>()),
-        _runtime(std::make_unique<RuntimeT>(0)) {// TODO: make dynamic fo different devices
+        _runtime(std::make_unique<RuntimeT>(devID)), _mem_manager(*_runtime) {
     core::CoreInitializer::initialize();
-
     _compiler->initialize();
     _runtime->linkMC(_compiler->compile(*_M));
   }
 
+public:
   template <typename... Args> void run(std::string name, KernelConfiguration&& config, Args &&... args) {
 
     const std::string prefix("_ZN5pacxx13genericKernelILm");
@@ -81,7 +92,9 @@ public:
     size_t i = 0;
     common::for_each_in_arg_pack([&](auto &&arg) {
       auto size = arg_sizes[i++];
-      std::memcpy(ptr, &arg, size);
+      meta::memory_translation mtl;
+      auto targ = mtl(_mem_manager, arg);
+      std::memcpy(ptr, &targ, size);
       ptr += size;
     }, std::forward<Args>(args)...);
 
@@ -96,10 +109,17 @@ public:
     return *static_cast<DeviceBuffer<T>*>(ptr);
   }
 
+  RawDeviceBuffer& allocateRaw(size_t bytes){
+    return *_runtime->allocateRawMemory(bytes);
+  }
+
+  auto& mm(){ return _mem_manager; }
+
 private:
   std::unique_ptr<llvm::Module> _M;
   std::unique_ptr<IRCompiler> _compiler;
   std::unique_ptr<IRRuntime> _runtime;
+  MemoryManager _mem_manager;
 };
 }
 }

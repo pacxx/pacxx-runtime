@@ -7,30 +7,27 @@
 
 #include <cstddef>
 
-namespace pacxx
-{
-namespace v2
-{
-  class DeviceBufferBase{
-  public:
-    virtual ~DeviceBufferBase() {}
-  };
+namespace pacxx {
+namespace v2 {
+class DeviceBufferBase {
+public:
+  virtual ~DeviceBufferBase() {}
+};
 
-  template <typename T>
-  class DeviceBuffer : public DeviceBufferBase
-  {
-  public:
-    virtual ~DeviceBuffer(){}
+template <typename T> class DeviceBuffer : public DeviceBufferBase {
+public:
+  virtual ~DeviceBuffer() {}
 
-    virtual T* get() = 0;
+  virtual T *get(size_t offset = 0) const = 0;
 
-    virtual void upload(T* src, size_t count) = 0;
-    virtual void download(T* dest, size_t count) = 0;
-    virtual void uploadAsync(T* src, size_t count) = 0;
-    virtual void downloadAsync(T* dest, size_t count) = 0;
-  };
+  virtual void upload(const T *src, size_t count, size_t offset = 0) = 0;
+  virtual void download(T *dest, size_t count, size_t offset = 0) = 0;
+  virtual void uploadAsync(const T *src, size_t count, size_t offset = 0) = 0;
+  virtual void downloadAsync(T *dest, size_t count, size_t offset = 0) = 0;
+};
+
+class RawDeviceBuffer : public DeviceBuffer<void> {};
 }
 }
 
-
-#endif //PACXX_V2_DEVICEBUFFER_H
+#endif // PACXX_V2_DEVICEBUFFER_H

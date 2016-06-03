@@ -5,22 +5,19 @@
 #ifndef PACXX_V2_COREINITIALIZER_H
 #define PACXX_V2_COREINITIALIZER_H
 
+namespace pacxx {
+namespace core {
+class CoreInitializer {
+public:
+  static void initialize();
 
-namespace pacxx
-{
-namespace core
-{
-    class CoreInitializer
-    {
-    public:
-        static void initialize();
-    private:
-        CoreInitializer();
-        void initializeCore();
-        bool _initialized;
-    };
+private:
+  CoreInitializer();
+  ~CoreInitializer();
+  void initializeCore();
+  bool _initialized;
+};
 }
 }
 
-
-#endif //PACXX_V2_COREINITIALIZER_H
+#endif // PACXX_V2_COREINITIALIZER_H

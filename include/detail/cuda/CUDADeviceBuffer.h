@@ -11,7 +11,7 @@
 #define PACXX_V2_CUDADEVICEBUFFER_H
 namespace pacxx {
 namespace v2 {
-class CUDARawDeviceBuffer {
+class CUDARawDeviceBuffer : public RawDeviceBuffer {
   friend class CUDARuntime;
 
 private:
@@ -44,24 +44,25 @@ public:
     return *this;
   }
 
-  void *get() { return _buffer; }
+  void *get(size_t offset = 0) const { return _buffer + offset; }
 
-  void upload(void *src, size_t bytes) {
-    SEC_CUDA_CALL(cudaMemcpy(_buffer, src, bytes, cudaMemcpyHostToDevice));
+  void upload(const void *src, size_t bytes, size_t offset = 0) {
+    __message("uploading data ", (void*) _buffer, " offset ", offset);
+    SEC_CUDA_CALL(cudaMemcpy(_buffer + offset, src, bytes, cudaMemcpyHostToDevice));
   }
-  void download(void *dest, size_t bytes) {
-    SEC_CUDA_CALL(cudaMemcpy(dest, _buffer, bytes, cudaMemcpyDeviceToHost));
+  void download(void *dest, size_t bytes, size_t offset = 0) {
+    SEC_CUDA_CALL(cudaMemcpy(dest, _buffer + offset, bytes, cudaMemcpyDeviceToHost));
   }
-  void uploadAsync(void *src, size_t bytes) {
-    SEC_CUDA_CALL(cudaMemcpyAsync(_buffer, src, bytes, cudaMemcpyHostToDevice));
+  void uploadAsync(const void *src, size_t bytes, size_t offset = 0) {
+    SEC_CUDA_CALL(cudaMemcpyAsync(_buffer + offset, src, bytes, cudaMemcpyHostToDevice));
   }
-  void downloadAsync(void *dest, size_t bytes) {
+  void downloadAsync(void *dest, size_t bytes, size_t offset = 0) {
     SEC_CUDA_CALL(
-        cudaMemcpyAsync(dest, _buffer, bytes, cudaMemcpyDeviceToHost));
+        cudaMemcpyAsync(dest, _buffer + offset, bytes, cudaMemcpyDeviceToHost));
   }
 
 private:
-  void *_buffer;
+  char *_buffer;
 };
 
 template <typename T> class CUDADeviceBuffer : public DeviceBuffer<T> {
@@ -69,6 +70,7 @@ template <typename T> class CUDADeviceBuffer : public DeviceBuffer<T> {
 
 private:
   CUDADeviceBuffer(CUDARawDeviceBuffer buffer) : _buffer(std::move(buffer)) {}
+  CUDARawDeviceBuffer* getRawBuffer() { return &_buffer; }
 
 public:
   virtual ~CUDADeviceBuffer() {}
@@ -82,19 +84,19 @@ public:
     return *this;
   }
 
-  virtual T *get() final { return reinterpret_cast<T *>(_buffer.get()); }
+  virtual T *get(size_t offset = 0) const final { return reinterpret_cast<T *>(_buffer.get()); }
 
-  virtual void upload(T *src, size_t count) override {
-    _buffer.upload(src, count * sizeof(T));
+  virtual void upload(const T *src, size_t count, size_t offset = 0) override {
+    _buffer.upload(src, count * sizeof(T), offset);
   }
-  virtual void download(T *dest, size_t count) override {
-    _buffer.download(dest, count * sizeof(T));
+  virtual void download(T *dest, size_t count, size_t offset = 0) override {
+    _buffer.download(dest, count * sizeof(T), offset);
   }
-  virtual void uploadAsync(T *src, size_t count) override {
-    _buffer.uploadAsync(src, count * sizeof(T));
+  virtual void uploadAsync(const T *src, size_t count, size_t offset = 0) override {
+    _buffer.uploadAsync(src, count * sizeof(T), offset);
   }
-  virtual void downloadAsync(T *dest, size_t count) override {
-    _buffer.downloadAsync(dest, count * sizeof(T));
+  virtual void downloadAsync(T *dest, size_t count, size_t offset = 0) override {
+    _buffer.downloadAsync(dest, count * sizeof(T), offset);
   }
 
 private:
