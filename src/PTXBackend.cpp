@@ -11,6 +11,7 @@
 #include <llvm/Support/TargetRegistry.h>
 #include <llvm/Target/TargetLowering.h>
 #include <llvm/Target/TargetMachine.h>
+#include <llvm/Support/raw_ostream.h>
 
 #include "detail/common/Exceptions.h"
 #include "detail/cuda/PTXBackend.h"

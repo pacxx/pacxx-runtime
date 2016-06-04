@@ -18,6 +18,7 @@ namespace pacxx {
     {
     public:
       std::unique_ptr<llvm::Module> loadFile(const std::string& filename);
+      std::unique_ptr<llvm::Module> loadInternal(const char* ptr, size_t size);
     };
 
   }

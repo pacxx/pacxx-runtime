@@ -43,8 +43,10 @@ namespace v2
       return *buffer;
     }
 
+    // make a vector unmanaged all memory on the device is been
+    // freed and the vector is removed from the managed vectors
     template <typename T>
-    void deleteVector(const std::vector<T>& vec)
+    void unmanageVector(const std::vector<T>& vec)
     {
       auto ptr = _managed_vectors[reinterpret_cast<const void*>(&vec)];
       if (ptr)

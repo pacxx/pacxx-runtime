@@ -12,7 +12,7 @@ Dimension3::Dimension3(size_t vx, size_t vy,  size_t vz)
 
 Dimension3::Dimension3(dim3 px) : x(px.x), y(px.y), z(px.z) {}
 
-dim3 Dimension3::getDim3() { return dim3(x, y, z); }
+dim3 Dimension3::getDim3() const { return dim3(x, y, z); }
 
 KernelConfiguration::KernelConfiguration(Dimension3 b, Dimension3 t,
                                          size_t sm)

@@ -36,21 +36,52 @@ struct LOG_LEVEL {
 template <pacxx::common::LOG_LEVEL::LEVEL debug_level =
               pacxx::common::LOG_LEVEL::info,
           typename... Params>
-static void __sprint(const char *file, int line, Params &&... args);
+static void pacxx_log_print(const char *file, int line, Params &&... args);
 
-#define __message(...) __sprint<>(__FILE__, __LINE__, __VA_ARGS__)
+
+// TODO: remove when the old Log.h is removed
+#ifdef __message
+#undef __message
+#endif
+
+#ifdef __debug
+#undef __debug
+#endif
+
+#ifdef __warning
+#undef __warning
+#endif
+
+#ifdef __error
+#undef __error
+#endif
+
+#ifdef __verbose
+#undef __verbose
+#endif
+
+#ifdef __fatal
+#undef __fatal
+#endif
+
+#ifdef __exception
+#undef __exception
+#endif
+
+
+#define __message(...) pacxx_log_print<>(__FILE__, __LINE__, __VA_ARGS__)
 #define __warning(...)                                                         \
-  __sprint<pacxx::common::LOG_LEVEL::warning>(__FILE__, __LINE__, __VA_ARGS__)
+  pacxx_log_print<pacxx::common::LOG_LEVEL::warning>(__FILE__, __LINE__, __VA_ARGS__)
 #define __error(...)                                                           \
-  __sprint<pacxx::common::LOG_LEVEL::error>(__FILE__, __LINE__, __VA_ARGS__)
+  pacxx_log_print<pacxx::common::LOG_LEVEL::error>(__FILE__, __LINE__, __VA_ARGS__)
 #define __debug(...)                                                           \
-  __sprint<pacxx::common::LOG_LEVEL::debug>(__FILE__, __LINE__, __VA_ARGS__)
+  pacxx_log_print<pacxx::common::LOG_LEVEL::debug>(__FILE__, __LINE__, __VA_ARGS__)
 #define __verbose(...)                                                         \
-  __sprint<pacxx::common::LOG_LEVEL::verbose>(__FILE__, __LINE__, __VA_ARGS__)
+  pacxx_log_print<pacxx::common::LOG_LEVEL::verbose>(__FILE__, __LINE__, __VA_ARGS__)
 #define __fatal(...)                                                           \
-  __sprint<pacxx::common::LOG_LEVEL::fatal>(__FILE__, __LINE__, __VA_ARGS__)
+  pacxx_log_print<pacxx::common::LOG_LEVEL::fatal>(__FILE__, __LINE__, __VA_ARGS__)
 #define __exception(...)                                                       \
-  __sprint<pacxx::common::LOG_LEVEL::exception>(__FILE__, __LINE__, __VA_ARGS__)
+  pacxx_log_print<pacxx::common::LOG_LEVEL::exception>(__FILE__, __LINE__, __VA_ARGS__)
 
 #include <iostream>
 #include <sstream>
@@ -71,7 +102,7 @@ void dumpToLog(const T &V, std::string prefix = "", const char *file = "",
   std::string str;
   raw_string_ostream ss(str);
   V.print(ss);
-  __sprint<LOG_LEVEL::verbose>(file, line, "[", prefix, "] ", ss.str());
+  pacxx_log_print<LOG_LEVEL::verbose>(file, line, "[", prefix, "] ", ss.str());
 }
 
 class Log {
@@ -182,7 +213,7 @@ private:
 }
 
 template <pacxx::common::LOG_LEVEL::LEVEL debug_level, typename... Params>
-static void __sprint(const char *file, int line, Params &&... args) {
+static void pacxx_log_print(const char *file, int line, Params &&... args) {
   pacxx::common::Log::get().print<debug_level, Params...>(
       file, line, std::forward<decltype(args)>(args)...);
 }

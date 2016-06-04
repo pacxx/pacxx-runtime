@@ -6,10 +6,10 @@
 #define PACXX_V2_KERNEL_H
 
 #include <vector>
+#include "KernelConfiguration.h"
 
 namespace pacxx {
 namespace v2 {
-struct KernelConfiguration;
 
 class Kernel {
 public:

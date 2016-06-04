@@ -27,5 +27,13 @@ namespace pacxx
       return parseIR(mem->getMemBufferRef(), Diag, getGlobalContext());
     }
 
+    std::unique_ptr<llvm::Module> ModuleLoader::loadInternal(const char* ptr, size_t size)
+    {
+      SMDiagnostic Diag;
+      std::string bytes(ptr, size);
+      auto mem = MemoryBuffer::getMemBuffer(bytes, "internal IR");
+      return parseIR(mem->getMemBufferRef(), Diag, getGlobalContext());
+    }
+
   }
 }

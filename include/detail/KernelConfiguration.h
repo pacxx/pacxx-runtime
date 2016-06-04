@@ -18,7 +18,7 @@ namespace v2 {
 struct Dimension3 {
   Dimension3(size_t vx = 1, size_t vy = 1, size_t vz = 1);
   Dimension3(dim3 px);
-  dim3 getDim3();
+  dim3 getDim3() const;
   size_t x, y, z;
 };
 
