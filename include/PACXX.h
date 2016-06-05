@@ -8,9 +8,10 @@
 #include <type_traits>
 #include <utility>
 #include <cstddef>
-#include <detail/common/Log.h>
+#include "detail/common/Log.h"
 #include "detail/KernelConfiguration.h"
 #include "Executor.h"
+#include "detail/device/DeviceCode.h"
 
 namespace pacxx {
   namespace v2 {
