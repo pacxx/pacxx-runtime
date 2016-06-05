@@ -11,6 +11,8 @@
 #include "detail/IRRuntime.h"
 #include "detail/cuda/CUDAKernel.h"
 #include "detail/cuda/CUDADeviceBuffer.h"
+#include "PTXBackend.h"
+
 // forward declarations of cuda driver structs
 struct CUctx_st;
 typedef struct CUctx_st* CUcontext;
@@ -23,9 +25,12 @@ namespace pacxx
 {
   namespace v2
   {
-    class CUDARuntime : public IRRuntime
+    class CUDARuntime : public IRRuntime<CUDARuntime>
     {
     public:
+
+      using CompilerT = PTXBackend;
+
       CUDARuntime(unsigned dev_id);
       virtual ~CUDARuntime();
 
@@ -33,7 +38,17 @@ namespace pacxx
       virtual Kernel& getKernel(const std::string& name) override;
 
       virtual size_t getPreferedMemoryAlignment() override;
-      virtual DeviceBufferBase* allocateMemory(size_t bytes) override;
+
+      template <typename T>
+      DeviceBuffer<T>* allocateMemory(size_t count) {
+        CUDARawDeviceBuffer raw;
+        raw.allocate(count * sizeof(T));
+        auto wrapped = new CUDADeviceBuffer<T>(std::move(raw));
+        _memory.push_back(std::unique_ptr<DeviceBufferBase>(
+            static_cast<DeviceBufferBase *>(wrapped)));
+        return wrapped;
+      }
+
       virtual RawDeviceBuffer* allocateRawMemory(size_t bytes) override;
       virtual void deleteRawMemory(RawDeviceBuffer* ptr) override;
 

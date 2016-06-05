@@ -27,8 +27,6 @@ public:
   virtual ~CUDARawDeviceBuffer() {
     if (_buffer)
       SEC_CUDA_CALL(cudaFree(_buffer));
-    else
-      __message("dtor but null");
   }
 
   CUDARawDeviceBuffer(const CUDARawDeviceBuffer &) = delete;
@@ -47,10 +45,10 @@ public:
   void *get(size_t offset = 0) const { return _buffer + offset; }
 
   void upload(const void *src, size_t bytes, size_t offset = 0) {
-    __message("uploading data ", (void*) _buffer, " offset ", offset);
     SEC_CUDA_CALL(cudaMemcpy(_buffer + offset, src, bytes, cudaMemcpyHostToDevice));
   }
   void download(void *dest, size_t bytes, size_t offset = 0) {
+    __message("downloading ", bytes, " b");
     SEC_CUDA_CALL(cudaMemcpy(dest, _buffer + offset, bytes, cudaMemcpyDeviceToHost));
   }
   void uploadAsync(const void *src, size_t bytes, size_t offset = 0) {
@@ -90,6 +88,7 @@ public:
     _buffer.upload(src, count * sizeof(T), offset);
   }
   virtual void download(T *dest, size_t count, size_t offset = 0) override {
+    __message("downloading ", count*sizeof(T), " b");
     _buffer.download(dest, count * sizeof(T), offset);
   }
   virtual void uploadAsync(const T *src, size_t count, size_t offset = 0) override {

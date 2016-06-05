@@ -15,6 +15,9 @@
 
 namespace pacxx {
   namespace v2 {
+
+    using RuntimeT = CUDARuntime;
+
     template<class T, int size, class Enable = void>
     struct vec {
     };
@@ -166,7 +169,38 @@ namespace pacxx {
         [[kernel_call(config.blocks.getDim3(), config.threads.getDim3(), 0, 0)]] genericKernel<_C, L, ArgTys...>(
             address_space_cast<const L &, 1>(F), address_space_cast<ArgTys, 1>(args)...);
 #else
-        auto& executor = Executor::Create();
+        auto& executor = Executor<RuntimeT>::Create();
+        executor.run(typeid(L).name(), config, nullptr, std::forward<Ts>(args)...);
+#endif
+      }
+    };
+
+    // since genericKernel takes all parameters as lvalue and not as xvalue we let
+    // the types of form int*&& decay to int* to avoid the automatic decay to int**
+    template <typename T>
+    struct remove_rvalue_from_pointer
+    {
+      using type = std::conditional_t<std::is_pointer<std::decay_t<T>>::value, std::decay_t<T>, T>;
+    };
+
+    template<typename T>
+    using remove_rvalue_from_pointer_t = typename remove_rvalue_from_pointer<T>::type;
+
+
+    template<size_t _C>
+    struct exp_kernel_caller{
+      template<typename L, typename... Ts>
+      static void call(const L &F, const KernelConfiguration& config, Ts &&... args) {
+
+        // In PACXX V1 the compiler removed the kernel_call in the host code
+        // this however, was highly unstable between the two compilation passes and overly complicated.
+        // In PACXX V2 we use the __device_code__ macro to distinguish between the two compilation phases
+        // This approach has the advantage that we do not have to break up type safety.
+#ifdef __device_code__
+        [[kernel_call(config.blocks.getDim3(), config.threads.getDim3(), 0, 0)]] genericKernel<_C, L, remove_rvalue_from_pointer_t<Ts>...>(
+            address_space_cast<const L &, 1>(F), address_space_cast<remove_rvalue_from_pointer_t<Ts>, 1>(args)...);
+#else
+        auto& executor = Executor<RuntimeT>::Create();
         executor.run(typeid(L).name(), config, nullptr, std::forward<Ts>(args)...);
 #endif
       }
@@ -182,8 +216,8 @@ namespace pacxx {
 
       template<typename... Ts>
       void operator()(Ts &&... args) const {
-        typedef kernel_caller<_C, decltype(&std::remove_const_t<std::remove_reference_t<L>>::operator())>
-            caller;
+        //using caller = kernel_caller<_C, decltype(&std::remove_const_t<std::remove_reference_t<L>>::operator())>;
+        using caller = exp_kernel_caller<_C>;
 
         caller::call(_function, _config, std::forward<Ts>(args)...);
       }
@@ -201,6 +235,10 @@ namespace pacxx {
     auto kernel (const Func& lambda, KernelConfiguration&& config){
       return _kernel<decltype(lambda), versioning>(lambda, std::forward<KernelConfiguration>(config));
     };
+
+    template <typename T = RuntimeT>
+    auto& get_executor() { return Executor<RuntimeT>::Create();}
+
   }
 }
 #endif //PACXX_V2_KERNEL_H_H

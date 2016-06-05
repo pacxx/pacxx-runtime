@@ -18,7 +18,7 @@ namespace v2
   class MemoryManager
   {
   public:
-    MemoryManager(IRRuntime& runtime) : _runtime(runtime) {}
+    MemoryManager(IRRuntimeBase& runtime) : _runtime(runtime) {}
 
     virtual ~MemoryManager(){}
 
@@ -55,7 +55,7 @@ namespace v2
     }
 
   private:
-    IRRuntime& _runtime;
+    IRRuntimeBase& _runtime;
     std::map<const void*, RawDeviceBuffer*> _managed_vectors;
   };
 }
