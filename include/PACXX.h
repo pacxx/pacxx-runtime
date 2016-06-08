@@ -231,7 +231,7 @@ namespace pacxx {
     };
 
 
-    template <typename Func, size_t versioning = 0>
+    template <typename Func, size_t versioning = __COUNTER__  >
     auto kernel (const Func& lambda, KernelConfiguration&& config){
       return _kernel<decltype(lambda), versioning>(lambda, std::forward<KernelConfiguration>(config));
     };

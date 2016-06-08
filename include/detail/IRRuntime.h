@@ -23,9 +23,6 @@ namespace pacxx
 
       virtual size_t getPreferedMemoryAlignment() = 0;
 
-      // template <typename T>
-      // DeviceBufferBase* allocateMemory(size_t bytes);
-
       virtual RawDeviceBuffer* allocateRawMemory(size_t bytes) = 0;
       virtual void deleteRawMemory(RawDeviceBuffer* ptr) = 0;
     };

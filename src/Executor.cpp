@@ -4,9 +4,8 @@
 
 #include "Executor.h"
 
-namespace pacxx
-{
-namespace v2
-{
+namespace pacxx {
+  namespace v2 {
 
+  }
 }

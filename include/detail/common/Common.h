@@ -81,7 +81,10 @@ std::string replace_substring(std::string subject, const std::string &search,
 // reads the content of a file into a string
 std::string read_file(std::string filename);
 
-// pushes every input to a string stream and returns the string
+  // write a string to a file
+void write_string_to_file(const std::string& filename, const std::string& data);
+
+  // pushes every input to a string stream and returns the string
 template <typename... T> std::string to_string(T &&... args) {
   std::stringstream ss;
 

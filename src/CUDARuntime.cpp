@@ -98,7 +98,6 @@ RawDeviceBuffer *CUDARuntime::allocateRawMemory(size_t bytes) {
     auto It = std::find_if(_memory.begin(), _memory.end(), [&](const auto& uptr) { return uptr.get() == ptr;});
     if (It != _memory.end())
       _memory.erase(It);
-    __message("raw pointer deleted");
   }
 
 }

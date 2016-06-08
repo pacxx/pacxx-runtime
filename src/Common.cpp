@@ -65,5 +65,12 @@ namespace pacxx{
         return "";
       }
 
+      void write_string_to_file(const std::string& filename, const std::string& data) {
+
+        std::fstream out(filename, std::ios::out);
+        out << data;
+        out.close();
+      }
+
     }
 }

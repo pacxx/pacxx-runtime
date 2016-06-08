@@ -67,13 +67,31 @@ public:
 
   template <typename... Args> void run(std::string name, KernelConfiguration config, Args &&... args) {
 
-    const Function* F = nullptr;
+    const Function *F = nullptr;
 
-    for (const auto& func : _M->functions())
-    {
-      if (func.getName().find(name) != llvm::StringRef::npos)
-        F = &func;
+    auto pos = name.find("$_"); // get the lambdas unique id
+    if (pos != std::string::npos) {
+      pos += 2;
+      std::string numbers = "0123456789";
+      size_t first = name.find_first_of(numbers.c_str(), pos);
+      size_t last = first;
+      while (last != std::string::npos) {
+        size_t temp = last;
+        last = name.find_first_of(numbers.c_str(), last+1);
+        if (last - temp > 1) {
+          last = temp;
+          break;
+        }
+      }
+
+      std::string id = name.substr(pos, last - first + 1);
+      for (const auto &func : _M->functions()) {
+        if (func.getName().find(id) != llvm::StringRef::npos)
+          F = &func;
+      }
     }
+    else
+      F = _M->getFunction(name);
 
     if (!F)
       throw common::generic_exception("Kernel function not found in module! " + name);
@@ -94,7 +112,6 @@ public:
         buffer_size +=
             arg_size * (static_cast<size_t>(arg_size / arg_alignment) + 1);*/
       auto arg_offset = (offset + arg_alignment - 1) & ~(arg_alignment - 1);
-      __error(arg_size, " ", arg_alignment, " ", arg_offset);
       offset = arg_offset + arg_size;
       buffer_size = offset;
       return arg_offset;
@@ -102,13 +119,10 @@ public:
 
     std::vector<char> args_buffer(buffer_size);
 
-    __message(buffer_size);
-
     auto ptr = args_buffer.data();
     size_t i = 0;
     common::for_each_in_arg_pack([&](auto &&arg) {
       auto offset = arg_offsets[i++];
-      __warning( sizeof(std::decay_t<decltype(arg)>), " ", typeid(std::decay_t<decltype(arg)>).name(), " ", offset);
       meta::memory_translation mtl;
       auto targ = mtl(_mem_manager, arg);
       std::memcpy(ptr + offset, &targ, sizeof(std::decay_t<decltype(arg)>));
