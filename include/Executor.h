@@ -42,6 +42,7 @@ public:
   using CompilerT = typename RuntimeT::CompilerT;
 
    static auto& Create() {// TODO: make dynamic fo different devices
+     __message("Initializing PACXX Executor");
      static Executor instance (0);
 
      if (!_initialized) {
@@ -64,8 +65,15 @@ private:
 public:
 
   void setModule(std::unique_ptr<llvm::Module> M);
+  template <typename L, typename... Args> void run(const L& lambda, KernelConfiguration config, Args &&... args) {
 
-  template <typename... Args> void run(std::string name, KernelConfiguration config, Args &&... args) {
+
+    __warning("lambda size: ", sizeof(L));
+    auto& dev_lambda = _mem_manager.getTemporaryLambda(lambda);
+    run_by_name(typeid(L).name(), config, dev_lambda.get(), std::forward<Args>(args)...);
+  }
+
+  template <typename... Args> void run_by_name(std::string name, KernelConfiguration config, Args &&... args) {
 
     const Function *F = nullptr;
 
@@ -118,14 +126,15 @@ public:
     });
 
     std::vector<char> args_buffer(buffer_size);
-
+    __warning("buffer size: ", buffer_size);
     auto ptr = args_buffer.data();
     size_t i = 0;
     common::for_each_in_arg_pack([&](auto &&arg) {
       auto offset = arg_offsets[i++];
       meta::memory_translation mtl;
       auto targ = mtl(_mem_manager, arg);
-      std::memcpy(ptr + offset, &targ, sizeof(std::decay_t<decltype(arg)>));
+      __message(targ, " ", sizeof(decltype(targ)));
+      std::memcpy(ptr + offset, &targ, sizeof(decltype(targ)));
     }, std::forward<Args>(args)...);
 
     auto& K = _runtime->getKernel(F->getName().str());

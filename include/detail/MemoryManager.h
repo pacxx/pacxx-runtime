@@ -43,6 +43,15 @@ namespace v2
       return *buffer;
     }
 
+    template <typename T>
+    RawDeviceBuffer& translateVector(const std::vector<T>& vec)
+    {
+      auto ptr = _managed_vectors[reinterpret_cast<const void*>(&vec)];
+      if (!ptr)
+        throw common::generic_exception("unmanaged vector instance provided to translateVector");
+      return *ptr;
+    }
+
     // make a vector unmanaged all memory on the device is been
     // freed and the vector is removed from the managed vectors
     template <typename T>
@@ -54,9 +63,21 @@ namespace v2
       else __error("unmanaged vector supplied");
     }
 
+    template<typename L>
+    RawDeviceBuffer& getTemporaryLambda(const L& lambda){
+      auto buffer = _temporaries[reinterpret_cast<const void*>(&lambda)];
+      if (!buffer) {
+        buffer = _runtime.allocateRawMemory(sizeof(L));
+        buffer->uploadAsync(&lambda, sizeof(L));
+        _temporaries[reinterpret_cast<const void*>(&lambda)] = buffer;
+      }
+      return *buffer;
+    }
+
   private:
     IRRuntimeBase& _runtime;
     std::map<const void*, RawDeviceBuffer*> _managed_vectors;
+    std::map<const void*, RawDeviceBuffer*> _temporaries;
   };
 }
 

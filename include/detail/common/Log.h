@@ -80,8 +80,8 @@ static void pacxx_log_print(const char *file, int line, Params &&... args);
   pacxx_log_print<pacxx::common::LOG_LEVEL::verbose>(__FILE__, __LINE__, __VA_ARGS__)
 #define __fatal(...)                                                           \
   pacxx_log_print<pacxx::common::LOG_LEVEL::fatal>(__FILE__, __LINE__, __VA_ARGS__)
-#define __exception(...)                                                       \
-  pacxx_log_print<pacxx::common::LOG_LEVEL::exception>(__FILE__, __LINE__, __VA_ARGS__)
+#define __exception(...)                    //                                   \
+  //pacxx_log_print<pacxx::common::LOG_LEVEL::exception>(__FILE__, __LINE__, __VA_ARGS__)
 
 #include <iostream>
 #include <sstream>
@@ -105,13 +105,19 @@ void dumpToLog(const T &V, std::string prefix = "", const char *file = "",
   pacxx_log_print<LOG_LEVEL::verbose>(file, line, "[", prefix, "] ", ss.str());
 }
 
+  static void intializeLogging();
+  static void shutdownLogging();
+
 class Log {
 public:
   static Log &get();
 
 private:
-  Log();
 
+  friend void intializeLogging();
+  friend void shutdownLogging();
+
+  Log();
   virtual ~Log();
 
 public:

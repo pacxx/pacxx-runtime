@@ -12,6 +12,7 @@
 #include "detail/KernelConfiguration.h"
 #include "Executor.h"
 #include "detail/device/DeviceCode.h"
+#include "detail/common/Meta.h"
 
 namespace pacxx {
   namespace v2 {
@@ -63,6 +64,7 @@ namespace pacxx {
 
     public:
       T &operator[](int idx) { return sm_ptr[idx]; }
+      const T& operator[](int idx) const { return sm_ptr[idx]; }
     };
 
     template<typename T, typename std::enable_if<!std::is_pointer<
@@ -175,17 +177,6 @@ namespace pacxx {
       }
     };
 
-    // since genericKernel takes all parameters as lvalue and not as xvalue we let
-    // the types of form int*&& decay to int* to avoid the automatic decay to int**
-    template <typename T>
-    struct remove_rvalue_from_pointer
-    {
-      using type = std::conditional_t<std::is_pointer<std::decay_t<T>>::value, std::decay_t<T>, T>;
-    };
-
-    template<typename T>
-    using remove_rvalue_from_pointer_t = typename remove_rvalue_from_pointer<T>::type;
-
 
     template<size_t _C>
     struct exp_kernel_caller{
@@ -197,11 +188,11 @@ namespace pacxx {
         // In PACXX V2 we use the __device_code__ macro to distinguish between the two compilation phases
         // This approach has the advantage that we do not have to break up type safety.
 #ifdef __device_code__
-        [[kernel_call(config.blocks.getDim3(), config.threads.getDim3(), 0, 0)]] genericKernel<_C, L, remove_rvalue_from_pointer_t<Ts>...>(
-            address_space_cast<const L &, 1>(F), address_space_cast<remove_rvalue_from_pointer_t<Ts>, 1>(args)...);
+        [[kernel_call(config.blocks.getDim3(), config.threads.getDim3(), 0, 0)]] genericKernel<_C, L, meta::remove_reference_t<Ts>...>(
+            address_space_cast<const L &, 1>(F), address_space_cast<meta::remove_reference_t<Ts>, 1>(args)...);
 #else
         auto& executor = Executor<RuntimeT>::Create();
-        executor.run(typeid(L).name(), config, nullptr, std::forward<Ts>(args)...);
+        executor.run(F, config, std::forward<Ts>(args)...);
 #endif
       }
     };
