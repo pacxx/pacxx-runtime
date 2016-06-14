@@ -48,7 +48,6 @@ public:
     SEC_CUDA_CALL(cudaMemcpy(_buffer + offset, src, bytes, cudaMemcpyHostToDevice));
   }
   void download(void *dest, size_t bytes, size_t offset = 0) {
-    __message("downloading ", bytes, " b");
     SEC_CUDA_CALL(cudaMemcpy(dest, _buffer + offset, bytes, cudaMemcpyDeviceToHost));
   }
   void uploadAsync(const void *src, size_t bytes, size_t offset = 0) {

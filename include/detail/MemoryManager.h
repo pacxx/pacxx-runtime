@@ -22,29 +22,31 @@ namespace v2
 
     virtual ~MemoryManager(){}
 
-    template <typename T>
-    RawDeviceBuffer& manageVector(const std::vector<T>& vec)
+    template <typename T, typename Allocator>
+    RawDeviceBuffer& manageVector(const std::vector<T, Allocator>& vec)
     {
       auto buffer = _managed_vectors[reinterpret_cast<const void*>(&vec)];
       if (!buffer) {
         // allocate memory for the vector and the data of the vector
-        size_t header_offset = sizeof(std::vector<T>);
-        size_t additonal_bytes = std::max(header_offset, _runtime.getPreferedMemoryAlignment());
+        size_t additonal_bytes = std::max(sizeof(std::vector<T>), _runtime.getPreferedMemoryAlignment());
         size_t vector_memsize = vec.size() * sizeof(T);
-
         buffer = _runtime.allocateRawMemory(additonal_bytes + vector_memsize);
-        char *this_ptr = reinterpret_cast<char *>(buffer->get(additonal_bytes));
+
+        struct { char* begin, end; } fake_vector;
+        fake_vector.begin = reinterpret_cast<char *>(buffer->get(additonal_bytes));
+        fake_vector.end = fake_vector.end + vector_memsize;
+
+        buffer->uploadAsync(&fake_vector, sizeof(fake_vector), additonal_bytes - 32); // TODO: fix the 32 here
         buffer->upload(vec.data(), vector_memsize, additonal_bytes);
-        buffer->upload(&this_ptr, sizeof(intptr_t), additonal_bytes - 32); // TODO: fix the 32 here
-        this_ptr += vector_memsize;
-        buffer->upload(&this_ptr, sizeof(intptr_t), additonal_bytes - 24); // TODO: fix the 24 here
+
         _managed_vectors[reinterpret_cast<const void*>(&vec)] = buffer;
       }
       return *buffer;
     }
 
-    template <typename T>
-    RawDeviceBuffer& translateVector(const std::vector<T>& vec)
+
+    template <typename T, typename Allocator>
+    RawDeviceBuffer& translateVector(const std::vector<T, Allocator>& vec)
     {
       auto ptr = _managed_vectors[reinterpret_cast<const void*>(&vec)];
       if (!ptr)
@@ -54,12 +56,15 @@ namespace v2
 
     // make a vector unmanaged all memory on the device is been
     // freed and the vector is removed from the managed vectors
-    template <typename T>
-    void unmanageVector(const std::vector<T>& vec)
+    template <typename T, typename Allocator>
+    void unmanageVector(const std::vector<T, Allocator>& vec)
     {
       auto ptr = _managed_vectors[reinterpret_cast<const void*>(&vec)];
-      if (ptr)
+      if (ptr) {
         _runtime.deleteRawMemory(ptr);
+        _managed_vectors[reinterpret_cast<const void*>(&vec)] = nullptr;
+
+      }
       else __error("unmanaged vector supplied");
     }
 

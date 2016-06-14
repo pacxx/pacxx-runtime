@@ -95,9 +95,10 @@ RawDeviceBuffer *CUDARuntime::allocateRawMemory(size_t bytes) {
 
   void CUDARuntime::deleteRawMemory(RawDeviceBuffer* ptr)
   {
-    auto It = std::find_if(_memory.begin(), _memory.end(), [&](const auto& uptr) { return uptr.get() == ptr;});
+    auto It = std::find_if(_memory.begin(), _memory.end(), [&](const auto& uptr) { return static_cast<CUDADeviceBuffer<char>*>(uptr.get())->getRawBuffer() == ptr;});
     if (It != _memory.end())
       _memory.erase(It);
+    else __error("ptr to delete not found");
   }
 
 }

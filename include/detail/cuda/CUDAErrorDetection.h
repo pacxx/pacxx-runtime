@@ -21,7 +21,7 @@ namespace pacxx
   }
 }
 
-#define SEC_CUDA_CALL(val) checkCUDACall((val), #val, __FILE__, __LINE__)
+#define SEC_CUDA_CALL(val) pacxx::v2::checkCUDACall((val), #val, __FILE__, __LINE__)
 
 
 #endif //PACXX_V2_CUDAERRORDETECTION_H
