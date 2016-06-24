@@ -72,7 +72,24 @@ void for_each_in_arg_pack(F &&f, Ts &&... t) {
 std::string GetEnv(const std::string &var);
 
 // extracts the filename from a filepath
-std::string get_file_from_filepath(std::string path);
+
+inline std::string get_file_from_filepath(std::string path) {
+
+#ifndef __WIN32__
+    std::string delim("/");
+#else
+    std::string delim("\\");
+#endif
+    std::string filename;
+
+    size_t pos = path.find_last_of(delim);
+    if (pos != std::string::npos)
+      filename.assign(path.begin() + pos + 1, path.end());
+    else
+      filename = path;
+
+    return filename;
+  }
 
 // replaces as substring in the subject string
 std::string replace_substring(std::string subject, const std::string &search,

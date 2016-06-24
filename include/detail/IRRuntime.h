@@ -7,6 +7,7 @@
 
 #include <string>
 #include <vector>
+#include <llvm/IR/Module.h>
 #include "Kernel.h"
 #include "DeviceBuffer.h"
 
@@ -18,13 +19,17 @@ namespace pacxx
     {
     public:
       virtual ~IRRuntimeBase() {};
-      virtual void linkMC(const std::string& MC) = 0;
+      virtual void link(std::unique_ptr<llvm::Module> M) = 0;
       virtual Kernel& getKernel(const std::string& name) = 0;
 
       virtual size_t getPreferedMemoryAlignment() = 0;
 
       virtual RawDeviceBuffer* allocateRawMemory(size_t bytes) = 0;
       virtual void deleteRawMemory(RawDeviceBuffer* ptr) = 0;
+
+      virtual const llvm::Module& getModule() = 0;
+
+      virtual void synchronize() = 0;
     };
 
     template <typename Derived> // CRTP
@@ -34,9 +39,9 @@ namespace pacxx
       auto& derived() { return *static_cast<Derived*>(this); }
     public:
       virtual ~IRRuntime() {};
-      virtual void linkMC(const std::string& MC) override
+      virtual void link(std::unique_ptr<llvm::Module> M) override
       {
-        derived().linkMC(MC);
+        derived().link(std::move(M));
       }
       virtual Kernel& getKernel(const std::string& name) override
       {

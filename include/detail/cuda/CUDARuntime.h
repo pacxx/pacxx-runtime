@@ -8,9 +8,9 @@
 #include <memory>
 #include <map>
 #include <list>
-#include "detail/IRRuntime.h"
-#include "detail/cuda/CUDAKernel.h"
-#include "detail/cuda/CUDADeviceBuffer.h"
+#include "../IRRuntime.h"
+#include "CUDAKernel.h"
+#include "CUDADeviceBuffer.h"
 #include "PTXBackend.h"
 
 // forward declarations of cuda driver structs
@@ -34,7 +34,7 @@ namespace pacxx
       CUDARuntime(unsigned dev_id);
       virtual ~CUDARuntime();
 
-      virtual void linkMC(const std::string& MC) override;
+      virtual void link(std::unique_ptr<llvm::Module> M) override;
       virtual Kernel& getKernel(const std::string& name) override;
 
       virtual size_t getPreferedMemoryAlignment() override;
@@ -52,9 +52,15 @@ namespace pacxx
       virtual RawDeviceBuffer* allocateRawMemory(size_t bytes) override;
       virtual void deleteRawMemory(RawDeviceBuffer* ptr) override;
 
+      virtual const llvm::Module& getModule() override;
+
+      virtual void synchronize() override;
+
     private:
       CUcontext _context;
       CUmodule _mod;
+      std::unique_ptr<CompilerT> _compiler;
+      std::unique_ptr<llvm::Module> _M;
       std::map<std::string, std::unique_ptr<CUDAKernel>> _kernels;
       std::list<std::unique_ptr<DeviceBufferBase>> _memory;
     };

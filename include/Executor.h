@@ -53,12 +53,22 @@ public:
     return instance;
   }
 
+  static auto& Create(std::string module_bytes) {// TODO: make dynamic fo different devices
+    static Executor instance (0);
+
+    if (!_initialized) {
+      ModuleLoader loader;
+      auto M = loader.loadInternal(module_bytes.data(), module_bytes.size());
+      instance.setModule(std::move(M));
+      _initialized = true;
+    }
+    return instance;
+  }
+
 private:
   Executor(unsigned devID)
-      :  _compiler(std::make_unique<CompilerT>()),
-        _runtime(std::make_unique<RuntimeT>(devID)), _mem_manager(*_runtime) {
+      :  _runtime(std::make_unique<RuntimeT>(devID)), _mem_manager(*_runtime) {
     core::CoreInitializer::initialize();
-    _compiler->initialize();
   }
 
 public:
@@ -71,8 +81,8 @@ public:
 
   template <typename... Args> void run_by_name(std::string name, KernelConfiguration config, Args &&... args) {
 
-    const Function *F = nullptr;
-
+    const llvm::Function *F = nullptr;
+    const llvm::Module& M = _runtime->getModule();
     auto pos = name.find("$_"); // get the lambdas unique id
     if (pos != std::string::npos) {
       pos += 2;
@@ -89,13 +99,13 @@ public:
       }
 
       std::string id = name.substr(pos, last - first + 1);
-      for (const auto &func : _M->functions()) {
+      for (const auto &func : M.functions()) {
         if (func.getName().find(id) != llvm::StringRef::npos)
           F = &func;
       }
     }
     else
-      F = _M->getFunction(name);
+      F = M.getFunction(name);
 
     if (!F)
       throw common::generic_exception("Kernel function not found in module! " + name);
@@ -106,9 +116,9 @@ public:
     int offset = 0;
 
     std::transform(F->arg_begin(), F->arg_end(), arg_offsets.begin(), [&](const auto& arg){
-      auto arg_size = _M->getDataLayout().getTypeAllocSize(arg.getType());
+      auto arg_size = M.getDataLayout().getTypeAllocSize(arg.getType());
       auto arg_alignment =
-          _M->getDataLayout().getPrefTypeAlignment(arg.getType());
+          M.getDataLayout().getPrefTypeAlignment(arg.getType());
 
       /*if (arg_size <= arg_alignment)
         buffer_size += arg_alignment;
@@ -147,9 +157,9 @@ public:
 
   auto& mm(){ return _mem_manager; }
 
+  void synchronize() { _runtime->sychronize(); }
+
 private:
-  std::unique_ptr<llvm::Module> _M;
-  std::unique_ptr<CompilerT> _compiler;
   std::unique_ptr<RuntimeT> _runtime;
   MemoryManager _mem_manager;
 };
@@ -159,8 +169,7 @@ private:
 
   template <typename T>
   void Executor<T>::setModule(std::unique_ptr<llvm::Module> M) {
-    _M = std::move(M);
-    _runtime->linkMC(_compiler->compile(*_M));
+    _runtime->link(std::move(M));
   }
 
 

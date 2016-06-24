@@ -13,7 +13,7 @@
 
 namespace pacxx {
 namespace v2 {
-CUDARuntime::CUDARuntime(unsigned dev_id) : _context(nullptr) {
+CUDARuntime::CUDARuntime(unsigned dev_id) : _context(nullptr), _compiler(std::make_unique<CompilerT>()){
   SEC_CUDA_CALL(cuInit(0));
   CUcontext old;
   SEC_CUDA_CALL(cuCtxGetCurrent(&old)); // check if there is already a context
@@ -27,11 +27,17 @@ CUDARuntime::CUDARuntime(unsigned dev_id) : _context(nullptr) {
     __verbose("creating cudaCtx for device: ", dev_id, " ", device, " ",
               _context);
   }
+
+  _compiler->initialize();
+
 }
 
 CUDARuntime::~CUDARuntime() { }
 
-void CUDARuntime::linkMC(const std::string &MC) {
+void CUDARuntime::link(std::unique_ptr<llvm::Module> M) {
+  _M = std::move(M);
+  std::string MC = _compiler->compile(*_M);
+
   float walltime;
   char error_log[81920];
   char info_log[81920];
@@ -100,6 +106,10 @@ RawDeviceBuffer *CUDARuntime::allocateRawMemory(size_t bytes) {
       _memory.erase(It);
     else __error("ptr to delete not found");
   }
+
+  const llvm::Module& CUDARuntime::getModule() { return *_M; }
+
+  void synchronize() {  SEC_CUDA_CALL(cudaDeviceSynchronize()); }
 
 }
 }
