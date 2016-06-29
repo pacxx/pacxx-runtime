@@ -109,7 +109,7 @@ RawDeviceBuffer *CUDARuntime::allocateRawMemory(size_t bytes) {
 
   const llvm::Module& CUDARuntime::getModule() { return *_M; }
 
-  void synchronize() {  SEC_CUDA_CALL(cudaDeviceSynchronize()); }
+  void CUDARuntime::synchronize() {  SEC_CUDA_CALL(cudaDeviceSynchronize()); }
 
 }
 }

@@ -25,14 +25,28 @@
 #include "detail/KernelConfiguration.h"
 #include "ModuleLoader.h"
 
+#ifdef __PACXX_V2_INTEROP
+const char* llvm_start = nullptr;
+int llvm_size = 0;
+const char* reflection_start = nullptr;
+int reflection_size = 0;
+#else
 extern const char llvm_start[];
 extern int llvm_size;
 extern const char reflection_start[];
 extern int reflection_size;
-
+#endif
 
 namespace pacxx {
 namespace v2 {
+
+  struct KernelArgument
+  {
+    KernelArgument(void* address, size_t size) : address(address), size(size) {}
+    void* address;
+    size_t size;
+  };
+
   template <typename RuntimeT>
 class Executor {
 private:
@@ -147,6 +161,50 @@ public:
     K.launch();
   }
 
+  template <typename... Args> void run_interop(std::string name, KernelConfiguration config, const std::vector<KernelArgument>& args) {
+
+    const llvm::Module& M = _runtime->getModule();
+    const llvm::Function *F = M.getFunction(name);
+
+    if (!F)
+      throw common::generic_exception("Kernel function not found in module! " + name);
+
+    size_t buffer_size = 0;
+    std::vector<size_t> arg_offsets(F->arg_size());
+
+    int offset = 0;
+
+    std::transform(F->arg_begin(), F->arg_end(), arg_offsets.begin(), [&](const auto& arg){
+      auto arg_size = M.getDataLayout().getTypeAllocSize(arg.getType());
+      auto arg_alignment =
+          M.getDataLayout().getPrefTypeAlignment(arg.getType());
+
+      /*if (arg_size <= arg_alignment)
+        buffer_size += arg_alignment;
+      else
+        buffer_size +=
+            arg_size * (static_cast<size_t>(arg_size / arg_alignment) + 1);*/
+      auto arg_offset = (offset + arg_alignment - 1) & ~(arg_alignment - 1);
+      offset = arg_offset + arg_size;
+      buffer_size = offset;
+      return arg_offset;
+    });
+
+    std::vector<char> args_buffer(buffer_size);
+    auto ptr = args_buffer.data();
+    size_t i = 0;
+
+    for (const auto& arg : args) {
+      auto offset = arg_offsets[i++];
+      std::memcpy(ptr + offset, arg.address, arg.size);
+    }
+
+    auto& K = _runtime->getKernel(F->getName().str());
+    K.configurate(config);
+    K.setArguments(args_buffer);
+    K.launch();
+  }
+
   template <typename T> DeviceBuffer<T>& allocate(size_t count){
     return *_runtime->template allocateMemory<T>(count);
   }
@@ -157,7 +215,7 @@ public:
 
   auto& mm(){ return _mem_manager; }
 
-  void synchronize() { _runtime->sychronize(); }
+  void synchronize() { _runtime->synchronize(); }
 
 private:
   std::unique_ptr<RuntimeT> _runtime;
