@@ -15,6 +15,7 @@
 
 #include "detail/common/Exceptions.h"
 #include "detail/cuda/PTXBackend.h"
+#include <llvm/Transforms/PACXXTransforms.h>
 
 using namespace llvm;
 
@@ -58,6 +59,7 @@ std::string PTXBackend::compile(llvm::Module& M) {
   { // at this point we have to make sure that the output stream goes out of scope early
     raw_svector_ostream ptxOS(ptxString);
     legacy::PassManager PM;
+    PM.add(createPACXXStaticEvalPass());
     if (_machine->addPassesToEmitFile(PM, ptxOS, TargetMachine::CGFT_AssemblyFile,
                                       false)) {
       throw common::generic_exception(

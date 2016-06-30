@@ -12,14 +12,13 @@
 #include "CUDAKernel.h"
 #include "CUDADeviceBuffer.h"
 #include "PTXBackend.h"
+#include "../msp/MSPEngine.h"
 
 // forward declarations of cuda driver structs
 struct CUctx_st;
 typedef struct CUctx_st* CUcontext;
 struct CUmod_st;
 typedef struct CUmod_st* CUmodule;
-
-
 
 namespace pacxx
 {
@@ -52,17 +51,26 @@ namespace pacxx
       virtual RawDeviceBuffer* allocateRawMemory(size_t bytes) override;
       virtual void deleteRawMemory(RawDeviceBuffer* ptr) override;
 
+      virtual void initializeMSP(std::unique_ptr<llvm::Module> M) override;
+      virtual void evaluateStagedFunctions(Kernel& K) override;
+      virtual void requestIRTransformation(Kernel& K) override;
+
       virtual const llvm::Module& getModule() override;
 
       virtual void synchronize() override;
 
     private:
+      void compileAndLink();
+
+    private:
       CUcontext _context;
       CUmodule _mod;
       std::unique_ptr<CompilerT> _compiler;
-      std::unique_ptr<llvm::Module> _M;
+      std::unique_ptr<llvm::Module> _M, _rawM;
       std::map<std::string, std::unique_ptr<CUDAKernel>> _kernels;
       std::list<std::unique_ptr<DeviceBufferBase>> _memory;
+      bool _delayed_compilation;
+      v2::MSPEngine _msp_engine;
     };
   }
 }
