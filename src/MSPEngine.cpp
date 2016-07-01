@@ -13,6 +13,12 @@ using namespace llvm;
 
 namespace pacxx {
   namespace v2 {
+
+    MSPEngine::MSPEngine() : _disabled(true){
+
+    }
+
+
     void MSPEngine::initialize(std::unique_ptr<llvm::Module> M) {
       _stubs =
           pacxx::getTagedFunctionsWithTag(M.get(), "pacxx.reflection", "stub");
@@ -49,7 +55,12 @@ namespace pacxx {
         }
 
         __verbose("MSP Engine initialized: ", FStubs.size(), " generic stubs / ", i64FStubs.size(), " shortcuts");
+        _disabled = false;
       }
+      else {
+        __debug("MSP Engine disabled!");
+      }
+
     }
 
     void MSPEngine::evaluate(const llvm::Function &KF, Kernel &kernel) {
@@ -184,5 +195,7 @@ namespace pacxx {
         finder.reset();
       }
     }
+
+    bool MSPEngine::isDisabled() { return _disabled; }
   }
 }

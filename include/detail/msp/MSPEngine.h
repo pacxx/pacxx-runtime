@@ -25,12 +25,15 @@ namespace v2
     using stub_ptr_t = void (*)(void *, void *);
     using i64_stub_ptr_t = size_t (*)(size_t);
 
+    MSPEngine();
 
     void initialize(std::unique_ptr<llvm::Module> M);
     void evaluate(const llvm::Function& KF, Kernel& kernel);
     void transformModule(llvm::Module& M, Kernel& K);
+    bool isDisabled();
 
   private:
+    bool _disabled;
     llvm::ExecutionEngine* _engine;
     std::set<std::pair<llvm::Function*, int>> _stubs;
 

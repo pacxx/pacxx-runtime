@@ -17,7 +17,8 @@
 
 namespace pacxx {
   namespace v2 {
-    CUDARuntime::CUDARuntime(unsigned dev_id) : _context(nullptr), _compiler(std::make_unique<CompilerT>()), _delayed_compilation(false) {
+    CUDARuntime::CUDARuntime(unsigned dev_id) : _context(nullptr), _compiler(std::make_unique<CompilerT>()),
+                                                _delayed_compilation(false) {
       SEC_CUDA_CALL(cuInit(0));
       CUcontext old;
       SEC_CUDA_CALL(cuCtxGetCurrent(&old)); // check if there is already a context
@@ -39,7 +40,7 @@ namespace pacxx {
     CUDARuntime::~CUDARuntime() { }
 
     void CUDARuntime::link(std::unique_ptr<llvm::Module> M) {
-      if (!_rawM){
+      if (!_rawM) {
         _rawM = std::move(M);
       }
 
@@ -47,13 +48,13 @@ namespace pacxx {
       _M->setDataLayout(_rawM->getDataLayoutStr());
 
       auto reflect = _M->getFunction("__pacxx_reflect");
-      if (!reflect || reflect->getNumUses() == 0)
-      {
+      if (!reflect || reflect->getNumUses() == 0) {
         compileAndLink();
       }
-      else
+      else {
         __verbose("Module contains unresolved calls to __pacxx_reflect. Linking delayed!");
-      _delayed_compilation = true;
+        _delayed_compilation = true;
+      }
     }
 
     void CUDARuntime::compileAndLink() {
@@ -131,17 +132,19 @@ namespace pacxx {
         __error("ptr to delete not found");
     }
 
-    void CUDARuntime::initializeMSP(std::unique_ptr<llvm::Module> M)
-    {
+    void CUDARuntime::initializeMSP(std::unique_ptr<llvm::Module> M) {
+      if (_msp_engine.isDisabled()) return;
       _msp_engine.initialize(std::move(M));
     }
 
-    void CUDARuntime::evaluateStagedFunctions(Kernel& K)
-    {
+    void CUDARuntime::evaluateStagedFunctions(Kernel &K) {
+      if (_msp_engine.isDisabled()) return;
       _msp_engine.evaluate(*_rawM->getFunction(K.getName()), K);
     }
 
-    void CUDARuntime::requestIRTransformation(Kernel& K) {
+    void CUDARuntime::requestIRTransformation(Kernel &K) {
+      if (_msp_engine.isDisabled()) return;
+
       _M.reset(CloneModule(_rawM.get()));
       _M->setDataLayout(_rawM->getDataLayoutStr());
 
@@ -151,7 +154,7 @@ namespace pacxx {
 
       CUfunction ptr = nullptr;
       SEC_CUDA_CALL(cuModuleGetFunction(&ptr, _mod, K.getName().c_str()));
-      static_cast<CUDAKernel&>(K).overrideFptr(ptr);
+      static_cast<CUDAKernel &>(K).overrideFptr(ptr);
     }
 
 
