@@ -88,6 +88,8 @@ private:
 public:
 
   void setModule(std::unique_ptr<llvm::Module> M);
+  void setModule(std::string module_bytes);
+
   template <typename L, typename... Args> void run(const L& lambda, KernelConfiguration config, Args &&... args) {
     auto& dev_lambda = _mem_manager.getTemporaryLambda(lambda);
     run_by_name(typeid(L).name(), config, dev_lambda.get(), std::forward<Args>(args)...);
@@ -228,6 +230,13 @@ private:
   template <typename T>
   void Executor<T>::setModule(std::unique_ptr<llvm::Module> M) {
     _runtime->link(std::move(M));
+  }
+
+  template <typename T>
+  void Executor<T>::setModule(std::string module_bytes){
+    ModuleLoader loader;
+    auto M = loader.loadInternal(module_bytes.data(), module_bytes.size());
+    Create().setModule(std::move(M));
   }
 
 
