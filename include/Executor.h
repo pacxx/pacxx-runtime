@@ -55,8 +55,11 @@ public:
 
   using CompilerT = typename RuntimeT::CompilerT;
 
-   static auto& Create() {// TODO: make dynamic fo different devices
+   static auto& Create(bool load_internal = true) {// TODO: make dynamic fo different devices
      static Executor instance (0);
+     
+     if (!load_internal)
+       _initialized = true;
 
      if (!_initialized) {
        ModuleLoader loader;
