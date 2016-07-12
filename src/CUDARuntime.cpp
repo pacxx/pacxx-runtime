@@ -40,9 +40,9 @@ namespace pacxx {
     CUDARuntime::~CUDARuntime() { }
 
     void CUDARuntime::link(std::unique_ptr<llvm::Module> M) {
-      if (!_rawM) {
-        _rawM = std::move(M);
-      }
+
+      _rawM = std::move(M);
+
 
       _M.reset(CloneModule(_rawM.get()));
       _M->setDataLayout(_rawM->getDataLayoutStr());
