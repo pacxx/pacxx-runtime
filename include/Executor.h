@@ -18,7 +18,6 @@
 #include "detail/IRRuntime.h"
 #include "CodePolicy.h"
 #include "detail/CoreInitializer.h"
-#include "detail/IRCompiler.h"
 #include "detail/common/Log.h"
 #include "detail/cuda/PTXBackend.h"
 #include "detail/MemoryManager.h"

@@ -5,18 +5,22 @@
 #ifndef PACXX_V2_NATIVEBACKEND_H
 #define PACXX_V2_NATIVEBACKEND_H
 
-#include <detail/IRCompiler.h>
+#include <llvm/Linker/Linker.h>
 
 namespace pacxx
 {
   namespace v2
   {
-    class NativeBackend : public IRCompiler {
+    class NativeBackend {
     public:
       NativeBackend();
-      virtual ~NativeBackend();
 
-      virtual std::string compile(llvm::Module &M) override;
+      ~NativeBackend();
+
+    private:
+      std::unique_ptr<llvm::Module> _composite;
+      llvm::Linker _linker;
+
     };
   }
 }

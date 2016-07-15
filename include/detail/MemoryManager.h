@@ -32,9 +32,11 @@ namespace v2
         size_t vector_memsize = vec.size() * sizeof(T);
         buffer = _runtime.allocateRawMemory(additonal_bytes + vector_memsize);
 
-        struct { char* begin, end; } fake_vector;
+        struct {
+          char* begin, * end;
+        } fake_vector;
         fake_vector.begin = reinterpret_cast<char *>(buffer->get(additonal_bytes));
-        fake_vector.end = fake_vector.end + vector_memsize;
+        fake_vector.end = fake_vector.begin + vector_memsize;
 
         buffer->uploadAsync(&fake_vector, sizeof(fake_vector), additonal_bytes - 32); // TODO: fix the 32 here
         buffer->upload(vec.data(), vector_memsize, additonal_bytes);

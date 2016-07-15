@@ -43,7 +43,6 @@ namespace pacxx {
 
       _rawM = std::move(M);
 
-
       _M.reset(CloneModule(_rawM.get()));
       _M->setDataLayout(_rawM->getDataLayoutStr());
 

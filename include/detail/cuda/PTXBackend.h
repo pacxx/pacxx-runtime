@@ -7,9 +7,6 @@
 
 #include <llvm/Target/TargetMachine.h>
 #include <llvm/Target/TargetOptions.h>
-
-#include "detail/IRCompiler.h"
-
 namespace llvm {
 class Module;
 class Target;
@@ -17,13 +14,15 @@ class Target;
 
 namespace pacxx {
 namespace v2 {
-class PTXBackend : public IRCompiler {
+  class PTXBackend {
 public:
   PTXBackend();
-  virtual ~PTXBackend() {}
 
-  virtual void initialize() override;
-  virtual std::string compile(llvm::Module &M) override;
+    ~PTXBackend() { }
+
+    void initialize();
+
+    std::string compile(llvm::Module& M);
 
 private:
   const llvm::Target *_target;
