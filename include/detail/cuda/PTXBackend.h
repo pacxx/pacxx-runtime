@@ -7,7 +7,8 @@
 
 #include <llvm/Target/TargetMachine.h>
 #include <llvm/Target/TargetOptions.h>
-
+#include <llvm/Support/raw_ostream.h>
+#include <llvm/ADT/SmallString.h>
 #include "detail/IRCompiler.h"
 
 namespace llvm {
@@ -23,6 +24,8 @@ public:
   virtual ~PTXBackend() {}
 
   virtual void initialize() override;
+
+  llvm::legacy::PassManager& getPassManager();
   virtual std::string compile(llvm::Module &M) override;
 
 private:
@@ -30,6 +33,10 @@ private:
   llvm::TargetOptions _options;
   std::unique_ptr<llvm::TargetMachine> _machine;
   std::string _cpu, _features;
+  llvm::legacy::PassManager _PM;
+  llvm::SmallString<128> _ptxString;
+  llvm::raw_svector_ostream _ptxOS;
+  bool _pmInitialized;
 };
 }
 }

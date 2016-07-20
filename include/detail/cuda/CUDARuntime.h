@@ -56,6 +56,8 @@ namespace pacxx
 
       virtual void synchronize() override;
 
+      virtual llvm::legacy::PassManager& getPassManager() override;
+
     private:
       CUcontext _context;
       CUmodule _mod;

@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 #include <llvm/IR/Module.h>
+#include <llvm/IR/LegacyPassManager.h>
 #include "Kernel.h"
 #include "DeviceBuffer.h"
 
@@ -30,6 +31,9 @@ namespace pacxx
       virtual const llvm::Module& getModule() = 0;
 
       virtual void synchronize() = 0;
+
+      virtual llvm::legacy::PassManager& getPassManager() = 0;
+
     };
 
     template <typename Derived> // CRTP
