@@ -59,6 +59,8 @@ namespace pacxx
 
       virtual void synchronize() override;
 
+      virtual llvm::legacy::PassManager& getPassManager() override;
+
     private:
       void compileAndLink();
 

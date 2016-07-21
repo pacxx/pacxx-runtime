@@ -7,6 +7,9 @@
 
 #include <llvm/Target/TargetMachine.h>
 #include <llvm/Target/TargetOptions.h>
+#include <llvm/Support/raw_ostream.h>
+#include <llvm/ADT/SmallString.h>
+
 namespace llvm {
 class Module;
 class Target;
@@ -17,18 +20,22 @@ namespace v2 {
   class PTXBackend {
 public:
   PTXBackend();
+  ~PTXBackend() { }
 
-    ~PTXBackend() { }
+  void initialize();
 
-    void initialize();
-
-    std::string compile(llvm::Module& M);
+  llvm::legacy::PassManager& getPassManager();
+  std::string compile(llvm::Module& M);
 
 private:
   const llvm::Target *_target;
   llvm::TargetOptions _options;
   std::unique_ptr<llvm::TargetMachine> _machine;
   std::string _cpu, _features;
+  llvm::legacy::PassManager _PM;
+  llvm::SmallString<128> _ptxString;
+  llvm::raw_svector_ostream _ptxOS;
+  bool _pmInitialized;
 };
 }
 }

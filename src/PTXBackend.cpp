@@ -22,7 +22,7 @@ using namespace llvm;
 namespace pacxx {
 namespace v2 {
 PTXBackend::PTXBackend()
-    : _target(nullptr), _cpu("sm_35"), _features("+ptx40") {}
+    : _target(nullptr), _cpu("sm_35"), _features("+ptx40"), _pmInitialized(false), _ptxOS(_ptxString) { }
 
 void PTXBackend::initialize() {
   PassRegistry *Registry = PassRegistry::getPassRegistry();
@@ -38,6 +38,7 @@ void PTXBackend::initialize() {
   _options.NoNaNsFPMath = false;
   _options.HonorSignDependentRoundingFPMathOption = false;
   _options.AllowFPOpFusion = FPOpFusion::Fast;
+
 }
 
 std::string PTXBackend::compile(llvm::Module& M) {
@@ -50,26 +51,28 @@ std::string PTXBackend::compile(llvm::Module& M) {
     throw common::generic_exception(Error);
   }
 
-  _machine.reset(_target->createTargetMachine(
-      TheTriple.getTriple(), _cpu, _features, _options, Reloc::Default,
-      CodeModel::Default, CodeGenOpt::None));
+  _ptxString.clear();
 
+  if (!_pmInitialized) {
+    _machine.reset(_target->createTargetMachine(
+        TheTriple.getTriple(), _cpu, _features, _options, Reloc::Default,
+        CodeModel::Default, CodeGenOpt::None));
 
-  SmallString<128> ptxString;
-  { // at this point we have to make sure that the output stream goes out of scope early
-    raw_svector_ostream ptxOS(ptxString);
-    legacy::PassManager PM;
-    PM.add(createPACXXStaticEvalPass());
-    if (_machine->addPassesToEmitFile(PM, ptxOS, TargetMachine::CGFT_AssemblyFile,
+    if (_machine->addPassesToEmitFile(_PM, _ptxOS, TargetMachine::CGFT_AssemblyFile,
                                       false)) {
       throw common::generic_exception(
           "target does not support generation of this file type!\n");
     }
 
-    PM.run(M);
-  } // ptxOS must go out of scope to get the entire PTX output in ptxString
+    _pmInitialized = true;
+  }
 
-  return ptxString.str().str();
+  _PM.run(M);
+
+
+  return _ptxString.str().str();
 }
+
+  llvm::legacy::PassManager& PTXBackend::getPassManager() { return _PM; }
 }
 }

@@ -215,6 +215,8 @@ public:
 
   void synchronize() { _runtime->synchronize(); }
 
+  auto& getPassManager() { return _runtime->getPassManager(); }
+
 private:
   std::unique_ptr<RuntimeT> _runtime;
   MemoryManager _mem_manager;

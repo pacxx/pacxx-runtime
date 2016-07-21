@@ -161,5 +161,7 @@ namespace pacxx {
 
     void CUDARuntime::synchronize() { SEC_CUDA_CALL(cudaDeviceSynchronize()); }
 
+    llvm::legacy::PassManager& CUDARuntime::getPassManager() { return _compiler->getPassManager(); }
+
   }
 }
