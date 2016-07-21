@@ -20,22 +20,24 @@ namespace v2 {
   class PTXBackend {
 public:
   PTXBackend();
-  ~PTXBackend() { }
 
-  void initialize();
+    ~PTXBackend() { }
 
-  llvm::legacy::PassManager& getPassManager();
-  std::string compile(llvm::Module& M);
+    void initialize();
+
+    llvm::legacy::PassManager& getPassManager();
+
+    std::string compile(llvm::Module& M);
 
 private:
   const llvm::Target *_target;
   llvm::TargetOptions _options;
   std::unique_ptr<llvm::TargetMachine> _machine;
   std::string _cpu, _features;
-  llvm::legacy::PassManager _PM;
-  llvm::SmallString<128> _ptxString;
-  llvm::raw_svector_ostream _ptxOS;
-  bool _pmInitialized;
+    llvm::legacy::PassManager _PM;
+    llvm::SmallString<128> _ptxString;
+    llvm::raw_svector_ostream _ptxOS;
+    bool _pmInitialized;
 };
 }
 }
