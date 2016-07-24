@@ -20,6 +20,13 @@ namespace pacxx
 {
   namespace v2
   {
+
+    std::unique_ptr<llvm::Module> ModuleLoader::loadFile(const std::string& IR) {
+      SMDiagnostic Diag;
+      auto mem = MemoryBuffer::getMemBuffer(IR, "llvm IR");
+      return parseIR(mem->getMemBufferRef(), Diag, getGlobalContext());
+    }
+
     std::unique_ptr<llvm::Module> ModuleLoader::loadFile(const std::string& filename)
     {
       SMDiagnostic Diag;
@@ -39,11 +46,17 @@ namespace pacxx
     std::unique_ptr<llvm::Module> ModuleLoader::loadAndLink(std::unique_ptr<llvm::Module> old,
                                                             const std::string& filename) {
 
-      std::unique_ptr<llvm::Module> composite = std::move(old);
-      Linker linker(composite.get());
-
       auto loaded = loadFile(filename);
-      linker.linkInModule(loaded.get());
+
+      return link(std::move(old), std::move(loaded));
+    }
+
+    std::unique_ptr<llvm::Module> ModuleLoader::link(std::unique_ptr<llvm::Module> m1,
+                                                     std::unique_ptr<llvm::Module> m2) {
+
+      std::unique_ptr<llvm::Module> composite = std::move(m1);
+      Linker linker(composite.get());
+      linker.linkInModule(m2.get());
 
       return std::move(composite);
     }
