@@ -21,7 +21,7 @@ namespace pacxx
   namespace v2
   {
 
-    std::unique_ptr<llvm::Module> ModuleLoader::loadFile(const std::string& IR) {
+    std::unique_ptr<llvm::Module> ModuleLoader::loadIR(const std::string& IR) {
       SMDiagnostic Diag;
       auto mem = MemoryBuffer::getMemBuffer(IR, "llvm IR");
       return parseIR(mem->getMemBufferRef(), Diag, getGlobalContext());
