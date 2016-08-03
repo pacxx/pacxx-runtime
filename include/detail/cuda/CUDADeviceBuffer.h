@@ -5,6 +5,7 @@
 #include "CUDAErrorDetection.h"
 #include <detail/DeviceBuffer.h>
 #include "detail/common/Log.h"
+#include <cuda_runtime_api.h>
 #include <memory>
 
 #ifndef PACXX_V2_CUDADEVICEBUFFER_H
@@ -20,7 +21,7 @@ private:
 
   void allocate (size_t bytes)
   {
-    SEC_CUDA_CALL(cudaMalloc(&_buffer, bytes));
+    SEC_CUDA_CALL(cudaMalloc((void**)&_buffer, bytes));
   }
 
 public:

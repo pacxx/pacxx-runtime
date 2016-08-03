@@ -23,8 +23,7 @@ namespace pacxx {
 
       std::unique_ptr<llvm::Module> loadAndLink(std::unique_ptr<llvm::Module> old, const std::string& filename);
 
-      std::unique_ptr<llvm::Module> link(std::unique_ptr<llvm::Module> m1,
-                                         std::unique_ptr<llvm::Module> m2);
+      std::unique_ptr<llvm::Module> link(std::unique_ptr<llvm::Module> m1, std::unique_ptr<llvm::Module> m2);
     };
 
   }
