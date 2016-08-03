@@ -11,35 +11,36 @@
 #include <llvm/ADT/SmallString.h>
 
 namespace llvm {
-class Module;
-class Target;
+  class Module;
+
+  class Target;
 }
 
 namespace pacxx {
-namespace v2 {
-  class PTXBackend {
-public:
-  PTXBackend();
+  namespace v2 {
+    class PTXBackend {
+    public:
+      PTXBackend();
 
-    ~PTXBackend() { }
+      ~PTXBackend() {}
 
-    void initialize();
+      void initialize(unsigned CC);
 
-    llvm::legacy::PassManager& getPassManager();
+      llvm::legacy::PassManager& getPassManager();
 
-    std::string compile(llvm::Module& M);
+      std::string compile(llvm::Module& M);
 
-private:
-  const llvm::Target *_target;
-  llvm::TargetOptions _options;
-  std::unique_ptr<llvm::TargetMachine> _machine;
-  std::string _cpu, _features;
-    llvm::legacy::PassManager _PM;
-    llvm::SmallString<128> _ptxString;
-    llvm::raw_svector_ostream _ptxOS;
-    bool _pmInitialized;
-};
-}
+    private:
+      const llvm::Target *_target;
+      llvm::TargetOptions _options;
+      std::unique_ptr<llvm::TargetMachine> _machine;
+      std::string _cpu, _features;
+      llvm::legacy::PassManager _PM;
+      llvm::SmallString<128> _ptxString;
+      llvm::raw_svector_ostream _ptxOS;
+      bool _pmInitialized;
+    };
+  }
 }
 
 #endif // PACXX_V2_PTXBACKEND_H

@@ -2,14 +2,8 @@
 // Created by mhaidl on 30/05/16.
 //
 
-#include "detail/cuda/CUDARuntime.h"
-#include "detail/common/Log.h"
-#include "detail/cuda/CUDAErrorDetection.h"
-#include <cuda.h>
-#include <detail/Kernel.h>
+#include <detail/cuda/CUDARuntime.h>
 #include <detail/common/Exceptions.h>
-#include <detail/cuda/CUDADeviceBuffer.h>
-#include <string>
 #include <llvm/IR/Constants.h>
 #include <llvm/IR/Intrinsics.h>
 #include <llvm/Transforms/Utils/Cloning.h>
@@ -32,8 +26,13 @@ namespace pacxx {
         __verbose("creating cudaCtx for device: ", dev_id, " ", device, " ",
                   _context);
       }
+      cudaDeviceProp prop;
+      SEC_CUDA_CALL(cudaGetDeviceProperties(&prop, dev_id));
 
-      _compiler->initialize();
+      unsigned CC = prop.major * 10 + prop.minor;
+
+      __verbose("Initializing PTXBackend for ", dev_id, " with compute capability ", CC);
+      _compiler->initialize(CC);
 
     }
 
