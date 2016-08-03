@@ -23,7 +23,7 @@ namespace pacxx {
         CUdevice device;
         SEC_CUDA_CALL(cuDeviceGet(&device, dev_id));
         SEC_CUDA_CALL(cuCtxCreate(&_context, CU_CTX_SCHED_AUTO, device));
-        __verbose("creating cudaCtx for device: ", dev_id, " ", device, " ",
+        __verbose("Creating cudaCtx for device: ", dev_id, " ", device, " ",
                   _context);
       }
       cudaDeviceProp prop;
@@ -31,7 +31,8 @@ namespace pacxx {
 
       unsigned CC = prop.major * 10 + prop.minor;
 
-      __verbose("Initializing PTXBackend for ", dev_id, " with compute capability ", CC);
+      __verbose("Initializing PTXBackend for ", prop.name, " (dev: ", dev_id, ") with compute capability ", prop.major,
+                ".", prop.minor);
       _compiler->initialize(CC);
 
     }

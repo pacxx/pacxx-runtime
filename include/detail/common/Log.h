@@ -105,8 +105,8 @@ void dumpToLog(const T &V, std::string prefix = "", const char *file = "",
   pacxx_log_print<LOG_LEVEL::verbose>(file, line, "[", prefix, "] ", ss.str());
 }
 
-  static void intializeLogging();
-  static void shutdownLogging();
+//  static void intializeLogging();
+//  static void shutdownLogging();
 
 class Log {
 public:
@@ -114,8 +114,8 @@ public:
 
 private:
 
-  friend void intializeLogging();
-  friend void shutdownLogging();
+//  friend void intializeLogging();
+//  friend void shutdownLogging();
 
   Log();
   virtual ~Log();

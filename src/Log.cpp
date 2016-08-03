@@ -6,18 +6,19 @@ namespace pacxx
 {
 namespace common
 {
-  static Log* the_log = nullptr;
-
-  __attribute__((constructor)) static void intializeLogging() {
-    the_log = new Log();
-  }
-
-  __attribute__((destructor)) static void shutdownLogging() {
-    delete the_log;
-  }
+//  static Log* the_log = nullptr;
+//
+//  __attribute__((constructor)) static void intializeLogging() {
+//    the_log = new Log();
+//  }
+//
+//  __attribute__((destructor)) static void shutdownLogging() {
+//    delete the_log;
+//  }
 
   Log& Log::get() {
-    return *the_log;
+    static Log the_log;
+    return the_log;
   }
 
   Log::Log() : _silent(false), _no_warnings(false), output(std::cout) {
