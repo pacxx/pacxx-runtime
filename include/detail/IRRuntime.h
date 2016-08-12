@@ -67,6 +67,11 @@ namespace pacxx {
         return derived().template allocateMemory<T>(count);
       }
 
+      template<typename T>
+      void freeMemory(DeviceBuffer<T>* ptr) {
+        return derived().template freeMemory<T>(ptr);
+      }
+
       virtual RawDeviceBuffer *allocateRawMemory(size_t bytes) override {
         return derived().allocateRawMemory(bytes);
       }

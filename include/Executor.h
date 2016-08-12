@@ -211,7 +211,17 @@ public:
     return *_runtime->allocateRawMemory(bytes);
   }
 
+  template <typename T> void free(DeviceBuffer<T>& buffer){
+    _runtime->template deleteMemory(&buffer);
+  }
+
+  void freeRaw(RawDeviceBuffer& buffer){
+    _runtime->deleteRawMemory(&buffer);
+  }
+
   auto& mm(){ return _mem_manager; }
+
+  auto& rt(){ return *_runtime; }
 
   void synchronize() { _runtime->synchronize(); }
 
