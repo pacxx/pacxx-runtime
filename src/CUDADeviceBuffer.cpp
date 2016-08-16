@@ -8,7 +8,7 @@
 
 namespace pacxx {
   namespace v2 {
-    CUDARawDeviceBuffer::CUDARawDeviceBuffer() {
+    CUDARawDeviceBuffer::CUDARawDeviceBuffer() : _mercy(1) {
     }
 
     void CUDARawDeviceBuffer::allocate(size_t bytes) {
@@ -56,8 +56,15 @@ namespace pacxx {
     }
 
     void CUDARawDeviceBuffer::abandon() {
-      Executor<CUDARuntime>::Create().freeRaw(*this);
-      _buffer = nullptr;
+        --_mercy;
+        if (_mercy == 0) {
+            Executor<CUDARuntime>::Create().freeRaw(*this);
+            _buffer = nullptr;
+        }
+    }
+
+    void CUDARawDeviceBuffer::mercy() {
+        ++_mercy;
     }
   }
 }

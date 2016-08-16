@@ -14,6 +14,11 @@
 
 namespace pacxx {
   namespace v2 {
+    template<typename T>
+    class Callback;
+
+    class CallbackBase;
+
     class IRRuntimeBase {
     public:
       virtual ~IRRuntimeBase() { };
@@ -40,6 +45,8 @@ namespace pacxx {
 
       virtual llvm::legacy::PassManager& getPassManager() = 0;
 
+      virtual void removeCallback(CallbackBase* ptr) = 0;
+
     };
 
     template<typename Derived> // CRTP
@@ -48,20 +55,6 @@ namespace pacxx {
       auto &derived() { return *static_cast<Derived *>(this); }
 
     public:
-      virtual ~IRRuntime() { };
-
-      virtual void link(std::unique_ptr<llvm::Module> M) override {
-        derived().link(std::move(M));
-      }
-
-      virtual Kernel &getKernel(const std::string &name) override {
-        return derived().getKernel(name);
-      }
-
-      virtual size_t getPreferedMemoryAlignment() override {
-        return derived().getPreferedMemoryAlignment();
-      }
-
       template<typename T>
       DeviceBuffer<T> *allocateMemory(size_t count) {
         return derived().template allocateMemory<T>(count);
@@ -72,13 +65,11 @@ namespace pacxx {
         return derived().template freeMemory<T>(ptr);
       }
 
-      virtual RawDeviceBuffer *allocateRawMemory(size_t bytes) override {
-        return derived().allocateRawMemory(bytes);
+      template<typename CallbackFunc>
+      void setCallback(Callback<CallbackFunc> cb) {
+          return derived().template setCallback<CallbackFunc>(cb);
       }
 
-      virtual void deleteRawMemory(RawDeviceBuffer *ptr) override {
-        derived().deleteRawMemory(ptr);
-      }
     };
   }
 }

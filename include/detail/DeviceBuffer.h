@@ -24,6 +24,8 @@ public:
   virtual void download(T *dest, size_t count, size_t offset = 0) = 0;
   virtual void uploadAsync(const T *src, size_t count, size_t offset = 0) = 0;
   virtual void downloadAsync(T *dest, size_t count, size_t offset = 0) = 0;
+
+  virtual void mercy() = 0;
   virtual void abandon() = 0;
 };
 

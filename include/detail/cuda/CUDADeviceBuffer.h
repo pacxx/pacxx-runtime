@@ -43,8 +43,11 @@ namespace pacxx {
 
       virtual void abandon() override;
 
+      virtual void mercy() override;
+
     private:
       char* _buffer;
+      unsigned _mercy;
     };
 
     template<typename T>
@@ -70,15 +73,13 @@ namespace pacxx {
         return *this;
       }
 
-      virtual T* get(size_t offset = 0) const final { return reinterpret_cast<T*>(_buffer.get()); }
+      virtual T* get(size_t offset = 0) const final { return reinterpret_cast<T*>(_buffer.get(sizeof(T) * offset)); }
 
       virtual void upload(const T* src, size_t count, size_t offset = 0) override {
-        __message("uploading ", count * sizeof(T), " byte");
         _buffer.upload(src, count * sizeof(T), offset);
       }
 
       virtual void download(T* dest, size_t count, size_t offset = 0) override {
-        __message("downloading ", count * sizeof(T), " byte");
         _buffer.download(dest, count * sizeof(T), offset);
       }
 
@@ -91,8 +92,11 @@ namespace pacxx {
       }
 
       virtual void abandon() override {
-        __message("abandoning buffer");
         _buffer.abandon();
+      }
+
+      virtual void mercy() override {
+        _buffer.mercy();
       }
 
     private:

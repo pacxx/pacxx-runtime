@@ -17,8 +17,6 @@
 namespace pacxx {
   namespace v2 {
 
-    using RuntimeT = CUDARuntime;
-
     template<class T, int size, class Enable = void>
     struct vec {
     };
@@ -29,12 +27,12 @@ namespace pacxx {
     };
 
     template<typename F, typename... Args>
-    [[reflect]] auto _stage(F func, Args &&... args) {
+    [[reflect]] auto _stage(F func, Args&& ... args) {
       return static_cast<long>(func(std::forward<Args>(args)...));
     }
 
     template<typename Arg>
-    auto stage(const Arg &val) {
+    auto stage(const Arg& val) {
       return static_cast<Arg>(_stage([&] { return val; }));
     }
 
@@ -42,40 +40,41 @@ namespace pacxx {
     class shared_memory {
     public:
       template<typename U = T,
-          typename std::enable_if<!std::is_void<U>::value && __sm_size == 0>::type * = nullptr>
+          typename std::enable_if<!std::is_void<U>::value && __sm_size == 0>::type* = nullptr>
       shared_memory() {
 #ifdef __device_code__
         [[shared]] extern T ptr[];
 #else
-        T *ptr = nullptr;
+        T* ptr = nullptr;
 #endif
         sm_ptr = reinterpret_cast<decltype(sm_ptr)>(ptr);
       }
 
       template<typename U = T,
-          typename std::enable_if<!std::is_void<U>::value && __sm_size != 0>::type * = nullptr>
+          typename std::enable_if<!std::is_void<U>::value && __sm_size != 0>::type* = nullptr>
       shared_memory() {
         [[shared]] T ptr[__sm_size];
         sm_ptr = reinterpret_cast<decltype(sm_ptr)>(ptr);
       }
 
     private:
-      T /*__attribute__((address_space(3)))*/*sm_ptr;
+      T /*__attribute__((address_space(3)))*/* sm_ptr;
 
     public:
-      T &operator[](int idx) { return sm_ptr[idx]; }
+      T& operator[](int idx) { return sm_ptr[idx]; }
+
       const T& operator[](int idx) const { return sm_ptr[idx]; }
     };
 
     template<typename T, typename std::enable_if<!std::is_pointer<
-        typename std::remove_reference<T>::type>::value>::type * = nullptr>
+        typename std::remove_reference<T>::type>::value>::type* = nullptr>
     T forward_sec(T val) {
       return val;
     }
 
     template<typename T, typename std::enable_if<std::is_pointer<
-        typename std::remove_reference<T>::type>::value>::type * = nullptr>
-    typename std::remove_reference<T>::type forward_sec(T &val) {
+        typename std::remove_reference<T>::type>::value>::type* = nullptr>
+    typename std::remove_reference<T>::type forward_sec(T& val) {
       return val;
     }
 
@@ -84,48 +83,49 @@ namespace pacxx {
     template<typename T>
     struct generic_to_global {
       using type = std::conditional_t<
-          std::is_reference<T>::value, std::remove_reference_t<T> __attribute((address_space(1))),
-          std::conditional_t<
-              std::is_pointer<T>::value,
-              std::remove_pointer_t<std::remove_reference_t<T>> __attribute((address_space(1))) *, T>>;
+      std::is_reference<T>::value, std::remove_reference_t <T> __attribute((address_space(1))),
+      std::conditional_t <
+      std::is_pointer<T>::value,
+      std::remove_pointer_t<std::remove_reference_t < T>> __attribute((address_space(1)))*, T>>;
     };
     template<typename T>
     struct global_to_generic {
       using type =
       std::conditional_t<std::is_reference<T>::value,
-          std::remove_reference_t<T> __attribute((address_space(0))), T>;
+      std::remove_reference_t <T> __attribute((address_space(0))), T>;
     };
 
     template<typename T, int AS, typename U,
-        typename std::enable_if<AS == 1 && std::is_reference<T>::value>::type * = nullptr>
+        typename std::enable_if<AS == 1 && std::is_reference<T>::value>::type* = nullptr>
     std::conditional_t<std::is_reference<T>::value,
         std::add_lvalue_reference_t<typename generic_to_global<T>::type>,
         typename generic_to_global<T>::type>
-    address_space_cast(U &arg) {
-      return *reinterpret_cast<typename generic_to_global<T>::type *>(&arg);
+    address_space_cast(U& arg) {
+      return *reinterpret_cast<typename generic_to_global<T>::type*>(&arg);
     }
 
     template<typename T, int AS, typename U,
-        typename std::enable_if<AS == 0 && std::is_reference<T>::value>::type * = nullptr>
-    T address_space_cast(U &arg) {
-      return *reinterpret_cast<std::conditional_t<std::is_const<T>::value, const std::remove_reference_t<T> *, std::remove_reference_t<T> *>>(&arg);
+        typename std::enable_if<AS == 0 && std::is_reference<T>::value>::type* = nullptr>
+    T address_space_cast(U& arg) {
+      return *reinterpret_cast<std::conditional_t<std::is_const<T>::value, const std::remove_reference_t <T>*,
+          std::remove_reference_t < T>* >> (&arg);
     }
 
     template<typename T, int AS, typename U,
-        typename std::enable_if<AS == 1 && std::is_pointer<T>::value>::type * = nullptr>
+        typename std::enable_if<AS == 1 && std::is_pointer<T>::value>::type* = nullptr>
     auto address_space_cast(U arg) {
-      return reinterpret_cast<std::remove_pointer_t<T> __attribute((address_space(1))) *>(arg);
+      return reinterpret_cast<std::remove_pointer_t <T> __attribute((address_space(1)))*>(arg);
     }
 
     template<typename T, int AS, typename U,
-        typename std::enable_if<AS == 0 && std::is_pointer<T>::value>::type * = nullptr>
+        typename std::enable_if<AS == 0 && std::is_pointer<T>::value>::type* = nullptr>
     auto address_space_cast(U arg) {
       return reinterpret_cast<T>(arg);
     }
 
     template<
         typename T, int AS, typename U,
-        typename std::enable_if_t<!std::is_reference<T>::value && !std::is_pointer<T>::value, int> * = nullptr>
+        typename std::enable_if_t<!std::is_reference<T>::value && !std::is_pointer<T>::value, int>* = nullptr>
     T address_space_cast(U val) {
       return static_cast<T>(val);
     }
@@ -135,11 +135,11 @@ namespace pacxx {
 
     template<size_t _C, typename L, typename... ArgTys>
     void
-    genericKernel(const __attribute((address_space(1))) L &lambda,
+    genericKernel(const __attribute((address_space(1))) L& lambda,
                   std::conditional_t<std::is_reference<ArgTys>::value,
                       std::add_lvalue_reference_t<typename generic_to_global<ArgTys>::type>,
                       typename generic_to_global<ArgTys>::type>... args) {
-      const auto &lambda_as0 = address_space_cast<const L &, 0>(lambda);
+      const auto& lambda_as0 = address_space_cast<const L&, 0>(lambda);
       lambda_as0(address_space_cast<ArgTys, 0>(args)...);
     }
 
@@ -155,13 +155,13 @@ namespace pacxx {
 
       template<size_t i>
       struct ArgTy {
-        typedef typename std::tuple_element<i, std::tuple<ArgTys...>>::type type;
+        typedef typename std::tuple_element<i, std::tuple < ArgTys...>>::type type;
       };
 
       using ReturnType = RType;
 
       template<typename L, typename... Ts>
-      static void call(const L &F, const KernelConfiguration& config, Ts &&... args) {
+      static void call(const L& F, const KernelConfiguration& config, Ts&& ... args) {
 
         // In PACXX V1 the compiler removed the kernel_call in the host code
         // this however, was highly unstable between the two compilation passes and overly complicated.
@@ -179,9 +179,9 @@ namespace pacxx {
 
 
     template<size_t _C>
-    struct exp_kernel_caller{
+    struct exp_kernel_caller {
       template<typename L, typename... Ts>
-      static void call(const L &F, const KernelConfiguration& config, Ts &&... args) {
+      static void call(const L& F, const KernelConfiguration& config, Ts&& ... args) {
 
         // In PACXX V1 the compiler removed the kernel_call in the host code
         // this however, was highly unstable between the two compilation passes and overly complicated.
@@ -195,18 +195,35 @@ namespace pacxx {
         executor.run(F, config, std::forward<Ts>(args)...);
 #endif
       }
+
+      template<typename L, typename CallbackTy, typename... Ts>
+      static void
+      call_with_cb(const L& F, const KernelConfiguration& config, CallbackTy& callback, Ts&& ... args) {
+
+        // In PACXX V1 the compiler removed the kernel_call in the host code
+        // this however, was highly unstable between the two compilation passes and overly complicated.
+        // In PACXX V2 we use the __device_code__ macro to distinguish between the two compilation phases
+        // This approach has the advantage that we do not have to break up type safety.
+#ifdef __device_code__
+        [[kernel_call(config.blocks.getDim3(), config.threads.getDim3(), 0, 0)]] genericKernel<_C, L, meta::remove_reference_t<Ts>...>(
+            address_space_cast<const L &, 1>(F), address_space_cast<meta::remove_reference_t<Ts>, 1>(args)...);
+#else
+        auto& executor = Executor<RuntimeT>::Create();
+        executor.run_with_callback(F, config, callback, std::forward<Ts>(args)...);
+#endif
+      }
     };
 
     template<typename L, size_t _C>
     class _kernel {
     public:
-      _kernel(const L &lambda, KernelConfiguration&& config)
+      _kernel(const L& lambda, KernelConfiguration&& config)
           : _function(lambda), _config(config) {
       }
 
 
       template<typename... Ts>
-      void operator()(Ts &&... args) const {
+      void operator()(Ts&& ... args) const {
         //using caller = kernel_caller<_C, decltype(&std::remove_const_t<std::remove_reference_t<L>>::operator())>;
         using caller = exp_kernel_caller<_C>;
 
@@ -217,18 +234,50 @@ namespace pacxx {
       auto synchronize() { __message("synchronize not implemented yet"); }
 
     private:
-      const L &_function;
+      const L& _function;
       KernelConfiguration _config;
     };
 
+    template<typename L, typename CB, size_t _C>
+    class _kernel_with_cb {
+    public:
+      _kernel_with_cb(const L& lambda, KernelConfiguration&& config, CB callback)
+          : _function(lambda), _config(config), _callback(callback) {
+      }
 
-    template <typename Func, size_t versioning = __COUNTER__  >
-    auto kernel (const Func& lambda, KernelConfiguration&& config){
+
+      template<typename... Ts>
+      void operator()(Ts&& ... args) {
+        //using caller = kernel_caller<_C, decltype(&std::remove_const_t<std::remove_reference_t<L>>::operator())>;
+        using caller = exp_kernel_caller<_C>;
+
+        caller::call_with_cb(_function, _config, _callback, std::forward<Ts>(args)...);
+      }
+
+
+      auto synchronize() { __message("synchronize not implemented yet"); }
+
+    private:
+      const L& _function;
+      KernelConfiguration _config;
+      CB _callback;
+    };
+
+
+    template<typename Func, size_t versioning = __COUNTER__>
+    auto kernel(const Func& lambda, KernelConfiguration&& config) {
       return _kernel<decltype(lambda), versioning>(lambda, std::forward<KernelConfiguration>(config));
     };
 
-    template <typename T = RuntimeT>
-    auto& get_executor() { return Executor<RuntimeT>::Create();}
+    template<typename Func, typename CallbackFunc, size_t versioning = __COUNTER__>
+    auto kernel_with_cb(const Func& lambda, KernelConfiguration&& config, Callback <CallbackFunc>&& CB) {
+      return _kernel_with_cb<decltype(lambda), Callback < CallbackFunc>, versioning >
+                                                                         (lambda, std::forward<KernelConfiguration>(
+                                                                             config), std::forward <
+                                                                                      Callback <
+                                                                                      CallbackFunc >>
+                                                                                                   (CB));
+    };
 
   }
 }
