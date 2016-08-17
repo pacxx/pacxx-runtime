@@ -8,6 +8,7 @@
 #include <cuda.h>
 #include <map>
 #include <string>
+#include <functional>
 #include "detail/Kernel.h"
 #include "detail/KernelConfiguration.h"
 
@@ -39,6 +40,8 @@ namespace pacxx
 
       virtual void launch() override;
 
+      virtual void setCallback(std::function<void()> callback) override { _callback = callback; };
+
     private:
       void overrideFptr(CUfunction fptr) { _fptr = fptr; }
 
@@ -53,6 +56,7 @@ namespace pacxx
       std::map<int, long long> _staged_values;
       bool _staged_values_changed;
       std::string _name;
+      std::function<void()> _callback;
     };
   }
 }

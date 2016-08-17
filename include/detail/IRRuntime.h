@@ -45,7 +45,7 @@ namespace pacxx {
 
       virtual llvm::legacy::PassManager& getPassManager() = 0;
 
-      virtual void removeCallback(CallbackBase* ptr) = 0;
+//      virtual void removeCallback(CallbackBase* ptr) = 0;
 
     };
 
@@ -65,10 +65,10 @@ namespace pacxx {
         return derived().template freeMemory<T>(ptr);
       }
 
-      template<typename CallbackFunc>
-      void setCallback(Callback<CallbackFunc> cb) {
-          return derived().template setCallback<CallbackFunc>(cb);
-      }
+//      template<typename CallbackFunc>
+//      void setCallback(Callback<CallbackFunc> cb) {
+//          return derived().template setCallback<CallbackFunc>(cb);
+//      }
 
     };
   }

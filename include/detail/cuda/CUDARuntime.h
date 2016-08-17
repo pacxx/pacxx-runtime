@@ -15,7 +15,6 @@
 #include "CUDADeviceBuffer.h"
 #include "PTXBackend.h"
 #include "../msp/MSPEngine.h"
-#include <Callback.h>
 #include <cstdlib>
 
 // forward declarations of cuda driver structs
@@ -90,33 +89,34 @@ namespace pacxx {
 
       virtual llvm::legacy::PassManager& getPassManager() override;
 
-      template<typename T>
-      void setCallback(Callback<T> cb) {
-        //callbacks must survive until they are fired
-        callback_mem new_cb;
-        new_cb.size = sizeof(Callback<T>);
-        new_cb.ptr = std::malloc(new_cb.size);
-        Callback<T>* survivingCopy = new(new_cb.ptr) Callback<T>(cb);
-        survivingCopy->registeredWith(this);
-        _callbacks.push_back(new_cb);
-        SEC_CUDA_CALL(cudaStreamAddCallback(nullptr, CUDARuntime::fireCallback, new_cb.ptr, NULL));
-
-      };
-
-      virtual void removeCallback(CallbackBase* ptr) override {
-        auto It = std::find_if(_callbacks.begin(), _callbacks.end(), [&](const auto& v) { return v.ptr == ptr; });
-        if (It != _callbacks.end()) {
-          ptr->~CallbackBase();
-          std::free(It->ptr);
-          _callbacks.erase(It);
-        }
-      }
+//      template<typename T>
+//      void setCallback(Callback<T> cb) {
+//        //callbacks must survive until they are fired
+//        callback_mem new_cb;
+//        new_cb.size = sizeof(Callback<T>);
+//        new_cb.ptr = std::malloc(new_cb.size);
+//        Callback<T>* survivingCopy = new(new_cb.ptr) Callback<T>(cb);
+//        survivingCopy->registeredWith(this);
+//        _callbacks.push_back(new_cb);
+//        SEC_CUDA_CALL(cudaStreamAddCallback(nullptr, CUDARuntime::fireCallback, new_cb.ptr, NULL));
+//
+//      };
+//
+//      virtual void removeCallback(CallbackBase* ptr) override {
+//        auto It = std::find_if(_callbacks.begin(), _callbacks.end(), [&](const auto& v) { return v.ptr == ptr; });
+//        if (It != _callbacks.end()) {
+//          ptr->~CallbackBase();
+//          std::free(It->ptr);
+//          _callbacks.erase(It);
+//        }
+//      }
 
     private:
       void compileAndLink();
 
+    public:
       static void fireCallback(cudaStream_t stream, cudaError_t status, void* userData) {
-        reinterpret_cast<CallbackBase*>(userData)->call();
+        (*reinterpret_cast<std::function<void()>*>(userData))();
       }
 
     private:

@@ -12,7 +12,6 @@
 #include <string>
 #include <algorithm>
 #include <detail/DeviceBuffer.h>
-#include <Callback.h>
 #include <detail/cuda/CUDARuntime.h>
 #include <detail/common/Exceptions.h>
 #include <detail/IRRuntime.h>
@@ -84,27 +83,29 @@ namespace pacxx {
 
     public:
 
-      void setModule(std::unique_ptr <llvm::Module> M);
+      void setModule(std::unique_ptr<llvm::Module> M);
 
       void setModule(std::string module_bytes);
 
       template<typename L, typename... Args>
       void run(const L& lambda, KernelConfiguration config, Args&& ... args) {
         auto& dev_lambda = _mem_manager.getTemporaryLambda(lambda);
-        run_by_name(typeid(L).name(), config, dev_lambda.get(), std::forward<Args>(args)...);
+        auto& K = get_kernel_by_name(typeid(L).name(), config, dev_lambda.get(), std::forward<Args>(args)...);
+        K.launch();
       }
 
       template<typename L, typename CallbackFunc, typename... Args>
       void
-      run_with_callback(const L& lambda, KernelConfiguration config, Callback <CallbackFunc>& cb, Args&& ... args) {
+      run_with_callback(const L& lambda, KernelConfiguration config, CallbackFunc&& cb, Args&& ... args) {
         auto& dev_lambda = _mem_manager.getTemporaryLambda(lambda);
-        run_by_name(typeid(L).name(), config, dev_lambda.get(), std::forward<Args>(args)...);
-        _runtime->setCallback(cb);
+        auto& K = get_kernel_by_name(typeid(L).name(), config, dev_lambda.get(), std::forward<Args>(args)...);
+        K.setCallback(std::move(cb));
+        K.launch();
       }
 
 
       template<typename... Args>
-      void run_by_name(std::string name, KernelConfiguration config, Args&& ... args) {
+      auto& get_kernel_by_name(std::string name, KernelConfiguration config, Args&& ... args) {
 
         const llvm::Function* F = nullptr;
         const llvm::Module& M = _runtime->getModule();
@@ -135,7 +136,7 @@ namespace pacxx {
           throw common::generic_exception("Kernel function not found in module! " + name);
 
         size_t buffer_size = 0;
-        std::vector <size_t> arg_offsets(F->arg_size());
+        std::vector<size_t> arg_offsets(F->arg_size());
 
         int offset = 0;
 
@@ -144,11 +145,6 @@ namespace pacxx {
           auto arg_alignment =
               M.getDataLayout().getPrefTypeAlignment(arg.getType());
 
-          /*if (arg_size <= arg_alignment)
-            buffer_size += arg_alignment;
-          else
-            buffer_size +=
-                arg_size * (static_cast<size_t>(arg_size / arg_alignment) + 1);*/
           auto arg_offset = (offset + arg_alignment - 1) & ~(arg_alignment - 1);
           offset = arg_offset + arg_size;
           buffer_size = offset;
@@ -168,11 +164,11 @@ namespace pacxx {
         auto& K = _runtime->getKernel(F->getName().str());
         K.configurate(config);
         K.setArguments(args_buffer);
-        K.launch();
+        return K;
       }
 
       template<typename... Args>
-      void run_interop(std::string name, KernelConfiguration config, const std::vector <KernelArgument>& args) {
+      void run_interop(std::string name, KernelConfiguration config, const std::vector<KernelArgument>& args) {
 
         const llvm::Module& M = _runtime->getModule();
         const llvm::Function* F = M.getFunction(name);
@@ -181,7 +177,7 @@ namespace pacxx {
           throw common::generic_exception("Kernel function not found in module! " + name);
 
         size_t buffer_size = 0;
-        std::vector <size_t> arg_offsets(F->arg_size());
+        std::vector<size_t> arg_offsets(F->arg_size());
 
         int offset = 0;
 
@@ -190,11 +186,6 @@ namespace pacxx {
           auto arg_alignment =
               M.getDataLayout().getPrefTypeAlignment(arg.getType());
 
-          /*if (arg_size <= arg_alignment)
-            buffer_size += arg_alignment;
-          else
-            buffer_size +=
-                arg_size * (static_cast<size_t>(arg_size / arg_alignment) + 1);*/
           auto arg_offset = (offset + arg_alignment - 1) & ~(arg_alignment - 1);
           offset = arg_offset + arg_size;
           buffer_size = offset;
@@ -217,7 +208,7 @@ namespace pacxx {
       }
 
       template<typename T>
-      DeviceBuffer <T>& allocate(size_t count) {
+      DeviceBuffer<T>& allocate(size_t count) {
         return *_runtime->template allocateMemory<T>(count);
       }
 
@@ -226,7 +217,7 @@ namespace pacxx {
       }
 
       template<typename T>
-      void free(DeviceBuffer <T>& buffer) {
+      void free(DeviceBuffer<T>& buffer) {
         _runtime->template deleteMemory(&buffer);
       }
 
@@ -245,31 +236,27 @@ namespace pacxx {
       template<typename PromisedTy, typename... Ts>
       auto& getPromise(Ts&& ... args) {
         auto promise = new BindingPromise<PromisedTy>(std::forward<Ts>(args)...);
-        _promises.push_back(promise);
         return *promise;
       };
 
       template<typename PromisedTy>
-      void forgetPromise(BindingPromise <PromisedTy>& instance) {
-        auto it = std::find_if(_promises.begin(), _promises.end(), [&](auto vptr) { return vptr = &instance; });
-        if (it != _promises.end()) {
-          delete &instance;
-          _promises.erase(it);
-        }
+      void forgetPromise(BindingPromise<PromisedTy>& instance) {
+
+        delete &instance;
+
       };
 
 
     private:
-      std::unique_ptr <RuntimeT> _runtime;
+      std::unique_ptr<RuntimeT> _runtime;
       MemoryManager _mem_manager;
-      std::list<void*> _promises;
     };
 
     template<typename T>
     bool Executor<T>::_initialized = false;
 
     template<typename T>
-    void Executor<T>::setModule(std::unique_ptr <llvm::Module> M) {
+    void Executor<T>::setModule(std::unique_ptr<llvm::Module> M) {
       _runtime->link(std::move(M));
     }
 

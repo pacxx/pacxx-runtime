@@ -70,6 +70,8 @@ namespace pacxx {
           _fptr, _config.blocks.x, _config.blocks.y, _config.blocks.z,
           _config.threads.x, _config.threads.y, _config.threads.z, _config.sm_size,
           NULL, nullptr, &_launch_args[0]));
+      if (_callback)
+        SEC_CUDA_CALL(cudaStreamAddCallback(nullptr, CUDARuntime::fireCallback, &_callback, NULL));
     }
 
 

@@ -83,16 +83,16 @@ namespace pacxx {
     template<typename T>
     struct generic_to_global {
       using type = std::conditional_t<
-      std::is_reference<T>::value, std::remove_reference_t <T> __attribute((address_space(1))),
-      std::conditional_t <
-      std::is_pointer<T>::value,
-      std::remove_pointer_t<std::remove_reference_t < T>> __attribute((address_space(1)))*, T>>;
+          std::is_reference<T>::value, std::remove_reference_t<T> __attribute((address_space(1))),
+          std::conditional_t<
+              std::is_pointer<T>::value,
+              std::remove_pointer_t<std::remove_reference_t<T>> __attribute((address_space(1)))*, T>>;
     };
     template<typename T>
     struct global_to_generic {
       using type =
       std::conditional_t<std::is_reference<T>::value,
-      std::remove_reference_t <T> __attribute((address_space(0))), T>;
+          std::remove_reference_t<T> __attribute((address_space(0))), T>;
     };
 
     template<typename T, int AS, typename U,
@@ -107,14 +107,14 @@ namespace pacxx {
     template<typename T, int AS, typename U,
         typename std::enable_if<AS == 0 && std::is_reference<T>::value>::type* = nullptr>
     T address_space_cast(U& arg) {
-      return *reinterpret_cast<std::conditional_t<std::is_const<T>::value, const std::remove_reference_t <T>*,
-          std::remove_reference_t < T>* >> (&arg);
+      return *reinterpret_cast<std::conditional_t<std::is_const<T>::value, const std::remove_reference_t<T>*,
+          std::remove_reference_t<T>* >> (&arg);
     }
 
     template<typename T, int AS, typename U,
         typename std::enable_if<AS == 1 && std::is_pointer<T>::value>::type* = nullptr>
     auto address_space_cast(U arg) {
-      return reinterpret_cast<std::remove_pointer_t <T> __attribute((address_space(1)))*>(arg);
+      return reinterpret_cast<std::remove_pointer_t<T> __attribute((address_space(1)))*>(arg);
     }
 
     template<typename T, int AS, typename U,
@@ -155,7 +155,7 @@ namespace pacxx {
 
       template<size_t i>
       struct ArgTy {
-        typedef typename std::tuple_element<i, std::tuple < ArgTys...>>::type type;
+        typedef typename std::tuple_element<i, std::tuple<ArgTys...>>::type type;
       };
 
       using ReturnType = RType;
@@ -241,8 +241,8 @@ namespace pacxx {
     template<typename L, typename CB, size_t _C>
     class _kernel_with_cb {
     public:
-      _kernel_with_cb(const L& lambda, KernelConfiguration&& config, CB callback)
-          : _function(lambda), _config(config), _callback(callback) {
+      _kernel_with_cb(const L& lambda, KernelConfiguration&& config, CB&& callback)
+          : _function(lambda), _config(config), _callback(std::move(callback)) {
       }
 
 
@@ -270,13 +270,9 @@ namespace pacxx {
     };
 
     template<typename Func, typename CallbackFunc, size_t versioning = __COUNTER__>
-    auto kernel_with_cb(const Func& lambda, KernelConfiguration&& config, Callback <CallbackFunc>&& CB) {
-      return _kernel_with_cb<decltype(lambda), Callback < CallbackFunc>, versioning >
-                                                                         (lambda, std::forward<KernelConfiguration>(
-                                                                             config), std::forward <
-                                                                                      Callback <
-                                                                                      CallbackFunc >>
-                                                                                                   (CB));
+    auto kernel_with_cb(const Func& lambda, KernelConfiguration&& config, CallbackFunc&& CB) {
+      return _kernel_with_cb<decltype(lambda), CallbackFunc, versioning>
+          (lambda, std::forward<KernelConfiguration>(config), std::forward<CallbackFunc>(CB));
     };
 
   }

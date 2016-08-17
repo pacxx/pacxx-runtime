@@ -25,6 +25,8 @@ public:
   virtual void setName(std::string name) = 0;
   virtual const std::string& getName() const = 0;
   virtual void launch() = 0;
+
+  virtual void setCallback(std::function<void()> callback) = 0;
 };
 }
 }

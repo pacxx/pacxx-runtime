@@ -5,16 +5,29 @@
 #ifndef PACXX_V2_PROMISE_H
 #define PACXX_V2_PROMISE_H
 
+#include <future>
+
 namespace pacxx {
   namespace v2 {
+
+    template<typename RuntimeT>
+    class Executor;
+
     template<typename PromisedTy>
     class BindingPromise {
-    public:
+    private:
+
+      template<typename T> friend
+      class Executor;
+
       template<typename... Ts>
       BindingPromise(Ts&& ... args) : _bound(std::forward<Ts>(args)...) {
 
       }
 
+      ~BindingPromise() {}
+
+    public:
       auto& getBoundObject() { return _bound; }
 
       auto getFuture() { return _promise.get_future(); }
