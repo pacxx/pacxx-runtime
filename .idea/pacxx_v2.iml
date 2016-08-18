@@ -16,25 +16,23 @@
       <sourceFolder url="file://$MODULE_DIR$/src/MSPEngine.cpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/NativeBackend.cpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/KernelConfiguration.cpp" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/include/Callback.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/include/Executor.h" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/include/Promise.h" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/include/CodePolicy.h" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/include/ModuleLoader.h" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/include/detail/CoreInitializer.h" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/include/detail/stl_extension/Allocators.h.h" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/include/detail/DeviceBuffer.h" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/include/detail/native/NativeBackend.h" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/include/detail/native/NativeRuntime.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/include/detail/DeviceBuffer.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/include/detail/msp/MSPEngine.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/include/detail/KernelArgument.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/include/detail/Kernel.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/include/detail/KernelConfiguration.h" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/include/detail/common/Timing.h" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/include/detail/common/Common.h" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/include/detail/common/LLVMHelper.h" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/include/detail/common/Log.h" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/include/detail/common/Meta.h" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/include/detail/common/Exceptions.h" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/include/detail/msp/MSPEngine.h" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/include/detail/KernelArgument.h" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/include/detail/Kernel.h" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/include/detail/KernelConfiguration.h" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/include/detail/cuda/CUDARuntime.h" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/include/detail/cuda/PTXBackend.h" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/include/detail/cuda/CUDAErrorDetection.h" isTestSource="false" />
@@ -43,7 +41,8 @@
       <sourceFolder url="file://$MODULE_DIR$/include/detail/cuda/CUDADeviceBuffer.h" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/include/detail/MemoryManager.h" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/include/detail/IRRuntime.h" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/include/Executor.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/include/ModuleLoader.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/include/CodePolicy.h" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/CMakeLists.txt" isTestSource="false" />
     </content>
     <orderEntry type="sourceFolder" forTests="false" />

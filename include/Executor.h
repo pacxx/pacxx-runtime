@@ -24,6 +24,8 @@
 #include <detail/KernelArgument.h>
 #include <Promise.h>
 #include <ModuleLoader.h>
+#include <regex>
+#include <cstdlib>
 
 #ifdef __PACXX_V2_INTEROP
 const char* llvm_start = nullptr;
@@ -109,28 +111,44 @@ namespace pacxx {
 
         const llvm::Function* F = nullptr;
         const llvm::Module& M = _runtime->getModule();
-        auto pos = name.find("$_"); // get the lambdas unique id
-        if (pos != std::string::npos) {
-          pos += 2;
-          std::string numbers = "0123456789";
-          size_t first = name.find_first_of(numbers.c_str(), pos);
-          size_t last = first;
-          while (last != std::string::npos) {
-            size_t temp = last;
-            last = name.find_first_of(numbers.c_str(), last + 1);
-            if (last - temp > 1) {
-              last = temp;
-              break;
-            }
-          }
 
-          std::string id = name.substr(pos, last - first + 1);
-          for (const auto& func : M.functions()) {
-            if (func.getName().find(id) != llvm::StringRef::npos)
-              F = &func;
-          }
-        } else
-          F = M.getFunction(name);
+        auto cleanName = [](const auto& name) {
+          auto cleaned_name = std::regex_replace(name, std::regex("S[0-9A-Z]{0,1}_"), "");
+          auto It = cleaned_name.find("$_") + 2;
+          auto value = std::to_string(std::strtol(&cleaned_name[It], nullptr, 10)).size();
+          cleaned_name.erase(It + value);
+          return cleaned_name;
+        };
+
+        auto clean_name = cleanName(name);
+
+//        auto pos = name.find("$_"); // get the lambdas unique id
+//        if (pos != std::string::npos) {
+//          pos += 2;
+//          std::string numbers = "0123456789";
+//          size_t first = name.find_first_of(numbers.c_str(), pos);
+//          size_t last = first;
+//          while (last != std::string::npos) {
+//            size_t temp = last;
+//            last = name.find_first_of(numbers.c_str(), last + 1);
+//            if (last - temp > 1) {
+//              last = temp;
+//              break;
+//            }
+//          }
+//
+//          std::string id = name.substr(pos, last - first + 1);
+//          for (const auto& func : M.functions()) {
+//            if (func.getName().find(id) != llvm::StringRef::npos)
+//              F = &func;
+//          }
+//        } else
+//          F = M.getFunction(name);
+        for (auto& Func : M.getFunctionList()) {
+          auto fname = cleanName(Func.getName().str());
+          if (fname.find(clean_name) != std::string::npos)
+            F = &Func;
+        }
 
         if (!F)
           throw common::generic_exception("Kernel function not found in module! " + name);

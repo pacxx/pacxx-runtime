@@ -13,6 +13,19 @@
 #include "Executor.h"
 #include "detail/device/DeviceCode.h"
 #include "detail/common/Meta.h"
+#include <regex>
+
+template<class U, U>
+struct IntegralConstant {
+};
+
+template<class U, U* u>
+std::string mangledSymbolName() {
+  std::string null = typeid(IntegralConstant<U*, nullptr>).name();
+  std::string symbol = typeid(IntegralConstant<U*, u>).name();
+  return symbol.substr(null.size() - 3, symbol.size() - null.size() + 0);
+}
+
 
 namespace pacxx {
   namespace v2 {
@@ -139,8 +152,12 @@ namespace pacxx {
                   std::conditional_t<std::is_reference<ArgTys>::value,
                       std::add_lvalue_reference_t<typename generic_to_global<ArgTys>::type>,
                       typename generic_to_global<ArgTys>::type>... args) {
+#ifdef __device_code__
       const auto& lambda_as0 = address_space_cast<const L&, 0>(lambda);
       lambda_as0(address_space_cast<ArgTys, 0>(args)...);
+#else
+      __message(typeid(args).name()...);
+#endif
     }
 
     template<size_t _C, typename T>
@@ -274,6 +291,18 @@ namespace pacxx {
       return _kernel_with_cb<decltype(lambda), CallbackFunc, versioning>
           (lambda, std::forward<KernelConfiguration>(config), std::forward<CallbackFunc>(CB));
     };
+
+#define __kernel(__lambda, __config, ...)                                                              \
+      [](const auto& lambda, pacxx::v2::KernelConfiguration&& config) {    \
+          return pacxx::v2::_kernel<decltype(lambda), __COUNTER__>(lambda, std::forward<pacxx::v2::KernelConfiguration>(config));                                  \
+      }(__lambda, __config, __VA_ARGS__)
+
+#define __kernel_with_cb(__lambda, __config, __cb, ...)                                                              \
+      [](const auto& lambda, pacxx::v2::KernelConfiguration&& config, auto&& CB) {    \
+          return pacxx::v2::_kernel_with_cb<decltype(lambda), CallbackFunc, __COUNTER__> \
+            (lambda, std::forward<pacxx::v2::KernelConfiguration>(config), std::forward<CallbackFunc>(CB));                                  \
+      }(__lambda, __config, __cb, __VA_ARGS__)
+
 
   }
 }
