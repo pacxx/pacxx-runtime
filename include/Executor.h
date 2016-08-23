@@ -113,8 +113,11 @@ namespace pacxx {
         const llvm::Module& M = _runtime->getModule();
 
         auto cleanName = [](const auto& name) {
-          auto cleaned_name = std::regex_replace(name, std::regex("S[0-9A-Z]{0,1}_"), "");
-          auto It = cleaned_name.find("$_") + 2;
+          auto cleaned_name = std::regex_replace(name, std::regex("S[0-9A-Z]{0,9}_"), "");
+          auto It = cleaned_name.find("$_");
+          if (It == std::string::npos)
+            return cleaned_name;
+          It += 2;
           auto value = std::to_string(std::strtol(&cleaned_name[It], nullptr, 10)).size();
           cleaned_name.erase(It + value);
           return cleaned_name;
@@ -146,6 +149,7 @@ namespace pacxx {
 //          F = M.getFunction(name);
         for (auto& Func : M.getFunctionList()) {
           auto fname = cleanName(Func.getName().str());
+
           if (fname.find(clean_name) != std::string::npos)
             F = &Func;
         }
