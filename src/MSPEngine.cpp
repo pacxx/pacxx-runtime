@@ -75,9 +75,7 @@ namespace pacxx {
               auto FName = std::string("__pacxx_reflection_stub") + std::to_string(cstage);
               if (auto F = _engine->FindFunctionNamed(FName.c_str())) {
                 auto args = kernel.getHostArguments();
-
                 void *rFP = _engine->getPointerToFunction(F);
-
                 auto FP = reinterpret_cast<int64_t (*)(void *)>(rFP);
                 int64_t value = FP(&args[0]);
                 __verbose("staging: ", FName, "  - result is ", value);
@@ -118,7 +116,6 @@ namespace pacxx {
           conf[(p.first + 1) * -1] = p.second;
         }
       }
-
       Function *KF = M.getFunction(K.getName());
 
       auto kernelMD =
@@ -135,6 +132,7 @@ namespace pacxx {
           }
         }
       }
+
       MDArgs.push_back(MDString::get(M.getContext(), "launch config"));
       for (auto v : conf) {
         MDArgs.push_back(llvm::ConstantAsMetadata::get(
@@ -147,7 +145,7 @@ namespace pacxx {
 
       for (size_t i = 0; i < conf.size(); ++i) {
         Intrinsic::ID iid;
-        Function *F;
+        Function* F = nullptr;
         switch (i) {
           case 0:
             iid = Intrinsic::nvvm_read_ptx_sreg_ntid_x;
@@ -181,7 +179,9 @@ namespace pacxx {
 
         finder.setIntrinsicID(iid);
         finder.setOpenCLFunction(F, v);
+
         finder.visit(KF);
+
         const auto &calls = finder.getFoundCalls();
         for (const auto &CI : calls) {
           __verbose("replacing ntid/nctaid call with ", conf[i]);

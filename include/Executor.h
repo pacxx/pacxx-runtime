@@ -60,6 +60,7 @@ namespace pacxx {
           ModuleLoader loader;
           auto M = loader.loadInternal(llvm_start, llvm_size);
           instance.setModule(std::move(M));
+          instance.setMSPModule(loader.loadInternal(reflection_start, reflection_size));
           _initialized = true;
         }
         return instance;
@@ -84,6 +85,10 @@ namespace pacxx {
       }
 
     public:
+
+      void setMSPModule(std::unique_ptr<llvm::Module> M) {
+        _runtime->initializeMSP(std::move(M));
+      }
 
       void setModule(std::unique_ptr<llvm::Module> M);
 
@@ -174,18 +179,29 @@ namespace pacxx {
         });
 
         std::vector<char> args_buffer(buffer_size);
+        std::vector<char> host_args_buffer(buffer_size);
         auto ptr = args_buffer.data();
+        auto hptr = host_args_buffer.data();
         size_t i = 0;
         common::for_each_in_arg_pack([&](auto&& arg) {
           auto offset = arg_offsets[i++];
-          meta::memory_translation mtl;
-          auto targ = mtl(_mem_manager, arg);
+          auto targ = meta::memory_translation{}(_mem_manager, arg);
           std::memcpy(ptr + offset, &targ, sizeof(decltype(targ)));
+          if (i > 1) { // ignore the lambda
+            auto harg = meta::msp_memory_translation{}(arg);
+            std::memcpy(hptr, &harg, sizeof(decltype(harg)));
+          }
+          hptr += sizeof(decltype(arg));
         }, std::forward<Args>(args)...);
 
         auto& K = _runtime->getKernel(F->getName().str());
+        K.setName(F->getName().str());
         K.configurate(config);
+        K.setHostArguments(host_args_buffer);
         K.setArguments(args_buffer);
+
+        _runtime->evaluateStagedFunctions(K);
+
         return K;
       }
 

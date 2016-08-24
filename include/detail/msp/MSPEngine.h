@@ -11,6 +11,7 @@
 #include <set>
 #include <detail/Kernel.h>
 #include <detail/common/Meta.h>
+#include <detail/common/Log.h>
 
 #include "../KernelArgument.h"
 

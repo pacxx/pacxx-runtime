@@ -27,7 +27,6 @@ namespace pacxx {
         if (I.isInlineAsm())
           return;
         auto cand = I.getCalledFunction();
-
         if (cand) {
           if (cand->isIntrinsic()) {
             if (cand->getIntrinsicID() == IID)

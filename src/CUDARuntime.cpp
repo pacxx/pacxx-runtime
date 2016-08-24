@@ -98,6 +98,7 @@ namespace pacxx {
             throw common::generic_exception("Kernel function not found in module!");
         }
         auto kernel = new CUDAKernel(*this, ptr);
+        kernel->setName(name);
         _kernels[name].reset(kernel);
 
         return *kernel;
@@ -132,7 +133,7 @@ namespace pacxx {
     }
 
     void CUDARuntime::initializeMSP(std::unique_ptr<llvm::Module> M) {
-      if (_msp_engine.isDisabled()) return;
+      if (!_msp_engine.isDisabled()) return;
       _msp_engine.initialize(std::move(M));
     }
 
@@ -143,7 +144,6 @@ namespace pacxx {
 
     void CUDARuntime::requestIRTransformation(Kernel &K) {
       if (_msp_engine.isDisabled()) return;
-
       _M.reset(CloneModule(_rawM.get()));
       _M->setDataLayout(_rawM->getDataLayoutStr());
 

@@ -8,7 +8,7 @@
 #ifndef PACXX_PASS_NAME
 #define PACXX_PASS_NAME ""
 #endif
-#define __dump(a) dumpToLog((a), PACXX_PASS_NAME, __FILE__, __LINE__)
+#define __dump(a) pacxx::common::dumpToLog((a), PACXX_PASS_NAME, __FILE__, __LINE__)
 
 namespace pacxx {
 namespace common {
