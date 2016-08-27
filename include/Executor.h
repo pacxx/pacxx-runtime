@@ -119,6 +119,8 @@ namespace pacxx {
 
         auto cleanName = [](const auto& name) {
           auto cleaned_name = std::regex_replace(name, std::regex("S[0-9A-Z]{0,9}_"), "");
+          cleaned_name = std::regex_replace(cleaned_name, std::regex("5pacxx"), ""); // bad hack
+          // cleaned_name = std::regex_replace(cleaned_name, std::regex("S[0-9A-Z]{0,9}_"), "");
           auto It = cleaned_name.find("$_");
           if (It == std::string::npos)
             return cleaned_name;
@@ -160,7 +162,7 @@ namespace pacxx {
         }
 
         if (!F)
-          throw common::generic_exception("Kernel function not found in module! " + name);
+          throw common::generic_exception("Kernel function not found in module! " + clean_name);
 
         size_t buffer_size = 0;
         std::vector<size_t> arg_offsets(F->arg_size());

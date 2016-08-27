@@ -27,7 +27,7 @@ namespace pacxx {
 
     void PTXBackend::initialize(unsigned CC) {
       _cpu = "sm_" + std::to_string(CC);
-      PassRegistry *Registry = PassRegistry::getPassRegistry();
+      PassRegistry* Registry = PassRegistry::getPassRegistry();
       initializeCore(*Registry);
       initializeCodeGen(*Registry);
       initializeLoopStrengthReducePass(*Registry);
@@ -60,15 +60,14 @@ namespace pacxx {
         _PM.add(new TargetLibraryInfoWrapperPass(TLII));
 
         _PM.add(createReassociatePass());
-        //  if (ConstOps[devId])
-        {
-          _PM.add(createConstantPropagationPass());
-          _PM.add(createSCCPPass());
-          _PM.add(createConstantHoistingPass());
-          _PM.add(createCorrelatedValuePropagationPass());
-          _PM.add(createInstructionCombiningPass());
-          _PM.add(createLICMPass());
-        }
+
+        _PM.add(createConstantPropagationPass());
+        _PM.add(createSCCPPass());
+        _PM.add(createConstantHoistingPass());
+        _PM.add(createCorrelatedValuePropagationPass());
+        _PM.add(createInstructionCombiningPass());
+        _PM.add(createLICMPass());
+
         _PM.add(createIndVarSimplifyPass());
         _PM.add(createLoopRotatePass());
         _PM.add(createLoopSimplifyPass());
@@ -76,9 +75,8 @@ namespace pacxx {
         _PM.add(createLCSSAPass());
         _PM.add(createLoopStrengthReducePass());
         _PM.add(createLICMPass());
-        _PM.add(
-            createLoopUnrollPass(2000, 32));
-
+        _PM.add(createLoopUnrollPass(2000, 32));
+        _PM.add(createStraightLineStrengthReducePass());
         _PM.add(createCorrelatedValuePropagationPass());
         _PM.add(createConstantPropagationPass());
         _PM.add(createInstructionCombiningPass());

@@ -10,31 +10,54 @@
 #include "../DeviceBuffer.h"
 
 
-namespace pacxx
-{
-namespace meta
-{
-  template <class T> struct is_vector : std::false_type {
-  };
+namespace pacxx {
+  namespace meta {
 
-  template <class T, class Alloc> struct is_vector<std::vector<T, Alloc>> : std::true_type {
-};
+    template<typename T>
+    struct callable_wrapper {
+      T callable;
 
-  template <typename T> struct is_devbuffer : std::is_base_of<v2::DeviceBufferBase, T> {};
+      callable_wrapper(T callable) : callable(callable) {}
 
-  // since genericKernel takes all parameters as lvalue and not as xvalue we let
-  // the types of form int*&& decay to int* to avoid the automatic decay to int**
-  template <typename T>
-  struct remove_reference
-  {
-    using type = std::conditional_t<std::is_pointer<std::decay_t<T>>::value || std::is_arithmetic<std::decay_t<T>>::value, std::decay_t<T>, T>;
-  };
+      template<typename...Ts>
+      auto operator()(Ts&& ... args) {
+        return callable(std::forward<Ts>(args)...);
+      };
+    };
 
-  template<typename T>
-  using remove_reference_t = typename remove_reference<T>::type;
+    template<class T>
+    struct is_vector : std::false_type {
+    };
 
+    template<class T, class Alloc>
+    struct is_vector<std::vector<T, Alloc>> : std::true_type {
+    };
 
-}
+    template<class T>
+    struct is_wrapped_callable : std::false_type {
+    };
+
+    template<class T>
+    struct is_wrapped_callable<pacxx::meta::callable_wrapper<T>> : std::true_type {
+    };
+
+    template<typename T>
+    struct is_devbuffer : std::is_base_of<v2::DeviceBufferBase, T> {
+    };
+
+    // since genericKernel takes all parameters as lvalue and not as xvalue we let
+    // the types of form int*&& decay to int* to avoid the automatic decay to int**
+    template<typename T>
+    struct remove_reference {
+      using type = std::conditional_t<
+          std::is_pointer<std::decay_t<T>>::value || std::is_arithmetic<std::decay_t<T>>::value ||
+          is_wrapped_callable<std::decay_t<T>>::value, std::decay_t<T>, T>;
+    };
+
+    template<typename T>
+    using remove_reference_t = typename remove_reference<T>::type;
+
+  }
 }
 
 

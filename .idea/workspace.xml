@@ -14,11 +14,7 @@
     <list default="true" id="b23ee11a-199e-4d67-806c-ecb70b2e8678" name="Default" comment="">
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/include/Executor.h" afterPath="$PROJECT_DIR$/include/Executor.h" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/include/detail/common/LLVMHelper.h" afterPath="$PROJECT_DIR$/include/detail/common/LLVMHelper.h" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/include/detail/common/Log.h" afterPath="$PROJECT_DIR$/include/detail/common/Log.h" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/include/detail/msp/MSPEngine.h" afterPath="$PROJECT_DIR$/include/detail/msp/MSPEngine.h" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/CUDARuntime.cpp" afterPath="$PROJECT_DIR$/src/CUDARuntime.cpp" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/MSPEngine.cpp" afterPath="$PROJECT_DIR$/src/MSPEngine.cpp" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/include/detail/common/Meta.h" afterPath="$PROJECT_DIR$/include/detail/common/Meta.h" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/PTXBackend.cpp" afterPath="$PROJECT_DIR$/src/PTXBackend.cpp" />
     </list>
     <ignored path="pacxx_v2.iws" />
@@ -42,9 +38,36 @@
       <file leaf-file-name="Executor.h" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/include/Executor.h">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="260">
-              <caret line="184" column="0" selection-start-line="184" selection-start-column="0" selection-end-line="184" selection-end-column="0" />
+            <state relative-caret-position="-28">
+              <caret line="186" column="0" selection-start-line="186" selection-start-column="0" selection-end-line="186" selection-end-column="0" />
               <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="PACXX.h" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/include/PACXX.h">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="290">
+              <caret line="208" column="80" selection-start-line="208" selection-start-column="68" selection-end-line="208" selection-end-column="80" />
+              <folding>
+                <element signature="e#8271#8510#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="Meta.h" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/include/detail/common/Meta.h">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="486">
+              <caret line="47" column="46" selection-start-line="47" selection-start-column="46" selection-end-line="47" selection-end-column="46" />
+              <folding>
+                <element signature="e#212#224#0" expanded="true" />
+                <element signature="e#350#365#0" expanded="true" />
+                <element signature="e#663#672#0" expanded="true" />
+                <element signature="e#744#753#0" expanded="true" />
+              </folding>
             </state>
           </provider>
         </entry>
@@ -52,7 +75,7 @@
       <file leaf-file-name="CUDAKernel.cpp" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/CUDAKernel.cpp">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="144">
+            <state relative-caret-position="1080">
               <caret line="60" column="40" selection-start-line="60" selection-start-column="17" selection-end-line="60" selection-end-column="40" />
               <folding />
             </state>
@@ -62,48 +85,25 @@
       <file leaf-file-name="CUDAKernel.h" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/include/detail/cuda/CUDAKernel.h">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="144">
+            <state relative-caret-position="666">
               <caret line="37" column="26" selection-start-line="37" selection-start-column="19" selection-end-line="37" selection-end-column="26" />
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="CUDARuntime.cpp" pinned="false" current-in-tab="true">
+      <file leaf-file-name="CUDARuntime.cpp" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/CUDARuntime.cpp">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="288">
+            <state relative-caret-position="2628">
               <caret line="146" column="0" selection-start-line="146" selection-start-column="0" selection-end-line="146" selection-end-column="0" />
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="MSPEngine.h" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/include/detail/msp/MSPEngine.h">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="342">
-              <caret line="57" column="7" selection-start-line="57" selection-start-column="7" selection-end-line="57" selection-end-column="7" />
-              <folding>
-                <element signature="e#1019#1081#0" expanded="true" />
-                <element signature="e#1235#1326#0" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="Meta.h" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/include/detail/common/Meta.h">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-216">
-              <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="Executor.cpp" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/Executor.cpp">
+      <file leaf-file-name="PTXBackend.h" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/include/detail/cuda/PTXBackend.h">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="0">
               <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
@@ -112,31 +112,31 @@
           </provider>
         </entry>
       </file>
+      <file leaf-file-name="PTXBackend.cpp" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/PTXBackend.cpp">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="756">
+              <caret line="85" column="0" selection-start-line="85" selection-start-column="0" selection-end-line="85" selection-end-column="0" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="MSPEngine.h" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/include/detail/msp/MSPEngine.h">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="1026">
+              <caret line="57" column="7" selection-start-line="57" selection-start-column="7" selection-end-line="57" selection-end-column="7" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
       <file leaf-file-name="MSPEngine.cpp" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/MSPEngine.cpp">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="306">
+            <state relative-caret-position="1386">
               <caret line="77" column="0" selection-start-line="77" selection-start-column="0" selection-end-line="77" selection-end-column="0" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="Log.h" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/include/detail/common/Log.h">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="180">
-              <caret line="10" column="25" selection-start-line="10" selection-start-column="25" selection-end-line="10" selection-end-column="25" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="LLVMHelper.h" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/include/detail/common/LLVMHelper.h">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="396">
-              <caret line="28" column="42" selection-start-line="28" selection-start-column="42" selection-end-line="28" selection-end-column="42" />
               <folding />
             </state>
           </provider>
@@ -166,8 +166,10 @@
         <option value="$PROJECT_DIR$/include/detail/common/LLVMHelper.h" />
         <option value="$PROJECT_DIR$/include/detail/msp/MSPEngine.h" />
         <option value="$PROJECT_DIR$/src/MSPEngine.cpp" />
-        <option value="$PROJECT_DIR$/include/Executor.h" />
         <option value="$PROJECT_DIR$/src/CUDARuntime.cpp" />
+        <option value="$PROJECT_DIR$/src/PTXBackend.cpp" />
+        <option value="$PROJECT_DIR$/include/detail/common/Meta.h" />
+        <option value="$PROJECT_DIR$/include/Executor.h" />
       </list>
     </option>
   </component>
@@ -548,7 +550,10 @@
       <workItem from="1471450763057" duration="8439000" />
       <workItem from="1471512367640" duration="17032000" />
       <workItem from="1471957398342" duration="2124000" />
-      <workItem from="1472030643191" duration="5627000" />
+      <workItem from="1472030643191" duration="6893000" />
+      <workItem from="1472043493673" duration="1013000" />
+      <workItem from="1472124925019" duration="8589000" />
+      <workItem from="1472298836722" duration="4722000" />
     </task>
     <task id="LOCAL-00001" summary="kernels can now have a callback that is fired when the kernel's execution is finished&#10;&#10;PACXX provides a wrapper for std::promise which hold a bound object that is bound to the lifetime of the promise. when the promise is fulfilled that BindingPromise transfers ownership of the bound object the its future object. This is necessary since CUDA does not allow calls to CUDA API functions from within a Callback (stupid...)">
       <created>1471386310478</created>
@@ -578,11 +583,18 @@
       <option name="project" value="LOCAL" />
       <updated>1471957432216</updated>
     </task>
-    <option name="localTasksCounter" value="5" />
+    <task id="LOCAL-00005" summary="fixed MSP once more">
+      <created>1472037847659</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1472037847659</updated>
+    </task>
+    <option name="localTasksCounter" value="6" />
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="72951000" />
+    <option name="totallyTimeSpent" value="88541000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="0" y="0" width="1920" height="1052" extended-state="6" />
@@ -592,7 +604,6 @@
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="CMake" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33046287" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="true" content_ui="tabs" />
-      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.32938644" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
@@ -603,6 +614,7 @@
       <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
       <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="2" side_tool="false" content_ui="combo" />
+      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.32938644" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
     </layout>
@@ -625,7 +637,8 @@
     <MESSAGE value="removed some stupid ideas from last night &#10;&#10;Callbacks are now bound to the Kernel instance launched" />
     <MESSAGE value="rewrite of kernel name lookup to support not only lambdas (which are partly broken at this time) but also functor objects" />
     <MESSAGE value="fixed kernel name cleanup and removed debug output" />
-    <option name="LAST_COMMIT_MESSAGE" value="fixed kernel name cleanup and removed debug output" />
+    <MESSAGE value="fixed MSP once more" />
+    <option name="LAST_COMMIT_MESSAGE" value="fixed MSP once more" />
     <option name="REFORMAT_BEFORE_PROJECT_COMMIT" value="true" />
   </component>
   <component name="XDebuggerManager">
@@ -633,35 +646,6 @@
     <watches-manager />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/src/CUDADeviceBuffer.cpp">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1062">
-          <caret line="59" column="24" selection-start-line="59" selection-start-column="24" selection-end-line="59" selection-end-column="24" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/include/PACXX.h">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="4122">
-          <caret line="229" column="0" selection-start-line="229" selection-start-column="0" selection-end-line="230" selection-end-column="64" />
-          <folding>
-            <marker date="1471541648000" expanded="true" signature="690:11594" ph="{...}" />
-            <marker date="1471541648000" expanded="true" signature="5096:5310" ph="{...}" />
-            <marker date="1471541648000" expanded="true" signature="5934:6698" ph="{...}" />
-            <marker date="1471541648000" expanded="true" signature="6891:7675" ph="{...}" />
-            <marker date="1471541648000" expanded="true" signature="7862:8670" ph="{...}" />
-            <marker date="1471541648000" expanded="false" signature="8733:9340" ph="{...}" />
-            <marker date="1471541648000" expanded="true" signature="8855:8864" ph="{...}" />
-            <marker date="1471541648000" expanded="true" signature="8941:9182" ph="{...}" />
-            <marker date="1471541648000" expanded="true" signature="9595:9604" ph="{...}" />
-            <marker date="1471541648000" expanded="true" signature="9675:9935" ph="{...}" />
-            <marker date="1471541648000" expanded="true" signature="10244:10354" ph="{...}" />
-            <marker date="1471541648000" expanded="true" signature="10534:10709" ph="{...}" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/include/detail/cuda/CUDARuntime.h">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="0">
@@ -676,7 +660,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="1134">
           <caret line="63" column="0" selection-start-line="63" selection-start-column="0" selection-end-line="63" selection-end-column="0" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -691,7 +674,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="0">
           <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -706,7 +688,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="1692">
           <caret line="94" column="23" selection-start-line="94" selection-start-column="16" selection-end-line="94" selection-end-column="23" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -722,7 +703,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="936">
           <caret line="52" column="24" selection-start-line="52" selection-start-column="24" selection-end-line="52" selection-end-column="24" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -730,7 +710,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="1062">
           <caret line="59" column="24" selection-start-line="59" selection-start-column="24" selection-end-line="59" selection-end-column="24" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -738,20 +717,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="4122">
           <caret line="229" column="0" selection-start-line="229" selection-start-column="0" selection-end-line="230" selection-end-column="64" />
-          <folding>
-            <marker date="1471541648000" expanded="true" signature="690:11594" ph="{...}" />
-            <marker date="1471541648000" expanded="true" signature="5096:5310" ph="{...}" />
-            <marker date="1471541648000" expanded="true" signature="5934:6698" ph="{...}" />
-            <marker date="1471541648000" expanded="true" signature="6891:7675" ph="{...}" />
-            <marker date="1471541648000" expanded="true" signature="7862:8670" ph="{...}" />
-            <marker date="1471541648000" expanded="false" signature="8733:9340" ph="{...}" />
-            <marker date="1471541648000" expanded="true" signature="8855:8864" ph="{...}" />
-            <marker date="1471541648000" expanded="true" signature="8941:9182" ph="{...}" />
-            <marker date="1471541648000" expanded="true" signature="9595:9604" ph="{...}" />
-            <marker date="1471541648000" expanded="true" signature="9675:9935" ph="{...}" />
-            <marker date="1471541648000" expanded="true" signature="10244:10354" ph="{...}" />
-            <marker date="1471541648000" expanded="true" signature="10534:10709" ph="{...}" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -769,7 +734,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="1134">
           <caret line="63" column="0" selection-start-line="63" selection-start-column="0" selection-end-line="63" selection-end-column="0" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -784,7 +748,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="0">
           <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -799,7 +762,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="1692">
           <caret line="94" column="23" selection-start-line="94" selection-start-column="16" selection-end-line="94" selection-end-column="23" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -815,7 +777,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="1062">
           <caret line="59" column="24" selection-start-line="59" selection-start-column="24" selection-end-line="59" selection-end-column="24" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -823,20 +784,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="4122">
           <caret line="229" column="0" selection-start-line="229" selection-start-column="0" selection-end-line="230" selection-end-column="64" />
-          <folding>
-            <marker date="1471541648000" expanded="true" signature="690:11594" ph="{...}" />
-            <marker date="1471541648000" expanded="true" signature="5096:5310" ph="{...}" />
-            <marker date="1471541648000" expanded="true" signature="5934:6698" ph="{...}" />
-            <marker date="1471541648000" expanded="true" signature="6891:7675" ph="{...}" />
-            <marker date="1471541648000" expanded="true" signature="7862:8670" ph="{...}" />
-            <marker date="1471541648000" expanded="false" signature="8733:9340" ph="{...}" />
-            <marker date="1471541648000" expanded="true" signature="8855:8864" ph="{...}" />
-            <marker date="1471541648000" expanded="true" signature="8941:9182" ph="{...}" />
-            <marker date="1471541648000" expanded="true" signature="9595:9604" ph="{...}" />
-            <marker date="1471541648000" expanded="true" signature="9675:9935" ph="{...}" />
-            <marker date="1471541648000" expanded="true" signature="10244:10354" ph="{...}" />
-            <marker date="1471541648000" expanded="true" signature="10534:10709" ph="{...}" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -854,7 +801,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="1134">
           <caret line="63" column="0" selection-start-line="63" selection-start-column="0" selection-end-line="63" selection-end-column="0" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -869,7 +815,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="0">
           <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -891,7 +836,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="0">
           <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -906,7 +850,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="0">
           <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -921,7 +864,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="1188">
           <caret line="66" column="17" selection-start-line="66" selection-start-column="17" selection-end-line="66" selection-end-column="17" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -929,7 +871,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="1350">
           <caret line="75" column="0" selection-start-line="75" selection-start-column="0" selection-end-line="75" selection-end-column="0" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -937,7 +878,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="432">
           <caret line="95" column="7" selection-start-line="95" selection-start-column="7" selection-end-line="95" selection-end-column="7" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -945,7 +885,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="0">
           <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -953,7 +892,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="504">
           <caret line="28" column="63" selection-start-line="28" selection-start-column="63" selection-end-line="28" selection-end-column="63" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -961,7 +899,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="1206">
           <caret line="67" column="0" selection-start-line="67" selection-start-column="2" selection-end-line="70" selection-end-column="9" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -980,36 +917,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="594">
           <caret line="33" column="0" selection-start-line="33" selection-start-column="0" selection-end-line="33" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/include/PACXX.h">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="864">
-          <caret line="226" column="5" selection-start-line="226" selection-start-column="5" selection-end-line="226" selection-end-column="5" />
-          <folding>
-            <marker date="1471541648000" expanded="true" signature="690:11594" ph="{...}" />
-            <marker date="1471541648000" expanded="true" signature="5096:5310" ph="{...}" />
-            <marker date="1471541648000" expanded="true" signature="5934:6698" ph="{...}" />
-            <marker date="1471541648000" expanded="true" signature="6891:7675" ph="{...}" />
-            <marker date="1471541648000" expanded="true" signature="7862:8670" ph="{...}" />
-            <marker date="1471541648000" expanded="false" signature="8733:9340" ph="{...}" />
-            <marker date="1471541648000" expanded="true" signature="8855:8864" ph="{...}" />
-            <marker date="1471541648000" expanded="true" signature="8941:9182" ph="{...}" />
-            <marker date="1471541648000" expanded="true" signature="9595:9604" ph="{...}" />
-            <marker date="1471541648000" expanded="true" signature="9675:9935" ph="{...}" />
-            <marker date="1471541648000" expanded="true" signature="10244:10354" ph="{...}" />
-            <marker date="1471541648000" expanded="true" signature="10534:10709" ph="{...}" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/include/detail/common/Meta.h">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-216">
-          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -1017,7 +924,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="180">
           <caret line="10" column="25" selection-start-line="10" selection-start-column="25" selection-end-line="10" selection-end-column="25" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -1031,7 +937,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/include/detail/common/LLVMHelper.h">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="396">
+        <state relative-caret-position="504">
           <caret line="28" column="42" selection-start-line="28" selection-start-column="42" selection-end-line="28" selection-end-column="42" />
           <folding />
         </state>
@@ -1039,15 +945,23 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/include/detail/cuda/CUDAKernel.h">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="144">
+        <state relative-caret-position="666">
           <caret line="37" column="26" selection-start-line="37" selection-start-column="19" selection-end-line="37" selection-end-column="26" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/MSPEngine.cpp">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1386">
+          <caret line="77" column="0" selection-start-line="77" selection-start-column="0" selection-end-line="77" selection-end-column="0" />
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/CUDAKernel.cpp">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="144">
+        <state relative-caret-position="1080">
           <caret line="60" column="40" selection-start-line="60" selection-start-column="17" selection-end-line="60" selection-end-column="40" />
           <folding />
         </state>
@@ -1055,36 +969,64 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/include/detail/msp/MSPEngine.h">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="342">
+        <state relative-caret-position="1026">
           <caret line="57" column="7" selection-start-line="57" selection-start-column="7" selection-end-line="57" selection-end-column="7" />
-          <folding>
-            <element signature="e#1019#1081#0" expanded="true" />
-            <element signature="e#1235#1326#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/MSPEngine.cpp">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="306">
-          <caret line="77" column="0" selection-start-line="77" selection-start-column="0" selection-end-line="77" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/include/Executor.h">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="260">
-          <caret line="184" column="0" selection-start-line="184" selection-start-column="0" selection-end-line="184" selection-end-column="0" />
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/CUDARuntime.cpp">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="288">
+        <state relative-caret-position="2628">
           <caret line="146" column="0" selection-start-line="146" selection-start-column="0" selection-end-line="146" selection-end-column="0" />
           <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/include/detail/cuda/PTXBackend.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/PTXBackend.cpp">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="756">
+          <caret line="85" column="0" selection-start-line="85" selection-start-column="0" selection-end-line="85" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/include/PACXX.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="290">
+          <caret line="208" column="80" selection-start-line="208" selection-start-column="68" selection-end-line="208" selection-end-column="80" />
+          <folding>
+            <element signature="e#8271#8510#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/include/Executor.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-28">
+          <caret line="186" column="0" selection-start-line="186" selection-start-column="0" selection-end-line="186" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/include/detail/common/Meta.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="486">
+          <caret line="47" column="46" selection-start-line="47" selection-start-column="46" selection-end-line="47" selection-end-column="46" />
+          <folding>
+            <element signature="e#212#224#0" expanded="true" />
+            <element signature="e#350#365#0" expanded="true" />
+            <element signature="e#663#672#0" expanded="true" />
+            <element signature="e#744#753#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
