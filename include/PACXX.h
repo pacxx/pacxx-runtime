@@ -148,13 +148,14 @@ namespace pacxx {
 
     template<size_t _C, typename L, typename... ArgTys>
     void
-    genericKernel(const __attribute((address_space(1))) L& lambda,
+    genericKernel(L callable, //const __attribute((address_space(1))) L& lambda,
                   std::conditional_t<std::is_reference<ArgTys>::value,
                       std::add_lvalue_reference_t<typename generic_to_global<ArgTys>::type>,
                       typename generic_to_global<ArgTys>::type>... args) {
 #ifdef __device_code__
-      const auto& lambda_as0 = address_space_cast<const L&, 0>(lambda);
-      lambda_as0(address_space_cast<ArgTys, 0>(args)...);
+      // const auto& lambda_as0 = address_space_cast<const L&, 0>(lambda);
+      // lambda_as0(address_space_cast<ArgTys, 0>(args)...);
+       callable(address_space_cast<ArgTys, 0>(args)...);
 #else
       __message(typeid(args).name()...);
 #endif
@@ -206,7 +207,7 @@ namespace pacxx {
         // This approach has the advantage that we do not have to break up type safety.
 #ifdef __device_code__
         [[kernel_call(config.blocks.getDim3(), config.threads.getDim3(), 0, 0)]] genericKernel<_C, L, meta::remove_reference_t<Ts>...>(
-            address_space_cast<const L &, 1>(F), address_space_cast<meta::remove_reference_t<Ts>, 1>(args)...);
+            /*address_space_cast<const L &, 1>(F)*/ F, address_space_cast<meta::remove_reference_t<Ts>, 1>(args)...);
 #else
         auto& executor = Executor<RuntimeT>::Create();
         executor.run(F, config, std::forward<Ts>(args)...);
@@ -223,7 +224,7 @@ namespace pacxx {
         // This approach has the advantage that we do not have to break up type safety.
 #ifdef __device_code__
         [[kernel_call(config.blocks.getDim3(), config.threads.getDim3(), 0, 0)]] genericKernel<_C, L, meta::remove_reference_t<Ts>...>(
-            address_space_cast<const L &, 1>(F), address_space_cast<meta::remove_reference_t<Ts>, 1>(args)...);
+            /*address_space_cast<const L &, 1>(F)*/ F, address_space_cast<meta::remove_reference_t<Ts>, 1>(args)...);
 #else
         auto& executor = Executor<RuntimeT>::Create();
         executor.run_with_callback(F, config, callback, std::forward<Ts>(args)...);
@@ -275,7 +276,7 @@ namespace pacxx {
       auto synchronize() { __message("synchronize not implemented yet"); }
 
     private:
-      const L& _function;
+      meta::callable_wrapper<L> _function;
       KernelConfiguration _config;
       CB _callback;
     };

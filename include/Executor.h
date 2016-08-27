@@ -96,16 +96,15 @@ namespace pacxx {
 
       template<typename L, typename... Args>
       void run(const L& lambda, KernelConfiguration config, Args&& ... args) {
-        auto& dev_lambda = _mem_manager.getTemporaryLambda(lambda);
-        auto& K = get_kernel_by_name(typeid(L).name(), config, dev_lambda.get(), std::forward<Args>(args)...);
+        // auto& dev_lambda = _mem_manager.getTemporaryLambda(lambda);
+        auto& K = get_kernel_by_name(typeid(L).name(), config, lambda, std::forward<Args>(args)...);
         K.launch();
       }
 
       template<typename L, typename CallbackFunc, typename... Args>
       void
       run_with_callback(const L& lambda, KernelConfiguration config, CallbackFunc&& cb, Args&& ... args) {
-        auto& dev_lambda = _mem_manager.getTemporaryLambda(lambda);
-        auto& K = get_kernel_by_name(typeid(L).name(), config, dev_lambda.get(), std::forward<Args>(args)...);
+        auto& K = get_kernel_by_name(typeid(L).name(), config, lambda, std::forward<Args>(args)...);
         K.setCallback(std::move(cb));
         K.launch();
       }
