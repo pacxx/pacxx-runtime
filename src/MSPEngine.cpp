@@ -8,13 +8,14 @@
 #include <detail/common/Exceptions.h>
 #include <llvm/IR/Constants.h>
 #include <detail/common/LLVMHelper.h>
+#include <detail/common/Timing.h>
 
 using namespace llvm;
 
 namespace pacxx {
   namespace v2 {
 
-    MSPEngine::MSPEngine() : _disabled(true){
+    MSPEngine::MSPEngine() : _disabled(true) {
 
     }
 
@@ -24,14 +25,14 @@ namespace pacxx {
           pacxx::getTagedFunctionsWithTag(M.get(), "pacxx.reflection", "stub");
       if (!_stubs.empty()) {
         std::string ErrStr;
-        Module &MSPModule = *M;
+        Module& MSPModule = *M;
         EngineBuilder builder{std::move(M)};
 
         builder.setErrorStr(&ErrStr);
 
         builder.setEngineKind(EngineKind::JIT);
 
-        RTDyldMemoryManager *RTDyldMM = new SectionMemoryManager();
+        RTDyldMemoryManager* RTDyldMM = new SectionMemoryManager();
 
         builder.setMCJITMemoryManager(
             std::unique_ptr<RTDyldMemoryManager>(RTDyldMM));
@@ -54,7 +55,8 @@ namespace pacxx {
           }
         }
 
-        __verbose("MSP Engine initialized: ", FStubs.size(), " generic stubs / ", i64FStubs.size(), " shortcuts");
+        __verbose("MSP Engine initialized: ", FStubs.size(), " generic stubs / ", i64FStubs.size(),
+                  " shortcuts");
         _disabled = false;
       }
       else {
@@ -63,24 +65,24 @@ namespace pacxx {
 
     }
 
-    void MSPEngine::evaluate(const llvm::Function &KF, Kernel &kernel) {
-      auto &M = *KF.getParent();
+    void MSPEngine::evaluate(const llvm::Function& KF, Kernel& kernel) {
+      auto& M = *KF.getParent();
       if (auto RF = M.getFunction("__pacxx_reflect")) {
         for (auto U : RF->users()) {
-          if (CallInst *CI = dyn_cast<CallInst>(U)) {
-            if (MDNode *MD = CI->getMetadata("pacxx.reflect.stage")) {
-              auto *ci32 = dyn_cast<ConstantInt>(
+          if (CallInst* CI = dyn_cast<CallInst>(U)) {
+            if (MDNode* MD = CI->getMetadata("pacxx.reflect.stage")) {
+              auto* ci32 = dyn_cast<ConstantInt>(
                   dyn_cast<ValueAsMetadata>(MD->getOperand(0).get())->getValue());
               auto cstage = (unsigned int) *ci32->getValue().getRawData();
               auto FName = std::string("__pacxx_reflection_stub") + std::to_string(cstage);
               if (auto F = _engine->FindFunctionNamed(FName.c_str())) {
                 auto args = kernel.getHostArguments();
-                void *rFP = _engine->getPointerToFunction(F);
-                auto FP = reinterpret_cast<int64_t (*)(void *)>(rFP);
+                void* rFP = _engine->getPointerToFunction(F);
+                auto FP = reinterpret_cast<int64_t (*)(void*)>(rFP);
                 int64_t value = FP(&args[0]);
                 __verbose("staging: ", FName, "  - result is ", value);
 
-                if (auto *ci2 = dyn_cast<ConstantInt>(CI->getOperand(0))) {
+                if (auto* ci2 = dyn_cast<ConstantInt>(CI->getOperand(0))) {
                   kernel.setStagedValue(*(ci2->getValue().getRawData()), value);
                 }
               }
@@ -91,13 +93,13 @@ namespace pacxx {
 
     }
 
-    void MSPEngine::transformModule(llvm::Module &M, Kernel &K) {
+    void MSPEngine::transformModule(llvm::Module& M, Kernel& K) {
       common::CallFinder finder;
-      auto &staged_values = K.getStagedValues();
-      if (Function *RF = M.getFunction("__pacxx_reflect")) {
+      auto& staged_values = K.getStagedValues();
+      if (Function* RF = M.getFunction("__pacxx_reflect")) {
         for (auto U : RF->users()) {
-          if (CallInst *CI = dyn_cast<CallInst>(U)) {
-            if (auto *ci2 = dyn_cast<ConstantInt>(CI->getOperand(0))) {
+          if (CallInst* CI = dyn_cast<CallInst>(U)) {
+            if (auto* ci2 = dyn_cast<ConstantInt>(CI->getOperand(0))) {
               int rep = *(ci2->getValue().getRawData());
               for (auto p : staged_values) {
                 if (p.first >= 0 && p.first == rep) {
@@ -116,11 +118,11 @@ namespace pacxx {
           conf[(p.first + 1) * -1] = p.second;
         }
       }
-      Function *KF = M.getFunction(K.getName());
+      Function* KF = M.getFunction(K.getName());
 
       auto kernelMD =
           M.getOrInsertNamedMetadata(std::string("pacxx.kernel.") + K.getName());
-      std::vector<Metadata *> MDArgs;
+      std::vector<Metadata*> MDArgs;
 
       int op = -1;
       for (unsigned i = 0; i < kernelMD->getNumOperands(); ++i) {
@@ -182,8 +184,8 @@ namespace pacxx {
 
         finder.visit(KF);
 
-        const auto &calls = finder.getFoundCalls();
-        for (const auto &CI : calls) {
+        const auto& calls = finder.getFoundCalls();
+        for (const auto& CI : calls) {
           __verbose("replacing ntid/nctaid call with ", conf[i]);
           auto IF = CI->getCalledFunction();
           CI->replaceAllUsesWith(ConstantInt::get(CI->getType(), conf[i]));
@@ -194,6 +196,7 @@ namespace pacxx {
 
         finder.reset();
       }
+
     }
 
     bool MSPEngine::isDisabled() { return _disabled; }

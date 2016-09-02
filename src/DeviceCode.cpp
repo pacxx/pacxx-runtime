@@ -13,9 +13,103 @@
 
 #define __CUDANVVM__ 1
 #define __CUDABE__ 1
+//#define __CUDACC_RTC__ 1
 #include <vector_types.h>
 #include "detail/device/DeviceFunctionDecls.h"
 extern "C"{
+#include <device_functions_decls.h>
+int __nvvm_atom_cta_add_gen_i(volatile int *, int);
+int __nvvm_atom_sys_add_gen_i(volatile int *, int);
+long long __nvvm_atom_cta_add_gen_ll(volatile long long *, long long);
+long long __nvvm_atom_sys_add_gen_ll(volatile long long *, long long);
+unsigned int __nvvm_atom_cta_add_gen_ui(volatile unsigned int *, unsigned int);
+unsigned int __nvvm_atom_sys_add_gen_ui(volatile unsigned int *, unsigned int);
+unsigned long long __nvvm_atom_cta_add_gen_ull(volatile unsigned long long *, unsigned long long);
+unsigned long long __nvvm_atom_sys_add_gen_ull(volatile unsigned long long *, unsigned long long);
+float __nvvm_atom_cta_add_gen_f(volatile float*, float); 
+float __nvvm_atom_sys_add_gen_f(volatile float*, float); 
+double __nvvm_atom_cta_add_gen_d(volatile double*, double); 
+double __nvvm_atom_sys_add_gen_d(volatile double*, double); 
+
+int __nvvm_atom_cta_min_gen_i(volatile int *, int);
+int __nvvm_atom_sys_min_gen_i(volatile int *, int);
+long long __nvvm_atom_cta_min_gen_ll(volatile long long *, long long);
+long long __nvvm_atom_sys_min_gen_ll(volatile long long *, long long);
+unsigned int __nvvm_atom_cta_min_gen_ui(volatile unsigned int *, unsigned int);
+unsigned int __nvvm_atom_sys_min_gen_ui(volatile unsigned int *, unsigned int);
+unsigned long long __nvvm_atom_cta_min_gen_ull(volatile unsigned long long *, unsigned long long);
+unsigned long long __nvvm_atom_sys_min_gen_ull(volatile unsigned long long *, unsigned long long);
+float __nvvm_atom_cta_min_gen_f(volatile float*, float); 
+float __nvvm_atom_sys_min_gen_f(volatile float*, float); 
+double __nvvm_atom_cta_min_gen_d(volatile double*, double); 
+double __nvvm_atom_sys_min_gen_d(volatile double*, double); 
+
+int __nvvm_atom_cta_max_gen_i(volatile int *, int);
+int __nvvm_atom_sys_max_gen_i(volatile int *, int);
+long long __nvvm_atom_cta_max_gen_ll(volatile long long *, long long);
+long long __nvvm_atom_sys_max_gen_ll(volatile long long *, long long);
+unsigned int __nvvm_atom_cta_max_gen_ui(volatile unsigned int *, unsigned int);
+unsigned int __nvvm_atom_sys_max_gen_ui(volatile unsigned int *, unsigned int);
+unsigned long long __nvvm_atom_cta_max_gen_ull(volatile unsigned long long *, unsigned long long);
+unsigned long long __nvvm_atom_sys_max_gen_ull(volatile unsigned long long *, unsigned long long);
+float __nvvm_atom_cta_max_gen_f(volatile float*, float); 
+float __nvvm_atom_sys_max_gen_f(volatile float*, float); 
+double __nvvm_atom_cta_max_gen_d(volatile double*, double); 
+double __nvvm_atom_sys_max_gen_d(volatile double*, double); 
+
+int __nvvm_atom_cta_xchg_gen_i(volatile int *, int);
+int __nvvm_atom_sys_xchg_gen_i(volatile int *, int);
+long long __nvvm_atom_cta_xchg_gen_ll(volatile long long *, long long);
+long long __nvvm_atom_sys_xchg_gen_ll(volatile long long *, long long);
+unsigned int __nvvm_atom_cta_xchg_gen_ui(volatile unsigned int *, unsigned int);
+unsigned int __nvvm_atom_sys_xchg_gen_ui(volatile unsigned int *, unsigned int);
+unsigned long long __nvvm_atom_cta_xchg_gen_ull(volatile unsigned long long *, unsigned long long);
+unsigned long long __nvvm_atom_sys_xchg_gen_ull(volatile unsigned long long *, unsigned long long);
+float __nvvm_atom_cta_xchg_gen_f(volatile float*, float); 
+float __nvvm_atom_sys_xchg_gen_f(volatile float*, float); 
+double __nvvm_atom_cta_xchg_gen_d(volatile double*, double); 
+double __nvvm_atom_sys_xchg_gen_d(volatile double*, double); 
+
+int __nvvm_atom_cta_inc_gen_i(volatile int *, int);
+int __nvvm_atom_sys_inc_gen_i(volatile int *, int);
+long long __nvvm_atom_cta_inc_gen_ll(volatile long long *, long long);
+long long __nvvm_atom_sys_inc_gen_ll(volatile long long *, long long);
+unsigned int __nvvm_atom_cta_inc_gen_ui(volatile unsigned int *, unsigned int);
+unsigned int __nvvm_atom_sys_inc_gen_ui(volatile unsigned int *, unsigned int);
+unsigned long long __nvvm_atom_cta_inc_gen_ull(volatile unsigned long long *, unsigned long long);
+unsigned long long __nvvm_atom_sys_inc_gen_ull(volatile unsigned long long *, unsigned long long);
+
+int __nvvm_atom_cta_dec_gen_i(volatile int *, int);
+int __nvvm_atom_sys_dec_gen_i(volatile int *, int);
+long long __nvvm_atom_cta_dec_gen_ll(volatile long long *, long long);
+long long __nvvm_atom_sys_dec_gen_ll(volatile long long *, long long);
+unsigned int __nvvm_atom_cta_dec_gen_ui(volatile unsigned int *, unsigned int);
+unsigned int __nvvm_atom_sys_dec_gen_ui(volatile unsigned int *, unsigned int);
+unsigned long long __nvvm_atom_cta_dec_gen_ull(volatile unsigned long long *, unsigned long long);
+unsigned long long __nvvm_atom_sys_dec_gen_ull(volatile unsigned long long *, unsigned long long);
+
+int __nvvm_atom_cta_cas_gen_i(volatile int *, int, int);
+int __nvvm_atom_sys_cas_gen_i(volatile int *, int, int);
+long long __nvvm_atom_cta_cas_gen_ll(volatile long long *, long long, long long);
+long long __nvvm_atom_sys_cas_gen_ll(volatile long long *, long long, long long);
+
+int __nvvm_atom_cta_and_gen_i(volatile int *, int);
+int __nvvm_atom_sys_and_gen_i(volatile int *, int);
+long long __nvvm_atom_cta_and_gen_ll(volatile long long *, long long);
+long long __nvvm_atom_sys_and_gen_ll(volatile long long *, long long);
+
+int __nvvm_atom_cta_or_gen_i(volatile int *, int);
+int __nvvm_atom_sys_or_gen_i(volatile int *, int);
+long long __nvvm_atom_cta_or_gen_ll(volatile long long *, long long);
+long long __nvvm_atom_sys_or_gen_ll(volatile long long *, long long);
+
+int __nvvm_atom_cta_xor_gen_i(volatile int *, int);
+int __nvvm_atom_sys_xor_gen_i(volatile int *, int);
+long long __nvvm_atom_cta_xor_gen_ll(volatile long long *, long long);
+long long __nvvm_atom_sys_xor_gen_ll(volatile long long *, long long);
+
+
+
 #include <device_functions.h>
 };
 namespace native {

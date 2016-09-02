@@ -17,6 +17,7 @@
 #include <llvm/Transforms/Scalar.h>
 #include <llvm/Transforms/Vectorize.h>
 #include <llvm/Analysis/TargetLibraryInfo.h>
+#include <detail/common/Timing.h>
 
 using namespace llvm;
 
@@ -44,64 +45,65 @@ namespace pacxx {
     }
 
     std::string PTXBackend::compile(llvm::Module& M) {
-      Triple TheTriple = Triple(M.getTargetTriple());
-      std::string Error;
+      SCOPED_TIMING {
+                      Triple TheTriple = Triple(M.getTargetTriple());
+                      std::string Error;
 
-      if (!_target)
-        _target = TargetRegistry::lookupTarget("nvptx64", TheTriple, Error);
-      if (!_target) {
-        throw common::generic_exception(Error);
-      }
+                      if (!_target)
+                        _target = TargetRegistry::lookupTarget("nvptx64", TheTriple, Error);
+                      if (!_target) {
+                        throw common::generic_exception(Error);
+                      }
 
-      _ptxString.clear();
+                      _ptxString.clear();
 
-      if (!_pmInitialized) {
-        TargetLibraryInfoImpl TLII(Triple(M.getTargetTriple()));
-        _PM.add(new TargetLibraryInfoWrapperPass(TLII));
+                      if (!_pmInitialized) {
+                        TargetLibraryInfoImpl TLII(Triple(M.getTargetTriple()));
+                        _PM.add(new TargetLibraryInfoWrapperPass(TLII));
 
-        _PM.add(createReassociatePass());
+                        _PM.add(createReassociatePass());
 
-        _PM.add(createConstantPropagationPass());
-        _PM.add(createSCCPPass());
-        _PM.add(createConstantHoistingPass());
-        _PM.add(createCorrelatedValuePropagationPass());
-        _PM.add(createInstructionCombiningPass());
-        _PM.add(createLICMPass());
+                        _PM.add(createConstantPropagationPass());
+                        _PM.add(createSCCPPass());
+                        _PM.add(createConstantHoistingPass());
+                        _PM.add(createCorrelatedValuePropagationPass());
+                        _PM.add(createInstructionCombiningPass());
+                        _PM.add(createLICMPass());
 
-        _PM.add(createIndVarSimplifyPass());
-        _PM.add(createLoopRotatePass());
-        _PM.add(createLoopSimplifyPass());
-        _PM.add(createLoopInstSimplifyPass());
-        _PM.add(createLCSSAPass());
-        _PM.add(createLoopStrengthReducePass());
-        _PM.add(createLICMPass());
-        _PM.add(createLoopUnrollPass(2000, 32));
-        _PM.add(createStraightLineStrengthReducePass());
-        _PM.add(createCorrelatedValuePropagationPass());
-        _PM.add(createConstantPropagationPass());
-        _PM.add(createInstructionCombiningPass());
-        _PM.add(createCFGSimplificationPass());
-        _PM.add(createInstructionCombiningPass());
-        _PM.add(createPACXXStaticEvalPass());
-        _PM.add(createPACXXNvvmRegPass(true));
-
-
-        _machine.reset(_target->createTargetMachine(
-            TheTriple.getTriple(), _cpu, _features, _options, Reloc::Default,
-            CodeModel::Default, CodeGenOpt::None));
-
-        if (_machine->addPassesToEmitFile(_PM, _ptxOS, TargetMachine::CGFT_AssemblyFile,
-                                          false)) {
-          throw common::generic_exception(
-              "target does not support generation of this file type!\n");
-        }
-
-        _pmInitialized = true;
-      }
-
-      _PM.run(M);
+                        _PM.add(createIndVarSimplifyPass());
+                        _PM.add(createLoopRotatePass());
+                        _PM.add(createLoopSimplifyPass());
+                        _PM.add(createLoopInstSimplifyPass());
+                        _PM.add(createLCSSAPass());
+                        _PM.add(createLoopStrengthReducePass());
+                        _PM.add(createLICMPass());
+                        _PM.add(createLoopUnrollPass(2000, 32));
+                        _PM.add(createStraightLineStrengthReducePass());
+                        _PM.add(createCorrelatedValuePropagationPass());
+                        _PM.add(createConstantPropagationPass());
+                        _PM.add(createInstructionCombiningPass());
+                        _PM.add(createCFGSimplificationPass());
+                        _PM.add(createInstructionCombiningPass());
+                        _PM.add(createPACXXStaticEvalPass());
+                        _PM.add(createPACXXNvvmRegPass(true));
 
 
+                        _machine.reset(_target->createTargetMachine(
+                            TheTriple.getTriple(), _cpu, _features, _options, Reloc::Default,
+                            CodeModel::Default, CodeGenOpt::None));
+
+                        if (_machine->addPassesToEmitFile(_PM, _ptxOS, TargetMachine::CGFT_AssemblyFile,
+                                                          false)) {
+                          throw common::generic_exception(
+                              "target does not support generation of this file type!\n");
+                        }
+
+                        _pmInitialized = true;
+                      }
+
+                      _PM.run(M);
+
+                    };
       return _ptxString.str().str();
     }
 

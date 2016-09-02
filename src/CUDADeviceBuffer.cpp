@@ -8,11 +8,12 @@
 
 namespace pacxx {
   namespace v2 {
-    CUDARawDeviceBuffer::CUDARawDeviceBuffer() : _mercy(1) {
+    CUDARawDeviceBuffer::CUDARawDeviceBuffer() : _size(0), _mercy(1) {
     }
 
     void CUDARawDeviceBuffer::allocate(size_t bytes) {
       SEC_CUDA_CALL(cudaMalloc((void**) &_buffer, bytes));
+      _size = bytes;
     }
 
     CUDARawDeviceBuffer::~CUDARawDeviceBuffer() {
@@ -31,6 +32,7 @@ namespace pacxx {
     CUDARawDeviceBuffer& CUDARawDeviceBuffer::operator=(CUDARawDeviceBuffer&& rhs) {
       _buffer = rhs._buffer;
       rhs._buffer = nullptr;
+      rhs._size = 0;
       return *this;
     }
 
@@ -65,6 +67,11 @@ namespace pacxx {
 
     void CUDARawDeviceBuffer::mercy() {
         ++_mercy;
+    }
+
+    void CUDARawDeviceBuffer::copyTo(void* dest)
+    {
+      SEC_CUDA_CALL(cudaMemcpy(dest, _buffer, _size, cudaMemcpyDeviceToDevice));
     }
   }
 }

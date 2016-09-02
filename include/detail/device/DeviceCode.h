@@ -1,15 +1,3 @@
-//
-// Created by mhaidl on 05/06/16.
-//
-
-#ifndef PACXX_V2_DEVICECODE_H
-#define PACXX_V2_DEVICECODE_H
-/* Copyright (C) University of Muenster - All Rights Reserved
- * Unauthorized copying of this file, via any medium is strictly prohibited
- * Proprietary and confidential
- * Written by Michael Haidl <michael.haidl@uni-muenster.de>, 2010-2014
- */
-
 #pragma once
 //#include <device_types.h>
 #ifndef __forceinline__
@@ -460,5 +448,3 @@ int signbit(double val);
 
 #endif
 #endif
-
-#endif //PACXX_V2_DEVICECODE_H

@@ -41,12 +41,15 @@ namespace pacxx {
 
       virtual void downloadAsync(void* dest, size_t bytes, size_t offset = 0) override;
 
+      virtual void copyTo(void* dest) override;
+
       virtual void abandon() override;
 
       virtual void mercy() override;
 
     private:
       char* _buffer;
+      size_t _size;
       unsigned _mercy;
     };
 
@@ -97,6 +100,10 @@ namespace pacxx {
 
       virtual void mercy() override {
         _buffer.mercy();
+      }
+
+      virtual void copyTo(T* dest) override {
+        _buffer.copyTo(dest);
       }
 
     private:

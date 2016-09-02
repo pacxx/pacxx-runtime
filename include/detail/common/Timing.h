@@ -22,7 +22,7 @@
 #endif
 
 #define SCOPED_TIMING \
-  auto ANONYMOUS_VARIABLE(TIMING) = pacxx::common::ScopedTimingProxy(__FILE__, __LINE__) + [&]()
+  auto ANONYMOUS_VARIABLE(TIMING) = pacxx::common::ScopedTimingProxy(__FILE__, __LINE__, __func__) + [&]()
 
 namespace pacxx
 {
@@ -42,11 +42,11 @@ namespace pacxx
       }
 
       ~ScopedTiming() {
-        auto time = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
+        auto time = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
 #ifndef __PACXX_TIMING_STANDALONE__
-        __message(message, " timed: ", time, "ms");
+        __message(message, " timed: ", time, "us");
 #else
-        std::cout << common::to_string(message, " timed: ", time, "ms") << std::endl;
+        std::cout << common::to_string(message, " timed: ", time, "us") << std::endl;
 #endif
 
       }
@@ -56,8 +56,8 @@ namespace pacxx
     {
       std::stringstream file_line;
 
-      ScopedTimingProxy(const char* file, int line) {
-        file_line << common::get_file_from_filepath(file) << ":" << line;
+      ScopedTimingProxy(const char* file, int line, const char* func) {
+        file_line << common::get_file_from_filepath(file) << ":" << line << " " << func;
       }
 
       template <typename T>
