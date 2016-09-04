@@ -84,6 +84,20 @@ namespace pacxx {
         core::CoreInitializer::initialize();
       }
 
+      std::string cleanName(const std::string& name) {
+        auto cleaned_name = std::regex_replace(name, std::regex("S[0-9A-Z]{0,9}_"), "");
+        cleaned_name = std::regex_replace(cleaned_name, std::regex("5pacxx"), ""); // bad hack
+        cleaned_name = std::regex_replace(cleaned_name, std::regex("2v2"), ""); // bad hack
+        // cleaned_name = std::regex_replace(cleaned_name, std::regex("S[0-9A-Z]{0,9}_"), "");
+        auto It = cleaned_name.find("$_");
+        if (It == std::string::npos)
+          return cleaned_name;
+        It += 2;
+        auto value = std::to_string(std::strtol(&cleaned_name[It], nullptr, 10)).size();
+        cleaned_name.erase(It + value);
+        return cleaned_name;
+      }
+
     public:
 
       void setMSPModule(std::unique_ptr<llvm::Module> M) {
@@ -116,52 +130,27 @@ namespace pacxx {
         const llvm::Function* F = nullptr;
         const llvm::Module& M = _runtime->getModule();
 
-        auto cleanName = [](const auto& name) {
-          auto cleaned_name = std::regex_replace(name, std::regex("S[0-9A-Z]{0,9}_"), "");
-          cleaned_name = std::regex_replace(cleaned_name, std::regex("5pacxx"), ""); // bad hack
-          // cleaned_name = std::regex_replace(cleaned_name, std::regex("S[0-9A-Z]{0,9}_"), "");
-          auto It = cleaned_name.find("$_");
-          if (It == std::string::npos)
-            return cleaned_name;
-          It += 2;
-          auto value = std::to_string(std::strtol(&cleaned_name[It], nullptr, 10)).size();
-          cleaned_name.erase(It + value);
-          return cleaned_name;
-        };
-
-        auto clean_name = cleanName(name);
-
-//        auto pos = name.find("$_"); // get the lambdas unique id
-//        if (pos != std::string::npos) {
-//          pos += 2;
-//          std::string numbers = "0123456789";
-//          size_t first = name.find_first_of(numbers.c_str(), pos);
-//          size_t last = first;
-//          while (last != std::string::npos) {
-//            size_t temp = last;
-//            last = name.find_first_of(numbers.c_str(), last + 1);
-//            if (last - temp > 1) {
-//              last = temp;
-//              break;
-//            }
-//          }
-//
-//          std::string id = name.substr(pos, last - first + 1);
-//          for (const auto& func : M.functions()) {
-//            if (func.getName().find(id) != llvm::StringRef::npos)
-//              F = &func;
-//          }
-//        } else
-//          F = M.getFunction(name);
-        for (auto& Func : M.getFunctionList()) {
-          auto fname = cleanName(Func.getName().str());
-
-          if (fname.find(clean_name) != std::string::npos)
-            F = &Func;
+        auto it = _kernel_translation.find(name);
+        if (it == _kernel_translation.end()) {
+          auto clean_name = cleanName(name);
+          for (auto& p : _kernel_translation)
+            if (p.first.find(clean_name) != std::string::npos) {
+              F = p.second;
+              _kernel_translation[name] = F;
+            }
         }
+        else
+          F = it->second;
 
-        if (!F)
-          throw common::generic_exception("Kernel function not found in module! " + clean_name);
+        if (!F) {
+          __error(cleanName(name));
+          for (auto& Func : M.getFunctionList()) {
+            auto fname = cleanName(Func.getName().str());
+            __warning(fname);
+
+          }
+          throw common::generic_exception("Kernel function not found in module! " + cleanName(name));
+        }
 
         size_t buffer_size = 0;
         std::vector<size_t> arg_offsets(F->arg_size());
@@ -289,6 +278,7 @@ namespace pacxx {
     private:
       std::unique_ptr<RuntimeT> _runtime;
       MemoryManager _mem_manager;
+      std::map<std::string, const llvm::Function*> _kernel_translation;
     };
 
     template<typename T>
@@ -296,6 +286,9 @@ namespace pacxx {
 
     template<typename T>
     void Executor<T>::setModule(std::unique_ptr<llvm::Module> M) {
+      for (auto& F : M->getFunctionList())
+        _kernel_translation[cleanName(F.getName().str())] = &F;
+
       _runtime->link(std::move(M));
     }
 

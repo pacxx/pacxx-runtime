@@ -235,7 +235,7 @@ namespace pacxx {
     template<typename L, size_t _C>
     class _kernel {
     public:
-      _kernel(const L& lambda, KernelConfiguration&& config)
+      _kernel(const L& lambda, KernelConfiguration config)
           : _function(lambda), _config(config) {
       }
 
@@ -259,7 +259,7 @@ namespace pacxx {
     template<typename L, typename CB, size_t _C>
     class _kernel_with_cb {
     public:
-      _kernel_with_cb(const L& lambda, KernelConfiguration&& config, CB&& callback)
+      _kernel_with_cb(const L& lambda, KernelConfiguration config, CB&& callback)
           : _function(lambda), _config(config), _callback(std::move(callback)) {
       }
 
@@ -283,14 +283,14 @@ namespace pacxx {
 
 
     template<typename Func, size_t versioning = __COUNTER__>
-    auto kernel(const Func& lambda, KernelConfiguration&& config) {
-      return _kernel<decltype(lambda), versioning>(lambda, std::forward<KernelConfiguration>(config));
+    auto kernel(const Func& lambda, KernelConfiguration config) {
+      return _kernel<decltype(lambda), versioning>(lambda, config);
     };
 
     template<typename Func, typename CallbackFunc, size_t versioning = __COUNTER__>
-    auto kernel_with_cb(const Func& lambda, KernelConfiguration&& config, CallbackFunc&& CB) {
+    auto kernel_with_cb(const Func& lambda, KernelConfiguration config, CallbackFunc&& CB) {
       return _kernel_with_cb<decltype(lambda), CallbackFunc, versioning>
-          (lambda, std::forward<KernelConfiguration>(config), std::forward<CallbackFunc>(CB));
+          (lambda, config, std::forward<CallbackFunc>(CB));
     };
 
 #define __kernel(__lambda, __config, ...)                                                              \

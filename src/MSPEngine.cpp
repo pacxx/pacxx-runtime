@@ -66,6 +66,8 @@ namespace pacxx {
     }
 
     void MSPEngine::evaluate(const llvm::Function& KF, Kernel& kernel) {
+      __verbose("staging function: ", KF.getName().str());
+      bool kernelHasStagedFunction = false;
       auto& M = *KF.getParent();
       if (auto RF = M.getFunction("__pacxx_reflect")) {
         for (auto U : RF->users()) {
@@ -76,21 +78,28 @@ namespace pacxx {
               auto cstage = (unsigned int) *ci32->getValue().getRawData();
               auto FName = std::string("__pacxx_reflection_stub") + std::to_string(cstage);
               if (auto F = _engine->FindFunctionNamed(FName.c_str())) {
-                auto args = kernel.getHostArguments();
-                void* rFP = _engine->getPointerToFunction(F);
-                auto FP = reinterpret_cast<int64_t (*)(void*)>(rFP);
-                int64_t value = FP(&args[0]);
-                __verbose("staging: ", FName, "  - result is ", value);
+                int64_t value = 0;
+                bool inScope = false;
+                if (CI->getParent()->getParent() == &KF) {
+                  auto args = kernel.getHostArguments();
+                  void* rFP = _engine->getPointerToFunction(F);
+                  auto FP = reinterpret_cast<int64_t (*)(void*)>(rFP);
+                  value = FP(&args[0]);
+                  kernelHasStagedFunction = true;
+                  inScope = true;
+                }
+                // __verbose("staging: ", FName, "  - result is ", value);
 
                 if (auto* ci2 = dyn_cast<ConstantInt>(CI->getOperand(0))) {
-                  kernel.setStagedValue(*(ci2->getValue().getRawData()), value);
+                  kernel.setStagedValue(*(ci2->getValue().getRawData()), value, inScope);
                 }
               }
             }
           }
         }
       }
-
+      if (!kernelHasStagedFunction)
+        kernel.disableStaging();
     }
 
     void MSPEngine::transformModule(llvm::Module& M, Kernel& K) {
@@ -111,6 +120,8 @@ namespace pacxx {
           }
         }
       }
+
+      return;
 
       std::vector<int64_t> conf(6);
       for (auto p : staged_values) {
@@ -144,6 +155,7 @@ namespace pacxx {
         kernelMD->addOperand(MDNode::get(M.getContext(), MDArgs));
       else
         kernelMD->setOperand(op, MDNode::get(M.getContext(), MDArgs));
+
 
       for (size_t i = 0; i < conf.size(); ++i) {
         Intrinsic::ID iid;

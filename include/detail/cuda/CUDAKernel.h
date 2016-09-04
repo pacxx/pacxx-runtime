@@ -32,7 +32,12 @@ namespace pacxx
       virtual const std::vector<char>& getArguments() const override;
       virtual void setHostArguments(const std::vector<char>& arg_buffer) override;
       virtual const std::vector<char>& getHostArguments() const override;
-      virtual void setStagedValue(int ref, long long value) override;
+
+      virtual void setStagedValue(int ref, long long value, bool inScope) override;
+
+      virtual void disableStaging() override;
+
+      virtual bool requireStaging() override;
       virtual const std::map<int, long long>& getStagedValues() const override;
 
       virtual void setName(std::string name) override;
@@ -57,6 +62,7 @@ namespace pacxx
       bool _staged_values_changed;
       std::string _name;
       std::function<void()> _callback;
+      bool _disable_staging;
     };
   }
 }

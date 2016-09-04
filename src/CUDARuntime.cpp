@@ -84,7 +84,7 @@ namespace pacxx {
       SEC_CUDA_CALL(
           cuModuleLoadDataEx(&_mod, MC.c_str(), 6, lioptions, opt_values));
       if (info_log[0] != '\0')
-        __warning("Linker Output: \n", info_log);
+        __verbose("Linker Output: \n", info_log);
     }
 
     Kernel &CUDARuntime::getKernel(const std::string &name) {
@@ -138,8 +138,10 @@ namespace pacxx {
     }
 
     void CUDARuntime::evaluateStagedFunctions(Kernel &K) {
-      if (_msp_engine.isDisabled()) return;
-      _msp_engine.evaluate(*_rawM->getFunction(K.getName()), K);
+      if (K.requireStaging()) {
+        if (_msp_engine.isDisabled()) return;
+        _msp_engine.evaluate(*_rawM->getFunction(K.getName()), K);
+      }
     }
 
     void CUDARuntime::requestIRTransformation(Kernel &K) {

@@ -11,24 +11,26 @@ namespace pacxx {
   namespace v2 {
 
     CUDAKernel::CUDAKernel(CUDARuntime &runtime, CUfunction fptr) : _runtime(runtime), _fptr(fptr),
-                                                                    _staged_values_changed(false) { }
+                                                                    _staged_values_changed(false),
+                                                                    _disable_staging(false) {}
 
     CUDAKernel::~CUDAKernel() { }
 
     void CUDAKernel::configurate(KernelConfiguration config) {
-      _config = config;
-      std::vector<size_t> a(6);
-      a[0] = config.threads.x;
-      a[1] = config.threads.y;
-      a[2] = config.threads.z;
-      a[3] = config.blocks.x;
-      a[4] = config.blocks.y;
-      a[5] = config.blocks.z;
+      if (_config != config) {
+        _config = config;
+        std::vector<size_t> a(6);
+        a[0] = config.threads.x;
+        a[1] = config.threads.y;
+        a[2] = config.threads.z;
+        a[3] = config.blocks.x;
+        a[4] = config.blocks.y;
+        a[5] = config.blocks.z;
 
-      for (size_t i = 0; i < a.size(); ++i) {
-        setStagedValue((i * -1) - 1, a[i]);
+        for (size_t i = 0; i < a.size(); ++i) {
+          // setStagedValue((i * -1) - 1, a[i], true);
+        }
       }
-
     }
 
     KernelConfiguration CUDAKernel::getConfiguration() const { return _config; }
@@ -75,10 +77,11 @@ namespace pacxx {
     }
 
 
-    void CUDAKernel::setStagedValue(int ref, long long value) {
+    void CUDAKernel::setStagedValue(int ref, long long value, bool inScope) {
       auto old = _staged_values[ref];
       if (old != value) {
         _staged_values[ref] = value;
+        if (inScope)
         _staged_values_changed = true;
       }
     }
@@ -93,6 +96,14 @@ namespace pacxx {
 
     const std::string &CUDAKernel::getName() const {
       return _name;
+    }
+
+    void CUDAKernel::disableStaging() {
+      _disable_staging = true;
+    }
+
+    bool CUDAKernel::requireStaging() {
+      return !_disable_staging;
     }
   }
 }

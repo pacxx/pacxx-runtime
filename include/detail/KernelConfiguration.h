@@ -19,6 +19,16 @@ struct Dimension3 {
   Dimension3(size_t vx = 1, size_t vy = 1, size_t vz = 1);
   Dimension3(dim3 px);
   dim3 getDim3() const;
+
+  bool operator==(const Dimension3& rhs) {
+    return x == rhs.x && y == rhs.y && z == rhs.z;
+  }
+
+  bool operator!=(const Dimension3& rhs) {
+    return x != rhs.x || y != rhs.y || z != rhs.z;
+  }
+
+
   size_t x, y, z;
 };
 
@@ -27,6 +37,14 @@ struct KernelConfiguration {
   KernelConfiguration(Dimension3 b, Dimension3 t, size_t sm = 0);
   KernelConfiguration(size_t total_threads);
   KernelConfiguration();
+
+  bool operator==(const KernelConfiguration& rhs) {
+    return blocks == rhs.blocks && threads == rhs.threads;
+  }
+
+  bool operator!=(const KernelConfiguration& rhs) {
+    return blocks != rhs.blocks || threads != rhs.threads;
+  }
 
   Dimension3 blocks;
   Dimension3 threads;

@@ -19,19 +19,20 @@ namespace pacxx {
     CUDARawDeviceBuffer::~CUDARawDeviceBuffer() {
       if (_buffer) {
         SEC_CUDA_CALL(cudaFree(_buffer));
-     //   __message("freeing buffer");
       }
     }
 
     CUDARawDeviceBuffer::CUDARawDeviceBuffer(CUDARawDeviceBuffer&& rhs) {
       _buffer = rhs._buffer;
-      rhs.
-          _buffer = nullptr;
+      rhs._buffer = nullptr;
+      _size = rhs._size;
+      rhs._size = 0;
     }
 
     CUDARawDeviceBuffer& CUDARawDeviceBuffer::operator=(CUDARawDeviceBuffer&& rhs) {
       _buffer = rhs._buffer;
       rhs._buffer = nullptr;
+      _size = rhs._size;
       rhs._size = 0;
       return *this;
     }
@@ -71,7 +72,10 @@ namespace pacxx {
 
     void CUDARawDeviceBuffer::copyTo(void* dest)
     {
-      SEC_CUDA_CALL(cudaMemcpy(dest, _buffer, _size, cudaMemcpyDeviceToDevice));
+      if (!dest)
+        __error(__func__, "nullptr arived, discarding copy");
+      if (dest != _buffer)
+        SEC_CUDA_CALL(cudaMemcpyAsync(dest, _buffer, _size, cudaMemcpyDeviceToDevice));
     }
   }
 }
