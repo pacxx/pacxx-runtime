@@ -48,14 +48,13 @@ namespace pacxx {
     // since genericKernel takes all parameters as lvalue and not as xvalue we let
     // the types of form int*&& decay to int* to avoid the automatic decay to int**
     template<typename T>
-    struct remove_reference {
+    struct add_gpu_reference {
       using type = std::conditional_t<
-          std::is_pointer<std::decay_t<T>>::value || std::is_arithmetic<std::decay_t<T>>::value ||
-          is_wrapped_callable<std::decay_t<T>>::value, std::decay_t<T>, T>;
+          is_vector<std::decay_t<T>>::value, std::add_lvalue_reference_t<T>, T>;
     };
 
     template<typename T>
-    using remove_reference_t = typename remove_reference<T>::type;
+    using add_gpu_reference_t = typename add_gpu_reference<T>::type;
 
   }
 }

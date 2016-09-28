@@ -206,8 +206,8 @@ namespace pacxx {
         // In PACXX V2 we use the __device_code__ macro to distinguish between the two compilation phases
         // This approach has the advantage that we do not have to break up type safety.
 #ifdef __device_code__
-        [[kernel_call(config.blocks.getDim3(), config.threads.getDim3(), 0, 0)]] genericKernel<_C, L, meta::remove_reference_t<Ts>...>(
-            /*address_space_cast<const L &, 1>(F)*/ F, address_space_cast<meta::remove_reference_t<Ts>, 1>(args)...);
+        [[kernel_call(config.blocks.getDim3(), config.threads.getDim3(), 0, 0)]] genericKernel<_C, L, meta::add_gpu_reference_t<std::remove_reference_t<Ts>>...>(
+            /*address_space_cast<const L &, 1>(F)*/ F, address_space_cast<meta::add_gpu_reference_t<std::remove_reference_t<Ts>>, 1>(args)...);
 #else
         auto& executor = Executor<RuntimeT>::Create();
         executor.run(F, config, std::forward<Ts>(args)...);
@@ -223,8 +223,8 @@ namespace pacxx {
         // In PACXX V2 we use the __device_code__ macro to distinguish between the two compilation phases
         // This approach has the advantage that we do not have to break up type safety.
 #ifdef __device_code__
-        [[kernel_call(config.blocks.getDim3(), config.threads.getDim3(), 0, 0)]] genericKernel<_C, L, meta::remove_reference_t<Ts>...>(
-            /*address_space_cast<const L &, 1>(F)*/ F, address_space_cast<meta::remove_reference_t<Ts>, 1>(args)...);
+        [[kernel_call(config.blocks.getDim3(), config.threads.getDim3(), 0, 0)]] genericKernel<_C, L, meta::add_gpu_reference_t<std::remove_reference_t<Ts>>...>(
+            /*address_space_cast<const L &, 1>(F)*/ F, address_space_cast<meta::add_gpu_reference_t<std::remove_reference_t<Ts>>, 1>(args)...);
 #else
         auto& executor = Executor<RuntimeT>::Create();
         executor.run_with_callback(F, config, callback, std::forward<Ts>(args)...);

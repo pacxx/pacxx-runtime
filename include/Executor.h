@@ -129,7 +129,6 @@ namespace pacxx {
 
         const llvm::Function* F = nullptr;
         const llvm::Module& M = _runtime->getModule();
-
         auto it = _kernel_translation.find(name);
         if (it == _kernel_translation.end()) {
           auto clean_name = cleanName(name);
@@ -170,9 +169,11 @@ namespace pacxx {
 
         std::vector<char> args_buffer(buffer_size);
         std::vector<char> host_args_buffer(buffer_size);
+
         auto ptr = args_buffer.data();
         auto hptr = host_args_buffer.data();
         size_t i = 0;
+
         common::for_each_in_arg_pack([&](auto&& arg) {
           auto offset = arg_offsets[i++];
           auto targ = meta::memory_translation{}(_mem_manager, arg);
@@ -290,6 +291,14 @@ namespace pacxx {
         _kernel_translation[cleanName(F.getName().str())] = &F;
 
       _runtime->link(std::move(M));
+
+//      for (auto& p : _kernel_translation)
+//      {
+//        auto& K = _runtime->getKernel(p.second->getName().str());
+//        K.setName(p.second->getName().str());
+//        _runtime->evaluateStagedFunctions(K);
+//      }
+
     }
 
     template<typename T>

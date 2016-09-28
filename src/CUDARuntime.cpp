@@ -8,6 +8,7 @@
 #include <llvm/IR/Intrinsics.h>
 #include <llvm/Transforms/Utils/Cloning.h>
 #include <detail/common/LLVMHelper.h>
+#include <detail/common/Timing.h>
 
 namespace pacxx {
   namespace v2 {
@@ -17,7 +18,7 @@ namespace pacxx {
       CUcontext old;
       SEC_CUDA_CALL(cuCtxGetCurrent(&old)); // check if there is already a context
       if (old) {
-        _context = old; // we use the found context
+        _context = old; // we use the existing context
       }
       if (!_context) { // create a new context for the device
         CUdevice device;
@@ -57,8 +58,10 @@ namespace pacxx {
     }
 
     void CUDARuntime::compileAndLink() {
-      std::string MC = _compiler->compile(*_M);
-
+      std::string MC;
+      SCOPED_TIMING{
+          MC = _compiler->compile(*_M);
+      };
       float walltime;
       char error_log[81920];
       char info_log[81920];
@@ -85,6 +88,7 @@ namespace pacxx {
           cuModuleLoadDataEx(&_mod, MC.c_str(), 6, lioptions, opt_values));
       if (info_log[0] != '\0')
         __verbose("Linker Output: \n", info_log);
+      _delayed_compilation = false;
     }
 
     Kernel &CUDARuntime::getKernel(const std::string &name) {
