@@ -49,16 +49,16 @@
     <orderEntry type="module-library">
       <library name="Header Search Paths">
         <CLASSES>
-          <root url="file:///usr/lib/gcc/x86_64-pc-linux-gnu/6.1.1/include" />
-          <root url="file:///usr/lib/gcc/x86_64-pc-linux-gnu/6.1.1/include-fixed" />
           <root url="file:///usr/include" />
+          <root url="file:///usr/lib/gcc/x86_64-pc-linux-gnu/6.2.1/include-fixed" />
+          <root url="file:///usr/lib/gcc/x86_64-pc-linux-gnu/6.2.1/include" />
           <root url="file:///usr/local/include" />
           <root url="file:///usr/local/cuda/include" />
         </CLASSES>
         <SOURCES>
-          <root url="file:///usr/lib/gcc/x86_64-pc-linux-gnu/6.1.1/include" />
-          <root url="file:///usr/lib/gcc/x86_64-pc-linux-gnu/6.1.1/include-fixed" />
           <root url="file:///usr/include" />
+          <root url="file:///usr/lib/gcc/x86_64-pc-linux-gnu/6.2.1/include-fixed" />
+          <root url="file:///usr/lib/gcc/x86_64-pc-linux-gnu/6.2.1/include" />
           <root url="file:///usr/local/include" />
           <root url="file:///usr/local/cuda/include" />
         </SOURCES>

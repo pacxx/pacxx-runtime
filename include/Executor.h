@@ -182,7 +182,8 @@ namespace pacxx {
             auto harg = meta::msp_memory_translation{}(arg);
             std::memcpy(hptr, &harg, sizeof(decltype(harg)));
           }
-          hptr += sizeof(decltype(arg));
+          hptr += sizeof(decltype(targ));
+          //    __warning(sizeof(decltype(arg)), " ", sizeof(decltype(targ)));
         }, std::forward<Args>(args)...);
 
         auto& K = _runtime->getKernel(F->getName().str());
