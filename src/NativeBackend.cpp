@@ -111,7 +111,7 @@ namespace pacxx
     void NativeBackend::linkInModule(std::unique_ptr<llvm::Module> M) {
         _linker.getModule()->appendModuleInlineAsm(native_loop_ir);
         _linker.linkInModule(M.get(), llvm::Linker::Flags::None, nullptr);
-        __verbose(_linker.getModule()->dump());
+        _linker.getModule()->dump();
     }
 
     llvm::legacy::PassManager& NativeBackend::getPassManager() { return _PM; }
