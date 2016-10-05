@@ -6,6 +6,7 @@
 #define PACXX_V2_NATIVEBACKEND_H
 
 #include <llvm/Linker/Linker.h>
+#include <llvm/IR/LegacyPassManager.h>
 
 namespace pacxx
 {
@@ -17,10 +18,14 @@ namespace pacxx
 
       ~NativeBackend();
 
+      llvm::legacy::PassManager& getPassManager();
+
+      void linkInModule(std::unique_ptr<llvm::Module> M);
+
     private:
+      llvm::legacy::PassManager _PM;
       std::unique_ptr<llvm::Module> _composite;
       llvm::Linker _linker;
-
     };
   }
 }

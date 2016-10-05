@@ -23,7 +23,7 @@ namespace pacxx
 
       using CompilerT = NativeBackend;
 
-      NativeRuntime(unsigned dev_id = -1);
+      NativeRuntime(unsigned dev_id);
       virtual ~NativeRuntime();
 
       virtual void link(std::unique_ptr<llvm::Module> M) override;
@@ -40,6 +40,8 @@ namespace pacxx
       virtual void deleteRawMemory(RawDeviceBuffer* ptr) override;
 
     private:
+      std::unique_ptr<CompilerT> _compiler;
+      std::unique_ptr<llvm::Module> _M;
       llvm::ExecutionEngine* _JITEngine;
     };
   }

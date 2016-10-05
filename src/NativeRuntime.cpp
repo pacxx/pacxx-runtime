@@ -13,12 +13,18 @@ namespace pacxx
 {
   namespace v2
   {
-    NativeRuntime::NativeRuntime(unsigned){}
-    NativeRuntime::~NativeRuntime(){}
+    NativeRuntime::NativeRuntime(unsigned)
+        : _compiler(std::make_unique(CompilerT())){}
+
+    NativeRuntime::~NativeRuntime() {}
 
     void NativeRuntime::link(std::unique_ptr<llvm::Module> M) {
       std::string error;
-      EngineBuilder builder{std::move(M)};
+
+      _M = std::move(M);
+      _compiler->linkInModule(_M);
+
+      EngineBuilder builder{std::move(_M)};
 
       builder.setErrorStr(&error);
 
