@@ -161,8 +161,8 @@ namespace pacxx {
 #endif
     }
 
-    template<size_t _C, typename T>
-    struct kernel_caller : public kernel_caller<_C, decltype(&T::operator())> {
+    template<typename _RuntimeT, size_t _C, typename T>
+    struct kernel_caller : public kernel_caller<_RuntimeT, _C, decltype(&T::operator())> {
     };
 
     template<typename _RuntimeT, size_t _C, typename FType, typename RType, typename... ArgTys>
