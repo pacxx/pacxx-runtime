@@ -21,10 +21,9 @@ namespace pacxx
     void NativeRuntime::link(std::unique_ptr<llvm::Module> M) {
       std::string error;
 
-      _M = std::move(M);
-      _compiler->linkInModule(_M);
+      _compiler->linkInModule(M.get());
 
-      EngineBuilder builder{std::move(_M)};
+      EngineBuilder builder{std::move(M)};
 
       builder.setErrorStr(&error);
 

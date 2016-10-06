@@ -108,9 +108,9 @@ namespace pacxx
 
     NativeBackend::~NativeBackend() { }
 
-    void NativeBackend::linkInModule(std::unique_ptr<llvm::Module> M) {
+    void NativeBackend::linkInModule(llvm::Module* M) {
         _linker.getModule()->appendModuleInlineAsm(native_loop_ir);
-        _linker.linkInModule(M.get(), llvm::Linker::Flags::None, nullptr);
+        _linker.linkInModule(M, llvm::Linker::Flags::None, nullptr);
         _linker.getModule()->dump();
     }
 
