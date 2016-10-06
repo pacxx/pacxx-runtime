@@ -113,7 +113,7 @@ namespace pacxx
         _linker.linkInModule(functionModule.get(), llvm::Linker::Flags::None, nullptr);
         _linker.linkInModule(M, llvm::Linker::Flags::None, nullptr);
         //applyPasses(_linker.getModule());
-        _composite->dump();
+        //_composite->dump();
         return std::move(_composite);
     }
 
@@ -122,7 +122,7 @@ namespace pacxx
         llvm::MemoryBufferRef buffer(native_loop_ir, "loop-buffer");
         std::unique_ptr<llvm::Module> Result = llvm::parseIR(buffer, Err, Context);
         if (!Result)
-            Err.print("loop-ir", llvm::errs());
+            Err.print("createModule", llvm::errs());
         Result->materializeMetadata();
         return Result;
     }
