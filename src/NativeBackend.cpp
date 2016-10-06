@@ -140,16 +140,14 @@ namespace pacxx
       TheModule->setDataLayout(_JITEngine->getDataLayout());
 
       llvm::raw_fd_ostream OS("moduleBeforePass", EC, llvm::sys::fs::F_None);
-      llvm::WriteBitcodeToFile(TheModule, OS);
-      OS.flush();
+      TheModule->print(OS, nullptr);
 
       applyPasses(*TheModule);
 
       _JITEngine->finalizeObject();
 
       llvm::raw_fd_ostream OS1("moduleAfterPass", EC, llvm::sys::fs::F_None);
-      llvm::WriteBitcodeToFile(TheModule, OS1);
-      OS1.flush();
+      TheModule->print(OS1, nullptr);
     }
 
     void NativeBackend::linkInModule(llvm::Module& M) {
