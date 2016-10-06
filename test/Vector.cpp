@@ -4,8 +4,8 @@
 using namespace pacxx::v2;
 using namespace std;
 
-#define OPT_N (6666666)
-#define THREAD_N 128
+#define OPT_N (1)
+#define THREAD_N 1
 
 #define DIV_UP(a, b) (((a) + (b)-1) / (b))
 
@@ -20,11 +20,12 @@ int main(int argc, char **argv) {
   };
 
   auto vaddKernel =
-      kernel<NativeRuntime>(vectorAdd, {{(OPT_N + THREAD_N - 1) / THREAD_N}, {THREAD_N}});
+      kernel<CUDARuntime>(vectorAdd, {{(OPT_N + THREAD_N - 1) / THREAD_N}, {THREAD_N}});
 
   vaddKernel(a, b, c);
- 
-  auto& exec = get_executor(); 
-  exec.synchronize(); 
+
+  auto& exec = get_executor();
+  std::cout << typeid(exec.rt()).name() << '\n';
+  exec.synchronize();
   return 0;
 }
