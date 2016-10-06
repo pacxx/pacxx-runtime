@@ -1,5 +1,7 @@
 #include <vector>
 #include <PACXX.h>
+#include <type_traits>
+#include <typeinfo>
 
 using namespace pacxx::v2;
 using namespace std;
@@ -20,8 +22,8 @@ int main(int argc, char **argv) {
   };
 
   auto vaddKernel =
-      kernel<CUDARuntime>(vectorAdd, {{(OPT_N + THREAD_N - 1) / THREAD_N}, {THREAD_N}});
-
+      kernel<NativeRuntime>(vectorAdd, {{(OPT_N + THREAD_N - 1) / THREAD_N}, {THREAD_N}});
+  
   vaddKernel(a, b, c);
 
   auto& exec = get_executor();
