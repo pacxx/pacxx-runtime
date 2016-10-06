@@ -140,10 +140,12 @@ namespace pacxx
 
         string Error;
 
+        /*
         if(!_target)
            _target = TargetRegistry::lookupTarget(M.getTargetTriple(), Error);
         if(!_target)
             throw common::generic_exception(Error);
+            */
 
 
         if(!_pmInitialized) {

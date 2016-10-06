@@ -56,7 +56,7 @@ namespace pacxx
     private:
       std::unique_ptr<llvm::Module> _M;
       std::unique_ptr<CompilerT> _compiler;
-      llvm::ExecutionEngine* _JITEngine;
+      //llvm::ExecutionEngine* _JITEngine;
     };
   }
 }

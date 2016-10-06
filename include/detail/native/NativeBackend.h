@@ -31,7 +31,7 @@ namespace pacxx
 
     private:
       llvm::legacy::PassManager _PM;
-      const llvm::Target *_target;
+      //const llvm::Target *_target;
       std::unique_ptr<llvm::Module> _composite;
       llvm::Linker _linker;
       bool _pmInitialized;
