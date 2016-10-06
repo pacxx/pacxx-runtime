@@ -144,10 +144,12 @@ namespace pacxx
 
       applyPasses(*TheModule);
 
-      _JITEngine->finalizeObject();
-
       llvm::raw_fd_ostream OS1("moduleAfterPass", EC, llvm::sys::fs::F_None);
       TheModule->print(OS1, nullptr);
+
+      _JITEngine->finalizeObject();
+
+
     }
 
     void NativeBackend::linkInModule(llvm::Module& M) {
