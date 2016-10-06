@@ -196,7 +196,7 @@ namespace pacxx {
     };
 
 
-    template<size_t _C>
+    template<typename RuntimeT, size_t _C>
     struct exp_kernel_caller {
       template<typename L, typename... Ts>
       static void call(const L& F, const KernelConfiguration& config, Ts&& ... args) {
@@ -232,7 +232,7 @@ namespace pacxx {
       }
     };
 
-    template<typename L, size_t _C>
+    template<typename L, typename RuntimeT, size_t _C>
     class _kernel {
     public:
       _kernel(const L& lambda, KernelConfiguration config)
@@ -243,7 +243,7 @@ namespace pacxx {
       template<typename... Ts>
       void operator()(Ts&& ... args) const {
         //using caller = kernel_caller<_C, decltype(&std::remove_const_t<std::remove_reference_t<L>>::operator())>;
-        using caller = exp_kernel_caller<_C>;
+        using caller = exp_kernel_caller<RuntimeT, _C>;
 
         caller::call(_function, _config, std::forward<Ts>(args)...);
       }
@@ -256,7 +256,7 @@ namespace pacxx {
       KernelConfiguration _config;
     };
 
-    template<typename L, typename CB, size_t _C>
+    template<typename L, typename CB, typename RuntimeT, size_t _C>
     class _kernel_with_cb {
     public:
       _kernel_with_cb(const L& lambda, KernelConfiguration config, CB&& callback)
@@ -267,7 +267,7 @@ namespace pacxx {
       template<typename... Ts>
       void operator()(Ts&& ... args) {
         //using caller = kernel_caller<_C, decltype(&std::remove_const_t<std::remove_reference_t<L>>::operator())>;
-        using caller = exp_kernel_caller<_C>;
+        using caller = exp_kernel_caller<RuntimeT, _C>;
 
         caller::call_with_cb(_function, _config, _callback, std::forward<Ts>(args)...);
       }
@@ -282,14 +282,14 @@ namespace pacxx {
     };
 
 
-    template<typename Func, size_t versioning = __COUNTER__>
+    template<typename Func, typename RuntimeT, size_t versioning = __COUNTER__>
     auto kernel(const Func& lambda, KernelConfiguration config) {
-      return _kernel<decltype(lambda), versioning>(lambda, config);
+      return _kernel<decltype(lambda), RuntimeT, versioning>(lambda, config);
     };
 
-    template<typename Func, typename CallbackFunc, size_t versioning = __COUNTER__>
+    template<typename Func, typename CallbackFunc, typename RuntimeT, size_t versioning = __COUNTER__>
     auto kernel_with_cb(const Func& lambda, KernelConfiguration config, CallbackFunc&& CB) {
-      return _kernel_with_cb<decltype(lambda), CallbackFunc, versioning>
+      return _kernel_with_cb<decltype(lambda), CallbackFunc, RuntimeT, versioning>
           (lambda, config, std::forward<CallbackFunc>(CB));
     };
 

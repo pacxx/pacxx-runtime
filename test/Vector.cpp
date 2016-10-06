@@ -20,7 +20,7 @@ int main(int argc, char **argv) {
   };
 
   auto vaddKernel =
-      kernel(vectorAdd, {{(OPT_N + THREAD_N - 1) / THREAD_N}, {THREAD_N}});
+      kernel<NativeRuntime>(vectorAdd, {{(OPT_N + THREAD_N - 1) / THREAD_N}, {THREAD_N}});
 
   vaddKernel(a, b, c);
  
