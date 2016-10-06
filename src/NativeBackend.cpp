@@ -4,8 +4,8 @@
 
 #include "detail/native/NativeBackend.h"
 #include <llvm/IR/LLVMContext.h>
-#include "detail/common/Log.h"
-
+#include <llvm/Support/SourceMgr.h>
+#include <llvm/IRReader/IRReader.h>
 
 namespace {
   const std::string native_loop_ir(R"(
@@ -108,13 +108,26 @@ namespace pacxx
 
     NativeBackend::~NativeBackend() { }
 
-    void NativeBackend::linkInModule(llvm::Module* M) {
-        _linker.getModule()->appendModuleInlineAsm(native_loop_ir);
+    std::unique_ptr<llvm::Module> NativeBackend::linkInModule(llvm::Module* M) {
+        std::unique_ptr<llvm::Module> functionModule = createModule(_linker.getModule()->getContext());
+        _linker.linkInModule(functionModule.get(), llvm::Linker::Flags::None, nullptr);
         _linker.linkInModule(M, llvm::Linker::Flags::None, nullptr);
-        _linker.getModule()->dump();
+        //applyPasses(_linker.getModule());
+        return _linker.getModule();
     }
 
-    llvm::legacy::PassManager& NativeBackend::getPassManager() { return _PM; }
+    std::unique_ptr<llvm::Module> createModule(llvm::LLVMContext &Context) {
+        llvm::SMDiagnostic Err;
+        llvm::MemoryBufferRef buffer(native_loop_ir, "loop-buffer");
+        std::unique_ptr<llvm::Module> Result = llvm::parseIR(buffer, Err, Context);
+        if (!Result)
+            Err.print("loop-ir", llvm::errs());
+        Result->materializeMetadata();
+        return Result;
+    }
 
+    void NativeBackend::applyPasses(llvm::Module* M) {}
+
+    llvm::legacy::PassManager& NativeBackend::getPassManager() { return _PM; }
   }
 }

@@ -20,7 +20,11 @@ namespace pacxx
 
       llvm::legacy::PassManager& getPassManager();
 
-      void linkInModule(llvm::Module* M);
+      std::unique_ptr<llvm::Module> linkInModule(llvm::Module* M);
+
+    private:
+      std::unique_ptr<llvm::Module> createModule(llvm::LLVMContext &Context);
+      void applyPasses(llvm::Module* M);
 
     private:
       llvm::legacy::PassManager _PM;

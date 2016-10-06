@@ -59,7 +59,7 @@ namespace pacxx
 
     void NativeRuntime::synchronize() { throw common::generic_exception("not implemented"); };
 
-    llvm::legacy::PassManager& NativeRuntime::getPassManager() { throw common::generic_exception("not implemented"); };
+    llvm::legacy::PassManager& NativeRuntime::getPassManager() { return _compiler->getPassManager(); };
 
   }
 }

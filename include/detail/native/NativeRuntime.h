@@ -53,7 +53,6 @@ namespace pacxx
 
       virtual llvm::legacy::PassManager& getPassManager() override;
 
-
     private:
       std::unique_ptr<CompilerT> _compiler;
       llvm::ExecutionEngine* _JITEngine;
