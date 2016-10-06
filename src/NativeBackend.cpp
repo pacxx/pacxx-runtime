@@ -116,7 +116,7 @@ namespace pacxx
         return std::move(_composite);
     }
 
-    std::unique_ptr<llvm::Module> createModule(llvm::LLVMContext &Context) {
+    std::unique_ptr<llvm::Module> NativeBackend::createModule(llvm::LLVMContext &Context) {
         llvm::SMDiagnostic Err;
         llvm::MemoryBufferRef buffer(native_loop_ir, "loop-buffer");
         std::unique_ptr<llvm::Module> Result = llvm::parseIR(buffer, Err, Context);
