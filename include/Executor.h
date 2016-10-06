@@ -311,10 +311,10 @@ namespace pacxx {
       Create().setModule(std::move(M));
     }
 
-    using RuntimeT = CUDARuntime;
+    //using RuntimeT = CUDARuntime;
 
-    template<typename T = RuntimeT>
-    auto& get_executor() { return Executor<RuntimeT>::Create(); }
+    template<typename T = CUDARuntime>
+    auto& get_executor() { return Executor<T>::Create(); }
 
   }
 }
