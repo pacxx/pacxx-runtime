@@ -9,6 +9,7 @@
 #include <llvm/Transforms/PACXXTransforms.h>
 #include <detail/common/Exceptions.h>
 #include <llvm/Analysis/TargetLibraryInfo.h>
+#include <llvm/ExecutionEngine/SectionMemoryManager.h>
 
 namespace {
   const std::string native_loop_ir(R"(
@@ -113,10 +114,34 @@ namespace pacxx
     NativeBackend::~NativeBackend() {}
 
     void NativeBackend::compile(llvm::Module &M) {
+
+        std::string error;
+
         linkInModule(M);
-        _composite->dump();
-        applyPasses(*_composite);
-        //TODO jit compile
+        llvm::Module *TheModule = _composite.get();
+
+        EngineBuilder builder{std::move(_composite)};
+
+        builder.setErrorStr(&error);
+
+        builder.setEngineKind(EngineKind::JIT);
+
+        builder.setMCJITMemoryManager(
+                std::unique_ptr<RTDyldMemoryManager>(
+                        static_cast<RTDyldMemoryManager*>(new SectionMemoryManager())));
+
+      _JITEngine = builder.create();
+      if (!_JITEngine) {
+        throw new common::generic_exception(error);
+      }
+
+      TheModule->setDataLayout(_JITEngine->getDataLayout());
+
+      applyPasses(*TheModule);
+
+      _JITEngine->finalizeObject();
+
+      TheModule->dump();
     }
 
     void NativeBackend::linkInModule(llvm::Module& M) {
@@ -140,13 +165,10 @@ namespace pacxx
 
         string Error;
 
-        /*
         if(!_target)
            _target = TargetRegistry::lookupTarget(M.getTargetTriple(), Error);
         if(!_target)
             throw common::generic_exception(Error);
-            */
-
 
         if(!_pmInitialized) {
 
