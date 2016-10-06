@@ -35,7 +35,8 @@ namespace pacxx
 
       _JITEngine = builder.create();
       if (!_JITEngine) {
-        throw new common::generic_exception(error);
+        throw new common::generic_exception("failed to create JITEngine");
+        //throw new common::generic_exception(error);
       }
       _JITEngine->finalizeObject();
 
