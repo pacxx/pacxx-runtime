@@ -49,17 +49,17 @@ namespace pacxx
 
     void NativeRuntime::deleteRawMemory(RawDeviceBuffer* ptr) { throw common::generic_exception("not implemented"); }
 
-    void initializeMSP(std::unique_ptr <llvm::Module> M) { throw common::generic_exception("not implemented"); }
+    void NativeRuntime::initializeMSP(std::unique_ptr <llvm::Module> M) { throw common::generic_exception("not implemented"); }
 
-    void evaluateStagedFunctions(Kernel& K) { throw common::generic_exception("not implemented"); }
+    void NativeRuntime::evaluateStagedFunctions(Kernel& K) { throw common::generic_exception("not implemented"); }
 
-    void requestIRTransformation(Kernel& K) { throw common::generic_exception("not implemented"); };
+    void NativeRuntime::requestIRTransformation(Kernel& K) { throw common::generic_exception("not implemented"); };
 
-    const llvm::Module& getModule() { throw common::generic_exception("not implemented"); }
+    const llvm::Module& NativeRuntime::getModule() { throw common::generic_exception("not implemented"); }
 
-    void synchronize() { throw common::generic_exception("not implemented"); };
+    void NativeRuntime::synchronize() { throw common::generic_exception("not implemented"); };
 
-    llvm::legacy::PassManager& getPassManager() { throw common::generic_exception("not implemented"); };
+    llvm::legacy::PassManager& NativeRuntime::getPassManager() { throw common::generic_exception("not implemented"); };
 
   }
 }
