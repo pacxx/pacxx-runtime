@@ -13,12 +13,14 @@
 #include <algorithm>
 #include <detail/DeviceBuffer.h>
 #include <detail/cuda/CUDARuntime.h>
+#include <detail/native/NativeRuntime.h>
 #include <detail/common/Exceptions.h>
 #include <detail/IRRuntime.h>
 #include <CodePolicy.h>
 #include <detail/CoreInitializer.h>
 #include <detail/common/Log.h>
 #include <detail/cuda/PTXBackend.h>
+#include <detail/native/NativeBackend.h>
 #include <detail/MemoryManager.h>
 #include <detail/KernelConfiguration.h>
 #include <detail/KernelArgument.h>
