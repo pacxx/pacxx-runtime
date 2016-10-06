@@ -165,7 +165,7 @@ namespace pacxx {
     struct kernel_caller : public kernel_caller<_C, decltype(&T::operator())> {
     };
 
-    template<size_t _C, typename FType, typename RType, typename... ArgTys>
+    template<typename RuntimeT, size_t _C, typename FType, typename RType, typename... ArgTys>
     struct kernel_caller<_C, RType (FType::*)(ArgTys...) const> {
       enum {
         arity = sizeof...(ArgTys)
