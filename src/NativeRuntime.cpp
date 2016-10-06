@@ -45,8 +45,21 @@ namespace pacxx
 
     size_t NativeRuntime::getPreferedMemoryAlignment(){ throw common::generic_exception("not implemented");  }
 
-
     RawDeviceBuffer* NativeRuntime::allocateRawMemory(size_t bytes) { throw common::generic_exception("not implemented");  }
+
     void NativeRuntime::deleteRawMemory(RawDeviceBuffer* ptr) { throw common::generic_exception("not implemented"); }
+
+    virtual void initializeMSP(std::unique_ptr <llvm::Module> M) { throw common::generic_exception("not implemented"); }
+
+      virtual void evaluateStagedFunctions(Kernel& K) { throw common::generic_exception("not implemented"); }
+
+      virtual void requestIRTransformation(Kernel& K) { throw common::generic_exception("not implemented"); };
+
+      virtual const llvm::Module& getModule() { throw common::generic_exception("not implemented"); }
+
+      virtual void synchronize() { throw common::generic_exception("not implemented"); };
+
+      virtual llvm::legacy::PassManager& getPassManager() { throw common::generic_exception("not implemented"); };
+
   }
 }

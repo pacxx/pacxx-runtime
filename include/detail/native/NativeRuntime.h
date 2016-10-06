@@ -27,6 +27,7 @@ namespace pacxx
       virtual ~NativeRuntime();
 
       virtual void link(std::unique_ptr<llvm::Module> M) override;
+
       virtual Kernel& getKernel(const std::string& name) override;
 
       virtual size_t getPreferedMemoryAlignment() override;
@@ -37,7 +38,21 @@ namespace pacxx
       }
 
       virtual RawDeviceBuffer* allocateRawMemory(size_t bytes) override;
+
       virtual void deleteRawMemory(RawDeviceBuffer* ptr) override;
+
+      virtual void initializeMSP(std::unique_ptr <llvm::Module> M) override;
+
+      virtual void evaluateStagedFunctions(Kernel& K) override;
+
+      virtual void requestIRTransformation(Kernel& K) override;
+
+      virtual const llvm::Module& getModule() override;
+
+      virtual void synchronize() override;
+
+      virtual llvm::legacy::PassManager& getPassManager() override;
+
 
     private:
       std::unique_ptr<CompilerT> _compiler;
