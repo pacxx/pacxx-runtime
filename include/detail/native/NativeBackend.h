@@ -7,6 +7,7 @@
 
 #include <llvm/Linker/Linker.h>
 #include <llvm/IR/LegacyPassManager.h>
+#include <llvm/Support/TargetRegistry.h>
 
 namespace pacxx
 {
@@ -30,6 +31,7 @@ namespace pacxx
 
     private:
       llvm::legacy::PassManager _PM;
+      const llvm::Target *_target;
       std::unique_ptr<llvm::Module> _composite;
       llvm::Linker _linker;
       bool _pmInitialized;

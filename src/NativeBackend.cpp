@@ -7,6 +7,8 @@
 #include <llvm/Support/SourceMgr.h>
 #include <llvm/IRReader/IRReader.h>
 #include <llvm/Transforms/PACXXTransforms.h>
+#include <detail/common/Exceptions.h>
+#include <llvm/Analysis/TargetLibraryInfo.h>
 
 namespace {
   const std::string native_loop_ir(R"(
@@ -121,6 +123,7 @@ namespace pacxx
         std::unique_ptr<llvm::Module> functionModule = NativeBackend::createModule(_linker.getModule()->getContext());
         _linker.linkInModule(functionModule.get(), llvm::Linker::Flags::None, nullptr);
         _linker.linkInModule(&M, llvm::Linker::Flags::None, nullptr);
+        _composite->setTargetTriple(sys::getProcessTriple());
     }
 
     std::unique_ptr<llvm::Module> NativeBackend::createModule(llvm::LLVMContext& Context) {
@@ -134,8 +137,19 @@ namespace pacxx
     }
 
     void NativeBackend::applyPasses(llvm::Module& M) {
+
+        string Error;
+
+        if(!_target)
+           _target = TargetRegistry::lookupTarget(M.getTargetTriple(), Error);
+        if(!_target)
+            throw common::generic_exception(Error);
+
+
         if(!_pmInitialized) {
-            _PM.add(createPACXXReflectionPass());
+            llvm::TargetLibraryInfoImpl TLII(Triple(M.getTargetTriple()));
+            _PM.add(new TargetLibraryInfoWrapperPass(TLII));
+
             _PM.add(createPACXXNativeLinker());
             _pmInitialized = true;
         }
