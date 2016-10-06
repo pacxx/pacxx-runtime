@@ -147,9 +147,9 @@ namespace pacxx
 
       _JITEngine->finalizeObject();
 
-      OS.raw_fd_ostream("moduleAfterPass", EC, llvm::sys::fs::F_None);
-      llvm::WriteBitcodeToFile(TheModule, OS);
-      OS.flush();
+      llvm::raw_fd_ostream OS1("moduleAfterPass", EC, llvm::sys::fs::F_None);
+      llvm::WriteBitcodeToFile(TheModule, OS1);
+      OS1.flush();
     }
 
     void NativeBackend::linkInModule(llvm::Module& M) {
