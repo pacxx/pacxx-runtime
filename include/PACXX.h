@@ -165,8 +165,8 @@ namespace pacxx {
     struct kernel_caller : public kernel_caller<_C, decltype(&T::operator())> {
     };
 
-    template<typename RuntimeT, size_t _C, typename FType, typename RType, typename... ArgTys>
-    struct kernel_caller<_C, RType (FType::*)(ArgTys...) const> {
+    template<typename _RuntimeT, size_t _C, typename FType, typename RType, typename... ArgTys>
+    struct kernel_caller<_RuntimeT, _C, RType (FType::*)(ArgTys...) const> {
       enum {
         arity = sizeof...(ArgTys)
       };
@@ -189,7 +189,7 @@ namespace pacxx {
         [[kernel_call(config.blocks.getDim3(), config.threads.getDim3(), 0, 0)]] genericKernel<_C, L, ArgTys...>(
             address_space_cast<const L &, 1>(F), address_space_cast<ArgTys, 1>(args)...);
 #else
-        auto& executor = Executor<RuntimeT>::Create();
+        auto& executor = Executor<_RuntimeT>::Create();
         executor.run(typeid(L).name(), config, nullptr, std::forward<Ts>(args)...);
 #endif
       }
