@@ -114,8 +114,8 @@ namespace pacxx
 
     void NativeBackend::compile(llvm::Module &M) {
         linkInModule(M);
-        applyPasses(*_composite);
         _composite->dump();
+        applyPasses(*_composite);
         //TODO jit compile
     }
 
