@@ -147,8 +147,6 @@ namespace pacxx
 
 
         if(!_pmInitialized) {
-            llvm::TargetLibraryInfoImpl TLII(Triple(M.getTargetTriple()));
-            _PM.add(new TargetLibraryInfoWrapperPass(TLII));
 
             _PM.add(createPACXXNativeLinker());
             _pmInitialized = true;
