@@ -113,6 +113,7 @@ namespace pacxx
         _linker.linkInModule(functionModule.get(), llvm::Linker::Flags::None, nullptr);
         _linker.linkInModule(M, llvm::Linker::Flags::None, nullptr);
         //applyPasses(_linker.getModule());
+        _composite->dump();
         return std::move(_composite);
     }
 
