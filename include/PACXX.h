@@ -282,7 +282,7 @@ namespace pacxx {
     };
 
 
-    template<IRRuntime RuntimeT, typename Func, size_t versioning = __COUNTER__>
+    template<IRRuntimeBase RuntimeT, typename Func, size_t versioning = __COUNTER__>
     auto kernel(const Func& lambda, KernelConfiguration config) {
       return _kernel<decltype(lambda), decltype(RuntimeT), versioning>(lambda, config);
     };
