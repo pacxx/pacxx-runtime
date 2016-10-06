@@ -6,6 +6,7 @@
 #include <llvm/IR/LLVMContext.h>
 #include <llvm/Support/SourceMgr.h>
 #include <llvm/IRReader/IRReader.h>
+#include <llvm/Transforms/PACXXTransforms.h>
 
 namespace {
   const std::string native_loop_ir(R"(
@@ -104,20 +105,25 @@ namespace pacxx
   namespace v2
   {
     NativeBackend::NativeBackend() : _composite(std::make_unique<llvm::Module>("pacxx-link", llvm::getGlobalContext())),
-                                     _linker(_composite.get()) { }
+                                     _linker(_composite.get()),
+                                     _pmInitialized(false){ }
 
-    NativeBackend::~NativeBackend() { }
+    NativeBackend::~NativeBackend() {}
 
-    std::unique_ptr<llvm::Module> NativeBackend::linkInModule(llvm::Module* M) {
-        std::unique_ptr<llvm::Module> functionModule = createModule(_linker.getModule()->getContext());
-        _linker.linkInModule(functionModule.get(), llvm::Linker::Flags::None, nullptr);
-        _linker.linkInModule(M, llvm::Linker::Flags::None, nullptr);
-        //applyPasses(_linker.getModule());
-        //_composite->dump();
-        return std::move(_composite);
+    void NativeBackend::compile(llvm::Module &M) {
+        linkInModule(M);
+        applyPasses(*_composite);
+        _composite->dump();
+        //TODO jit compile
     }
 
-    std::unique_ptr<llvm::Module> NativeBackend::createModule(llvm::LLVMContext &Context) {
+    void NativeBackend::linkInModule(llvm::Module& M) {
+        std::unique_ptr<llvm::Module> functionModule = NativeBackend::createModule(_linker.getModule()->getContext());
+        _linker.linkInModule(functionModule.get(), llvm::Linker::Flags::None, nullptr);
+        _linker.linkInModule(&M, llvm::Linker::Flags::None, nullptr);
+    }
+
+    std::unique_ptr<llvm::Module> NativeBackend::createModule(llvm::LLVMContext& Context) {
         llvm::SMDiagnostic Err;
         llvm::MemoryBufferRef buffer(native_loop_ir, "loop-buffer");
         std::unique_ptr<llvm::Module> Result = llvm::parseIR(buffer, Err, Context);
@@ -127,7 +133,14 @@ namespace pacxx
         return Result;
     }
 
-    void NativeBackend::applyPasses(llvm::Module* M) {}
+    void NativeBackend::applyPasses(llvm::Module& M) {
+        if(!_pmInitialized) {
+            _PM.add(createPACXXReflectionPass());
+            _PM.add(createPACXXNativeLinker());
+            _pmInitialized = true;
+        }
+        _PM.run(M);
+    }
 
     llvm::legacy::PassManager& NativeBackend::getPassManager() { return _PM; }
   }

@@ -21,8 +21,11 @@ namespace pacxx
     void NativeRuntime::link(std::unique_ptr<llvm::Module> M) {
       std::string error;
 
-      std::unique_ptr<llvm::Module> composite = _compiler->linkInModule(M.get());
+      _M = std::move(M);
 
+      _compiler->compile(*_M);
+
+        /*
       EngineBuilder builder{std::move(composite)};
 
       builder.setErrorStr(&error);
@@ -38,7 +41,7 @@ namespace pacxx
         throw new common::generic_exception(error);
       }
       _JITEngine->finalizeObject();
-
+         */
     }
 
     Kernel& NativeRuntime::getKernel(const std::string& name){ throw common::generic_exception("not implemented"); }
