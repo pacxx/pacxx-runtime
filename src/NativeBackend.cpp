@@ -10,6 +10,7 @@
 #include <detail/common/Exceptions.h>
 #include <llvm/Analysis/TargetLibraryInfo.h>
 #include <llvm/ExecutionEngine/SectionMemoryManager.h>
+#include <llvm/Bitcode/ReaderWriter.h>
 
 namespace {
   const std::string native_loop_ir(R"(
@@ -116,6 +117,7 @@ namespace pacxx
     void NativeBackend::compile(llvm::Module &M) {
 
         std::string error;
+        std::error_code EC;
 
         linkInModule(M);
         llvm::Module *TheModule = _composite.get();
@@ -137,11 +139,17 @@ namespace pacxx
 
       TheModule->setDataLayout(_JITEngine->getDataLayout());
 
+      llvm::raw_fd_ostream OS("moduleBeforePass", EC, llvm::sys::fs::F_None);
+      llvm::WriteBitcodeToFile(TheModule, OS);
+      OS.flush();
+
       applyPasses(*TheModule);
 
       _JITEngine->finalizeObject();
 
-      TheModule->dump();
+      OS.raw_fd_ostream("moduleAfterPass", EC, llvm::sys::fs::F_None);
+      llvm::WriteBitcodeToFile(TheModule, OS);
+      OS.flush();
     }
 
     void NativeBackend::linkInModule(llvm::Module& M) {
