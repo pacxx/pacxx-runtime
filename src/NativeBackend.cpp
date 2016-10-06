@@ -113,7 +113,7 @@ namespace pacxx
         _linker.linkInModule(functionModule.get(), llvm::Linker::Flags::None, nullptr);
         _linker.linkInModule(M, llvm::Linker::Flags::None, nullptr);
         //applyPasses(_linker.getModule());
-        return _linker.getModule();
+        return _composite;
     }
 
     std::unique_ptr<llvm::Module> createModule(llvm::LLVMContext &Context) {
