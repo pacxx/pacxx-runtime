@@ -5,8 +5,10 @@
 #ifndef PACXX_V2_NATIVEKERNEL_H
 #define PACXX_V2_NATIVEKERNEL_H
 
-#include <detail/Kernel.h>
 #include <map>
+#include <string>
+#include "detail/Kernel.h"
+#include "detail/KernelConfiguration.h"
 #include <functional>
 
 namespace pacxx {
