@@ -52,7 +52,7 @@ namespace pacxx {
                 _config.blocks.y, ",", _config.blocks.z, ")\nthreads(",
                 _config.threads.x, ",", _config.threads.y, ",", _config.threads.z,
                 ")\nshared_mem=", _config.sm_size);
-          auto functor = reinterpret_cast<void *(*)(size_t, size_t, size_t, size_t, size_t, size_t, std::vector *, std::vector *, std::vector *)> (_fptr);
+          auto functor = reinterpret_cast<void *(*)(size_t, size_t, size_t, size_t, size_t, size_t, std::vector<void*> *, std::vector<void*> *, std::vector<void*> *)> (_fptr);
           //TODO test for 1 block
           functor(0, 0, 0, _config.threads.x, _config.threads.y, _config.threads.z, NULL, nullptr, &_launch_args);
       }
