@@ -3,7 +3,6 @@
 //
 #include <llvm/ExecutionEngine/ExecutionEngine.h>
 #include <llvm/ExecutionEngine/SectionMemoryManager.h>
-#include <detail/native/NativeDeviceBuffer.h>
 #include "detail/native/NativeRuntime.h"
 #include "detail/common/Exceptions.h"
 

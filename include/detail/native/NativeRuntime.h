@@ -15,6 +15,8 @@
 #include "../IRRuntime.h"
 #include "NativeBackend.h"
 #include "NativeKernel.h"
+#include "NativeDeviceBuffer.h"
+
 
 namespace pacxx
 {
