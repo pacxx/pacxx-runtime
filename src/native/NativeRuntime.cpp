@@ -59,7 +59,7 @@ namespace pacxx
 
     void NativeRuntime::requestIRTransformation(Kernel& K) { throw common::generic_exception("not implemented"); };
 
-    const llvm::Module& NativeRuntime::getModule() { throw common::generic_exception("not implemented"); }
+    const llvm::Module& NativeRuntime::getModule() { return *_CPUMod; }
 
     void NativeRuntime::synchronize() { throw common::generic_exception("not implemented"); };
 
