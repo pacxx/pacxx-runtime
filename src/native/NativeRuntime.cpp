@@ -44,7 +44,7 @@ namespace pacxx
       }
     }
 
-    size_t NativeRuntime::getPreferedMemoryAlignment(){ throw common::generic_exception("not implemented");  }
+    size_t NativeRuntime::getPreferedMemoryAlignment(){ return _CPUMod->getDataLayout().getPointerABIAlignment(); }
 
     RawDeviceBuffer* NativeRuntime::allocateRawMemory(size_t bytes) { throw common::generic_exception("not implemented");  }
 
@@ -55,9 +55,14 @@ namespace pacxx
       _msp_engine.initialize(std::move(M));
     }
 
-    void NativeRuntime::evaluateStagedFunctions(Kernel& K) { throw common::generic_exception("not implemented"); }
+    void NativeRuntime::evaluateStagedFunctions(Kernel& K) {
+      if (K.requireStaging()) {
+        if (_msp_engine.isDisabled()) return;
+        _msp_engine.evaluate(*_CPUMod->getFunction(K.getName()), K);
+      }
+    }
 
-    void NativeRuntime::requestIRTransformation(Kernel& K) { throw common::generic_exception("not implemented"); };
+    void NativeRuntime::requestIRTransformation(Kernel& K) { throw common::generic_exception("not implemented"); }
 
     const llvm::Module& NativeRuntime::getModule() { return *_CPUMod; }
 
