@@ -60,6 +60,7 @@ namespace pacxx
       std::unique_ptr<llvm::Module> _M;
       std::unique_ptr<CompilerT> _compiler;
       std::map<std::string, std::unique_ptr<NativeKernel>> _kernels;
+      std::list <std::unique_ptr<DeviceBufferBase>> _memory;
       v2::MSPEngine _msp_engine;
     };
   }

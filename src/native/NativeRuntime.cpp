@@ -2,8 +2,8 @@
 // Created by mhaidl on 14/06/16.
 //
 #include <llvm/ExecutionEngine/ExecutionEngine.h>
-#include <llvm/ExecutionEngine/MCJIT.h>
 #include <llvm/ExecutionEngine/SectionMemoryManager.h>
+#include <detail/native/NativeDeviceBuffer.h>
 #include "detail/native/NativeRuntime.h"
 #include "detail/common/Exceptions.h"
 
@@ -46,9 +46,24 @@ namespace pacxx
 
     size_t NativeRuntime::getPreferedMemoryAlignment(){ return _CPUMod->getDataLayout().getPointerABIAlignment(); }
 
-    RawDeviceBuffer* NativeRuntime::allocateRawMemory(size_t bytes) { throw common::generic_exception("not implemented");  }
+    RawDeviceBuffer* NativeRuntime::allocateRawMemory(size_t bytes) {
+      NativeRawDeviceBuffer rawBuffer;
+      rawBuffer.allocate(bytes);
+      auto wrapped = new NativeDeviceBuffer<char>(std::move(rawBuffer));
+      _memory.push_back(std::unique_ptr<DeviceBufferBase>(
+              static_cast<DeviceBufferBase *>(wrapped)));
+      return wrapped->getRawBuffer();
+    }
 
-    void NativeRuntime::deleteRawMemory(RawDeviceBuffer* ptr) { throw common::generic_exception("not implemented"); }
+    void NativeRuntime::deleteRawMemory(RawDeviceBuffer* ptr) {
+      auto It = std::find_if(_memory.begin(), _memory.end(), [&](const auto &uptr) {
+          return static_cast<NativeDeviceBuffer<char> *>(uptr.get())->getRawBuffer() == ptr;
+      });
+      if(It != _memory.end())
+        _memory.erase(It);
+      else
+          __error("ptr to delete not found");
+    }
 
     void NativeRuntime::initializeMSP(std::unique_ptr <llvm::Module> M) {
       if (!_msp_engine.isDisabled()) return;
