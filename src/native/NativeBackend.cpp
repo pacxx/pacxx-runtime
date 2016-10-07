@@ -114,7 +114,7 @@ namespace pacxx
 
     NativeBackend::~NativeBackend() {}
 
-    void NativeBackend::compile(llvm::Module &M) {
+    llvm::Module* NativeBackend::compile(llvm::Module &M) {
 
         std::string error;
         std::error_code EC;
@@ -139,29 +139,38 @@ namespace pacxx
 
       TheModule->setDataLayout(_JITEngine->getDataLayout());
 
+      // TODO remove
       llvm::raw_fd_ostream OS("moduleBeforePass", EC, llvm::sys::fs::F_None);
       TheModule->print(OS, nullptr);
 
       applyPasses(*TheModule);
 
+      //TODO remove
       llvm::raw_fd_ostream OS1("moduleAfterPass", EC, llvm::sys::fs::F_None);
       TheModule->print(OS1, nullptr);
 
       _JITEngine->finalizeObject();
 
+      return TheModule;
+    }
 
+    void* NativeBackend::getFunctionPtr(llvm::Module* module, const std::string name) {
+        if(!_JITEngine)
+            throw new common::generic_exception("getFunctionPtr called before compile");
+        llvm::Function* kernel = module->getFunction(name);
+        return _JITEngine->getPointerToFunction(kernel);
     }
 
     void NativeBackend::linkInModule(llvm::Module& M) {
-        std::unique_ptr<llvm::Module> functionModule = NativeBackend::createModule(_linker.getModule()->getContext());
+        std::unique_ptr<llvm::Module> functionModule = NativeBackend::createModule(_composite->getContext(), native_loop_ir);
         _linker.linkInModule(functionModule.get(), llvm::Linker::Flags::None, nullptr);
         _linker.linkInModule(&M, llvm::Linker::Flags::None, nullptr);
         _composite->setTargetTriple(sys::getProcessTriple());
     }
 
-    std::unique_ptr<llvm::Module> NativeBackend::createModule(llvm::LLVMContext& Context) {
+    std::unique_ptr<llvm::Module> NativeBackend::createModule(llvm::LLVMContext& Context, const std::string IR) {
         llvm::SMDiagnostic Err;
-        llvm::MemoryBufferRef buffer(native_loop_ir, "loop-buffer");
+        llvm::MemoryBufferRef buffer(IR, "loop-buffer");
         std::unique_ptr<llvm::Module> Result = llvm::parseIR(buffer, Err, Context);
         if (!Result)
             Err.print("createModule", llvm::errs());

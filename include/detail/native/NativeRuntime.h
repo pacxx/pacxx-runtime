@@ -12,6 +12,7 @@
 #include <llvm/ExecutionEngine/ExecutionEngine.h>
 #include "../IRRuntime.h"
 #include "NativeBackend.h"
+#include "NativeKernel.h"
 
 namespace pacxx
 {
@@ -54,9 +55,10 @@ namespace pacxx
       virtual llvm::legacy::PassManager& getPassManager() override;
 
     private:
+      llvm::Module* _CPUMod;
       std::unique_ptr<llvm::Module> _M;
       std::unique_ptr<CompilerT> _compiler;
-      //llvm::ExecutionEngine* _JITEngine;
+      std::map<std::string, std::unique_ptr<NativeKernel>> _kernels;
     };
   }
 }

@@ -19,32 +19,30 @@ namespace pacxx
     NativeRuntime::~NativeRuntime() {}
 
     void NativeRuntime::link(std::unique_ptr<llvm::Module> M) {
-      std::string error;
 
       _M = std::move(M);
 
-      _compiler->compile(*_M);
+      _CPUMod = _compiler->compile(*_M);
 
-        /*
-      EngineBuilder builder{std::move(composite)};
-
-      builder.setErrorStr(&error);
-
-      builder.setEngineKind(EngineKind::JIT);
-
-      builder.setMCJITMemoryManager(
-          std::unique_ptr<RTDyldMemoryManager>(
-              static_cast<RTDyldMemoryManager*>(new SectionMemoryManager())));
-
-      _JITEngine = builder.create();
-      if (!_JITEngine) {
-        throw new common::generic_exception(error);
-      }
-      _JITEngine->finalizeObject();
-         */
     }
 
-    Kernel& NativeRuntime::getKernel(const std::string& name){ throw common::generic_exception("not implemented"); }
+    Kernel& NativeRuntime::getKernel(const std::string& name){
+      auto It = std::find_if(_kernels.begin(), _kernels.end(),
+                             [&](const auto &p) { return name == p.first; });
+      if (It == _kernels.end()) {
+        void* fptr = nullptr;
+        fptr = _compiler->getFunctionPtr(_CPUMod, name);
+        if (!fptr)
+          throw common::generic_exception("Kernel function not found in module!");
+        auto kernel = new NativeKernel(*this, fptr);
+        kernel->setName(name);
+        _kernels[name].reset(kernel);
+
+        return *kernel;
+      } else {
+        return *It->second;
+      }
+    }
 
     size_t NativeRuntime::getPreferedMemoryAlignment(){ throw common::generic_exception("not implemented");  }
 

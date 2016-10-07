@@ -22,9 +22,11 @@ namespace pacxx
 
       llvm::legacy::PassManager& getPassManager();
 
-      void compile(llvm::Module& M);
+      llvm::Module* compile(llvm::Module& M);
 
-      static std::unique_ptr<llvm::Module> createModule(llvm::LLVMContext &Context);
+      void* getFunctionPtr(llvm::Module* module, const std::string name);
+
+      static std::unique_ptr<llvm::Module> createModule(llvm::LLVMContext &Context, const std::string IR);
 
     private:
       void linkInModule(llvm::Module& M);
