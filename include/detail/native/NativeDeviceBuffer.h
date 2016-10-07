@@ -112,7 +112,7 @@ namespace pacxx {
       NativeRawDeviceBuffer _buffer;
 
 
-        };
+    };
     } // v2 namespace
 } // pacxx namespace
 

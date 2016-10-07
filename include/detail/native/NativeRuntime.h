@@ -11,6 +11,7 @@
 #include <list>
 #include <llvm/ExecutionEngine/ExecutionEngine.h>
 #include <detail/msp/MSPEngine.h>
+#include <detail/common/Exceptions.h>
 #include "../IRRuntime.h"
 #include "NativeBackend.h"
 #include "NativeKernel.h"
@@ -34,9 +35,36 @@ namespace pacxx
 
       virtual size_t getPreferedMemoryAlignment() override;
 
-      template <typename T>
+      template<typename T>
       DeviceBuffer<T>* allocateMemory(size_t count) {
-        return nullptr;
+        NativeRawDeviceBuffer rawBuffer;
+        rawBuffer.allocate(count * sizeof(T));
+        auto wrapped = new NativeDeviceBuffer<T>(std::move(rawBuffer));
+        _memory.push_back(std::unique_ptr<DeviceBufferBase>(
+            static_cast<DeviceBufferBase*>(wrapped)));
+        return wrapped;
+      }
+
+      template<typename T>
+      DeviceBuffer<T>* translateMemory(T* ptr) {
+        auto It = std::find_if(_memory.begin(), _memory.end(), [&](const auto& element) {
+          return reinterpret_cast<NativeDeviceBuffer<T>*>(element.get())->get() == ptr;
+        });
+
+        if (It != _memory.end())
+          return reinterpret_cast<DeviceBuffer<T>*>(It->get());
+        else
+          throw common::generic_exception("supplied pointer not found in translation list");
+      }
+
+      template<typename T>
+      void deleteMemory(DeviceBuffer<T>* ptr) {
+        auto It = std::find_if(_memory.begin(), _memory.end(), [&](const auto& element) {
+          return element.get() == ptr;
+        });
+
+        if (It != _memory.end())
+          _memory.erase(It);
       }
 
       virtual RawDeviceBuffer* allocateRawMemory(size_t bytes) override;
