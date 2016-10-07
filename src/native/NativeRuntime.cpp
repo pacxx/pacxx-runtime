@@ -50,7 +50,10 @@ namespace pacxx
 
     void NativeRuntime::deleteRawMemory(RawDeviceBuffer* ptr) { throw common::generic_exception("not implemented"); }
 
-    void NativeRuntime::initializeMSP(std::unique_ptr <llvm::Module> M) { throw common::generic_exception("not implemented"); }
+    void NativeRuntime::initializeMSP(std::unique_ptr <llvm::Module> M) {
+      if (!_msp_engine.isDisabled()) return;
+      _msp_engine.initialize(std::move(M));
+    }
 
     void NativeRuntime::evaluateStagedFunctions(Kernel& K) { throw common::generic_exception("not implemented"); }
 
