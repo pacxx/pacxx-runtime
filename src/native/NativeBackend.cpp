@@ -154,12 +154,6 @@ namespace pacxx
       return TheModule;
     }
 
-
-    FunctionType* NativeBackend::getFunctionType(llvm::Module *module, const std::string name) {
-        llvm::Function* kernel = getKernelFunction(module, name);
-        return kernel->getFunctionType();
-    }
-
     void* NativeBackend::getFunctionPtr(Module* module, const std::string name) {
         llvm::Function* kernel = getKernelFunction(module, name);
         return _JITEngine->getPointerToFunction(kernel);

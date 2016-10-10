@@ -10,9 +10,8 @@
 namespace pacxx {
   namespace v2 {
 
-    NativeKernel::NativeKernel(NativeRuntime &runtime, llvm::FunctionType* type, void *fptr) :
+    NativeKernel::NativeKernel(NativeRuntime &runtime, void *fptr) :
         _runtime(runtime),
-        _type(type),
         _fptr(fptr),
         _staged_values_changed(false),
         _disable_staging(false) {}

@@ -24,8 +24,6 @@ namespace pacxx
 
       llvm::Module* compile(llvm::Module& M);
 
-      llvm::FunctionType* getFunctionType(llvm::Module* module, const std::string name);
-
       void* getFunctionPtr(llvm::Module* module, const std::string name);
 
       static std::unique_ptr<llvm::Module> createModule(llvm::LLVMContext &Context, const std::string IR);
