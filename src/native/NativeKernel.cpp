@@ -49,8 +49,6 @@ namespace pacxx {
           __verbose("Launching kernel: \nblocks(", _config.blocks.x, ",",
                 _config.blocks.y, ",", _config.blocks.z, ")\nthreads(",
                 _config.threads.x, ",", _config.threads.y, ",", _config.threads.z,")");
-          __verbose(_type->getNumParams());
-          _type->dump();
           auto functor = reinterpret_cast<void *(*)(size_t, size_t, size_t, size_t, size_t, size_t, int**, int** , int** , int**)> (_fptr);
 
           functor(0, 0, 0, _config.threads.x, _config.threads.y, _config.threads.z, &_launch_args[0],
