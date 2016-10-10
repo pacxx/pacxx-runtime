@@ -54,7 +54,6 @@ namespace pacxx {
             std::vector<char> _args;
             std::vector<char> _host_args;
             size_t _args_size;
-            std::vector<void*> _launch_args;
             void* _fptr;
             std::map<int, long long> _staged_values;
             bool _staged_values_changed;

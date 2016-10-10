@@ -21,7 +21,6 @@ namespace pacxx {
     void NativeKernel::configurate(KernelConfiguration config) {
       if (_config != config) {
         _config = config;
-        //TODO how to handle shared memory if defined by user
       }
     }
 
@@ -30,9 +29,6 @@ namespace pacxx {
       void NativeKernel::setArguments(const std::vector<char> &arg_buffer) {
           _args = arg_buffer;
           _args_size = _args.size();
-          _launch_args.clear();
-          _launch_args.push_back(reinterpret_cast<void *>(_args.data()));
-          _launch_args.push_back(reinterpret_cast<void *>(&_args_size));
       }
 
       const std::vector<char>& NativeKernel::getArguments() const { return _args; }
@@ -58,7 +54,7 @@ namespace pacxx {
           //TODO test for 1 block
           _runtime.runFunctionOnThread<void *(*)(size_t, size_t, size_t, size_t, size_t, size_t, void** , void** , void**)>
                   (functor, 0, 0, 0, _config.threads.x, _config.threads.y, _config.threads.z,
-                                       &_launch_args[0], &_launch_args[1], &_launch_args[2]);
+                                       &_args[0], &_args[1], &_args[2]);
       }
 
       void NativeKernel::setStagedValue(int ref, long long value, bool inScope) { throw new common::generic_exception("not supported"); }
