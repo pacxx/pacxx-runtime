@@ -45,7 +45,7 @@ namespace pacxx {
         std::memcpy(_buffer + offset, src, bytes);
     }
 
-    void CUDARawDeviceBuffer::download(void* dest, size_t bytes, size_t offset) {
+    void NativeRawDeviceBuffer::download(void* dest, size_t bytes, size_t offset) {
         std::memcpy(dest, _buffer + offset, bytes);
     }
 
