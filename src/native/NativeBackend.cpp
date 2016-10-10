@@ -154,12 +154,22 @@ namespace pacxx
       return TheModule;
     }
 
-    void* NativeBackend::getFunctionPtr(llvm::Module* module, const std::string name) {
+
+    FunctionType* NativeBackend::getFunctionType(llvm::Module *module, const std::string name) {
+        llvm::Function* kernel = getKernelFunction(module, name);
+        return kernel->getFunctionType();
+    }
+
+    void* NativeBackend::getFunctionPtr(Module* module, const std::string name) {
+        llvm::Function* kernel = getKernelFunction(module, name);
+        return _JITEngine->getPointerToFunction(kernel);
+    }
+
+    Function* NativeBackend::getKernelFunction(Module* module, const std::string name) {
         if(!_JITEngine)
             throw new common::generic_exception("getFunctionPtr called before compile");
         //get the kernel wrapper function from the module
-        llvm::Function* kernel = module->getFunction("__wrapped__"+name);
-        return _JITEngine->getPointerToFunction(kernel);
+        return module->getFunction("__wrapped__"+name);
     }
 
     void NativeBackend::linkInModule(llvm::Module& M) {

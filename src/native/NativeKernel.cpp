@@ -10,8 +10,9 @@
 namespace pacxx {
   namespace v2 {
 
-    NativeKernel::NativeKernel(NativeRuntime &runtime, void *fptr) :
+    NativeKernel::NativeKernel(NativeRuntime &runtime, llvm::FunctionType* type, void *fptr) :
         _runtime(runtime),
+        _type(type),
         _fptr(fptr),
         _staged_values_changed(false),
         _disable_staging(false) {}
@@ -43,18 +44,23 @@ namespace pacxx {
       //TODO launch multiple threads
       void NativeKernel::launch() {
           __verbose(_args_size);
-          for(auto const& value : _args )
-              __verbose(value);
           if(!_fptr)
               throw new common::generic_exception("kernel has no function ptr");
           __verbose("Launching kernel: \nblocks(", _config.blocks.x, ",",
                 _config.blocks.y, ",", _config.blocks.z, ")\nthreads(",
                 _config.threads.x, ",", _config.threads.y, ",", _config.threads.z,")");
+          __verbose(_type->getNumParams());
+          for(int i = 0; i < _type->getNumParams(); ++i)
+            __verbose(_type->getParamType(i));
+          _type->dump();
           auto functor = reinterpret_cast<void *(*)(size_t, size_t, size_t, size_t, size_t, size_t, void** , void** , void**)> (_fptr);
-          //TODO test for 1 block
-          _runtime.runFunctionOnThread<void *(*)(size_t, size_t, size_t, size_t, size_t, size_t, void** , void** , void**)>
+
+          //functor(0, 0, 0, _config.threads.x, _config.threads.y, _config.threads.z, &_args[])
+          //TODO run on multiple threads
+          /*_runtime.runFunctionOnThread<void *(*)(size_t, size_t, size_t, size_t, size_t, size_t, void** , void** , void**)>
                   (functor, 0, 0, 0, _config.threads.x, _config.threads.y, _config.threads.z,
                                        &_args[0], &_args[1], &_args[2]);
+         */
       }
 
       void NativeKernel::setStagedValue(int ref, long long value, bool inScope) { throw new common::generic_exception("not supported"); }

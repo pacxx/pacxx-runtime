@@ -10,6 +10,7 @@
 #include "detail/Kernel.h"
 #include "detail/KernelConfiguration.h"
 #include <functional>
+#include <llvm/IR/Function.h>
 
 namespace pacxx {
 
@@ -22,7 +23,7 @@ namespace pacxx {
             friend class NativeRuntime;
 
         private:
-            NativeKernel(NativeRuntime& runtime, void* fptr);
+            NativeKernel(NativeRuntime& runtime, llvm::FunctionType* type, void* fptr);
 
         public:
             virtual ~NativeKernel();
@@ -54,6 +55,7 @@ namespace pacxx {
             std::vector<char> _args;
             std::vector<char> _host_args;
             size_t _args_size;
+            llvm::FunctionType* _type;
             void* _fptr;
             std::map<int, long long> _staged_values;
             bool _staged_values_changed;
