@@ -157,7 +157,6 @@ namespace pacxx
     void* NativeBackend::getFunctionPtr(llvm::Module* module, const std::string name) {
         if(!_JITEngine)
             throw new common::generic_exception("getFunctionPtr called before compile");
-        __verbose(name);
         //get the kernel wrapper function from the module
         llvm::Function* kernel = module->getFunction("__wrapped__"+name);
         return _JITEngine->getPointerToFunction(kernel);

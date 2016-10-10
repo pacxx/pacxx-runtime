@@ -44,8 +44,10 @@ namespace pacxx {
       const std::vector<char>& NativeKernel::getHostArguments() const { return _host_args; }
 
       //TODO reinterpret_cast to match kernel launch args
-      //TODO how to launch multiple threads
+      //TODO launch multiple threads
       void NativeKernel::launch() {
+          for(auto const& value : _args)
+            std::cout << value << std::endl;
           if(!_fptr)
               throw new common::generic_exception("kernel has no function ptr");
           __verbose("Launching kernel: \nblocks(", _config.blocks.x, ",",
