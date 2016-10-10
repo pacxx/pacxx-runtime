@@ -46,17 +46,15 @@ namespace pacxx {
       //TODO reinterpret_cast to match kernel launch args
       //TODO launch multiple threads
       void NativeKernel::launch() {
-          for(auto const& value : _args)
-              __verbose(value);
           if(!_fptr)
               throw new common::generic_exception("kernel has no function ptr");
           __verbose("Launching kernel: \nblocks(", _config.blocks.x, ",",
                 _config.blocks.y, ",", _config.blocks.z, ")\nthreads(",
                 _config.threads.x, ",", _config.threads.y, ",", _config.threads.z,
                 ")\nshared_mem=", _config.sm_size);
-          auto functor = reinterpret_cast<void *(*)(size_t, size_t, size_t, size_t, size_t, size_t, std::vector<void*> *, std::vector<void*> *, std::vector<void*> *)> (_fptr);
+          auto functor = reinterpret_cast<void *(*)(size_t, size_t, size_t, size_t, size_t, size_t, void* , void* , void*)> (_fptr);
           //TODO test for 1 block
-          functor(0, 0, 0, _config.threads.x, _config.threads.y, _config.threads.z, NULL, nullptr, &_launch_args);
+          functor(0, 0, 0, _config.threads.x, _config.threads.y, _config.threads.z, _launch_args[0], _launch_args[1], _launch_args[2]);
       }
 
       void NativeKernel::setStagedValue(int ref, long long value, bool inScope) { throw new common::generic_exception("not supported"); }
