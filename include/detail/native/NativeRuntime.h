@@ -86,8 +86,8 @@ namespace pacxx
 
       virtual llvm::legacy::PassManager& getPassManager() override;
 
-      template<class... Args>
-      void runFunctionOnThread(auto functor, Args&&... args) {
+      template<typename F, typename... Args>
+      void runFunctionOnThread(F functor, Args&&... args) {
         _threads.push_back(std::thread(functor, std::forward<Args>(args)));
       }
 

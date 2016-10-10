@@ -53,7 +53,8 @@ namespace pacxx {
                 _config.threads.x, ",", _config.threads.y, ",", _config.threads.z);
           auto functor = reinterpret_cast<void *(*)(size_t, size_t, size_t, size_t, size_t, size_t, void** , void** , void**)> (_fptr);
           //TODO test for 1 block
-          _runtime.runFunctionOnThread(functor, 0, 0, 0, _config.threads.x, _config.threads.y, _config.threads.z,
+          _runtime.runFunctionOnThread<void *(*)(size_t, size_t, size_t, size_t, size_t, size_t, void** , void** , void**)>
+                  (functor, 0, 0, 0, _config.threads.x, _config.threads.y, _config.threads.z,
                                        &_launch_args[0], &_launch_args[1], &_launch_args[2]);
       }
 
