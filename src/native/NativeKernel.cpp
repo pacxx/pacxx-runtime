@@ -47,7 +47,7 @@ namespace pacxx {
       //TODO launch multiple threads
       void NativeKernel::launch() {
           for(auto const& value : _args)
-            std::cout << value << std::endl;
+              __verbose(value);
           if(!_fptr)
               throw new common::generic_exception("kernel has no function ptr");
           __verbose("Launching kernel: \nblocks(", _config.blocks.x, ",",
