@@ -159,7 +159,7 @@ namespace pacxx
             throw new common::generic_exception("getFunctionPtr called before compile");
         __verbose(name);
         // wrapped necessary because of the names in the native pass
-        llvm::Function* kernel = module->getFunction("__wrapped__"+name);
+        llvm::Function* kernel = module->getFunction(name);
         return _JITEngine->getPointerToFunction(kernel);
     }
 
