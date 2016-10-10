@@ -51,8 +51,6 @@ namespace pacxx {
                 _config.blocks.y, ",", _config.blocks.z, ")\nthreads(",
                 _config.threads.x, ",", _config.threads.y, ",", _config.threads.z,")");
           __verbose(_type->getNumParams());
-          for(int i = 0; i < _type->getNumParams(); ++i)
-            __verbose(*_type->getParamType(i));
           _type->dump();
           auto functor = reinterpret_cast<void *(*)(size_t, size_t, size_t, size_t, size_t, size_t, int**, int** , int** , int**)> (_fptr);
 
