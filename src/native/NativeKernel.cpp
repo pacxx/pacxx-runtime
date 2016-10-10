@@ -50,9 +50,10 @@ namespace pacxx {
                 _config.blocks.y, ",", _config.blocks.z, ")\nthreads(",
                 _config.threads.x, ",", _config.threads.y, ",", _config.threads.z,")");
           auto functor = reinterpret_cast<void *(*)(size_t, size_t, size_t, size_t, size_t, size_t, int**, int** , int** , int**)> (_fptr);
+          __verbose(*_launch_args[0]);
 
-          functor(0, 0, 0, _config.threads.x, _config.threads.y, _config.threads.z, &_launch_args[0],
-                  &_launch_args[1]+sizeof(int*), &_launch_args[2], &_launch_args[3]);
+          //functor(0, 0, 0, _config.threads.x, _config.threads.y, _config.threads.z, &_launch_args[0],
+          //        &_launch_args[1]+sizeof(int*), &_launch_args[2], &_launch_args[3]);
           //TODO run on multiple threads
           /*_runtime.runFunctionOnThread<void *(*)(size_t, size_t, size_t, size_t, size_t, size_t, void** , void** , void**)>
                   (functor, 0, 0, 0, _config.threads.x, _config.threads.y, _config.threads.z,
