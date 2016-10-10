@@ -46,11 +46,12 @@ namespace pacxx {
       //TODO reinterpret_cast to match kernel launch args
       //TODO launch multiple threads
       void NativeKernel::launch() {
+          __verbose(_args_size);
           if(!_fptr)
               throw new common::generic_exception("kernel has no function ptr");
           __verbose("Launching kernel: \nblocks(", _config.blocks.x, ",",
                 _config.blocks.y, ",", _config.blocks.z, ")\nthreads(",
-                _config.threads.x, ",", _config.threads.y, ",", _config.threads.z);
+                _config.threads.x, ",", _config.threads.y, ",", _config.threads.z,")");
           auto functor = reinterpret_cast<void *(*)(size_t, size_t, size_t, size_t, size_t, size_t, void** , void** , void**)> (_fptr);
           //TODO test for 1 block
           _runtime.runFunctionOnThread<void *(*)(size_t, size_t, size_t, size_t, size_t, size_t, void** , void** , void**)>
