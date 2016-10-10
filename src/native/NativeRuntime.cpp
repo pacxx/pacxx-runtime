@@ -15,10 +15,7 @@ namespace pacxx
     NativeRuntime::NativeRuntime(unsigned)
         : _compiler(std::make_unique<CompilerT>()){}
 
-    NativeRuntime::~NativeRuntime() {
-      // join all threads if the runtime gets destroyed
-      synchronize();
-    }
+    NativeRuntime::~NativeRuntime() {}
 
     void NativeRuntime::link(std::unique_ptr<llvm::Module> M) {
 
