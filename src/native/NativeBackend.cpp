@@ -158,11 +158,9 @@ namespace pacxx
         if(!_JITEngine)
             throw new common::generic_exception("getFunctionPtr called before compile");
         __verbose(name);
-        llvm::Function* kernel = module->getFunction(name);
-        void* kernelptr = _JITEngine->getPointerToFunction(kernel);
-        if(!kernelptr)
-            throw new common::generic_exception("kernel with name " + name +" not found in module");
-        return kernelptr;
+        //get the kernel wrapper function from the module
+        llvm::Function* kernel = module->getFunction("__wrapped__"+name);
+        return _JITEngine->getPointerToFunction(kernel);
     }
 
     void NativeBackend::linkInModule(llvm::Module& M) {
