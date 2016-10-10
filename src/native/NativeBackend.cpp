@@ -157,6 +157,7 @@ namespace pacxx
     void* NativeBackend::getFunctionPtr(llvm::Module* module, const std::string name) {
         if(!_JITEngine)
             throw new common::generic_exception("getFunctionPtr called before compile");
+        __verbose(name);
         llvm::Function* kernel = module->getFunction(name);
         return _JITEngine->getPointerToFunction(kernel);
     }
