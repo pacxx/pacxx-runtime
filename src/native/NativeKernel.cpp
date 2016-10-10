@@ -30,6 +30,7 @@ namespace pacxx {
       void NativeKernel::setArguments(const std::vector<char> &arg_buffer) {
           _args = arg_buffer;
           _args_size = _args.size();
+          _launch_args.push_back(reinterpret_cast<int *>(_args.data()));
       }
 
       const std::vector<char>& NativeKernel::getArguments() const { return _args; }
@@ -51,11 +52,12 @@ namespace pacxx {
                 _config.threads.x, ",", _config.threads.y, ",", _config.threads.z,")");
           __verbose(_type->getNumParams());
           for(int i = 0; i < _type->getNumParams(); ++i)
-            __verbose(_type->getParamType(i));
+            __verbose(*_type->getParamType(i));
           _type->dump();
-          auto functor = reinterpret_cast<void *(*)(size_t, size_t, size_t, size_t, size_t, size_t, void** , void** , void**)> (_fptr);
+          auto functor = reinterpret_cast<void *(*)(size_t, size_t, size_t, size_t, size_t, size_t, int**, int** , int** , int**)> (_fptr);
 
-          //functor(0, 0, 0, _config.threads.x, _config.threads.y, _config.threads.z, &_args[])
+          functor(0, 0, 0, _config.threads.x, _config.threads.y, _config.threads.z, &_launch_args[0],
+                  &_launch_args[1]+sizeof(int*), &_launch_args[2], &_launch_args[3]);
           //TODO run on multiple threads
           /*_runtime.runFunctionOnThread<void *(*)(size_t, size_t, size_t, size_t, size_t, size_t, void** , void** , void**)>
                   (functor, 0, 0, 0, _config.threads.x, _config.threads.y, _config.threads.z,

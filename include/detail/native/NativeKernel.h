@@ -53,6 +53,7 @@ namespace pacxx {
             NativeRuntime& _runtime;
             KernelConfiguration _config;
             std::vector<char> _args;
+            std::vector<int *> _launch_args;
             std::vector<char> _host_args;
             size_t _args_size;
             llvm::FunctionType* _type;
