@@ -15,7 +15,10 @@ namespace pacxx
     NativeRuntime::NativeRuntime(unsigned)
         : _compiler(std::make_unique<CompilerT>()){}
 
-    NativeRuntime::~NativeRuntime() {}
+    NativeRuntime::~NativeRuntime() {
+      // join all threads if the runtime gets destroyed
+      synchronize();
+    }
 
     void NativeRuntime::link(std::unique_ptr<llvm::Module> M) {
 
@@ -80,7 +83,10 @@ namespace pacxx
 
     const llvm::Module& NativeRuntime::getModule() { return *_CPUMod; }
 
-    void NativeRuntime::synchronize() { throw common::generic_exception("not implemented"); };
+    void NativeRuntime::synchronize() {
+      for(size_t i = 0; i < _threads.size(); ++i)
+          _threads[i].join();
+    };
 
     llvm::legacy::PassManager& NativeRuntime::getPassManager() { return _compiler->getPassManager(); };
 

@@ -49,9 +49,6 @@ namespace pacxx {
             virtual void setCallback(std::function<void()> callback) override { _callback = callback; };
 
         private:
-            void overrideFptr(void* fptr) { _fptr = fptr; }
-
-        private:
             NativeRuntime& _runtime;
             KernelConfiguration _config;
             std::vector<char> _args;

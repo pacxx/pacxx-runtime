@@ -12,6 +12,7 @@
 #include <llvm/ExecutionEngine/ExecutionEngine.h>
 #include <detail/msp/MSPEngine.h>
 #include <detail/common/Exceptions.h>
+#include <thread>
 #include "../IRRuntime.h"
 #include "NativeBackend.h"
 #include "NativeKernel.h"
@@ -85,11 +86,17 @@ namespace pacxx
 
       virtual llvm::legacy::PassManager& getPassManager() override;
 
+      template<class... Args>
+      void runFunctionOnThread(auto functor, Args&&... args) {
+        _threads.push_back(std::thread(functor, std::forward<Args>(args)));
+      }
+
     private:
       llvm::Module* _CPUMod;
       std::unique_ptr<llvm::Module> _M;
       std::unique_ptr<CompilerT> _compiler;
       std::map<std::string, std::unique_ptr<NativeKernel>> _kernels;
+      std::vector<std::thread> _threads;
       std::list <std::unique_ptr<DeviceBufferBase>> _memory;
       v2::MSPEngine _msp_engine;
     };
