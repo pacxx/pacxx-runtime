@@ -88,7 +88,7 @@ namespace pacxx
 
       template<typename F, typename... Args>
       void runFunctionOnThread(F functor, Args&&... args) {
-        _threads.push_back(std::thread(functor, std::forward<Args>(args)));
+        _threads.push_back(std::thread(functor, std::forward<Args>(args)...));
       }
 
     private:
