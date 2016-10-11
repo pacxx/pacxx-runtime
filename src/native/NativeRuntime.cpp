@@ -87,11 +87,14 @@ namespace pacxx
 
       //TODO run on threads
     void NativeRuntime::runOnThread(llvm::Function *function, std::vector<llvm::GenericValue> args) {
-      llvm::ExecutionEngine* EE = _compiler->getExecutionEngine();
       __verbose("runFunction called");
-      __verbose(args[7].PointerVal);
-      _threads.push_back(std::thread(EE->runFunction(function, args), nullptr));
+      _threads.push_back(std::thread(callFunction, function, args));
     }
+
+      void* NativeRuntime::callFunction(llvm::Function *function, std::vector<llvm::GenericValue> args) {
+        __verbose(args[7].PointerVal);
+        _compiler->getExecutionEngine()->runFunction(function, args);
+      }
 
     llvm::legacy::PassManager& NativeRuntime::getPassManager() { return _compiler->getPassManager(); };
 

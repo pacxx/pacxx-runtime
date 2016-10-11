@@ -89,6 +89,9 @@ namespace pacxx
       virtual llvm::legacy::PassManager& getPassManager() override;
 
     private:
+      void* callFunction(llvm::Function* function, std::vector<llvm::GenericValue> args);
+
+    private:
       llvm::Module* _CPUMod;
       std::unique_ptr<llvm::Module> _M;
       std::unique_ptr<CompilerT> _compiler;
