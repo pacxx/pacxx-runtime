@@ -51,7 +51,7 @@ namespace pacxx {
                       _runtime.runOnThread(_function, prepareFunctionArgs(bidx, bidy, bidz));
       }
 
-      std::vector<llvm::GenericValue>* NativeKernel::prepareFunctionArgs(const size_t bidx, size_t bidy, size_t bidz) {
+      std::vector<llvm::GenericValue> NativeKernel::prepareFunctionArgs(const size_t bidx, size_t bidy, size_t bidz) {
           llvm::FunctionType *type = _function->getFunctionType();
           size_t numArgs = type->getNumParams();
           __verbose("function has ", numArgs, " arguments");
@@ -69,7 +69,7 @@ namespace pacxx {
           __verbose(args.size());
           if(args.size() != numArgs)
               throw new common::generic_exception("failed to create function arguments");
-          return &args;
+          return args;
       }
 
       void NativeKernel::setStagedValue(int ref, long long value, bool inScope) { throw new common::generic_exception("not supported"); }

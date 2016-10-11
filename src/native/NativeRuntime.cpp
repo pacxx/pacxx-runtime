@@ -86,9 +86,9 @@ namespace pacxx
     };
 
       //TODO run on threads
-    void NativeRuntime::runOnThread(llvm::Function *function, std::vector<llvm::GenericValue> *args) {
+    void NativeRuntime::runOnThread(llvm::Function *function, std::vector<llvm::GenericValue> args) {
         llvm::ExecutionEngine* EE = _compiler->getExecutionEngine();
-        EE->runFunction(function, *args);
+        EE->runFunction(function, args);
     }
 
     llvm::legacy::PassManager& NativeRuntime::getPassManager() { return _compiler->getPassManager(); };
