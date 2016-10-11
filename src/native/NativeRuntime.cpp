@@ -85,7 +85,7 @@ namespace pacxx
         thread.join();
     };
 
-    void NativeRuntime::runOnThread(llvm::Function *function, std::vector<llvm::GenericValue> args) {
+    void NativeRuntime::runOnThread(llvm::Function *function, std::vector<llvm::GenericValue> &args) {
         llvm::ExecutionEngine* EE = _compiler->getExecutionEngine();
       _threads.push_back(std::thread(EE->runFunction(function, args)));
     }
