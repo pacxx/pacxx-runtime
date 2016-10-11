@@ -29,7 +29,20 @@ namespace pacxx {
       void NativeKernel::setArguments(const std::vector<char> &arg_buffer) {
           _args = arg_buffer;
           _args_size = _args.size();
-          __verbose(_args_size);
+
+          size_t offset = 0;
+
+          // the first 3 params are always bidx, bidy and bidz
+          for(int i = 0; i < _function->getFunctionType()->getNumParams() -3; ++i) {
+            _launch_args.push_back(llvm::GenericValue());
+            if(i > 5) {
+                _launch_args[i] = llvm::PTOGV(_args.data() + offset);
+                offset += sizeof(_function->getFunctionType()->getParamType(i));
+            }
+          }
+          _launch_args[3].IntVal = _config.threads.x;
+          _launch_args[4].IntVal = _config.threads.y;
+          _launch_args[5].IntVal = _config.threads.z;
       }
 
       const std::vector<char>& NativeKernel::getArguments() const { return _args; }
@@ -42,6 +55,7 @@ namespace pacxx {
 
       //TODO launch multiple threads
       void NativeKernel::launch() {
+          std::vector<llvm::GenericValue> argVector(_function->getFunctionType()->getNumParams());
           __verbose("Launching kernel: \nblocks(", _config.blocks.x, ",",
                 _config.blocks.y, ",", _config.blocks.z, ")\nthreads(",
                 _config.threads.x, ",", _config.threads.y, ",", _config.threads.z,")");
@@ -49,25 +63,7 @@ namespace pacxx {
           for(size_t bidx = 0; bidx < _config.blocks.x; ++bidx)
               for(size_t bidy = 0; bidy < _config.blocks.y; ++bidy)
                   for(size_t bidz = 0; bidz < _config.blocks.z; ++bidz)
-                      _runtime.runOnThread(_function, prepareFunctionArgs(bidx, bidy, bidz));
-      }
-
-      std::vector<llvm::GenericValue> NativeKernel::prepareFunctionArgs(const size_t bidx, size_t bidy, size_t bidz) {
-          llvm::FunctionType *type = _function->getFunctionType();
-          size_t numArgs = type->getNumParams();
-          __verbose("function has ", numArgs, " arguments");
-          type->dump();
-          //TODO refactor if working
-          std::vector<GenericValue> args(numArgs);
-          args[0].IntVal = bidx;
-          args[1].IntVal = bidy;
-          args[2].IntVal = bidz;
-          args[3].IntVal = _config.threads.x;
-          args[4].IntVal = _config.threads.y;
-          args[5].IntVal = _config.threads.z;
-          memcpy(&args[6].IntVal, &args, sizeof(int));
-          args[7].PointerVal = args.data() + sizeof(int);
-          return args;
+                      _runtime.runOnThread(_function, bidx, bidy, bidz, _launch_args, _function->getFunctionType()->getNumParams());
       }
 
       void NativeKernel::setStagedValue(int ref, long long value, bool inScope) { throw new common::generic_exception("not supported"); }

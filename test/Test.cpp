@@ -20,13 +20,17 @@ int main(int argc, char **argv) {
       a[idx] = 20;
   };
 
+  DeviceBuffer devA = MemoryManager::translateVector(a);
+
   auto vaddKernel =
       kernel<NativeRuntime>(vectorAdd, {{(OPT_N + THREAD_N - 1) / THREAD_N}, {THREAD_N}});
-  
+
   vaddKernel(a);
 
   auto& exec = get_executor<NativeRuntime>();
   exec.synchronize();
+
+  devA.download(a, OPT_N * sizeof(int));
 
   std::cout << a[0] << std::endl;
   return 0;

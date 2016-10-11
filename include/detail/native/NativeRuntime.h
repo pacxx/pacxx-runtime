@@ -23,6 +23,10 @@ namespace pacxx
 {
   namespace v2
   {
+
+    void callFunction(llvm::ExecutionEngine* EE, llvm::Function *function, size_t bidx, size_t bidy, size_t bidz,
+                      std::vector<llvm::GenericValue>& args, size_t numArgs);
+
     class NativeRuntime : public IRRuntime<NativeRuntime>
     {
     public:
@@ -70,6 +74,9 @@ namespace pacxx
           _memory.erase(It);
       }
 
+      void runOnThread(llvm::Function *function, size_t bidx, size_t bidy, size_t bidz,
+                       std::vector<llvm::GenericValue> &args, size_t numArgs);
+
       virtual RawDeviceBuffer* allocateRawMemory(size_t bytes) override;
 
       virtual void deleteRawMemory(RawDeviceBuffer* ptr) override;
@@ -84,8 +91,6 @@ namespace pacxx
 
       virtual void synchronize() override;
 
-      void runOnThread(llvm::Function *function, std::vector<llvm::GenericValue> args);
-
       virtual llvm::legacy::PassManager& getPassManager() override;
 
     private:
@@ -98,7 +103,6 @@ namespace pacxx
       v2::MSPEngine _msp_engine;
     };
 
-    void callFunction(llvm::ExecutionEngine* EE, llvm::Function* function, std::vector<llvm::GenericValue> args);
   }
 }
 

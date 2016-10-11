@@ -12,6 +12,19 @@ namespace pacxx
 {
   namespace v2
   {
+    void callFunction(llvm::ExecutionEngine* EE, llvm::Function *function, size_t bidx, size_t bidy, size_t bidz,
+                      std::vector<llvm::GenericValue>& args, size_t numArgs) {
+
+      std::vector<llvm::GenericValue> argVector(numArgs);
+      argVector[0].IntVal = bidx;
+      argVector[1].IntVal = bidy;
+      argVector[2].IntVal = bidz;
+      //copy common launch args to the vector
+      std::copy(args.begin(), args.end(), argVector.begin()+3);
+
+      EE->runFunction(function, argVector);
+    }
+
     NativeRuntime::NativeRuntime(unsigned)
         : _compiler(std::make_unique<CompilerT>()){}
 
@@ -80,20 +93,18 @@ namespace pacxx
 
     const llvm::Module& NativeRuntime::getModule() { return *_CPUMod; }
 
+    void NativeRuntime::runOnThread(llvm::Function *function, size_t bidx, size_t bidy, size_t bidz,
+                                    std::vector<llvm::GenericValue> &args, size_t numArgs) {
+
+      _threads.push_back(std::thread(callFunction, _compiler->getExecutionEngine(), function, bidx, bidy, bidz,
+                                     args, numArgs));
+    }
+
     void NativeRuntime::synchronize() {
       for(auto &thread : _threads)
         thread.join();
     };
 
-      //TODO run on threads
-    void NativeRuntime::runOnThread(llvm::Function *function, std::vector<llvm::GenericValue> args) {
-      __verbose("runFunction called");
-      _threads.push_back(std::thread(callFunction, _compiler->getExecutionEngine(), function, std::ref(args)));
-    }
-
-      void callFunction(llvm::ExecutionEngine* EE, llvm::Function *function, std::vector<llvm::GenericValue> args) {
-        EE->runFunction(function, args);
-      }
 
     llvm::legacy::PassManager& NativeRuntime::getPassManager() { return _compiler->getPassManager(); };
 
