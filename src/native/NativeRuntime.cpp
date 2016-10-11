@@ -92,7 +92,7 @@ namespace pacxx
     }
 
       void callFunction(llvm::ExecutionEngine* EE, llvm::Function *function) {
-        __verbose(args[7].PointerVal);
+        std::vector<llvm::GenericValue> args(1);
         EE->runFunction(function, args);
       }
 
