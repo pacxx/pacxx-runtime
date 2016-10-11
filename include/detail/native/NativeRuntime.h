@@ -84,7 +84,7 @@ namespace pacxx
 
       virtual void synchronize() override;
 
-      void runOnThread(llvm::Function *function, std::vector<llvm::GenericValue> &args);
+      void runOnThread(llvm::Function *function, std::vector<llvm::GenericValue> args);
 
       virtual llvm::legacy::PassManager& getPassManager() override;
 

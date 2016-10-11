@@ -52,7 +52,7 @@ namespace pacxx {
                       _runtime.runOnThread(_function, prepareFunctionArgs(bidx, bidy, bidz));
       }
 
-      std::vector<llvm::GenericValue>& NativeKernel::prepareFunctionArgs(const size_t bidx, size_t bidy, size_t bidz) {
+      std::vector<llvm::GenericValue> NativeKernel::prepareFunctionArgs(const size_t bidx, size_t bidy, size_t bidz) {
           llvm::FunctionType *type = _function->getFunctionType();
           size_t numArgs = type->getNumParams();
           __verbose("function has ", numArgs, " arguments");
