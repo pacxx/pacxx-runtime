@@ -51,7 +51,7 @@ namespace pacxx {
             virtual void setCallback(std::function<void()> callback) override { _callback = callback; };
 
         private:
-            std::vector<llvm::GenericValue> prepareFunctionArgs(size_t bidx, size_t bidy, size_t bidz);
+            std::vector<llvm::GenericValue>& prepareFunctionArgs(size_t bidx, size_t bidy, size_t bidz);
 
         private:
             NativeRuntime& _runtime;
