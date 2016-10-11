@@ -98,7 +98,7 @@ namespace pacxx
       v2::MSPEngine _msp_engine;
     };
 
-    void callFunction(llvm::ExecutionEngine* EE, llvm::Function* function, std::vector<llvm::GenericValue> args);
+    void callFunction(llvm::ExecutionEngine* EE, llvm::Function* function);
   }
 }
 
