@@ -89,9 +89,6 @@ namespace pacxx
       virtual llvm::legacy::PassManager& getPassManager() override;
 
     private:
-      void callFunction(llvm::Function* function, std::vector<llvm::GenericValue> args);
-
-    private:
       llvm::Module* _CPUMod;
       std::unique_ptr<llvm::Module> _M;
       std::unique_ptr<CompilerT> _compiler;
@@ -100,6 +97,8 @@ namespace pacxx
       std::list <std::unique_ptr<DeviceBufferBase>> _memory;
       v2::MSPEngine _msp_engine;
     };
+
+    void callFunction(llvm::ExecutionEngine* EE, llvm::Function* function, std::vector<llvm::GenericValue> args);
   }
 }
 
