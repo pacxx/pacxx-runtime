@@ -91,7 +91,7 @@ namespace pacxx
       _threads.push_back(std::thread(&NativeRuntime::callFunction, this, function, args));
     }
 
-      void* NativeRuntime::callFunction(llvm::Function *function, std::vector<llvm::GenericValue> args) {
+      void NativeRuntime::callFunction(llvm::Function *function, std::vector<llvm::GenericValue> args) {
         __verbose(args[7].PointerVal);
         _compiler->getExecutionEngine()->runFunction(function, args);
       }
