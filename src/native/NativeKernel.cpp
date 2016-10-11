@@ -29,6 +29,7 @@ namespace pacxx {
       void NativeKernel::setArguments(const std::vector<char> &arg_buffer) {
           _args = arg_buffer;
           _args_size = _args.size();
+          __verbose(_args_size);
       }
 
       const std::vector<char>& NativeKernel::getArguments() const { return _args; }
@@ -57,18 +58,15 @@ namespace pacxx {
           __verbose("function has ", numArgs, " arguments");
           type->dump();
           //TODO refactor if working
-          std::vector<GenericValue> args(type->getNumParams());
+          std::vector<GenericValue> args(numArgs);
           args[0].IntVal = bidx;
           args[1].IntVal = bidy;
           args[2].IntVal = bidz;
           args[3].IntVal = _config.threads.x;
           args[4].IntVal = _config.threads.y;
           args[5].IntVal = _config.threads.z;
-          args[6].PointerVal = _args.data();
-          __verbose(numArgs);
-          __verbose(args.size());
-          if(args.size() != numArgs)
-              throw new common::generic_exception("failed to create function arguments");
+          memcpy(&args[6].IntVal, &args, sizeof(int));
+          args[7].PointerVal = args.data() + sizeof(int);
           return args;
       }
 
