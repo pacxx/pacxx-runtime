@@ -97,7 +97,7 @@ namespace pacxx
                                     std::vector<llvm::GenericValue> &args, size_t numArgs) {
 
       _threads.push_back(std::thread(callFunction, _compiler->getExecutionEngine(), function, bidx, bidy, bidz,
-                                     args, numArgs));
+                                     std::ref(args), numArgs));
     }
 
     void NativeRuntime::synchronize() {
