@@ -195,6 +195,6 @@ namespace pacxx
 
     llvm::legacy::PassManager& NativeBackend::getPassManager() { return _PM; }
 
-    llvm::ExecutionEngine& NativeBackend::getExecutionEngine() { return *_JITEngine; }
+    llvm::ExecutionEngine* NativeBackend::getExecutionEngine() { return _JITEngine; }
   }
 }

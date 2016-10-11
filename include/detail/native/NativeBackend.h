@@ -22,7 +22,7 @@ namespace pacxx
 
       llvm::legacy::PassManager& getPassManager();
 
-      llvm::ExecutionEngine& getExecutionEngine();
+      llvm::ExecutionEngine* getExecutionEngine();
 
       llvm::Module* compile(llvm::Module& M);
 
