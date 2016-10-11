@@ -29,11 +29,11 @@ namespace pacxx
       auto It = std::find_if(_kernels.begin(), _kernels.end(),
                              [&](const auto &p) { return name == p.first; });
       if (It == _kernels.end()) {
-        void* fptr = nullptr;
-        fptr = _compiler->getFunctionPtr(_CPUMod, name);
-        if (!fptr)
+        llvm::Function *function= nullptr;
+        function = _compiler->getKernelFunction(_CPUMod, name);
+        if (!function)
           throw common::generic_exception("Kernel function not found in module!");
-        auto kernel = new NativeKernel(*this, fptr);
+        auto kernel = new NativeKernel(*this, function);
         kernel->setName(name);
         _kernels[name].reset(kernel);
 
@@ -81,9 +81,14 @@ namespace pacxx
     const llvm::Module& NativeRuntime::getModule() { return *_CPUMod; }
 
     void NativeRuntime::synchronize() {
-      for(size_t i = 0; i < _threads.size(); ++i)
-          _threads[i].join();
+      for(auto &thread : _threads)
+        thread.join();
     };
+
+    void NativeRuntime::runOnThread(llvm::Function *function, std::vector<llvm::GenericValue> args) {
+      llvm::ExecutionEngine EE = _compiler->getExecutionEngine();
+      _threads.push_back(std::thread(EE.runFunction(function, args)));
+    }
 
     llvm::legacy::PassManager& NativeRuntime::getPassManager() { return _compiler->getPassManager(); };
 

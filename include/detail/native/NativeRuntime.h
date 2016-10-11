@@ -84,12 +84,9 @@ namespace pacxx
 
       virtual void synchronize() override;
 
-      virtual llvm::legacy::PassManager& getPassManager() override;
+      void runOnThread(llvm::Function *function, std::vector<llvm::GenericValue> args);
 
-      template<typename F, typename... Args>
-      void runFunctionOnThread(F functor, Args&&... args) {
-        _threads.push_back(std::thread(functor, std::forward<Args>(args)...));
-      }
+      virtual llvm::legacy::PassManager& getPassManager() override;
 
     private:
       llvm::Module* _CPUMod;

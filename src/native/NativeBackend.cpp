@@ -154,14 +154,7 @@ namespace pacxx
       return TheModule;
     }
 
-    void* NativeBackend::getFunctionPtr(Module* module, const std::string name) {
-        llvm::Function* kernel = getKernelFunction(module, name);
-        return _JITEngine->getPointerToFunction(kernel);
-    }
-
     Function* NativeBackend::getKernelFunction(Module* module, const std::string name) {
-        if(!_JITEngine)
-            throw new common::generic_exception("getFunctionPtr called before compile");
         //get the kernel wrapper function from the module
         return module->getFunction("__wrapped__"+name);
     }
@@ -201,5 +194,7 @@ namespace pacxx
     }
 
     llvm::legacy::PassManager& NativeBackend::getPassManager() { return _PM; }
+
+    llvm::ExecutionEngine& NativeBackend::getExecutionEngine() { return *_JITEngine; }
   }
 }

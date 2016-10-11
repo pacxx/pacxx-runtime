@@ -10,9 +10,9 @@
 namespace pacxx {
   namespace v2 {
 
-    NativeKernel::NativeKernel(NativeRuntime &runtime, void *fptr) :
+    NativeKernel::NativeKernel(NativeRuntime &runtime, llvm::Function *function) :
         _runtime(runtime),
-        _fptr(fptr),
+        _function(function),
         _staged_values_changed(false),
         _disable_staging(false) {}
 
@@ -29,7 +29,6 @@ namespace pacxx {
       void NativeKernel::setArguments(const std::vector<char> &arg_buffer) {
           _args = arg_buffer;
           _args_size = _args.size();
-          _launch_args.push_back(reinterpret_cast<int *>(_args.data()));
       }
 
       const std::vector<char>& NativeKernel::getArguments() const { return _args; }
@@ -40,28 +39,37 @@ namespace pacxx {
 
       const std::vector<char>& NativeKernel::getHostArguments() const { return _host_args; }
 
-      //TODO reinterpret_cast to match kernel launch args
       //TODO launch multiple threads
       void NativeKernel::launch() {
-          __verbose(_args_size);
-          if(!_fptr)
-              throw new common::generic_exception("kernel has no function ptr");
           __verbose("Launching kernel: \nblocks(", _config.blocks.x, ",",
                 _config.blocks.y, ",", _config.blocks.z, ")\nthreads(",
                 _config.threads.x, ",", _config.threads.y, ",", _config.threads.z,")");
-          auto functor = reinterpret_cast<void *(*)(size_t, size_t, size_t, size_t, size_t, size_t, int**, int** , int** , int**)> (_fptr);
-          __verbose(*_launch_args[0]);
-          __verbose(*_launch_args[1]);
-          __verbose(*_launch_args[2]);
-          __verbose(*_launch_args[3]);
+          //TODO create kernel arguments vector
+          for(size_t bidx = 0; bidx < _config.blocks.x; ++bidx)
+              for(size_t bidy = 0; bidy < _config.blocks.y; ++bidy)
+                  for(size_t bidz = 0; bidz < _config.blocks.z; ++bidz)
+                      _runtime.runOnThread(_function, prepareFunctionArgs(bidx, bidy, bidz));
+      }
 
-          //functor(0, 0, 0, _config.threads.x, _config.threads.y, _config.threads.z, &_launch_args[0],
-          //        &_launch_args[1]+sizeof(int*), &_launch_args[2], &_launch_args[3]);
-          //TODO run on multiple threads
-          /*_runtime.runFunctionOnThread<void *(*)(size_t, size_t, size_t, size_t, size_t, size_t, void** , void** , void**)>
-                  (functor, 0, 0, 0, _config.threads.x, _config.threads.y, _config.threads.z,
-                                       &_args[0], &_args[1], &_args[2]);
-         */
+      std::vector<llvm::GenericValue>& NativeKernel::prepareFunctionArgs(const size_t bidx, size_t bidy, size_t bidz) {
+          llvm::FunctionType *type = _function->getFunctionType();
+          size_t numArgs = type->getNumParams();
+          __verbose("function has ", numArgs, " arguments");
+          type->dump();
+          //TODO refactor if working
+          std::vector<GenericValue> args(type->getNumParams());
+          args[0].IntVal = bidx;
+          args[1].IntVal = bidy;
+          args[2].IntVal = bidz;
+          args[3].IntVal = _config.threads.x;
+          args[4].IntVal = _config.threads.y;
+          args[5].IntVal = _config.threads.z;
+          args[6].PointerVal = _args.data();
+          __verbose(numArgs);
+          __verbose(args.size());
+          if(args.size() != numArgs)
+              throw new common::generic_exception("failed to create function arguments");
+          return args;
       }
 
       void NativeKernel::setStagedValue(int ref, long long value, bool inScope) { throw new common::generic_exception("not supported"); }

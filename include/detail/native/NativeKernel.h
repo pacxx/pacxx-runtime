@@ -11,6 +11,7 @@
 #include "detail/KernelConfiguration.h"
 #include <functional>
 #include <llvm/IR/Function.h>
+#include <llvm/ExecutionEngine/GenericValue.h>
 
 namespace pacxx {
 
@@ -23,7 +24,7 @@ namespace pacxx {
             friend class NativeRuntime;
 
         private:
-            NativeKernel(NativeRuntime& runtime, void* fptr);
+            NativeKernel(NativeRuntime& runtime, llvm::Function *function);
 
         public:
             virtual ~NativeKernel();
@@ -50,13 +51,15 @@ namespace pacxx {
             virtual void setCallback(std::function<void()> callback) override { _callback = callback; };
 
         private:
+            std::vector<llvm::GenericValue>& prepareFunctionArgs(size_t bidx, size_t bidy, size_t bidz);
+
+        private:
             NativeRuntime& _runtime;
             KernelConfiguration _config;
             std::vector<char> _args;
-            std::vector<int *> _launch_args;
             std::vector<char> _host_args;
             size_t _args_size;
-            void* _fptr;
+            llvm::Function* _function;
             std::map<int, long long> _staged_values;
             bool _staged_values_changed;
             std::string _name;

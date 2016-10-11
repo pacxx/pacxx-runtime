@@ -14,25 +14,20 @@ using namespace std;
 int main(int argc, char **argv) {
   std::vector<int> a(OPT_N), b(OPT_N), c(OPT_N);
 
-  a[0] = 20;
-  b[0] = 30;
-
-  auto vectorAdd = [](const vector<int> &a, const vector<int> &b,
-                      vector<int> &c) {
+  auto test = [](const vector<int> &a) {
     auto idx = Thread::get().global.x;
     if (idx < a.size())
-      c[idx] = a[idx] + b[idx];
+      a[idx] = 20;
   };
 
   auto vaddKernel =
       kernel<NativeRuntime>(vectorAdd, {{(OPT_N + THREAD_N - 1) / THREAD_N}, {THREAD_N}});
   
-  vaddKernel(a, b, c);
+  vaddKernel(a);
 
-  auto& exec = get_executor();
-  std::cout << typeid(exec.rt()).name() << '\n';
+  auto& exec = get_executor<NativeRuntime>();
   exec.synchronize();
 
-  std::cout << c[0] << std::endl;
+  std::cout << a[0] << std::endl;
   return 0;
 }
