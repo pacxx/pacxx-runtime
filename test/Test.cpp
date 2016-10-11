@@ -20,17 +20,20 @@ int main(int argc, char **argv) {
       a[idx] = 20;
   };
 
-  DeviceBuffer devA = MemoryManager::translateVector(a);
+  Executor& exec = get_executor<CUDARuntime>();
+  MemoryManager mm = exec.mm();
+
+  RawDeviceBuffer dev_a = mm.translateVector(a);
+
 
   auto vaddKernel =
-      kernel<NativeRuntime>(vectorAdd, {{(OPT_N + THREAD_N - 1) / THREAD_N}, {THREAD_N}});
+      kernel<CUDARuntime>(test, {{(OPT_N + THREAD_N - 1) / THREAD_N}, {THREAD_N}});
 
   vaddKernel(a);
 
-  auto& exec = get_executor<NativeRuntime>();
   exec.synchronize();
 
-  devA.download(a, OPT_N * sizeof(int));
+  dev_a.download(a, OPT_N * sizeof(int));
 
   std::cout << a[0] << std::endl;
   return 0;
