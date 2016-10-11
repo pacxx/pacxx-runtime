@@ -90,7 +90,7 @@ namespace pacxx
       llvm::ExecutionEngine* EE = _compiler->getExecutionEngine();
       __verbose("runFunction called");
       __verbose(args[7].PointerVal);
-      EE->runFunction(function, args);
+      _threads.push_back(std::thread(EE->runFunction(function, args), nullptr));
     }
 
     llvm::legacy::PassManager& NativeRuntime::getPassManager() { return _compiler->getPassManager(); };
