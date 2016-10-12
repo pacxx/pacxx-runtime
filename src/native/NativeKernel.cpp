@@ -40,6 +40,7 @@ namespace pacxx {
           for(int i = 0; i < _function->getFunctionType()->getNumParams() - 3; ++i) {
             if(i > 2) {
                 llvm::Type* type = _function->getFunctionType()->getParamType(i +3);
+                type->dump();
                 auto arg_size  = M.getDataLayout().getTypeAllocSize(type);
                 auto arg_alignment = M.getDataLayout().getPrefTypeAlignment(type);
                 auto arg_offset = (offset + arg_alignment -1) & ~(arg_alignment -1);
