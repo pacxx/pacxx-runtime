@@ -32,6 +32,7 @@ namespace pacxx {
 
           size_t offset = 0;
 
+
           __verbose(_function->getFunctionType()->getNumParams());
 
           // the first 3 params are always bidx, bidy and bidz
@@ -42,8 +43,11 @@ namespace pacxx {
                 offset += sizeof(_function->getFunctionType()->getParamType(i));
             }
           }
-          __verbose(_function->getFunctionType()->getParamType(3)->getPrimitiveSizeInBits());
           __verbose("after loop");
+
+          _launch_args[3].IntVal = llvm::APInt(32, _config.threads.x);
+          _launch_args[4].IntVal = llvm::APInt(32, _config.threads.y);
+          _launch_args[5].IntVal = llvm::APInt(32, _config.threads.z);
       }
 
       const std::vector<char>& NativeKernel::getArguments() const { return _args; }
