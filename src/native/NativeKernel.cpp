@@ -33,8 +33,8 @@ namespace pacxx {
           __verbose(_function->getFunctionType()->getNumParams());
 
           // the first 3 params are always threadx, thready, threadz
-          __verbose(_function->getFunctionType()->getParamType(6));
-          __verbose(_function->getFunctionType()->getParamType(7));
+          _function->getFunctionType()->getParamType(6)->dump();
+          _function->getFunctionType()->getParamType(7)->dump();
 
           for(int i = 0; i < _function->getFunctionType()->getNumParams() - 3; ++i) {
             if(i > 2) {
