@@ -35,10 +35,10 @@ namespace pacxx {
 
           __verbose(_function->getFunctionType()->getNumParams());
 
-          // the first 3 params are always bidx, bidy and bidz
-          for(int i = 0; i < _function->getFunctionType()->getNumParams(); ++i) {
+          // the first 3 params are always threadx, thready, threadz
+          for(int i = 0; i < _function->getFunctionType()->getNumParams() - 3; ++i) {
             _launch_args.push_back(llvm::GenericValue());
-            if(i > 5) {
+            if(i > 2) {
                 _launch_args[i] = llvm::PTOGV(_args.data() + offset);
                 offset += sizeof(_function->getFunctionType()->getParamType(i));
             }
@@ -47,9 +47,9 @@ namespace pacxx {
 
           //TODO determine size of int for system
 
-          _launch_args[3].IntVal = llvm::APInt(32, _config.threads.x);
-          _launch_args[4].IntVal = llvm::APInt(32, _config.threads.y);
-          _launch_args[5].IntVal = llvm::APInt(32, _config.threads.z);
+          _launch_args[0].IntVal = _config.threads.x;
+          _launch_args[1].IntVal = _config.threads.y;
+          _launch_args[2].IntVal = _config.threads.z;
       }
 
       const std::vector<char>& NativeKernel::getArguments() const { return _args; }
