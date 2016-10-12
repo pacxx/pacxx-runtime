@@ -28,6 +28,7 @@ namespace pacxx
         __verbose(argVector[i].IntVal.getSExtValue());
 
       __verbose(argVector[6].PointerVal);
+      __verbose(argVector[6].IntVal.getSExtValue());
       __verbose(argVector[7].PointerVal);
 
       __verbose("Running");
