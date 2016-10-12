@@ -30,20 +30,16 @@ namespace pacxx {
           _args = arg_buffer;
           _args_size = _args.size();
 
-          size_t offset = 0;
-
           __verbose(_function->getFunctionType()->getNumParams());
 
-          __verbose(_function->getFunctionType()->getParamType(6)->getPrimitiveSizeInBits());
-          __verbose(_function->getFunctionType()->getParamType(7)->getPrimitiveSizeInBits());
+          __verbose(_function->getOperand(6)->getType());
+          __verbose(_function->getOperand(7)->getType());
 
           //TODO kernel params not set correctly
           // the first 3 params are always threadx, thready, threadz
           for(int i = 0; i < _function->getFunctionType()->getNumParams() - 3; ++i) {
             _launch_args.push_back(llvm::GenericValue());
             if(i > 2) {
-                _launch_args[i] = llvm::PTOGV(_args.data() + offset);
-                offset += _function->getFunctionType()->getParamType(i)->getPrimitiveSizeInBits();
             }
           }
 
