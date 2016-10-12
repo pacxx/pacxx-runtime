@@ -31,6 +31,8 @@ namespace pacxx {
           _args = arg_buffer;
           _args_size = _args.size();
 
+          __verbose("buffer size", _args_size);
+
           const llvm::Module& M = _runtime.getModule();
 
           size_t offset = 0;
@@ -42,9 +44,11 @@ namespace pacxx {
                 llvm::Type* type = _function->getFunctionType()->getParamType(i +3);
                 type->dump();
                 auto arg_size  = M.getDataLayout().getTypeAllocSize(type);
+                __verbose(arg_size);
                 auto arg_alignment = M.getDataLayout().getPrefTypeAlignment(type);
+                __verbose(arg_alignment);
                 auto arg_offset = (offset + arg_alignment -1) & ~(arg_alignment -1);
-                _launch_args.push_back(llvm::PTOGV(_args.data() + arg_offset));
+                _launch_args.push_back(llvm::PTOGV((_args.data() + arg_offset));
                 offset = arg_offset + arg_size;
             } else {
                 _launch_args.push_back(llvm::GenericValue());
@@ -55,7 +59,6 @@ namespace pacxx {
           _launch_args[1].IntVal = APInt(32, _config.threads.y);
           _launch_args[2].IntVal = APInt(32, _config.threads.z);
 
-          __verbose("created launch_args");
       }
 
       const std::vector<char>& NativeKernel::getArguments() const { return _args; }
