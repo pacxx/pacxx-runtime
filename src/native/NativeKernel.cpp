@@ -42,6 +42,7 @@ namespace pacxx {
                 offset += sizeof(_function->getFunctionType()->getParamType(i));
             }
           }
+          __verbose("after loop");
           _launch_args[3].IntVal = _config.threads.x;
           _launch_args[4].IntVal = _config.threads.y;
           _launch_args[5].IntVal = _config.threads.z;
