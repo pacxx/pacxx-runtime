@@ -20,7 +20,13 @@ namespace pacxx
       argVector[1].IntVal = bidy;
       argVector[2].IntVal = bidz;
       //copy common launch args to the vector
-      std::copy(args.begin(), args.end(), argVector.begin()+3);
+      std::copy(args.begin(), args.end(), argVector.begin() + 3);
+
+      __verbose(argVector[3].IntVal);
+      __verbose(argVector[4].IntVal);
+      __verbose(argVector[5].IntVal);
+      __verbose(argVector[6].PointerVal);
+      __verbose(argVector[3].PointerVal);
 
       __verbose("Running");
       EE->runFunction(function, argVector);
