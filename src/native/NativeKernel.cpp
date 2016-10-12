@@ -36,7 +36,7 @@ namespace pacxx {
           __verbose(_function->getFunctionType()->getNumParams());
 
           // the first 3 params are always bidx, bidy and bidz
-          for(int i = 0; i < _function->getFunctionType()->getNumParams() -3; ++i) {
+          for(int i = 0; i < _function->getFunctionType()->getNumParams(); ++i) {
             _launch_args.push_back(llvm::GenericValue());
             if(i > 5) {
                 _launch_args[i] = llvm::PTOGV(_args.data() + offset);
@@ -44,6 +44,8 @@ namespace pacxx {
             }
           }
           __verbose("after loop");
+
+          //TODO determine size of int for system
 
           _launch_args[3].IntVal = llvm::APInt(32, _config.threads.x);
           _launch_args[4].IntVal = llvm::APInt(32, _config.threads.y);
