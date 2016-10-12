@@ -43,9 +43,6 @@ namespace pacxx {
                 offset += sizeof(_function->getFunctionType()->getParamType(i));
             }
           }
-          __verbose("after loop");
-
-          //TODO determine size of int for system
 
           _launch_args[0].IntVal = _config.threads.x;
           _launch_args[1].IntVal = _config.threads.y;
