@@ -27,7 +27,7 @@ namespace pacxx
       for(int i = 0; i < 6; ++i)
         __verbose(argVector[i].IntVal.getSExtValue());
 
-      __verbose(argVector[6].IntVal);
+      __verbose(argVector[6].IntVal.getSExtValue());
       __verbose(argVector[7].PointerVal);
 
       __verbose("Running");
