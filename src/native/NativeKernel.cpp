@@ -44,9 +44,9 @@ namespace pacxx {
             }
           }
 
-          _launch_args[0].IntVal = _config.threads.x;
-          _launch_args[1].IntVal = _config.threads.y;
-          _launch_args[2].IntVal = _config.threads.z;
+          _launch_args[0].IntVal = APInt(32, _config.threads.x);
+          _launch_args[1].IntVal = APInt(32, _config.threads.y);
+          _launch_args[2].IntVal = APInt(32, _config.threads.z);
       }
 
       const std::vector<char>& NativeKernel::getArguments() const { return _args; }
