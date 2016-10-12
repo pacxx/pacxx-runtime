@@ -48,7 +48,6 @@ namespace pacxx {
                 auto arg_alignment = M.getDataLayout().getPrefTypeAlignment(type);
                 __verbose(arg_alignment);
                 auto arg_offset = (offset + arg_alignment -1) & ~(arg_alignment -1);
-                llvm::l
                 _launch_args.push_back(llvm::PTOGV((_args.data() + arg_offset)));
                 offset = arg_offset + arg_size;
             } else {
