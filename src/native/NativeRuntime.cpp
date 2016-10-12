@@ -25,8 +25,6 @@ namespace pacxx
       __verbose(argVector[3].IntVal);
       __verbose(argVector[4].IntVal);
       __verbose(argVector[5].IntVal);
-      __verbose(argVector[6].PointerVal);
-      __verbose(argVector[3].PointerVal);
 
       __verbose("Running");
       EE->runFunction(function, argVector);
