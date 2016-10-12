@@ -22,10 +22,6 @@ namespace pacxx
       //copy common launch args to the vector
       std::copy(args.begin(), args.end(), argVector.begin() + 3);
 
-      __verbose(argVector[3].IntVal.getSExtValue());
-      __verbose(argVector[4].IntVal.getSExtValue());
-      __verbose(argVector[5].IntVal.getSExtValue());
-
       __verbose("Running");
       EE->runFunction(function, argVector);
     }
