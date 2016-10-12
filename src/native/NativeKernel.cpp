@@ -35,7 +35,7 @@ namespace pacxx {
           __verbose(_function->getFunctionType()->getNumParams());
 
           __verbose(_function->getFunctionType()->getParamType(6)->getPrimitiveSizeInBits());
-          __verbose(offset += _function->getFunctionType()->getParamType(7)->getPrimitiveSizeInBits());
+          __verbose(_function->getFunctionType()->getParamType(7)->getPrimitiveSizeInBits());
 
           //TODO kernel params not set correctly
           // the first 3 params are always threadx, thready, threadz
