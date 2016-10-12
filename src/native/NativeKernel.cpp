@@ -35,26 +35,19 @@ namespace pacxx {
 
           std::vector<size_t> arg_offsets(_function->arg_size());
 
-          __verbose(_function->arg_size());
-
           size_t offset = 0;
-
-          std::transform(_function->arg_begin(), _function->arg_end(), arg_offsets.begin(), [&](const auto& arg) {
-            auto arg_size = M.getDataLayout().getTypeAllocSize(arg.getType());
-            auto arg_alignment =
-                M.getDataLayout().getPrefTypeAlignment(arg.getType());
-
-            auto arg_offset = (offset + arg_alignment - 1) & ~(arg_alignment - 1);
-            offset = arg_offset + arg_size;
-            return arg_offset;
-          });
 
           //TODO kernel params not set correctly
           // the first 3 params are always threadx, thready, threadz
           for(int i = 0; i < _function->getFunctionType()->getNumParams() - 3; ++i) {
             _launch_args.push_back(llvm::GenericValue());
             if(i > 2) {
-                _launch_args.push_back(llvm::PTOGV(_args.data() + arg_offsets[i + 3]));
+                llvm::Type* type = _function->getFunctionType()->getParamType(i +3);
+                auto arg_size  = M.getDataLayout().getTypeAllocSize(type);
+                auto arg_alignment = M.getDataLayout().getPrefTypeAlignment(type);
+                auto arg_offset = (offset + arg_alignment -1) & ~(arg_alignment -1);
+                _launch_args.push_back(llvm::PTOGV(_args.data() + arg_offset));
+                offset = arg_offset + arg_size;
             }
           }
 
