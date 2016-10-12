@@ -32,6 +32,8 @@ namespace pacxx {
 
           size_t offset = 0;
 
+          __verbose(_function->getFunctionType()->getNumParams());
+
           // the first 3 params are always bidx, bidy and bidz
           for(int i = 0; i < _function->getFunctionType()->getNumParams() -3; ++i) {
             _launch_args.push_back(llvm::GenericValue());
