@@ -33,8 +33,6 @@ namespace pacxx {
 
           const llvm::Module& M = _runtime.getModule();
 
-          std::vector<size_t> arg_offsets(_function->arg_size());
-
           size_t offset = 0;
 
           //TODO kernel params not set correctly
@@ -54,6 +52,8 @@ namespace pacxx {
           _launch_args[0].IntVal = APInt(32, _config.threads.x);
           _launch_args[1].IntVal = APInt(32, _config.threads.y);
           _launch_args[2].IntVal = APInt(32, _config.threads.z);
+
+          __verbose("created launch_args");
       }
 
       const std::vector<char>& NativeKernel::getArguments() const { return _args; }
