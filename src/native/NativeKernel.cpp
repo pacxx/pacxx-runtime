@@ -30,7 +30,7 @@ namespace pacxx {
           _args = arg_buffer;
           _args_size = _args.size();
 
-          __verbose(_function->getFunctionType()->getNumParams());
+          __verbose(_function->getNumOperands());
 
           __verbose(_function->getOperand(6)->getType());
           __verbose(_function->getOperand(7)->getType());
