@@ -27,19 +27,34 @@ namespace pacxx {
     KernelConfiguration NativeKernel::getConfiguration() const { return _config; }
 
       void NativeKernel::setArguments(const std::vector<char> &arg_buffer) {
+
           _args = arg_buffer;
           _args_size = _args.size();
 
-          __verbose(_function->getNumOperands());
+          const llvm::Module& M = _runtime.getModule();
 
-          __verbose(_function->getOperand(6)->getType());
-          __verbose(_function->getOperand(7)->getType());
+          std::vector<size_t> arg_offsets(_function->arg_size());
+
+          __verbose(_function->arg_size());
+
+          size_t offset = 0;
+
+          std::transform(_function->arg_begin(), _function->arg_end(), arg_offsets.begin(), [&](const auto& arg) {
+            auto arg_size = M.getDataLayout().getTypeAllocSize(arg.getType());
+            auto arg_alignment =
+                M.getDataLayout().getPrefTypeAlignment(arg.getType());
+
+            auto arg_offset = (offset + arg_alignment - 1) & ~(arg_alignment - 1);
+            offset = arg_offset + arg_size;
+            return arg_offset;
+          });
 
           //TODO kernel params not set correctly
           // the first 3 params are always threadx, thready, threadz
           for(int i = 0; i < _function->getFunctionType()->getNumParams() - 3; ++i) {
             _launch_args.push_back(llvm::GenericValue());
             if(i > 2) {
+                _launch_args.push_back(llvm::PTOGV(_args.data() + arg_offsets[i + 3]));
             }
           }
 
