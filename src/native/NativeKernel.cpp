@@ -49,7 +49,7 @@ namespace pacxx {
                 auto arg_alignment = M.getDataLayout().getPrefTypeAlignment(type);
                 __verbose(arg_alignment);
                 auto arg_offset = (offset + arg_alignment -1) & ~(arg_alignment -1);
-                std::memcpy(_launch_args[i].Untyped, _args.data()+ arg_offset, arg_size);
+                std::memcpy(_launch_args[i].Untyped, _args.data() + arg_offset, arg_size);
                 //_launch_args[i].Untyped.push_back(llvm::PTOGV((_args.data() + arg_offset)));
                 offset = arg_offset + arg_size;
             }

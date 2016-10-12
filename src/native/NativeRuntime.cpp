@@ -13,7 +13,7 @@ namespace pacxx
   namespace v2
   {
     void callFunction(llvm::ExecutionEngine* EE, llvm::Function *function, size_t bidx, size_t bidy, size_t bidz,
-                      const std::vector<llvm::GenericValue>& args, size_t numArgs) {
+                        std::vector<llvm::GenericValue>& args, size_t numArgs) {
 
       std::vector<llvm::GenericValue> argVector(numArgs);
 

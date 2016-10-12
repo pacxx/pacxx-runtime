@@ -25,7 +25,7 @@ namespace pacxx
   {
 
     void callFunction(llvm::ExecutionEngine* EE, llvm::Function *function, size_t bidx, size_t bidy, size_t bidz,
-                      std::vector<llvm::GenericValue>& args, size_t numArgs);
+                        std::vector<llvm::GenericValue>& args, const size_t numArgs);
 
     class NativeRuntime : public IRRuntime<NativeRuntime>
     {
