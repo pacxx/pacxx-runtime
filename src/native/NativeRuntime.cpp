@@ -13,7 +13,7 @@ namespace pacxx
   namespace v2
   {
     void callFunction(llvm::ExecutionEngine* EE, llvm::Function *function, size_t bidx, size_t bidy, size_t bidz,
-                      std::vector<llvm::GenericValue>& args, size_t numArgs) {
+                      const std::vector<llvm::GenericValue>& args, size_t numArgs) {
 
       std::vector<llvm::GenericValue> argVector(numArgs);
 
@@ -28,7 +28,6 @@ namespace pacxx
         __verbose(argVector[i].IntVal.getSExtValue());
 
       __verbose(argVector[6].PointerVal);
-      __verbose(argVector[6].IntVal.getSExtValue());
       __verbose(argVector[7].PointerVal);
 
       __verbose("Running");

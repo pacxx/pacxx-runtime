@@ -40,6 +40,7 @@ namespace pacxx {
           //TODO kernel params not set correctly
           // the first 3 params are always threadx, thready, threadz
           for(int i = 0; i < _function->getFunctionType()->getNumParams() - 3; ++i) {
+            _launch_args.push_back(llvm::GenericValue());
             if(i > 2) {
                 llvm::Type* type = _function->getFunctionType()->getParamType(i +3);
                 type->dump();
@@ -48,10 +49,9 @@ namespace pacxx {
                 auto arg_alignment = M.getDataLayout().getPrefTypeAlignment(type);
                 __verbose(arg_alignment);
                 auto arg_offset = (offset + arg_alignment -1) & ~(arg_alignment -1);
-                _launch_args.push_back(llvm::PTOGV((_args.data() + arg_offset)));
+                std::memcpy(_launch_args[i].Untyped, _args.data()+ arg_offset, arg_size);
+                //_launch_args[i].Untyped.push_back(llvm::PTOGV((_args.data() + arg_offset)));
                 offset = arg_offset + arg_size;
-            } else {
-                _launch_args.push_back(llvm::GenericValue());
             }
           }
 
