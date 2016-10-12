@@ -16,7 +16,7 @@ namespace pacxx
                       std::vector<llvm::GenericValue>& args, size_t numArgs) {
 
       std::vector<llvm::GenericValue> argVector(numArgs);
-      argVector[0].IntVal = bidx;
+      argVector[0].IntVal = 5;//bidx;
       argVector[1].IntVal = bidy;
       argVector[2].IntVal = bidz;
       //copy common launch args to the vector
