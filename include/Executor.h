@@ -181,7 +181,7 @@ namespace pacxx {
           auto offset = arg_offsets[i++];
           auto targ = meta::memory_translation{}(_mem_manager, arg);
           std::memcpy(ptr + offset, &targ, sizeof(decltype(targ)));
-          __verbose(ptr + offset);
+          __verbose(*(ptr + offset));
           if (i > 1) { // ignore the lambda
             auto harg = meta::msp_memory_translation{}(arg);
             std::memcpy(hptr, &harg, sizeof(decltype(harg)));
