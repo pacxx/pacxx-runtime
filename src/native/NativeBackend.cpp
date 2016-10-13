@@ -128,10 +128,15 @@ namespace pacxx
 
         builder.setEngineKind(EngineKind::JIT);
 
+        builder.setMCJITMemoryManager(make_unique<SectionMemoryManager>());
+
+        builder.setUseOrcMCJITReplacement(true);
+
+        /*
         builder.setMCJITMemoryManager(
                 std::unique_ptr<RTDyldMemoryManager>(
                         static_cast<RTDyldMemoryManager*>(new SectionMemoryManager())));
-        builder.setUseOrcMCJITReplacement(true);
+                        */
 
       _JITEngine = builder.create();
       if (!_JITEngine) {
