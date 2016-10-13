@@ -128,15 +128,9 @@ namespace pacxx
 
         builder.setEngineKind(EngineKind::JIT);
 
-        builder.setMCJITMemoryManager(llvm::make_unique<SectionMemoryManager>());
-
-        builder.setUseOrcMCJITReplacement(true);
-
-        /*
         builder.setMCJITMemoryManager(
                 std::unique_ptr<RTDyldMemoryManager>(
                         static_cast<RTDyldMemoryManager*>(new SectionMemoryManager())));
-                        */
 
       _JITEngine = builder.create();
       if (!_JITEngine) {
@@ -150,6 +144,10 @@ namespace pacxx
       TheModule->print(OS, nullptr);
 
       applyPasses(*TheModule);
+
+      __verbose("applied pass");
+
+      TheModule->dump();
 
       //TODO remove
       llvm::raw_fd_ostream OS1("moduleAfterPass", EC, llvm::sys::fs::F_None);
