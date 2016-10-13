@@ -28,14 +28,12 @@ namespace pacxx
         __verbose(argVector[i].IntVal.getSExtValue());
 
         __verbose("Running");
-        /*
         auto f = reinterpret_cast<void (*) (int32_t, int32_t, int32_t,
                                             int32_t, int32_t, int32_t,
-                                            int8_t, intptr_t)>(function);
+                                            int8_t, int32_t*)>(function);
         f(argVector[0].IntVal.getSExtValue(), argVector[1].IntVal.getSExtValue(), argVector[2].IntVal.getSExtValue(),
           argVector[3].IntVal.getSExtValue(), argVector[4].IntVal.getSExtValue(), argVector[5].IntVal.getSExtValue(),
-          argVector[6].IntVal.getSExtValue(), reinterpret_cast<intptr_t >(argVector[7].PointerVal));
-          */
+          argVector[6].IntVal.getSExtValue(), reinterpret_cast<int32_t *>(argVector[7].PointerVal));
 
       EE->runFunction(function, argVector);
     }
