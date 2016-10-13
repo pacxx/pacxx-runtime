@@ -33,7 +33,7 @@ namespace pacxx
                                             int8_t, llvm::PointerTy)>(function);
       f(argVector[0].IntVal.getSExtValue(), argVector[1].IntVal.getSExtValue(), argVector[2].IntVal.getSExtValue(),
           argVector[3].IntVal.getSExtValue(), argVector[4].IntVal.getSExtValue(), argVector[5].IntVal.getSExtValue(),
-          argVector[6].IntVal.getSExtValue(), argVector[7].PointerVal);
+          argVector[6].IntVal.getSExtValue(), GVTOP(argVector[7]));
 
       //EE->runFunction(function, argVector);
     }
