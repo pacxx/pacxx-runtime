@@ -131,6 +131,7 @@ namespace pacxx
         builder.setMCJITMemoryManager(
                 std::unique_ptr<RTDyldMemoryManager>(
                         static_cast<RTDyldMemoryManager*>(new SectionMemoryManager())));
+        builder.setUseOrcMCJITReplacement(true);
 
       _JITEngine = builder.create();
       if (!_JITEngine) {
