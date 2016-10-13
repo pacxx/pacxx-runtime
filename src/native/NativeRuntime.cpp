@@ -30,10 +30,10 @@ namespace pacxx
         __verbose("Running");
         auto f = reinterpret_cast<void (*) (int, int, int,
                                             int, int, int,
-                                            int, int*)>(function);
+                                            int, int*)>(EE->getPointerToFunction(function));
       f(argVector[0].IntVal.getZExtValue(), argVector[1].IntVal.getZExtValue(), argVector[2].IntVal.getZExtValue(),
           argVector[3].IntVal.getZExtValue(), argVector[4].IntVal.getZExtValue(), argVector[5].IntVal.getZExtValue(),
-          argVector[6].IntVal.getZExtValue(), (int*) GVTOP(argVector[7]));
+          argVector[6].IntVal.getZExtValue(), (int *) GVTOP(argVector[7]));
 
       //EE->runFunction(function, argVector);
     }
