@@ -30,8 +30,15 @@ namespace pacxx
       __verbose(argVector[6].IntVal.getSExtValue());
       __verbose(argVector[7].PointerVal);
 
-      __verbose("Running");
-      EE->runFunction(function, argVector);
+        __verbose("Running");
+        auto f = reinterpret_cast<void (*) (int32_t, int32_t, int32_t,
+                                            int32_t, int32_t, int32_t,
+                                            int8_t, intptr_t)>(function);
+        f(argVector[0].IntVal.VAL, argVector[1].IntVal.VAL, argVector[2].IntVal.VAL,
+          argVector[3].IntVal.VAL, argVector[4].IntVal.VAL, argVector[5].IntVal.VAL,
+          argVector[6].IntVal.VAL, reinterpret_cast<intptr_t >(argVector[7].PointerVal));
+
+      //EE->runFunction(function, argVector);
     }
 
     NativeRuntime::NativeRuntime(unsigned)
