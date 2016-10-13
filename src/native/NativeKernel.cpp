@@ -37,7 +37,6 @@ namespace pacxx {
 
           size_t offset = 0;
 
-          //TODO kernel params not set correctly
           // the first 3 params are always threadx, thready, threadz
           for(int i = 0; i < _function->getFunctionType()->getNumParams() - 3; ++i) {
             _launch_args.push_back(llvm::GenericValue());
@@ -50,7 +49,6 @@ namespace pacxx {
                 __verbose(arg_alignment);
                 auto arg_offset = (offset + arg_alignment -1) & ~(arg_alignment -1);
                 std::memcpy(_launch_args[i].Untyped, _args.data() + arg_offset, arg_size);
-                //_launch_args[i].Untyped.push_back(llvm::PTOGV((_args.data() + arg_offset)));
                 offset = arg_offset + arg_size;
             }
           }
@@ -71,11 +69,10 @@ namespace pacxx {
 
       //TODO launch multiple threads
       void NativeKernel::launch() {
-          std::vector<llvm::GenericValue> argVector(_function->getFunctionType()->getNumParams());
           __verbose("Launching kernel: \nblocks(", _config.blocks.x, ",",
                 _config.blocks.y, ",", _config.blocks.z, ")\nthreads(",
                 _config.threads.x, ",", _config.threads.y, ",", _config.threads.z,")");
-          //TODO create kernel arguments vector
+
           for(size_t bidx = 0; bidx < _config.blocks.x; ++bidx)
               for(size_t bidy = 0; bidy < _config.blocks.y; ++bidy)
                   for(size_t bidz = 0; bidz < _config.blocks.z; ++bidz)

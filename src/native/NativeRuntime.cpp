@@ -105,8 +105,9 @@ namespace pacxx
     void NativeRuntime::runOnThread(llvm::Function *function, size_t bidx, size_t bidy, size_t bidz,
                                     std::vector<llvm::GenericValue> &args, size_t numArgs) {
 
-      _threads.push_back(std::thread(callFunction, _compiler->getExecutionEngine(), function, bidx, bidy, bidz,
-                                     std::ref(args), numArgs));
+        callFunction(_compiler->getExecutionEngine(), function, bidx, bidy, bidz, args, numArgs);
+      //_threads.push_back(std::thread(callFunction, _compiler->getExecutionEngine(), function, bidx, bidy, bidz,
+                                  //   std::ref(args), numArgs));
     }
 
     void NativeRuntime::synchronize() {
