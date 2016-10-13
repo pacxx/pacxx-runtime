@@ -128,7 +128,7 @@ namespace pacxx
 
         builder.setEngineKind(EngineKind::JIT);
 
-        builder.setMCJITMemoryManager(make_unique<SectionMemoryManager>());
+        builder.setMCJITMemoryManager(llvm::make_unique<SectionMemoryManager>());
 
         builder.setUseOrcMCJITReplacement(true);
 
