@@ -34,9 +34,9 @@ namespace pacxx
         auto f = reinterpret_cast<void (*) (int32_t, int32_t, int32_t,
                                             int32_t, int32_t, int32_t,
                                             int8_t, intptr_t)>(function);
-        f(argVector[0].IntVal.VAL, argVector[1].IntVal.VAL, argVector[2].IntVal.VAL,
-          argVector[3].IntVal.VAL, argVector[4].IntVal.VAL, argVector[5].IntVal.VAL,
-          argVector[6].IntVal.VAL, reinterpret_cast<intptr_t >(argVector[7].PointerVal));
+        f(argVector[0].IntVal.getSExtValue(), argVector[1].IntVal.getSExtValue(), argVector[2].IntVal.getSExtValue(),
+          argVector[3].IntVal.getSExtValue(), argVector[4].IntVal.getSExtValue(), argVector[5].IntVal.getSExtValue(),
+          argVector[6].IntVal.getSExtValue(), reinterpret_cast<intptr_t >(argVector[7].PointerVal));
 
       //EE->runFunction(function, argVector);
     }
