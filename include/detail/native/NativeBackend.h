@@ -22,11 +22,9 @@ namespace pacxx
 
       llvm::legacy::PassManager& getPassManager();
 
-      llvm::ExecutionEngine* getExecutionEngine();
-
       llvm::Module* compile(llvm::Module& M);
 
-      llvm::Function* getKernelFunction(llvm::Module* module, const std::string name);
+      void* getKernelFptr(llvm::Module* module, const std::string name);
 
       static std::unique_ptr<llvm::Module> createModule(llvm::LLVMContext &Context, const std::string IR);
 

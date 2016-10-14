@@ -12,31 +12,6 @@ namespace pacxx
 {
   namespace v2
   {
-    void callFunction(llvm::ExecutionEngine* EE, llvm::Function *function, size_t bidx, size_t bidy, size_t bidz,
-                        std::vector<llvm::GenericValue>& args, size_t numArgs) {
-
-      std::vector<llvm::GenericValue> argVector(numArgs);
-
-      argVector[0].IntVal = APInt(32, bidx);
-      argVector[1].IntVal = APInt(32, bidy);
-      argVector[2].IntVal = APInt(32, bidz);
-
-      //copy common launch args to the vector
-      std::copy(args.begin(), args.end(), argVector.begin() + 3);
-
-      for(int i = 0; i < 6; ++i)
-        __verbose(argVector[i].IntVal.getSExtValue());
-
-        __verbose("Running");
-        auto f = reinterpret_cast<void (*) (int, int, int,
-                                            int, int, int,
-                                            int, int*)>(EE->getPointerToFunction(function));
-      f(argVector[0].IntVal.getZExtValue(), argVector[1].IntVal.getZExtValue(), argVector[2].IntVal.getZExtValue(),
-          argVector[3].IntVal.getZExtValue(), argVector[4].IntVal.getZExtValue(), argVector[5].IntVal.getZExtValue(),
-          argVector[6].IntVal.getZExtValue(), (int *) GVTOP(argVector[7]));
-
-      //EE->runFunction(function, argVector);
-    }
 
     NativeRuntime::NativeRuntime(unsigned)
         : _compiler(std::make_unique<CompilerT>()){}
@@ -55,11 +30,11 @@ namespace pacxx
       auto It = std::find_if(_kernels.begin(), _kernels.end(),
                              [&](const auto &p) { return name == p.first; });
       if (It == _kernels.end()) {
-        llvm::Function *function= nullptr;
-        function = _compiler->getKernelFunction(_CPUMod, name);
-        if (!function)
+        void *fptr= nullptr;
+        fptr = _compiler->getKernelFptr(_CPUMod, name);
+        if (!fptr)
           throw common::generic_exception("Kernel function not found in module!");
-        auto kernel = new NativeKernel(*this, function);
+        auto kernel = new NativeKernel(*this, fptr);
         kernel->setName(name);
         _kernels[name].reset(kernel);
 
@@ -106,18 +81,19 @@ namespace pacxx
 
     const llvm::Module& NativeRuntime::getModule() { return *_CPUMod; }
 
-    void NativeRuntime::runOnThread(llvm::Function *function, size_t bidx, size_t bidy, size_t bidz,
-                                    std::vector<llvm::GenericValue> &args, size_t numArgs) {
-
-      _threads.push_back(std::thread(callFunction, _compiler->getExecutionEngine(), function, bidx, bidy, bidz,
-                                     std::ref(args), numArgs));
+    void NativeRuntime::runOnThread(void* fptr, size_t bidx, size_t bidy, size_t bidz, size_t max_x, size_t max_y,
+                                    size_t max_z, char* args) {
+      // The kernel wrapper always has this function signature.
+      // The kernel args are constructed from the char buffer
+      auto functor = reinterpret_cast<void (*) (int, int, int,
+                                                int, int, int, char*)>(fptr);
+      _threads.push_back(std::thread(functor, bidx, bidy, bidz, max_x, max_y, max_z, args));
     }
 
     void NativeRuntime::synchronize() {
       for(auto &thread : _threads)
         thread.join();
     };
-
 
     llvm::legacy::PassManager& NativeRuntime::getPassManager() { return _compiler->getPassManager(); };
 

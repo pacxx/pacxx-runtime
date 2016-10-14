@@ -24,7 +24,7 @@ namespace pacxx {
             friend class NativeRuntime;
 
         private:
-            NativeKernel(NativeRuntime& runtime, llvm::Function *function);
+            NativeKernel(NativeRuntime& runtime, void* fptr);
 
         public:
             virtual ~NativeKernel();
@@ -55,9 +55,8 @@ namespace pacxx {
             KernelConfiguration _config;
             std::vector<char> _args;
             std::vector<char> _host_args;
-            std::vector<llvm::GenericValue> _launch_args;
             size_t _args_size;
-            llvm::Function* _function;
+            void* _fptr;
             std::map<int, long long> _staged_values;
             bool _staged_values_changed;
             std::string _name;

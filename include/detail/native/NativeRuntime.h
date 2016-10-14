@@ -24,9 +24,6 @@ namespace pacxx
   namespace v2
   {
 
-    void callFunction(llvm::ExecutionEngine* EE, llvm::Function *function, size_t bidx, size_t bidy, size_t bidz,
-                        std::vector<llvm::GenericValue>& args, const size_t numArgs);
-
     class NativeRuntime : public IRRuntime<NativeRuntime>
     {
     public:
@@ -74,8 +71,8 @@ namespace pacxx
           _memory.erase(It);
       }
 
-      void runOnThread(llvm::Function *function, size_t bidx, size_t bidy, size_t bidz,
-                       std::vector<llvm::GenericValue> &args, size_t numArgs);
+      void runOnThread(void* fptr, size_t bidx, size_t bidy, size_t bidz, size_t max_x, size_t max_y,
+                                      size_t max_z, char* args);
 
       virtual RawDeviceBuffer* allocateRawMemory(size_t bytes) override;
 

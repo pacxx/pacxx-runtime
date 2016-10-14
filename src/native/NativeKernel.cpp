@@ -10,9 +10,9 @@
 namespace pacxx {
   namespace v2 {
 
-    NativeKernel::NativeKernel(NativeRuntime &runtime, llvm::Function *function) :
+    NativeKernel::NativeKernel(NativeRuntime &runtime, void *fptr) :
         _runtime(runtime),
-        _function(function),
+        _fptr(fptr),
         _staged_values_changed(false),
         _disable_staging(false) {}
 
@@ -30,33 +30,6 @@ namespace pacxx {
 
           _args = arg_buffer;
           _args_size = _args.size();
-
-          __verbose("buffer size", _args_size);
-
-          const llvm::Module& M = _runtime.getModule();
-
-          size_t offset = 0;
-
-          // the first 3 params are always threadx, thready, threadz
-          for(int i = 0; i < _function->getFunctionType()->getNumParams() - 3; ++i) {
-            _launch_args.push_back(llvm::GenericValue());
-            if(i > 2) {
-                llvm::Type* type = _function->getFunctionType()->getParamType(i +3);
-                type->dump();
-                auto arg_size  = M.getDataLayout().getTypeAllocSize(type);
-                __verbose(arg_size);
-                auto arg_alignment = M.getDataLayout().getPrefTypeAlignment(type);
-                __verbose(arg_alignment);
-                auto arg_offset = (offset + arg_alignment -1) & ~(arg_alignment -1);
-                std::memcpy(_launch_args[i].Untyped, _args.data() + arg_offset, arg_size);
-                offset = arg_offset + arg_size;
-            }
-          }
-
-          _launch_args[0].IntVal = APInt(32, _config.threads.x);
-          _launch_args[1].IntVal = APInt(32, _config.threads.y);
-          _launch_args[2].IntVal = APInt(32, _config.threads.z);
-
       }
 
       const std::vector<char>& NativeKernel::getArguments() const { return _args; }
@@ -76,7 +49,8 @@ namespace pacxx {
           for(size_t bidx = 0; bidx < _config.blocks.x; ++bidx)
               for(size_t bidy = 0; bidy < _config.blocks.y; ++bidy)
                   for(size_t bidz = 0; bidz < _config.blocks.z; ++bidz)
-                      _runtime.runOnThread(_function, bidx, bidy, bidz, _launch_args, _function->getFunctionType()->getNumParams());
+                      _runtime.runOnThread(_fptr, bidx, bidy, bidz, _config.threads.x, _config.threads.y,
+                                           _config.threads.z, _args.data());
       }
 
       void NativeKernel::setStagedValue(int ref, long long value, bool inScope) { throw new common::generic_exception("not supported"); }

@@ -158,9 +158,10 @@ namespace pacxx
       return TheModule;
     }
 
-    Function* NativeBackend::getKernelFunction(Module* module, const std::string name) {
+    void* NativeBackend::getKernelFptr(llvm::Module *module, const std::string name) {
+        llvm::Function *kernel = module->getFunction("__wrapped__"+name);
         //get the kernel wrapper function from the module
-        return module->getFunction("__wrapped__"+name);
+        return _JITEngine->getPointerToFunction(kernel);
     }
 
     void NativeBackend::linkInModule(llvm::Module& M) {
