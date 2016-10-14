@@ -53,7 +53,6 @@ namespace pacxx {
         private:
             NativeRuntime& _runtime;
             KernelConfiguration _config;
-            unsigned _max_threads;
             std::vector<char> _args;
             std::vector<char> _host_args;
             void* _fptr;

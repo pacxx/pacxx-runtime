@@ -44,11 +44,6 @@ namespace pacxx {
                 _config.blocks.y, ",", _config.blocks.z, ")\nthreads(",
                 _config.threads.x, ",", _config.threads.y, ",", _config.threads.z,")");
 
-          if(_config.blocks.x + _config.blocks.y + _config.blocks.z > _max_threads) {
-              __verbose(_max_threads);
-              throw new common::generic_exception("Kernel configuration exceeded the maximum number of threads supported");
-          }
-
           for(size_t bidx = 0; bidx < _config.blocks.x; ++bidx)
               for(size_t bidy = 0; bidy < _config.blocks.y; ++bidy)
                   for(size_t bidz = 0; bidz < _config.blocks.z; ++bidz)
