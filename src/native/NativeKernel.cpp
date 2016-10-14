@@ -13,7 +13,6 @@ namespace pacxx {
     NativeKernel::NativeKernel(NativeRuntime &runtime, void *fptr) :
         _runtime(runtime),
         _fptr(fptr),
-        _max_threads(std::thread::hardware_concurrency()),
         _staged_values_changed(false),
         _disable_staging(false) {}
 
