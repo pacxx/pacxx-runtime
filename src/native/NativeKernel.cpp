@@ -13,6 +13,7 @@ namespace pacxx {
     NativeKernel::NativeKernel(NativeRuntime &runtime, void *fptr) :
         _runtime(runtime),
         _fptr(fptr),
+        _max_threads(std::thread::hardware_concurrency()),
         _staged_values_changed(false),
         _disable_staging(false) {}
 
@@ -27,9 +28,7 @@ namespace pacxx {
     KernelConfiguration NativeKernel::getConfiguration() const { return _config; }
 
       void NativeKernel::setArguments(const std::vector<char> &arg_buffer) {
-
           _args = arg_buffer;
-          _args_size = _args.size();
       }
 
       const std::vector<char>& NativeKernel::getArguments() const { return _args; }
@@ -40,11 +39,14 @@ namespace pacxx {
 
       const std::vector<char>& NativeKernel::getHostArguments() const { return _host_args; }
 
-      //TODO launch multiple threads
       void NativeKernel::launch() {
           __verbose("Launching kernel: \nblocks(", _config.blocks.x, ",",
                 _config.blocks.y, ",", _config.blocks.z, ")\nthreads(",
                 _config.threads.x, ",", _config.threads.y, ",", _config.threads.z,")");
+
+          if(_config.blocks.x + _config.blocks.y + _config.blocks.z > _max_threads)
+              throw new common::generic_exception(std::string("Kernel configuration exceeded the maximum number of "
+                                                                      "threads supported (") + _max_threads + ")");
 
           for(size_t bidx = 0; bidx < _config.blocks.x; ++bidx)
               for(size_t bidy = 0; bidy < _config.blocks.y; ++bidy)

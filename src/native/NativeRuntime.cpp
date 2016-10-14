@@ -87,6 +87,7 @@ namespace pacxx
       // The kernel args are constructed from the char buffer
       auto functor = reinterpret_cast<void (*) (int, int, int,
                                                 int, int, int, char*)>(fptr);
+
       _threads.push_back(std::thread(functor, bidx, bidy, bidz, max_x, max_y, max_z, args));
     }
 

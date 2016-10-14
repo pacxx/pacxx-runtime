@@ -53,9 +53,9 @@ namespace pacxx {
         private:
             NativeRuntime& _runtime;
             KernelConfiguration _config;
+            unsigned _max_threads;
             std::vector<char> _args;
             std::vector<char> _host_args;
-            size_t _args_size;
             void* _fptr;
             std::map<int, long long> _staged_values;
             bool _staged_values_changed;
