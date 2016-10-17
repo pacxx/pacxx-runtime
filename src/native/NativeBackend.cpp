@@ -48,7 +48,7 @@ namespace {
   store i32 0, i32* %__x, align 4
   br label %14
 
-  ; <label>:14                                      ; preds = %25, %13
+  ; <label>:14                                      ; preds = %xloop, %13
   %15 = load i32, i32* %__x, align 4
   %16 = load i32, i32* %1, align 4
   %17 = icmp ult i32 %15, %16
@@ -62,8 +62,9 @@ namespace {
   %23 = load i32, i32* %__z, align 4
   %24 = zext i32 %23 to i64
   call void @__dummy_kernel(i64 %20, i64 %22, i64 %24)
-  br label %25
-  ; <label>:25                                      ; preds = %18
+  br label %xloop
+
+  ; <label>:xloop                                      ; preds = %18
   %26 = load i32, i32* %__x, align 4
   %27 = add i32 %26, 1
   store i32 %27, i32* %__x, align 4
@@ -165,13 +166,6 @@ namespace pacxx
 
     void NativeBackend::linkInModule(llvm::Module& M) {
         std::unique_ptr<llvm::Module> functionModule = NativeBackend::createModule(_composite->getContext(), native_loop_ir);
-        M.dump();
-        // run vectorizer on kernel function
-        BasicBlockPass* BBPass = createBBVectorizePass();
-        for(const auto& func : M.getFunctionList())
-            for(Function::iterator I = func.begin(), E = func.end(); I != E; ++I)
-                BBPass->runOnBasicBlock(*I);
-        M.dump();
         _linker.linkInModule(functionModule.get(), llvm::Linker::Flags::None, nullptr);
         _linker.linkInModule(&M, llvm::Linker::Flags::None, nullptr);
         _composite->setTargetTriple(sys::getProcessTriple());
