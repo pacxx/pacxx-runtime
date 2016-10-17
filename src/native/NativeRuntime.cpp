@@ -92,6 +92,7 @@ namespace pacxx
     }
 
     void NativeRuntime::synchronize() {
+      __verbose("Threads to sync: ", _threads.size());
       for(auto &thread : _threads)
         thread.join();
     };
