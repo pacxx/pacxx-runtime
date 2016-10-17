@@ -191,7 +191,6 @@ namespace pacxx
 
         if(!_pmInitialized) {
 
-            _PM.add(createBBVectorizePass());
             _PM.add(createPACXXNativeLinker());
             _pmInitialized = true;
         }
