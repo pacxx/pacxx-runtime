@@ -11,6 +11,7 @@
 #include <llvm/Analysis/TargetLibraryInfo.h>
 #include <llvm/ExecutionEngine/SectionMemoryManager.h>
 #include <llvm/Bitcode/ReaderWriter.h>
+#include <llvm/Transforms/Scalar.h>
 
 namespace {
   const std::string native_loop_ir(R"(
@@ -191,8 +192,35 @@ namespace pacxx
             throw common::generic_exception(Error);
 
         if(!_pmInitialized) {
+            TargetLibraryInfoImpl TLII(Triple(M.getTargetTriple()));
+            _PM.add(new TargetLibraryInfoWrapperPass(TLII));
+
+            _PM.add(createReassociatePass());
+
+            _PM.add(createConstantPropagationPass());
+            _PM.add(createSCCPPass());
+            _PM.add(createConstantHoistingPass());
+            _PM.add(createCorrelatedValuePropagationPass());
+            _PM.add(createInstructionCombiningPass());
+            _PM.add(createLICMPass());
+
+            _PM.add(createIndVarSimplifyPass());
+            _PM.add(createLoopRotatePass());
+            _PM.add(createLoopSimplifyPass());
+            _PM.add(createLoopInstSimplifyPass());
+            _PM.add(createLCSSAPass());
+            _PM.add(createLoopStrengthReducePass());
+            _PM.add(createLICMPass());
+            _PM.add(createLoopUnrollPass(2000, 32));
+            _PM.add(createStraightLineStrengthReducePass());
+            _PM.add(createCorrelatedValuePropagationPass());
+            _PM.add(createConstantPropagationPass());
+            _PM.add(createInstructionCombiningPass());
+            _PM.add(createCFGSimplificationPass());
+            _PM.add(createInstructionCombiningPass());
 
             _PM.add(createPACXXNativeLinker());
+            _PM.add(createPACXXLambdaVectorizerPass());
             _pmInitialized = true;
         }
         _PM.run(M);
