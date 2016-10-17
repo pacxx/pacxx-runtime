@@ -95,6 +95,7 @@ namespace pacxx
       __verbose("Threads to sync: ", _threads.size());
       for(auto &thread : _threads)
         thread.join();
+      _threads.clear();
     };
 
     llvm::legacy::PassManager& NativeRuntime::getPassManager() { return _compiler->getPassManager(); };
