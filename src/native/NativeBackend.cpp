@@ -195,6 +195,7 @@ namespace pacxx
 
             _PM.add(createPACXXNativeLinker());
             _PM.add(createBBVectorizePass());
+            _PM.add(createLoopVectorizePass());
             _pmInitialized = true;
         }
         _PM.run(M);
