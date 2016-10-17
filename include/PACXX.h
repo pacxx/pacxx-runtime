@@ -9,6 +9,7 @@
 #include <utility>
 #include <cstddef>
 #include "detail/common/Log.h"
+#include "detail/common/Timing.h"
 #include "detail/KernelConfiguration.h"
 #include "Executor.h"
 #include "detail/device/DeviceCode.h"
