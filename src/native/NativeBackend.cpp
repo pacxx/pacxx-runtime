@@ -32,7 +32,7 @@ namespace {
   %5 = load i32, i32* %__z, align 4
   %6 = load i32, i32* %3, align 4
   %7 = icmp ult i32 %5, %6
-  br i1 %7, label %8, label %36
+  br i1 %7, label %8, label %35
 
   ; <label>:8                                       ; preds = %4
   store i32 0, i32* %__y, align 4
@@ -42,7 +42,7 @@ namespace {
   %10 = load i32, i32* %__y, align 4
   %11 = load i32, i32* %2, align 4
   %12 = icmp ult i32 %10, %11
-  br i1 %12, label %13, label %32
+  br i1 %12, label %13, label %31
 
   ; <label>:13                                      ; preds = %9
   store i32 0, i32* %__x, align 4
@@ -52,7 +52,7 @@ namespace {
   %15 = load i32, i32* %__x, align 4
   %16 = load i32, i32* %1, align 4
   %17 = icmp ult i32 %15, %16
-  br i1 %17, label %18, label %28
+  br i1 %17, label %18, label %27
 
   ; <label>:18                                      ; preds = %14
   %19 = load i32, i32* %__x, align 4
