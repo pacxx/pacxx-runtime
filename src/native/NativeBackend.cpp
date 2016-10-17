@@ -165,6 +165,13 @@ namespace pacxx
 
     void NativeBackend::linkInModule(llvm::Module& M) {
         std::unique_ptr<llvm::Module> functionModule = NativeBackend::createModule(_composite->getContext(), native_loop_ir);
+        M.dump();
+        // run vectorizer on kernel function
+        BasicBlockPass* BBPass = createBBVectorizePass();
+        for(const auto& func : M.getFunctionList())
+            for(Function::iterator I = func.begin(), E = func.end(); I != E; ++I)
+                BBPass->runOnBasicBlock(*I);
+        M.dump();
         _linker.linkInModule(functionModule.get(), llvm::Linker::Flags::None, nullptr);
         _linker.linkInModule(&M, llvm::Linker::Flags::None, nullptr);
         _composite->setTargetTriple(sys::getProcessTriple());
@@ -191,9 +198,6 @@ namespace pacxx
 
         if(!_pmInitialized) {
             _PM.add(createPACXXNativeLinker());
-            _PM.add(createBBVectorizePass());
-            _PM.add(createLoopVectorizePass());
-            _PM.add(createSLPVectorizerPass());
             _pmInitialized = true;
         }
         _PM.run(M);
