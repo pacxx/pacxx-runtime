@@ -148,8 +148,6 @@ namespace pacxx
 
       __verbose("applied pass");
 
-      TheModule->dump();
-
       //TODO remove
       llvm::raw_fd_ostream OS1("moduleAfterPass", EC, llvm::sys::fs::F_None);
       TheModule->print(OS1, nullptr);
