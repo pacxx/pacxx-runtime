@@ -65,30 +65,30 @@ namespace {
   br label %"xloop"
 
   xloop:                                      ; preds = %18
-  %26 = load i32, i32* %__x, align 4
-  %27 = add i32 %26, 1
-  store i32 %27, i32* %__x, align 4
+  %25 = load i32, i32* %__x, align 4
+  %26 = add i32 %25, 1
+  store i32 %26, i32* %__x, align 4
   br label %14, !llvm.loop !1
 
-  ; <label>:28                                      ; preds = %14
-  br label %29
+  ; <label>:27                                      ; preds = %14
+  br label %28
 
-  ; <label>:29                                      ; preds = %28
-  %30 = load i32, i32* %__y, align 4
-  %31 = add i32 %30, 1
-  store i32 %31, i32* %__y, align 4
+  ; <label>:28                                      ; preds = %28
+  %29 = load i32, i32* %__y, align 4
+  %30 = add i32 %29, 1
+  store i32 %30, i32* %__y, align 4
   br label %9
 
-  ; <label>:32                                      ; preds = %9
-  br label %33
+  ; <label>:31                                      ; preds = %9
+  br label %32
 
-  ; <label>:33                                      ; preds = %32
-  %34 = load i32, i32* %__z, align 4
-  %35 = add i32 %34, 1
-  store i32 %35, i32* %__z, align 4
+  ; <label>:32                                      ; preds = %32
+  %33 = load i32, i32* %__z, align 4
+  %34 = add i32 %33, 1
+  store i32 %34, i32* %__z, align 4
   br label %4
 
-  ; <label>:36                                      ; preds = %4
+  ; <label>:35                                      ; preds = %4
   ret void
 }
 
