@@ -64,10 +64,10 @@ namespace {
   call void @__dummy_kernel(i64 %20, i64 %22, i64 %24)
   br label %"xloop"
 
-  xloop:
-  %25 = load i32, i32* %__x, align 4
-  %26 = add i32 %25, 1
-  store i32 %26, i32* %__x, align 4
+  xloop:                                      ; preds = %18
+  %26 = load i32, i32* %__x, align 4
+  %27 = add i32 %26, 1
+  store i32 %27, i32* %__x, align 4
   br label %14, !llvm.loop !1
 
   ; <label>:28                                      ; preds = %14
