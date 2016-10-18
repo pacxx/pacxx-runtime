@@ -205,7 +205,6 @@ namespace pacxx
             _PM.add(createDeadCodeEliminationPass());
             _PM.add(createDeadInstEliminationPass());
             _PM.add(createDeadStoreEliminationPass());
-            _PM.
             _pmInitialized = true;
         }
         _PM.run(M);
