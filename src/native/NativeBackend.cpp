@@ -53,7 +53,7 @@ namespace {
   %15 = load i32, i32* %__x, align 4
   %16 = load i32, i32* %1, align 4
   %17 = icmp ult i32 %15, %16
-  br i1 %17, label %18, label %27
+  br i1 %17, label %18, label %30
 
   ; <label>:18                                      ; preds = %14
   %19 = load i32, i32* %__x, align 4
@@ -69,27 +69,33 @@ namespace {
   %25 = load i32, i32* %__x, align 4
   %26 = add i32 %25, 1
   store i32 %26, i32* %__x, align 4
-  br label %14, !llvm.loop !1
+  br label %"xcheck", !llvm.loop !1
 
-  ; <label>:27                                      ; preds = %14
-  br label %28
+  xcheck:
+  %27 = load i32, i32* %__x, align 4
+  %28 = load i32, i32* %1, align 4
+  %29 = icmp ult i32 %27, %28
+  br i1 %29, label %18, label %30
 
-  ; <label>:28                                      ; preds = %28
-  %29 = load i32, i32* %__y, align 4
-  %30 = add i32 %29, 1
-  store i32 %30, i32* %__y, align 4
+  ; <label>:30                                      ; preds = %14
+  br label %31
+
+  ; <label>:31                                      ; preds = %28
+  %32 = load i32, i32* %__y, align 4
+  %33 = add i32 %32, 1
+  store i32 %33, i32* %__y, align 4
   br label %9
 
-  ; <label>:31                                      ; preds = %9
-  br label %32
+  ; <label>:34                                      ; preds = %9
+  br label %35
 
-  ; <label>:32                                      ; preds = %32
-  %33 = load i32, i32* %__z, align 4
-  %34 = add i32 %33, 1
-  store i32 %34, i32* %__z, align 4
+  ; <label>:35                                      ; preds = %32
+  %36 = load i32, i32* %__z, align 4
+  %37 = add i32 %36, 1
+  store i32 %37, i32* %__z, align 4
   br label %4
 
-  ; <label>:35                                      ; preds = %4
+  ; <label>:38                                      ; preds = %4
   ret void
 }
 
@@ -199,6 +205,7 @@ namespace pacxx
             _PM.add(createDeadCodeEliminationPass());
             _PM.add(createDeadInstEliminationPass());
             _PM.add(createDeadStoreEliminationPass());
+            _PM.
             _pmInitialized = true;
         }
         _PM.run(M);
