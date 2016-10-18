@@ -192,6 +192,7 @@ namespace pacxx
 
         if(!_pmInitialized) {
             _PM.add(createPACXXNativeLinker());
+            _PM.add(createPACXXDeadCodeElimPass());
             _pmInitialized = true;
         }
         _PM.run(M);
