@@ -33,7 +33,7 @@ namespace {
   %5 = load i32, i32* %__z, align 4
   %6 = load i32, i32* %3, align 4
   %7 = icmp ult i32 %5, %6
-  br i1 %7, label %8, label %35
+  br i1 %7, label %8, label %38
 
   ; <label>:8                                       ; preds = %4
   store i32 0, i32* %__y, align 4
