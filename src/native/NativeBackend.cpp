@@ -63,15 +63,19 @@ namespace {
   %23 = load i32, i32* %__z, align 4
   %24 = zext i32 %23 to i64
   call void @__dummy_kernel(i64 %20, i64 %22, i64 %24)
+  br label %"xloop"
 
+  xloop:                                      ; preds = %18
   %25 = load i32, i32* %__x, align 4
   %26 = add i32 %25, 1
   store i32 %26, i32* %__x, align 4
+  br label %"xcheck", !llvm.loop !1
 
+  xcheck:
   %27 = load i32, i32* %__x, align 4
   %28 = load i32, i32* %1, align 4
   %29 = icmp ult i32 %27, %28
-  br i1 %29, label %18, label %30, !llvm.loop !1
+  br i1 %29, label %18, label %30
 
   ; <label>:30                                      ; preds = %xcheck
   br label %31
@@ -85,7 +89,7 @@ namespace {
   ; <label>:34                                      ; preds = %9
   br label %35
 
-  ; <label>:35                                      ; preds = %32
+  ; <label>:35                                      ; preds = %34
   %36 = load i32, i32* %__z, align 4
   %37 = add i32 %36, 1
   store i32 %37, i32* %__z, align 4
