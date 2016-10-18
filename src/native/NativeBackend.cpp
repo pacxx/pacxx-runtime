@@ -43,13 +43,13 @@ namespace {
   %10 = load i32, i32* %__y, align 4
   %11 = load i32, i32* %2, align 4
   %12 = icmp ult i32 %10, %11
-  br i1 %12, label %13, label %31
+  br i1 %12, label %13, label %35
 
   ; <label>:13                                      ; preds = %9
   store i32 0, i32* %__x, align 4
   br label %14
 
-  ; <label>:14                                      ; preds = %"xloop", %13
+  ; <label>:14                                      ; preds = %13
   %15 = load i32, i32* %__x, align 4
   %16 = load i32, i32* %1, align 4
   %17 = icmp ult i32 %15, %16
@@ -77,10 +77,10 @@ namespace {
   %29 = icmp ult i32 %27, %28
   br i1 %29, label %18, label %30
 
-  ; <label>:30                                      ; preds = %14
+  ; <label>:30                                      ; preds = %xcheck
   br label %31
 
-  ; <label>:31                                      ; preds = %28
+  ; <label>:31                                      ; preds = %30
   %32 = load i32, i32* %__y, align 4
   %33 = add i32 %32, 1
   store i32 %33, i32* %__y, align 4
