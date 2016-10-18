@@ -69,7 +69,7 @@ namespace {
   %27 = load i32, i32* %__x, align 4
   %28 = load i32, i32* %1, align 4
   %29 = icmp ult i32 %27, %28
-  br i1 %29, label %18, label %30
+  br i1 %29, label %18, label %30, !llvm.loop !1
 
   ; <label>:30                                      ; preds = %18
   br label %31
