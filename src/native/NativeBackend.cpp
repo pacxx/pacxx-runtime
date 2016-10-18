@@ -196,6 +196,9 @@ namespace pacxx
             _PM.add(createLoopSimplifyPass());
             _PM.add(createLoopInstSimplifyPass());
             _PM.add(createLoopStrengthReducePass());
+            _PM.add(createDeadCodeEliminationPass());
+            _PM.add(createDeadInstEliminationPass());
+            _PM.add(createDeadStoreEliminationPass());
             _pmInitialized = true;
         }
         _PM.run(M);
