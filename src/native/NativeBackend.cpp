@@ -11,6 +11,7 @@
 #include <llvm/Analysis/TargetLibraryInfo.h>
 #include <llvm/ExecutionEngine/SectionMemoryManager.h>
 #include <llvm/Bitcode/ReaderWriter.h>
+#include <llvm/Transforms/Scalar.h>
 #include "llvm/Transforms/Vectorize.h"
 
 namespace {
@@ -192,7 +193,9 @@ namespace pacxx
 
         if(!_pmInitialized) {
             _PM.add(createPACXXNativeLinker());
-            _PM.add(createPACXXDeadCodeElimPass());
+            _PM.add(createLoopSimplifyPass());
+            _PM.add(createLoopInstSimplifyPass());
+            _PM.add(createLoopStrengthReducePass());
             _pmInitialized = true;
         }
         _PM.run(M);
