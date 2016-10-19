@@ -12,7 +12,10 @@
 #include <llvm/ExecutionEngine/SectionMemoryManager.h>
 #include <llvm/Bitcode/ReaderWriter.h>
 #include <llvm/Transforms/Scalar.h>
-#include "llvm/Transforms/Vectorize.h"
+#include <llvm/Transforms/Vectorize.h>
+#include <llvm/LinkAllPasses.h>
+#include <llvm/Analysis/TargetTransformInfo.h>
+#include <llvm/Transforms/IPO/PassManagerBuilder.h>
 
 namespace {
   const std::string native_loop_ir(R"(
@@ -111,19 +114,19 @@ namespace pacxx
 {
   namespace v2
   {
-    NativeBackend::NativeBackend() : _composite(std::make_unique<llvm::Module>("pacxx-link", llvm::getGlobalContext())),
+    NativeBackend::NativeBackend() : _composite(std::make_unique<Module>("pacxx-link", getGlobalContext())),
                                      _linker(_composite.get()),
                                      _pmInitialized(false){ }
 
     NativeBackend::~NativeBackend() {}
 
-    llvm::Module* NativeBackend::compile(llvm::Module &M) {
+    Module* NativeBackend::compile(Module &M) {
 
         std::string error;
         std::error_code EC;
 
         linkInModule(M);
-        llvm::Module *TheModule = _composite.get();
+        Module *TheModule = _composite.get();
 
         EngineBuilder builder{std::move(_composite)};
 
@@ -143,7 +146,7 @@ namespace pacxx
       TheModule->setDataLayout(_JITEngine->getDataLayout());
 
       // TODO remove
-      llvm::raw_fd_ostream OS("moduleBeforePass", EC, llvm::sys::fs::F_None);
+      raw_fd_ostream OS("moduleBeforePass", EC, sys::fs::F_None);
       TheModule->print(OS, nullptr);
 
       applyPasses(*TheModule);
@@ -151,7 +154,7 @@ namespace pacxx
       __verbose("applied pass");
 
       //TODO remove
-      llvm::raw_fd_ostream OS1("moduleAfterPass", EC, llvm::sys::fs::F_None);
+      raw_fd_ostream OS1("moduleAfterPass", EC, sys::fs::F_None);
       TheModule->print(OS1, nullptr);
 
       _JITEngine->finalizeObject();
@@ -159,32 +162,64 @@ namespace pacxx
       return TheModule;
     }
 
-    void* NativeBackend::getKernelFptr(llvm::Module *module, const std::string name) {
-        llvm::Function *kernel = module->getFunction("__wrapped__"+name);
+    void* NativeBackend::getKernelFptr(Module *module, const std::string name) {
+        Function *kernel = module->getFunction("__wrapped__"+name);
         //get the kernel wrapper function from the module
         return _JITEngine->getPointerToFunction(kernel);
     }
 
-    void NativeBackend::linkInModule(llvm::Module& M) {
-        std::unique_ptr<llvm::Module> functionModule = NativeBackend::createModule(_composite->getContext(), native_loop_ir);
-        _linker.linkInModule(functionModule.get(), llvm::Linker::Flags::None, nullptr);
-        _linker.linkInModule(&M, llvm::Linker::Flags::None, nullptr);
+    void NativeBackend::linkInModule(Module& M) {
+        std::unique_ptr<Module> functionModule = NativeBackend::createModule(_composite->getContext(), native_loop_ir);
+        _linker.linkInModule(functionModule.get(), Linker::Flags::None, nullptr);
+        _linker.linkInModule(&M, Linker::Flags::None, nullptr);
         _composite->setTargetTriple(sys::getProcessTriple());
     }
 
-    std::unique_ptr<llvm::Module> NativeBackend::createModule(llvm::LLVMContext& Context, const std::string IR) {
-        llvm::SMDiagnostic Err;
-        llvm::MemoryBufferRef buffer(IR, "loop-buffer");
-        std::unique_ptr<llvm::Module> Result = llvm::parseIR(buffer, Err, Context);
+    std::unique_ptr<Module> NativeBackend::createModule(LLVMContext& Context, const std::string IR) {
+        SMDiagnostic Err;
+        MemoryBufferRef buffer(IR, "loop-buffer");
+        std::unique_ptr<Module> Result = parseIR(buffer, Err, Context);
         if (!Result)
-            Err.print("createModule", llvm::errs());
+            Err.print("createModule", errs());
         Result->materializeMetadata();
         return Result;
     }
 
-    void NativeBackend::applyPasses(llvm::Module& M) {
+      void NativeBackend::addO3Passes(legacy::PassManagerBase &MPM,
+                                      legacy::FunctionPassManager &FPM) {
+
+          PassManagerBuilder Builder;
+          Builder.OptLevel = 3;
+          Builder.SizeLevel = 0;
+
+          Builder.Inliner = createFunctionInliningPass(3, 0);
+          Builder.LoopVectorize = true;
+          Builder.SLPVectorize = true;
+
+          Builder.populateFunctionPassManager(FPM);
+          Builder.populateModulePassManager(MPM);
+      }
+
+    void NativeBackend::applyPasses(Module& M) {
 
         string Error;
+
+        TargetLibraryInfoImpl TLII(Triple(M.getTargetTriple()));// Initialize passes
+
+        TargetMachine* TM = _JITEngine->getTargetMachine();
+        std::unique_ptr<legacy::FunctionPassManager> FPM;
+
+        PassRegistry &Registry = *PassRegistry::getPassRegistry();
+        initializeCore(Registry);
+        initializeScalarOpts(Registry);
+        initializeObjCARCOpts(Registry);
+        initializeVectorization(Registry);
+        initializeIPO(Registry);
+        initializeAnalysis(Registry);
+        initializeTransformUtils(Registry);
+        initializeInstCombine(Registry);
+        initializeInstrumentation(Registry);
+        initializeTarget(Registry);
 
         if(!_target)
            _target = TargetRegistry::lookupTarget(M.getTargetTriple(), Error);
@@ -192,19 +227,24 @@ namespace pacxx
             throw common::generic_exception(Error);
 
         if(!_pmInitialized) {
+            FPM.reset(new legacy::FunctionPassManager(&M));
+            FPM->add(createTargetTransformInfoWrapperPass(TM->getTargetIRAnalysis()));
             _PM.add(createPACXXNativeLinker());
-            _PM.add(createLoopSimplifyPass());
-            _PM.add(createLoopInstSimplifyPass());
-            _PM.add(createLoopStrengthReducePass());
-            _PM.add(createDeadCodeEliminationPass());
-            _PM.add(createDeadInstEliminationPass());
-            _PM.add(createDeadStoreEliminationPass());
+            _PM.add(new TargetLibraryInfoWrapperPass(TLII));
+            _PM.add(createTargetTransformInfoWrapperPass(TM->getTargetIRAnalysis()));
+            addO3Passes(_PM, *FPM);
+            addO3Passes(_PM, *FPM);
+            FPM->doInitialization();
             _pmInitialized = true;
         }
+
+        for(Function &F : M)
+            FPM->run(F);
+
         _PM.run(M);
     }
 
-    llvm::legacy::PassManager& NativeBackend::getPassManager() { return _PM; }
+    legacy::PassManager& NativeBackend::getPassManager() { return _PM; }
 
   }
 }
