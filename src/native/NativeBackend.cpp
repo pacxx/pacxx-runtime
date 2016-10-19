@@ -185,7 +185,7 @@ namespace pacxx
         return Result;
     }
 
-    void NativeBackend::addO3Passes(llvm::legacy::PassManagerBase &MPM, llvm::legacy::FunctionPassManager &FPM) {
+    void NativeBackend::addO3Passes(legacy::PassManagerBase &MPM, legacy::FunctionPassManager &FPM) {
           PassManagerBuilder Builder;
           Builder.OptLevel = 3;
           Builder.SizeLevel = 0;
@@ -228,8 +228,8 @@ namespace pacxx
             FPM.reset(new legacy::FunctionPassManager(&M));
             FPM->add(createTargetTransformInfoWrapperPass(TM->getTargetIRAnalysis()));
             _PM.add(createPACXXNativeLinker());
-            _PM.add(new TargetLibraryInfoWrapperPass(TLII));
-            _PM.add(createTargetTransformInfoWrapperPass(TM->getTargetIRAnalysis()));
+            //_PM.add(new TargetLibraryInfoWrapperPass(TLII));
+            //_PM.add(createTargetTransformInfoWrapperPass(TM->getTargetIRAnalysis()));
             addO3Passes(_PM, *FPM);
             addO3Passes(_PM, *FPM);
             FPM->doInitialization();
