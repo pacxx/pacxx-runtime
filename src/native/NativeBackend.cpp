@@ -185,37 +185,9 @@ namespace pacxx
         return Result;
     }
 
-    void NativeBackend::addO3Passes(legacy::PassManagerBase &MPM) {
-          PassManagerBuilder Builder;
-          Builder.OptLevel = 3;
-          Builder.SizeLevel = 0;
-
-          Builder.Inliner = createFunctionInliningPass(3, 0);
-          Builder.LoopVectorize = true;
-          Builder.SLPVectorize = true;
-
-          Builder.populateModulePassManager(MPM);
-      }
-
     void NativeBackend::applyPasses(Module& M) {
 
         string Error;
-
-        TargetLibraryInfoImpl TLII(Triple(M.getTargetTriple()));// Initialize passes
-
-        TargetMachine* TM = _JITEngine->getTargetMachine();
-
-        PassRegistry &Registry = *PassRegistry::getPassRegistry();
-        initializeCore(Registry);
-        initializeScalarOpts(Registry);
-        initializeObjCARCOpts(Registry);
-        initializeVectorization(Registry);
-        initializeIPO(Registry);
-        initializeAnalysis(Registry);
-        initializeTransformUtils(Registry);
-        initializeInstCombine(Registry);
-        initializeInstrumentation(Registry);
-        initializeTarget(Registry);
 
         if(!_target)
            _target = TargetRegistry::lookupTarget(M.getTargetTriple(), Error);
@@ -224,10 +196,6 @@ namespace pacxx
 
         if(!_pmInitialized) {
             _PM.add(createPACXXNativeLinker());
-            //_PM.add(new TargetLibraryInfoWrapperPass(TLII));
-            //_PM.add(createTargetTransformInfoWrapperPass(TM->getTargetIRAnalysis()));
-            //addO3Passes(_PM);
-            //addO3Passes(_PM);
             _pmInitialized = true;
         }
 

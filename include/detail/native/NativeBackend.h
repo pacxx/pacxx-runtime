@@ -31,7 +31,6 @@ namespace pacxx
     private:
       void linkInModule(llvm::Module& M);
       void applyPasses(llvm::Module& M);
-      void addO3Passes(llvm::legacy::PassManagerBase &MPM);
 
     private:
       llvm::legacy::PassManager _PM;
