@@ -224,8 +224,8 @@ namespace pacxx
 
         if(!_pmInitialized) {
             _PM.add(createPACXXNativeLinker());
-            _PM.add(new TargetLibraryInfoWrapperPass(TLII));
-            _PM.add(createTargetTransformInfoWrapperPass(TM->getTargetIRAnalysis()));
+            //_PM.add(new TargetLibraryInfoWrapperPass(TLII));
+            //_PM.add(createTargetTransformInfoWrapperPass(TM->getTargetIRAnalysis()));
             //addO3Passes(_PM);
             //addO3Passes(_PM);
             _pmInitialized = true;
