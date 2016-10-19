@@ -185,7 +185,7 @@ namespace pacxx
         return Result;
     }
 
-    void NativeBackend::addO3Passes(legacy::PassManagerBase &MPM, legacy::FunctionPassManager &FPM) {
+    void NativeBackend::addO3Passes(legacy::PassManagerBase &MPM) {
           PassManagerBuilder Builder;
           Builder.OptLevel = 3;
           Builder.SizeLevel = 0;
@@ -194,7 +194,6 @@ namespace pacxx
           Builder.LoopVectorize = true;
           Builder.SLPVectorize = true;
 
-          Builder.populateFunctionPassManager(FPM);
           Builder.populateModulePassManager(MPM);
       }
 
@@ -205,7 +204,6 @@ namespace pacxx
         TargetLibraryInfoImpl TLII(Triple(M.getTargetTriple()));// Initialize passes
 
         TargetMachine* TM = _JITEngine->getTargetMachine();
-        std::unique_ptr<legacy::FunctionPassManager> FPM;
 
         PassRegistry &Registry = *PassRegistry::getPassRegistry();
         initializeCore(Registry);
@@ -225,19 +223,13 @@ namespace pacxx
             throw common::generic_exception(Error);
 
         if(!_pmInitialized) {
-            FPM.reset(new legacy::FunctionPassManager(&M));
-            FPM->add(createTargetTransformInfoWrapperPass(TM->getTargetIRAnalysis()));
             _PM.add(createPACXXNativeLinker());
-            //_PM.add(new TargetLibraryInfoWrapperPass(TLII));
-            //_PM.add(createTargetTransformInfoWrapperPass(TM->getTargetIRAnalysis()));
-            addO3Passes(_PM, *FPM);
-            addO3Passes(_PM, *FPM);
-            FPM->doInitialization();
+            _PM.add(new TargetLibraryInfoWrapperPass(TLII));
+            _PM.add(createTargetTransformInfoWrapperPass(TM->getTargetIRAnalysis()));
+            addO3Passes(_PM);
+            addO3Passes(_PM);
             _pmInitialized = true;
         }
-
-        for(Function &F : M)
-            FPM->run(F);
 
         _PM.run(M);
     }
