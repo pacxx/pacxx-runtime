@@ -65,7 +65,7 @@ namespace {
   %20 = zext i32 %__yload to i64
   %__zload = load i32, i32* %__z, align 4
   %21 = zext i32 %__zload to i64
-  call void @__dummy_kernel(i64 %20, i64 %22, i64 %24)
+  call void @__dummy_kernel(i64 %19, i64 %20, i64 %21)
   %22 = load i32, i32* %__x, align 4
   %23 = add i32 %25, 1
   store i32 %23, i32* %__x, align 4
