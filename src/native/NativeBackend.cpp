@@ -197,6 +197,7 @@ namespace pacxx
             throw common::generic_exception(Error);
 
         if(!_pmInitialized) {
+            _PM.add(createPACXXLambdaVectorizerPass());
             _PM.add(createPACXXNativeLinker());
             _pmInitialized = true;
         }
