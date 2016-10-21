@@ -197,9 +197,8 @@ namespace pacxx
             throw common::generic_exception(Error);
 
         if(!_pmInitialized) {
-            //_PM.add(createPACXXNativeKernelTransform());
+            _PM.add(createPACXXNativeKernelTransform());
             _PM.add(createPACXXNativeLinker());
-            _PM.add(createLoopUnrollPass(-1, 16, 1, 1));
             _pmInitialized = true;
         }
 
