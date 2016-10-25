@@ -65,14 +65,13 @@ namespace {
   %22 = zext i32 %21 to i64
   %23 = load i32, i32* %__z, align 4
   %24 = zext i32 %23 to i64
-  call void @__vectorized_dummy_kernel(i64 %20, i64 %22, i64 %24)
+  call void @__dummy_kernel(i64 %20, i64 %22, i64 %24)
   %25 = load i32, i32* %__x, align 4
-  %26 = add i32 %25, 16
+  %26 = add i32 %25, 1
   store i32 %26, i32* %__x, align 4
   %27 = load i32, i32* %__x, align 4
   %28 = load i32, i32* %1, align 4
-  %test = add i32 %27, 16
-  %29 = icmp ult i32 %test, %28
+  %29 = icmp ult i32 %27, %28
   br i1 %29, label %18, label %30, !llvm.loop !4
 
   ; <label>:30                                      ; preds = %18
@@ -98,8 +97,6 @@ namespace {
 }
 
 declare void @__dummy_kernel(i64, i64, i64) #1
-
-declare void @__vectorized_dummy_kernel(i64, i64, i64) #1
 
 attributes #0 = { uwtable "disable-tail-calls"="false" "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-ma  th"="false" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+fxsr,+mmx,+sse,+sse2" "unsafe-fp-math"="false" "use-soft-float"="false" }
 attributes #1 = { "disable-tail-calls"="false" "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="fal  se" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+fxsr,+mmx,+sse,+sse2" "unsafe-fp-math"="false" "use-soft-float"="false" }
