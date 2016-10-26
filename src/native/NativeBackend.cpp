@@ -72,7 +72,7 @@ namespace {
   %27 = load i32, i32* %__x, align 4
   %28 = load i32, i32* %1, align 4
   %29 = icmp ult i32 %27, %28
-  br i1 %29, label %18, label %30, !llvm.loop !4
+  br i1 %29, label %18, label %30, !llvm.loop !2
 
   ; <label>:30                                      ; preds = %18
   br label %31
@@ -106,8 +106,6 @@ attributes #1 = { "disable-tail-calls"="false" "less-precise-fpmad"="false" "no-
 !0 = !{!"PACXX"}
 !1 = distinct !{!1, !2}
 !2 = !{!"llvm.loop.vectorize.enable", i1 true}
-!3 = !{!"llvm.loop.vectorize.width", i32 16}
-!4 = !{!2, !3}
 )");
 }
 
@@ -145,6 +143,7 @@ namespace pacxx
         throw new common::generic_exception(error);
       }
 
+      TheModule->setTargetTriple(_JITEngine->getTargetMachine()->getTargetTriple().str());
       TheModule->setDataLayout(_JITEngine->getDataLayout());
 
       // TODO remove
