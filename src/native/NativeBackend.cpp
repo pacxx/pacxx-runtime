@@ -197,6 +197,7 @@ namespace pacxx
         if(!_pmInitialized) {
             TargetLibraryInfoImpl TLII(Triple(M.getTargetTriple()));
             _PM.add(new TargetLibraryInfoWrapperPass(TLII));
+            _PM.add(createTargetTransformInfoWrapperPass(_JITEngine->getTargetMachine()->getTargetIRAnalysis()));
             _PM.add(createPACXXNativeKernelTransform());
             _PM.add(createPACXXNativeLinker());
             _pmInitialized = true;
