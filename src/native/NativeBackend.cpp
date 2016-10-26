@@ -194,8 +194,9 @@ namespace pacxx
            _target = TargetRegistry::lookupTarget(M.getTargetTriple(), Error);
         if(!_target)
             throw common::generic_exception(Error);
-
         if(!_pmInitialized) {
+            TargetLibraryInfoImpl TLII(Triple(M.getTargetTriple()));
+            _PM.add(new TargetLibraryInfoWrapperPass(TLII));
             _PM.add(createPACXXNativeKernelTransform());
             _PM.add(createPACXXNativeLinker());
             _pmInitialized = true;
