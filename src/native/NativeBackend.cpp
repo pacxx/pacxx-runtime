@@ -188,17 +188,17 @@ namespace pacxx
 
     void NativeBackend::applyPasses(Module& M) {
 
-        string Error;
-
-        if(!_target)
-           _target = TargetRegistry::lookupTarget(M.getTargetTriple(), Error);
-        if(!_target)
-            throw common::generic_exception(Error);
+        if(!_machine)
+            _machine = _JITEngine->getTargetMachine();
+        if(!_machine)
+            throw common::generic_exception("Can not get target machine");
         if(!_pmInitialized) {
             TargetLibraryInfoImpl TLII(Triple(M.getTargetTriple()));
             _PM.add(new TargetLibraryInfoWrapperPass(TLII));
-            _PM.add(createTargetTransformInfoWrapperPass(_JITEngine->getTargetMachine()->getTargetIRAnalysis()));
+            _PM.add(createTargetTransformInfoWrapperPass(_machine->getTargetIRAnalysis()));
+            _PM.add(createPACXXAddrSpaceTransform());
             _PM.add(createPACXXNativeKernelTransform());
+            _PM.add(createSLPVectorizerPass());
             _PM.add(createPACXXNativeLinker());
             _pmInitialized = true;
         }
