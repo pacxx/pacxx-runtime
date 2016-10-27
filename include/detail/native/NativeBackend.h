@@ -34,7 +34,7 @@ namespace pacxx
 
     private:
       llvm::legacy::PassManager _PM;
-      const llvm::Target *_target;
+      llvm::TargetMachine* _machine;
       std::unique_ptr<llvm::Module> _composite;
       llvm::Linker _linker;
       llvm::ExecutionEngine *_JITEngine;
