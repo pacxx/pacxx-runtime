@@ -198,6 +198,7 @@ namespace pacxx
             _PM.add(createTargetTransformInfoWrapperPass(_machine->getTargetIRAnalysis()));
             _PM.add(createPACXXAddrSpaceTransform());
             _PM.add(createPACXXNativeKernelTransform());
+            _PM.add(createSCEVAAWrapperPass());
             _PM.add(createSLPVectorizerPass());
             _PM.add(createPACXXNativeLinker());
             _pmInitialized = true;
