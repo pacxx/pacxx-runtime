@@ -188,8 +188,6 @@ namespace pacxx
 
     void NativeBackend::applyPasses(Module& M) {
 
-        bool vectorized = false;
-
         if(!_machine)
             _machine = _JITEngine->getTargetMachine();
         if(!_machine)
