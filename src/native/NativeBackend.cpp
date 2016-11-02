@@ -199,7 +199,7 @@ namespace pacxx
             _PM.add(new TargetLibraryInfoWrapperPass(TLII));
             _PM.add(createTargetTransformInfoWrapperPass(_machine->getTargetIRAnalysis()));
             _PM.add(createPACXXAddrSpaceTransform());
-            _PM.add(createPACXXNativeVectorizer());
+            _PM.add(createPACXXNativeVectorizer(_machine));
             //_PM.add(createPACXXNativeLinker());
             _PM.add(createDeadCodeEliminationPass());
             _pmInitialized = true;
