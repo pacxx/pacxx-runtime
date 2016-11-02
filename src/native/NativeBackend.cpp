@@ -198,6 +198,7 @@ namespace pacxx
             TargetLibraryInfoImpl TLII(Triple(M.getTargetTriple()));
             _PM.add(new TargetLibraryInfoWrapperPass(TLII));
             _PM.add(createTargetTransformInfoWrapperPass(_machine->getTargetIRAnalysis()));
+            _PM.add(createScopedNoAliasAAWrapperPass());
             _PM.add(createPACXXAddrSpaceTransform());
             _PM.add(createPACXXNativeVectorizer());
             //_PM.add(createPACXXNativeLinker());
