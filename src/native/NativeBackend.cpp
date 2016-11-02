@@ -201,6 +201,7 @@ namespace pacxx
             _PM.add(createScopedNoAliasAAWrapperPass());
             _PM.add(createPACXXAddrSpaceTransform());
             _PM.add(createPACXXNativeVectorizer());
+            _PM.add(createSLPVectorizerPass());
             //_PM.add(createPACXXNativeLinker());
             _PM.add(createDeadCodeEliminationPass());
             _pmInitialized = true;
