@@ -188,6 +188,8 @@ namespace pacxx
 
     void NativeBackend::applyPasses(Module& M) {
 
+        bool vectorized = false;
+
         if(!_machine)
             _machine = _JITEngine->getTargetMachine();
         if(!_machine)
@@ -196,10 +198,8 @@ namespace pacxx
             TargetLibraryInfoImpl TLII(Triple(M.getTargetTriple()));
             _PM.add(new TargetLibraryInfoWrapperPass(TLII));
             _PM.add(createTargetTransformInfoWrapperPass(_machine->getTargetIRAnalysis()));
-            _PM.add(createScopedNoAliasAAWrapperPass());
             _PM.add(createPACXXAddrSpaceTransform());
-            _PM.add(createPACXXNativeKernelTransform());
-            _PM.add(createSLPVectorizerPass());
+            _PM.add(createPACXXNativeVectorizer());
             //_PM.add(createPACXXNativeLinker());
             _PM.add(createDeadCodeEliminationPass());
             _pmInitialized = true;
