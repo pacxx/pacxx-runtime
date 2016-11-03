@@ -15,85 +15,86 @@
 #include <llvm/Transforms/Vectorize.h>
 #include <llvm/LinkAllPasses.h>
 #include <llvm/Analysis/TargetTransformInfo.h>
+#include <llvm/Analysis/LoopInfo.h>
 #include <llvm/Transforms/IPO/PassManagerBuilder.h>
 
 namespace {
-  const std::string native_loop_ir(R"(
-  define void @foo(i32 %__maxx, i32 %__maxy, i32 %__maxz) #0 {
-  %1 = alloca i32, align 4
-  %2 = alloca i32, align 4
-  %3 = alloca i32, align 4
-  %__z = alloca i32, align 4
-  %__y = alloca i32, align 4
-  %__x = alloca i32, align 4
-  store i32 %__maxx, i32* %1, align 4
-  store i32 %__maxy, i32* %2, align 4
-  store i32 %__maxz, i32* %3, align 4
-  store i32 0, i32* %__z, align 4
-  br label %4
+const std::string native_loop_ir(R"(
+define void @foo(i32 %__maxx, i32 %__maxy, i32 %__maxz) #0 {
+    %1 = alloca i32, align 4
+    %2 = alloca i32, align 4
+    %3 = alloca i32, align 4
+    %__z = alloca i32, align 4
+    %__y = alloca i32, align 4
+    %__x = alloca i32, align 4
+    store i32 %__maxx, i32* %1, align 4
+    store i32 %__maxy, i32* %2, align 4
+    store i32 %__maxz, i32* %3, align 4
+    store i32 0, i32* %__z, align 4
+    br label %4
 
-  ; <label>:4                                       ; preds = %33, %0
-  %5 = load i32, i32* %__z, align 4
-  %6 = load i32, i32* %3, align 4
-  %7 = icmp ult i32 %5, %6
-  br i1 %7, label %8, label %38
+    ; <label>:4                                       ; preds = %33, %0
+    %5 = load i32, i32* %__z, align 4
+    %6 = load i32, i32* %3, align 4
+    %7 = icmp ult i32 %5, %6
+    br i1 %7, label %8, label %36
 
-  ; <label>:8                                       ; preds = %4
-  store i32 0, i32* %__y, align 4
-  br label %9
+    ; <label>:8                                       ; preds = %4
+    store i32 0, i32* %__y, align 4
+    br label %9
 
-  ; <label>:9                                       ; preds = %29, %8
-  %10 = load i32, i32* %__y, align 4
-  %11 = load i32, i32* %2, align 4
-  %12 = icmp ult i32 %10, %11
-  br i1 %12, label %13, label %35
+    ; <label>:9                                       ; preds = %29, %8
+    %10 = load i32, i32* %__y, align 4
+    %11 = load i32, i32* %2, align 4
+    %12 = icmp ult i32 %10, %11
+    br i1 %12, label %13, label %32
 
-  ; <label>:13                                      ; preds = %9
-  store i32 0, i32* %__x, align 4
-  br label %14
+    ; <label>:13                                      ; preds = %9
+    store i32 0, i32* %__x, align 4
+    br label %14
 
-  ; <label>:14                                      ; preds = %13
-  %15 = load i32, i32* %__x, align 4
-  %16 = load i32, i32* %1, align 4
-  %17 = icmp ult i32 %15, %16
-  br i1 %17, label %18, label %30
+    ; <label>:14                                      ; preds = %25, %13
+    %15 = load i32, i32* %__x, align 4
+    %16 = load i32, i32* %1, align 4
+    %17 = icmp ult i32 %15, %16
+    br i1 %17, label %18, label %28
 
-  ; <label>:18                                      ; preds = %14
-  %19 = load i32, i32* %__x, align 4
-  %20 = zext i32 %19 to i64
-  %21 = load i32, i32* %__y, align 4
-  %22 = zext i32 %21 to i64
-  %23 = load i32, i32* %__z, align 4
-  %24 = zext i32 %23 to i64
-  call void @__dummy_kernel(i64 %20, i64 %22, i64 %24)
-  %25 = load i32, i32* %__x, align 4
-  %26 = add i32 %25, 1
-  store i32 %26, i32* %__x, align 4
-  %27 = load i32, i32* %__x, align 4
-  %28 = load i32, i32* %1, align 4
-  %29 = icmp ult i32 %27, %28
-  br i1 %29, label %18, label %30, !llvm.loop !2
+    ; <label>:18                                      ; preds = %14
+    %19 = load i32, i32* %__x, align 4
+    %20 = zext i32 %19 to i64
+    %21 = load i32, i32* %__y, align 4
+    %22 = zext i32 %21 to i64
+    %23 = load i32, i32* %__z, align 4
+    %24 = zext i32 %23 to i64
+    call void @__dummy_kernel(i64 %20, i64 %22, i64 %24)
+    br label %25
 
-  ; <label>:30                                      ; preds = %18
-  br label %31
+    ; <label>:25                                      ; preds = %18
+    %26 = load i32, i32* %__x, align 4
+    %27 = add i32 %26, 1
+    store i32 %27, i32* %__x, align 4
+    br label %14, !llvm.loop !1
 
-  ; <label>:31                                      ; preds = %30
-  %32 = load i32, i32* %__y, align 4
-  %33 = add i32 %32, 1
-  store i32 %33, i32* %__y, align 4
-  br label %9
+    ; <label>:28                                      ; preds = %14
+    br label %29
 
-  ; <label>:34                                      ; preds = %9
-  br label %35
+    ; <label>:29                                      ; preds = %28
+    %30 = load i32, i32* %__y, align 4
+    %31 = add i32 %30, 1
+    store i32 %31, i32* %__y, align 4
+    br label %9
 
-  ; <label>:35                                      ; preds = %34
-  %36 = load i32, i32* %__z, align 4
-  %37 = add i32 %36, 1
-  store i32 %37, i32* %__z, align 4
-  br label %4
+    ; <label>:32                                      ; preds = %9
+    br label %33
 
-  ; <label>:38                                      ; preds = %4
-  ret void
+    ; <label>:33                                      ; preds = %32
+    %34 = load i32, i32* %__z, align 4
+    %35 = add i32 %34, 1
+    store i32 %35, i32* %__z, align 4
+    br label %4
+
+    ; <label>:36                                      ; preds = %4
+    ret void
 }
 
 declare void @__dummy_kernel(i64, i64, i64) #1
@@ -108,7 +109,6 @@ attributes #1 = { "disable-tail-calls"="false" "less-precise-fpmad"="false" "no-
 !2 = !{!"llvm.loop.vectorize.enable", i1 true}
 )");
 }
-
 
 namespace pacxx
 {
