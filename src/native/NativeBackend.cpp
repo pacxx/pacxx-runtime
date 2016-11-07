@@ -200,6 +200,8 @@ namespace pacxx
             _PM.add(createPACXXAddrSpaceTransform());
             _PM.add(createPACXXNativeVectorizer(_machine));
             _PM.add(createPACXXNativeLinker());
+            _PM.add(createCFGSimplificationPass());
+            _PM.add(createDeadCodeEliminationPass());
             _pmInitialized = true;
         }
 
