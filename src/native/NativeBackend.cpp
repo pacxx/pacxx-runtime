@@ -194,8 +194,7 @@ namespace pacxx
         if(!_machine)
             throw common::generic_exception("Can not get target machine");
         if(!_pmInitialized) {
-            PassManagerBuilder builder;
-            builder.OptLevel = 3;
+
             TargetLibraryInfoImpl TLII(Triple(M.getTargetTriple()));
             _PM.add(new TargetLibraryInfoWrapperPass(TLII));
             _PM.add(createTargetTransformInfoWrapperPass(_machine->getTargetIRAnalysis()));
@@ -204,8 +203,13 @@ namespace pacxx
             _PM.add(createPACXXNativeLinker());
             _PM.add(createCFGSimplificationPass());
             _PM.add(createDeadCodeEliminationPass());
-            // add O3 optimizations
-            //builder.populateModulePassManager(_PM);
+            // add O3 optimizations, except vectorization
+            PassManagerBuilder builder;
+            builder.OptLevel = 3;
+            builder.LoopVectorize = false;
+            builder.SLPVectorize = false;
+            builder.BBVectorize = false;
+            builder.populateModulePassManager(_PM);
             _pmInitialized = true;
         }
 
