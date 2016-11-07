@@ -205,7 +205,7 @@ namespace pacxx
             _PM.add(createCFGSimplificationPass());
             _PM.add(createDeadCodeEliminationPass());
             // add O3 optimizations
-            //builder.populateModulePassManager(_PM);
+            builder.populateModulePassManager(_PM);
             _pmInitialized = true;
         }
 
