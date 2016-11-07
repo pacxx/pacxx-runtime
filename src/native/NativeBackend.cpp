@@ -196,7 +196,6 @@ namespace pacxx
         if(!_pmInitialized) {
             PassManagerBuilder builder;
             builder.OptLevel = 3;
-            builder.populateModulePassManager(_PM);
             TargetLibraryInfoImpl TLII(Triple(M.getTargetTriple()));
             _PM.add(new TargetLibraryInfoWrapperPass(TLII));
             _PM.add(createTargetTransformInfoWrapperPass(_machine->getTargetIRAnalysis()));
@@ -205,6 +204,7 @@ namespace pacxx
             _PM.add(createPACXXNativeLinker());
             _PM.add(createCFGSimplificationPass());
             _PM.add(createDeadCodeEliminationPass());
+            builder.populateModulePassManager(_PM);
             _pmInitialized = true;
         }
 
