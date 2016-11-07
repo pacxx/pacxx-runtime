@@ -204,7 +204,8 @@ namespace pacxx
             _PM.add(createPACXXNativeLinker());
             _PM.add(createCFGSimplificationPass());
             _PM.add(createDeadCodeEliminationPass());
-            builder.populateModulePassManager(_PM);
+            // add O3 optimizations
+            //builder.populateModulePassManager(_PM);
             _pmInitialized = true;
         }
 
