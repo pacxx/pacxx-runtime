@@ -194,6 +194,9 @@ namespace pacxx
         if(!_machine)
             throw common::generic_exception("Can not get target machine");
         if(!_pmInitialized) {
+            PassManagerBuilder builder;
+            builder.OptLevel = 3;
+            builder.populateModulePassManager(_PM);
             TargetLibraryInfoImpl TLII(Triple(M.getTargetTriple()));
             _PM.add(new TargetLibraryInfoWrapperPass(TLII));
             _PM.add(createTargetTransformInfoWrapperPass(_machine->getTargetIRAnalysis()));
