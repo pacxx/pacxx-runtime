@@ -203,10 +203,11 @@ namespace pacxx
             _PM.add(createPACXXNativeLinker());
             _PM.add(createCFGSimplificationPass());
             _PM.add(createDeadCodeEliminationPass());
+            _PM.add(createDeadInstEliminationPass());
             // add O3 optimizations, except vectorization
             PassManagerBuilder builder;
             builder.OptLevel = 3;
-            //builder.populateModulePassManager(_PM);
+            builder.populateModulePassManager(_PM);
             _pmInitialized = true;
         }
 
