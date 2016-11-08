@@ -206,10 +206,7 @@ namespace pacxx
             // add O3 optimizations, except vectorization
             PassManagerBuilder builder;
             builder.OptLevel = 3;
-            builder.LoopVectorize = false;
-            builder.SLPVectorize = false;
-            builder.BBVectorize = false;
-            builder.populateModulePassManager(_PM);
+            //builder.populateModulePassManager(_PM);
             _pmInitialized = true;
         }
 
