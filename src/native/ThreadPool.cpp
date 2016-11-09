@@ -4,7 +4,7 @@
 
 #include "detail/native/ThreadPool.h"
 
-#include ""
+#include "detail/common/Log.h"
 
 namespace pacxx {
     namespace v2 {
