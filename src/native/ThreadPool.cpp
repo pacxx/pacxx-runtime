@@ -4,12 +4,16 @@
 
 #include "detail/native/ThreadPool.h"
 
+#include ""
+
 namespace pacxx {
     namespace v2 {
 
         ThreadPool::ThreadPool() : ThreadPool(std::thread::hardware_concurrency()) {}
 
         ThreadPool::ThreadPool(unsigned ThreadCount) : ActiveThreads(0), EnableFlag(true) {
+
+            __verbose("ThreadPool create with: ", ThreadCount, " threads");
 
             Threads.reserve(ThreadCount);
             for (unsigned ThreadID = 0; ThreadID < ThreadCount; ++ThreadID) {
