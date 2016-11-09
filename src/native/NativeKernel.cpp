@@ -52,6 +52,7 @@ namespace pacxx {
                 for(size_t bidx = 0; bidx < _config.blocks.x; ++bidx)
                       _runtime.runOnThread(_fptr, bidx, bidy, bidz, _config.threads.x, _config.threads.y,
                                            _config.threads.z, _args.data());
+          _runtime.synchronize();
 
           end = std::chrono::high_resolution_clock::now();
 
