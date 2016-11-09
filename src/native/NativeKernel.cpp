@@ -57,7 +57,7 @@ namespace pacxx {
 
           auto time = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
 
-          __verbose("Time measured in runtime :", time);
+          __verbose("Time measured in runtime :", time, " us");
       }
 
       void NativeKernel::setStagedValue(int ref, long long value, bool inScope) { throw new common::generic_exception("not supported"); }

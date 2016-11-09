@@ -17,6 +17,7 @@
 #include "NativeBackend.h"
 #include "NativeKernel.h"
 #include "NativeDeviceBuffer.h"
+#include "ThreadPool.h"
 
 
 namespace pacxx
@@ -95,7 +96,7 @@ namespace pacxx
       std::unique_ptr<llvm::Module> _M;
       std::unique_ptr<CompilerT> _compiler;
       std::map<std::string, std::unique_ptr<NativeKernel>> _kernels;
-      std::vector<std::thread> _threads;
+      ThreadPool _threadPool;
       std::list <std::unique_ptr<DeviceBufferBase>> _memory;
       v2::MSPEngine _msp_engine;
     };

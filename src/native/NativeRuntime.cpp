@@ -14,7 +14,7 @@ namespace pacxx
   {
 
     NativeRuntime::NativeRuntime(unsigned)
-        : _compiler(std::make_unique<CompilerT>()){}
+        : _compiler(std::make_unique<CompilerT>()), _threadPool() {}
 
     NativeRuntime::~NativeRuntime() {}
 
@@ -88,14 +88,11 @@ namespace pacxx
       auto functor = reinterpret_cast<void (*) (int, int, int,
                                                 int, int, int, char*)>(fptr);
 
-      _threads.push_back(std::thread(functor, bidx, bidy, bidz, max_x, max_y, max_z, args));
+      _threadPool.async(functor, bidx, bidy, bidz, max_x, max_y, max_z, args));
     }
 
     void NativeRuntime::synchronize() {
-      __verbose("Threads to sync: ", _threads.size());
-      for(auto &thread : _threads)
-        thread.join();
-      _threads.clear();
+        _threadPool.wait();
     };
 
     llvm::legacy::PassManager& NativeRuntime::getPassManager() { return _compiler->getPassManager(); };
