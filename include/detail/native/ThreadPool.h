@@ -79,7 +79,7 @@ namespace pacxx {
                     if (!EnableFlag && Tasks.empty())
                       return;
                     {
-                      ++ActiveThreads;
+                      ActiveThreads.fetch_add(1);
                       std::unique_lock<std::mutex> LockGuard(CompletionLock);
                     }
                     Task = std::move(Tasks.front());
@@ -90,7 +90,7 @@ namespace pacxx {
 
                   {
                     std::unique_lock<std::mutex> LockGuard(CompletionLock);
-                    --ActiveThreads;
+                    ActiveThreads.fetch_sub(1);
                   }
 
                   CompletionCondition.notify_all();
