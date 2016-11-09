@@ -58,7 +58,7 @@ namespace pacxx {
             std::mutex CompletionLock;
             std::condition_variable CompletionCondition;
 
-            std::atomic<unsigned> ActiveThreads;
+            std::atomic_uint ActiveThreads;
 
             bool EnableFlag;
         };
