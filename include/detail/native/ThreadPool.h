@@ -58,7 +58,7 @@ namespace pacxx {
             std::mutex CompletionLock;
             std::condition_variable CompletionCondition;
 
-            std::atomic_uint ActiveThreads;
+            std::atomic_int ActiveThreads;
 
             bool EnableFlag;
         };
@@ -79,7 +79,7 @@ namespace pacxx {
                     if (!EnableFlag && Tasks.empty())
                       return;
                     {
-                      ActiveThreads.fetch_add(1);
+                      ++ActiveThreads;
                       std::unique_lock<std::mutex> LockGuard(CompletionLock);
                     }
                     Task = std::move(Tasks.front());
@@ -90,7 +90,7 @@ namespace pacxx {
 
                   {
                     std::unique_lock<std::mutex> LockGuard(CompletionLock);
-                    ActiveThreads.fetch_sub(1);
+                    --ActiveThreads;
                   }
 
                   CompletionCondition.notify_all();
