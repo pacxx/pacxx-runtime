@@ -90,7 +90,7 @@ namespace pacxx {
 
                   {
                     std::unique_lock<std::mutex> LockGuard(CompletionLock);
-                    __c11_atomic_fetch_sub(&ActiveThreads, 1, std::memory_order_seq_cst);
+                    --ActiveThreads;
                   }
 
                   CompletionCondition.notify_all();
