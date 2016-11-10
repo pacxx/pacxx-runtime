@@ -191,7 +191,7 @@ namespace pacxx
 
         if(!_machine)
             _machine = _JITEngine->getTargetMachine();
-            std::cout << _machine->getTargetFeatureString().str() << std::endl;
+            __verbose("target features: ", _machine->getTargetFeatureString().str());
         if(!_machine)
             throw common::generic_exception("Can not get target machine");
         if(!_pmInitialized) {
