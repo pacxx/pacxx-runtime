@@ -126,14 +126,14 @@ namespace pacxx
         std::string error;
         std::error_code EC;
 
+        LLVMInitializeNativeTarget();
+
         linkInModule(M);
         Module *TheModule = _composite.get();
 
         EngineBuilder builder{std::move(_composite)};
 
         builder.setErrorStr(&error);
-
-        builder.selectTarget();
 
         builder.setEngineKind(EngineKind::JIT);
 
@@ -193,7 +193,6 @@ namespace pacxx
 
         if(!_machine)
             _machine = _JITEngine->getTargetMachine();
-            __verbose("cpu: ", _machine->getTargetCPU().str());
         if(!_machine)
             throw common::generic_exception("Can not get target machine");
         if(!_pmInitialized) {
