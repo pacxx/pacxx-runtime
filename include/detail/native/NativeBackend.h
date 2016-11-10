@@ -29,6 +29,7 @@ namespace pacxx
       static std::unique_ptr<llvm::Module> createModule(llvm::LLVMContext &Context, const std::string IR);
 
     private:
+      llvm::SmallVector<std::string, 10> getTargetFeatures();
       void linkInModule(llvm::Module& M);
       void applyPasses(llvm::Module& M);
 

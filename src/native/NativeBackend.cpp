@@ -137,6 +137,13 @@ namespace pacxx
 
         builder.setEngineKind(EngineKind::JIT);
 
+        builder.setOptLevel(CodeGenOpt::Aggressive);
+
+        _machine = builder.selectTarget(Triple(sys::getProcessTriple()), "",
+                                        sys::getHostCPUName(), getTargetFeatures());
+
+        TheModule->setDataLayout(_machine->createDataLayout());
+
         builder.setMCJITMemoryManager(
                 std::unique_ptr<RTDyldMemoryManager>(
                         static_cast<RTDyldMemoryManager*>(new SectionMemoryManager())));
@@ -166,6 +173,19 @@ namespace pacxx
       return TheModule;
     }
 
+    SmallVector<std::string, 10> NativeBackend::getTargetFeatures() {
+        StringMap<bool> HostFeatures;
+        SmallVector<std::string,10> attr;
+
+        llvm::sys::getHostCPUFeatures(HostFeatures);
+
+        for (StringMap<bool>::const_iterator it = HostFeatures.begin(); it != HostFeatures.end(); it++) {
+            std::string att = it->getValue() ? it->getKey().str() : std::string("-") + it->getKey().str();
+            attr.append(1, att);
+        }
+        return attr;
+    }
+
     void* NativeBackend::getKernelFptr(Module *module, const std::string name) {
         Function *kernel = module->getFunction("__wrapped__"+name);
         //get the kernel wrapper function from the module
@@ -191,8 +211,6 @@ namespace pacxx
 
     void NativeBackend::applyPasses(Module& M) {
 
-        if(!_machine)
-            _machine = _JITEngine->getTargetMachine();
         if(!_machine)
             throw common::generic_exception("Can not get target machine");
         if(!_pmInitialized) {
