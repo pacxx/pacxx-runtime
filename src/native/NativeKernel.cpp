@@ -46,6 +46,13 @@ namespace pacxx {
           std::chrono::high_resolution_clock::time_point start, end;
           unsigned runs = 1000;
 
+          for (size_t bidz = 0; bidz < _config.blocks.z; ++bidz)
+                for (size_t bidy = 0; bidy < _config.blocks.y; ++bidy)
+                    for (size_t bidx = 0; bidx < _config.blocks.x; ++bidx)
+                        _runtime.runOnThread(_fptr, bidx, bidy, bidz, _config.threads.x, _config.threads.y,
+                                               _config.threads.z, _args.data());
+            _runtime.synchronize();
+
           start = std::chrono::high_resolution_clock::now();
 
           for(unsigned i = 0; i < runs; ++i) {
