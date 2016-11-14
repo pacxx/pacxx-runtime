@@ -74,7 +74,7 @@ define void @foo(i32 %__maxx, i32 %__maxy, i32 %__maxz) #0 {
     %26 = load i32, i32* %__x, align 4
     %27 = add i32 %26, 1
     store i32 %27, i32* %__x, align 4
-    br label %14, !llvm.loop !1
+    br label %14, !llvm.loop
 
     ; <label>:28                                      ; preds = %14
     br label %29
@@ -106,8 +106,6 @@ attributes #1 = { "disable-tail-calls"="false" "less-precise-fpmad"="false" "no-
 !llvm.ident = !{!0}
 
 !0 = !{!"PACXX"}
-!1 = distinct !{!1, !2}
-!2 = !{!"llvm.loop.vectorize.enable", i1 true}
 )");
 }
 
