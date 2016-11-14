@@ -44,12 +44,11 @@ namespace pacxx {
                 _config.threads.x, ",", _config.threads.y, ",", _config.threads.z,")");
 
           std::chrono::high_resolution_clock::time_point start, end;
+          unsigned runs = 1000;
 
           start = std::chrono::high_resolution_clock::now();
-#ifdef PACXX_RUNS
-            for(unsigned i = 0; i < PACXX_RUNS; ++i)
-#endif
-          {
+
+          for(unsigned i = 0; i < runs; ++i) {
             for (size_t bidz = 0; bidz < _config.blocks.z; ++bidz)
                 for (size_t bidy = 0; bidy < _config.blocks.y; ++bidy)
                     for (size_t bidx = 0; bidx < _config.blocks.x; ++bidx)
@@ -62,10 +61,7 @@ namespace pacxx {
 
           auto  time = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
 
-#ifdef PACXX_RUNS
-          __verbose("Time measured in runtime :", time / PACXX_RUNS, " us for ", PACXX_RUNS, "iterations");
-#endif
-          __verbose("Time measured in runtime :", time, " us ");
+          __verbose("Time measured in runtime : ", time / runs, " us (", runs, " iterations)");
       }
 
       void NativeKernel::setStagedValue(int ref, long long value, bool inScope) { throw new common::generic_exception("not supported"); }
