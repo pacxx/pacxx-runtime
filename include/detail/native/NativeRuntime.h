@@ -70,9 +70,6 @@ namespace pacxx
           _memory.erase(It);
       }
 
-      void runOnThread(void* fptr, size_t bidx, size_t bidy, size_t bidz, size_t max_x, size_t max_y,
-                                      size_t max_z, char* args);
-
       virtual RawDeviceBuffer* allocateRawMemory(size_t bytes) override;
 
       virtual void deleteRawMemory(RawDeviceBuffer* ptr) override;

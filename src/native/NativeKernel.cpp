@@ -43,6 +43,11 @@ namespace pacxx {
                 _config.blocks.y, ",", _config.blocks.z, ")\nthreads(",
                 _config.threads.x, ",", _config.threads.y, ",", _config.threads.z,")");
 
+          // The kernel wrapper always has this function signature.
+          // The kernel args are constructed from the char buffer
+          auto functor = reinterpret_cast<void (*) (int, int, int,
+                                                int, int, int, char*)>(_fptr);
+
           std::chrono::high_resolution_clock::time_point start, end;
           unsigned runs = 1000;
 
@@ -52,8 +57,8 @@ namespace pacxx {
               tbb::parallel_for(size_t(0), _config.blocks.z, [&](size_t bidz) {
                   tbb::parallel_for(size_t(0), _config.blocks.y, [&](size_t bidy) {
                       tbb::parallel_for(size_t(0), _config.blocks.x, [&](size_t bidx) {
-                          _runtime.runOnThread(_fptr, bidx, bidy, bidz, _config.threads.x, _config.threads.y,
-                                               _config.threads.z, _args.data());
+                          functor(bidx, bidy, bidz, _config.threads.x, _config.threads.y,
+                                  _config.threads.z, _args.data());
                       });
                   });
               });

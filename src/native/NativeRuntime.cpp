@@ -81,16 +81,6 @@ namespace pacxx
 
     const llvm::Module& NativeRuntime::getModule() { return *_CPUMod; }
 
-    void NativeRuntime::runOnThread(void* fptr, size_t bidx, size_t bidy, size_t bidz, size_t max_x, size_t max_y,
-                                    size_t max_z, char* args) {
-      // The kernel wrapper always has this function signature.
-      // The kernel args are constructed from the char buffer
-      auto functor = reinterpret_cast<void (*) (int, int, int,
-                                                int, int, int, char*)>(fptr);
-
-      _threadPool.async(functor, bidx, bidy, bidz, max_x, max_y, max_z, args);
-    }
-
     void NativeRuntime::synchronize() {};
 
     llvm::legacy::PassManager& NativeRuntime::getPassManager() { return _compiler->getPassManager(); };
