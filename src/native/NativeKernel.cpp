@@ -63,13 +63,6 @@ namespace pacxx {
                       });
                   });
               });
-              /*
-            for (size_t bidz = 0; bidz < _config.blocks.z; ++bidz)
-                for (size_t bidy = 0; bidy < _config.blocks.y; ++bidy)
-                    for (size_t bidx = 0; bidx < _config.blocks.x; ++bidx)
-                        _runtime.runOnThread(_fptr, bidx, bidy, bidz, _config.threads.x, _config.threads.y,
-                                               _config.threads.z, _args.data());
-                                               */
           }
 
           end = std::chrono::high_resolution_clock::now();
@@ -79,9 +72,13 @@ namespace pacxx {
           __verbose("Time measured in runtime : ", time / runs, " us (", runs, " iterations)");
       }
 
-      void NativeKernel::setStagedValue(int ref, long long value, bool inScope) { throw new common::generic_exception("not supported"); }
+      void NativeKernel::setStagedValue(int ref, long long value, bool inScope) {
+          throw new common::generic_exception("not supported");
+      }
 
-      const std::map<int, long long>& NativeKernel::getStagedValues() const { throw new common::generic_exception("not supported"); }
+      const std::map<int, long long>& NativeKernel::getStagedValues() const {
+          throw new common::generic_exception("not supported");
+      }
 
       void NativeKernel::setName(std::string name) {
           _name = name;
