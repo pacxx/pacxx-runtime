@@ -50,7 +50,7 @@ namespace pacxx {
                                                 int, int, int, char*)>(_fptr);
 
           std::chrono::high_resolution_clock::time_point start, end;
-          unsigned runs = 1000;
+          unsigned runs = 1;
 
           start = std::chrono::high_resolution_clock::now();
 
