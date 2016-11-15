@@ -6,6 +6,7 @@
 #include <detail/native/NativeRuntime.h>
 #include <detail/common/Log.h>
 #include <detail/common/Exceptions.h>
+#include <tbb/tbb.h>
 
 namespace pacxx {
   namespace v2 {
