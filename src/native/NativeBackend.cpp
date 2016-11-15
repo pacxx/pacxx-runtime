@@ -142,6 +142,9 @@ namespace pacxx
         _machine = builder.selectTarget(Triple(sys::getProcessTriple()), "",
                                         sys::getHostCPUName(), getTargetFeatures());
 
+        _machine->Options.AllowFPOpFusion = FPOpFusion::Fast;
+        _machine->Options.UnsafeFPMath = false;
+
         TheModule->setDataLayout(_machine->createDataLayout());
 
         builder.setMCJITMemoryManager(
