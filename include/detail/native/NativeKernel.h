@@ -12,6 +12,7 @@
 #include <functional>
 #include <llvm/IR/Function.h>
 #include <llvm/ExecutionEngine/GenericValue.h>
+#include <tbb/tbb.h>
 
 namespace pacxx {
 

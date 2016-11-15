@@ -49,12 +49,21 @@ namespace pacxx {
           start = std::chrono::high_resolution_clock::now();
 
           for(unsigned i = 0; i < runs; ++i) {
+              tbb::parallel_for(size_t(0), _config.blocks.z, [&](size_t bidz) {
+                  tbb::parallel_for(size_t(0), _config.blocks.y, [&](size_t bidy) {
+                      tbb::parallel_for(size_t(0), _config.blocks.x, [&](size_t bidx) {
+                          _runtime.runOnThread(_fptr, bidx, bidy, bidz, _config.threads.x, _config.threads.y,
+                                               _config.threads.z, _args.data());
+                      });
+                  });
+              });
+              /*
             for (size_t bidz = 0; bidz < _config.blocks.z; ++bidz)
                 for (size_t bidy = 0; bidy < _config.blocks.y; ++bidy)
                     for (size_t bidx = 0; bidx < _config.blocks.x; ++bidx)
                         _runtime.runOnThread(_fptr, bidx, bidy, bidz, _config.threads.x, _config.threads.y,
                                                _config.threads.z, _args.data());
-            _runtime.synchronize();
+                                               */
           }
 
           end = std::chrono::high_resolution_clock::now();

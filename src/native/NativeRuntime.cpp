@@ -14,7 +14,7 @@ namespace pacxx
   {
 
     NativeRuntime::NativeRuntime(unsigned)
-        : _compiler(std::make_unique<CompilerT>()), _threadPool() {}
+        : _compiler(std::make_unique<CompilerT>()) {}
 
     NativeRuntime::~NativeRuntime() {}
 
@@ -91,9 +91,7 @@ namespace pacxx
       _threadPool.async(functor, bidx, bidy, bidz, max_x, max_y, max_z, args);
     }
 
-    void NativeRuntime::synchronize() {
-        _threadPool.wait();
-    };
+    void NativeRuntime::synchronize() {};
 
     llvm::legacy::PassManager& NativeRuntime::getPassManager() { return _compiler->getPassManager(); };
 
