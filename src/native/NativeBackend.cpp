@@ -142,9 +142,6 @@ namespace pacxx
         _machine = builder.selectTarget(Triple(sys::getProcessTriple()), "",
                                         sys::getHostCPUName(), getTargetFeatures());
 
-        _machine->Options.AllowFPOpFusion = FPOpFusion::Fast;
-        _machine->Options.UnsafeFPMath = false;
-
         TheModule->setDataLayout(_machine->createDataLayout());
 
         builder.setMCJITMemoryManager(
@@ -186,6 +183,9 @@ namespace pacxx
             std::string att = it->getValue() ? it->getKey().str() : std::string("-") + it->getKey().str();
             attr.append(1, att);
         }
+
+        for(auto it = attr.begin(); it != attr.end(); it++)
+            __verbose("Feature: ", (*it));
         return attr;
     }
 
