@@ -148,7 +148,8 @@ namespace pacxx
                 std::unique_ptr<RTDyldMemoryManager>(
                         static_cast<RTDyldMemoryManager*>(new SectionMemoryManager())));
 
-      _JITEngine = builder.create();
+      _JITEngine = builder.create(_machine);
+
       if (!_JITEngine) {
         throw new common::generic_exception(error);
       }
@@ -184,8 +185,6 @@ namespace pacxx
             attr.append(1, att);
         }
 
-        for(auto it = attr.begin(); it != attr.end(); it++)
-            __verbose("Feature: ", (*it));
         return attr;
     }
 
