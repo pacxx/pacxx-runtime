@@ -222,6 +222,8 @@ namespace pacxx
             _PM.add(createTargetTransformInfoWrapperPass(_machine->getTargetIRAnalysis()));
             _PM.add(createPACXXAddrSpaceTransform());
             _PM.add(createCFGSimplificationPass());
+            _PM.add(createUVAnalysisPass());
+            _PM.add(createVectorWidthAnalysisPass());
             _PM.add(createSPMDVectorizer());
             /*
             _PM.add(createPACXXNativeVectorizer(_machine));
