@@ -223,7 +223,7 @@ namespace pacxx
             _PM.add(createPACXXAddrSpaceTransform());
             _PM.add(createPACXXIdRemover());
             _PM.add(createSPMDVectorizer(&M, _machine));
-            _PM.add(createPACXXNativeLinker());
+            //_PM.add(createPACXXNativeLinker());
             /*
             _PM.add(createPACXXNativeVectorizer(_machine));
             _PM.add(createPACXXNativeLinker());
