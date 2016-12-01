@@ -222,19 +222,12 @@ namespace pacxx
             _PM.add(createTargetTransformInfoWrapperPass(_machine->getTargetIRAnalysis()));
             _PM.add(createPACXXAddrSpaceTransform());
             _PM.add(createPACXXIdRemover());
-            _PM.add(createSPMDVectorizer(&M, _machine));
+            _PM.add(createSPMDVectorizer());
             _PM.add(createPACXXNativeLinker());
-            /*
-            _PM.add(createPACXXNativeVectorizer(_machine));
-            _PM.add(createPACXXNativeLinker());
-            _PM.add(createCFGSimplificationPass());
-            _PM.add(createDeadCodeEliminationPass());
-            _PM.add(createDeadInstEliminationPass());
             // add O3 optimizations
             PassManagerBuilder builder;
             builder.OptLevel = 3;
-            //builder.populateModulePassManager(_PM);
-             */
+            builder.populateModulePassManager(_PM);
             _pmInitialized = true;
         }
 
