@@ -223,7 +223,7 @@ namespace pacxx
             _PM.add(createPACXXAddrSpaceTransform());
             _PM.add(createPACXXIdRemover());
             _PM.add(createSPMDVectorizer());
-            //_PM.add(createPACXXNativeLinker());
+            _PM.add(createPACXXNativeLinker());
             // add O3 optimizations
             PassManagerBuilder builder;
             builder.OptLevel = 3;
