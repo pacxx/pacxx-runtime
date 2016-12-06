@@ -3,6 +3,7 @@
 //
 #include <llvm/ExecutionEngine/ExecutionEngine.h>
 #include <llvm/ExecutionEngine/SectionMemoryManager.h>
+#include <llvm/Transforms/Utils/Cloning.h>
 #include "detail/native/NativeRuntime.h"
 #include "detail/common/Exceptions.h"
 
@@ -77,7 +78,19 @@ namespace pacxx
       }
     }
 
-    void NativeRuntime::requestIRTransformation(Kernel& K) { throw common::generic_exception("not implemented"); }
+    void NativeRuntime::requestIRTransformation(Kernel& K) {
+        if (_msp_engine.isDisabled()) return;
+
+        _M.reset(CloneModule(_M.get()));
+        _M->setDataLayout(_M->getDataLayoutStr());
+        _msp_engine.transformModule(*_M, K);
+
+        _compiler->compile(*_M);
+
+        void *fptr= nullptr;
+        fptr = _compiler->getKernelFptr(_CPUMod, K.getName().c_str());
+        static_cast<NativeKernel &>(K).overrideFptr(fptr);
+    }
 
     const llvm::Module& NativeRuntime::getModule() { return *_CPUMod; }
 

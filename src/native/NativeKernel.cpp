@@ -22,24 +22,43 @@ namespace pacxx {
     void NativeKernel::configurate(KernelConfiguration config) {
       if (_config != config) {
         _config = config;
+
+        std::vector<size_t> a(6);
+        a[0] = config.threads.x;
+        a[1] = config.threads.y;
+        a[2] = config.threads.z;
+        a[3] = config.blocks.x;
+        a[4] = config.blocks.y;
+        a[5] = config.blocks.z;
+
+        for (size_t i = 0; i < a.size(); ++i)
+            setStagedValue((i * -1) - 1, a[i], true);
       }
     }
 
     KernelConfiguration NativeKernel::getConfiguration() const { return _config; }
 
-      void NativeKernel::setArguments(const std::vector<char> &arg_buffer) {
-          _args = arg_buffer;
-      }
+    void NativeKernel::setArguments(const std::vector<char> &arg_buffer) {
+        _args = arg_buffer;
 
-      const std::vector<char>& NativeKernel::getArguments() const { return _args; }
+        //TODO stage constant kernel args
+    }
 
-      void NativeKernel::setHostArguments(const std::vector<char> &arg_buffer) {
-          _host_args = arg_buffer;
-      }
+    const std::vector<char>& NativeKernel::getArguments() const { return _args; }
 
-      const std::vector<char>& NativeKernel::getHostArguments() const { return _host_args; }
+    void NativeKernel::setHostArguments(const std::vector<char> &arg_buffer) {
+        _host_args = arg_buffer;
+    }
+
+    const std::vector<char>& NativeKernel::getHostArguments() const { return _host_args; }
 
       void NativeKernel::launch() {
+
+        if (!_fptr || _staged_values_changed) { // kernel has no function ptr yet. request kernel transformation and recompilation if necessary
+            _runtime.requestIRTransformation(*this);
+            _staged_values_changed = false;
+        }
+
           __verbose("Launching kernel: \nblocks(", _config.blocks.x, ",",
                 _config.blocks.y, ",", _config.blocks.z, ")\nthreads(",
                 _config.threads.x, ",", _config.threads.y, ",", _config.threads.z,")");
@@ -73,11 +92,16 @@ namespace pacxx {
       }
 
       void NativeKernel::setStagedValue(int ref, long long value, bool inScope) {
-          throw new common::generic_exception("not supported");
+        auto old = _staged_values[ref];
+        if (old != value) {
+            _staged_values[ref] = value;
+            if (inScope)
+                _staged_values_changed = true;
+        }
       }
 
       const std::map<int, long long>& NativeKernel::getStagedValues() const {
-          throw new common::generic_exception("not supported");
+          return _staged_values;
       }
 
       void NativeKernel::setName(std::string name) {
