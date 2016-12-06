@@ -93,7 +93,7 @@ namespace pacxx {
                   kernelHasStagedFunction = true;
                   inScope = true;
                 }
-                __verbose("staging: ", FName, "  - result is ", value);
+                // __verbose("staging: ", FName, "  - result is ", value);
 
                 if (auto* ci2 = dyn_cast<ConstantInt>(CI->getOperand(0))) {
                   kernel.setStagedValue(*(ci2->getValue().getRawData()), value, inScope);

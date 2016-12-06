@@ -87,11 +87,15 @@ namespace pacxx
       virtual llvm::legacy::PassManager& getPassManager() override;
 
     private:
+      void compileAndLink();
+
+    private:
       llvm::Module* _CPUMod;
       std::unique_ptr<llvm::Module> _M;
       std::unique_ptr<CompilerT> _compiler;
       std::map<std::string, std::unique_ptr<NativeKernel>> _kernels;
       std::list <std::unique_ptr<DeviceBufferBase>> _memory;
+      bool _delayed_compilation;
       v2::MSPEngine _msp_engine;
     };
 

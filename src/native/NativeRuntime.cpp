@@ -15,7 +15,7 @@ namespace pacxx
   {
 
     NativeRuntime::NativeRuntime(unsigned)
-        : _compiler(std::make_unique<CompilerT>()) {}
+        : _compiler(std::make_unique<CompilerT>()), _delayed_compilation(false) {}
 
     NativeRuntime::~NativeRuntime() {}
 
@@ -23,8 +23,22 @@ namespace pacxx
 
       _M = std::move(M);
 
-      _CPUMod = _compiler->compile(*_M);
+      _M.reset(CloneModule(_M.get()));
+      _M->setDataLayout(_M->getDataLayoutStr());
 
+      auto reflect = _M->getFunction("__pacxx_reflect");
+      if (!reflect || reflect->getNumUses() == 0) {
+        compileAndLink();
+      }
+      else {
+        __verbose("Module contains unresolved calls to __pacxx_reflect. Linking delayed!");
+        _delayed_compilation = true;
+      }
+    }
+
+    void NativeRuntime::compileAndLink() {
+        _CPUMod  = _compiler->compile(*_M);
+        _delayed_compilation = false;
     }
 
     Kernel& NativeRuntime::getKernel(const std::string& name){
@@ -32,9 +46,11 @@ namespace pacxx
                              [&](const auto &p) { return name == p.first; });
       if (It == _kernels.end()) {
         void *fptr= nullptr;
-        fptr = _compiler->getKernelFptr(_CPUMod, name);
-        if (!fptr)
-          throw common::generic_exception("Kernel function not found in module!");
+        if (!_delayed_compilation) {
+            fptr = _compiler->getKernelFptr(_CPUMod, name);
+            if (!fptr)
+                throw common::generic_exception("Kernel function not found in module!");
+        }
         auto kernel = new NativeKernel(*this, fptr);
         kernel->setName(name);
         _kernels[name].reset(kernel);
@@ -72,6 +88,7 @@ namespace pacxx
     }
 
     void NativeRuntime::evaluateStagedFunctions(Kernel& K) {
+      __verbose("evaluating staged functions");
       if (K.requireStaging()) {
         if (_msp_engine.isDisabled()) return;
         _msp_engine.evaluate(*_CPUMod->getFunction(K.getName()), K);
