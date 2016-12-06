@@ -21,10 +21,10 @@ namespace pacxx
 
     void NativeRuntime::link(std::unique_ptr<llvm::Module> M) {
 
-      _M = std::move(M);
+      _rawM = std::move(M);
 
-      _M.reset(CloneModule(_M.get()));
-      _M->setDataLayout(_M->getDataLayoutStr());
+      _M.reset(CloneModule(_rawM.get()));
+      _M->setDataLayout(_rawM->getDataLayoutStr());
 
       auto reflect = _M->getFunction("__pacxx_reflect");
       if (!reflect || reflect->getNumUses() == 0) {
@@ -91,18 +91,18 @@ namespace pacxx
       __verbose("evaluating staged functions");
       if (K.requireStaging()) {
         if (_msp_engine.isDisabled()) return;
-        _msp_engine.evaluate(*_CPUMod->getFunction(K.getName()), K);
+        _msp_engine.evaluate(*_rawM->getFunction(K.getName()), K);
       }
     }
 
     void NativeRuntime::requestIRTransformation(Kernel& K) {
         if (_msp_engine.isDisabled()) return;
 
-        _M.reset(CloneModule(_M.get()));
-        _M->setDataLayout(_M->getDataLayoutStr());
+        _M.reset(CloneModule(_rawM.get()));
+        _M->setDataLayout(_rawM->getDataLayoutStr());
         _msp_engine.transformModule(*_M, K);
 
-        _compiler->compile(*_M);
+        _CPUMod = _compiler->compile(*_M);
 
         void *fptr= nullptr;
         fptr = _compiler->getKernelFptr(_CPUMod, K.getName().c_str());
