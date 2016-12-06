@@ -91,7 +91,7 @@ namespace pacxx
 
     private:
       llvm::Module* _CPUMod;
-      std::unique_ptr<llvm::Module> _M;
+      std::unique_ptr<llvm::Module> _M, _rawM;
       std::unique_ptr<CompilerT> _compiler;
       std::map<std::string, std::unique_ptr<NativeKernel>> _kernels;
       std::list <std::unique_ptr<DeviceBufferBase>> _memory;
