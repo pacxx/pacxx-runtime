@@ -166,7 +166,7 @@ namespace pacxx
       raw_fd_ostream OS1("moduleAfterPass", EC, sys::fs::F_None);
       TheModule->print(OS1, nullptr);
 
-      //_JITEngine->finalizeObject();
+      _JITEngine->finalizeObject();
 
       return TheModule;
     }
@@ -222,7 +222,7 @@ namespace pacxx
             _PM.add(createLoopSimplifyPass());
             _PM.add(createLCSSAPass());
             _PM.add(createSPMDVectorizer());
-            _PM.add(createPACXXNativeLinker());
+            //_PM.add(createPACXXNativeLinker());
             // add O3 optimizations
             PassManagerBuilder builder;
             builder.OptLevel = 3;
