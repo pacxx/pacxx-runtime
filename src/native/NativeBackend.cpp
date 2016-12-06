@@ -41,10 +41,7 @@ define void @foo(i32 %__maxx, i32 %__maxy, i32 %__maxz) #0 {
     br i1 %7, label %8, label %36
 
     ; <label>:8                                       ; preds = %4
-    store i32 0, i32* %__y, align 4
-    br label %9
-
-    ; <label>:9                                       ; preds = %29, %8
+    store i32 0, i32* %__y, align 4 br label %9 ; <label>:9                                       ; preds = %29, %8
     %10 = load i32, i32* %__y, align 4
     %11 = load i32, i32* %2, align 4
     %12 = icmp ult i32 %10, %11
@@ -169,7 +166,7 @@ namespace pacxx
       raw_fd_ostream OS1("moduleAfterPass", EC, sys::fs::F_None);
       TheModule->print(OS1, nullptr);
 
-      _JITEngine->finalizeObject();
+      //_JITEngine->finalizeObject();
 
       return TheModule;
     }
