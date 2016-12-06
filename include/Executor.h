@@ -157,7 +157,7 @@ namespace pacxx {
         __verbose("Executor arg size ",F->arg_size());
         std::vector<size_t> arg_offsets(F->arg_size());
 
-        F->dump();
+        M.dump();
 
         int offset = 0;
 
