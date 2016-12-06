@@ -296,12 +296,11 @@ namespace pacxx {
 
       _runtime->link(std::move(M));
 
-//      for (auto& p : _kernel_translation)
-//      {
-//        auto& K = _runtime->getKernel(p.second->getName().str());
-//        K.setName(p.second->getName().str());
-//        _runtime->evaluateStagedFunctions(K);
-//      }
+      for (auto& p : _kernel_translation) {
+        auto& K = _runtime->getKernel(p.second->getName().str());
+        K.setName(p.second->getName().str());
+        _runtime->evaluateStagedFunctions(K);
+      }
 
     }
 
