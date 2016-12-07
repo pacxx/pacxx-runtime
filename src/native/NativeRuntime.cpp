@@ -50,7 +50,7 @@ namespace pacxx
         KernelConfiguration config = Kernel.getConfiguration();
         std::vector<char> args = Kernel.getHostArguments();
 
-        legacy::PassManager PM = getPassManager();
+        legacy::PassManager PM;
         PM.add(createPACXXConstantInserterPass(Kernel.getName(), config.threads.x, args));
         PM.add(createSCCPPass());
         PM.add(createDeadCodeEliminationPass());
