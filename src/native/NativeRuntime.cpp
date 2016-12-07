@@ -46,6 +46,7 @@ namespace pacxx
     }
 
     void NativeRuntime::propagateConstants(NativeKernel &Kernel) {
+        __verbose("propagating constants");
         KernelConfiguration config = Kernel.getConfiguration();
         std::vector<char> args = Kernel.getHostArguments();
 
