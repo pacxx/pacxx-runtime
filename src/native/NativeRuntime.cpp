@@ -52,17 +52,18 @@ namespace pacxx
     }
 
     void NativeRuntime::executeRuntimeOptimizations(NativeKernel &Kernel) {
+
+        if(!_delayed_compilation)  return;
+
         __verbose("runtime optimizations");
 
         KernelConfiguration config = Kernel.getConfiguration();
-        std::vector<char> args = Kernel.getHostArguments();
+        std::vector<char> args = Kernel.getArguments();
 
-        legacy::PassManager PM;
+        legacy::PassManager PM = getPassManager();
         PM.add(createPACXXConstantInserterPass(Kernel.getName(), config.threads.x, args));
         PM.add(createSCCPPass());
         PM.add(createDeadCodeEliminationPass());
-
-        PM.run(*_M);
 
         _CPUMod = _compiler->compile(*_M);
 

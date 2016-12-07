@@ -139,8 +139,6 @@ namespace pacxx
         _machine = builder.selectTarget(Triple(sys::getProcessTriple()), "",
                                         sys::getHostCPUName(), getTargetFeatures());
 
-        TheModule->setDataLayout(_machine->createDataLayout());
-
         builder.setMCJITMemoryManager(
                 std::unique_ptr<RTDyldMemoryManager>(
                         static_cast<RTDyldMemoryManager*>(new SectionMemoryManager())));
