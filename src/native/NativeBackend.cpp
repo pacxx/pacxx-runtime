@@ -149,12 +149,12 @@ namespace pacxx
         throw new common::generic_exception(error);
       }
 
-      TheModule->setTargetTriple(_JITEngine->getTargetMachine()->getTargetTriple().str());
-      TheModule->setDataLayout(_JITEngine->getDataLayout());
-
       // TODO remove
       raw_fd_ostream OS("moduleBeforePass", EC, sys::fs::F_None);
       TheModule->print(OS, nullptr);
+
+      TheModule->setTargetTriple(_JITEngine->getTargetMachine()->getTargetTriple().str());
+      TheModule->setDataLayout(_JITEngine->getDataLayout());
 
       applyPasses(*TheModule);
 
