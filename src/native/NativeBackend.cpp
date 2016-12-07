@@ -154,10 +154,9 @@ namespace pacxx
       TheModule->print(OS, nullptr);
 
       TheModule->setTargetTriple(_JITEngine->getTargetMachine()->getTargetTriple().str());
+      TheModule->setDataLayout(_JITEngine->getDataLayout());
 
       applyPasses(*TheModule);
-
-      //TheModule->setDataLayout(_JITEngine->getDataLayout());
 
       __verbose("applied pass");
 
