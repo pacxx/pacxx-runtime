@@ -35,7 +35,7 @@ namespace pacxx
             compileAndLink();
           else {
               __verbose("Enabled runtime optimizations. Linking delayed");
-              _CPUMod = M.get();
+              _CPUMod = _M.get();
               _delayed_compilation = true;
           }
       }
