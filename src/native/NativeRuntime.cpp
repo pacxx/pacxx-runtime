@@ -47,6 +47,9 @@ namespace pacxx
 
     void NativeRuntime::propagateConstants(NativeKernel &Kernel) {
         __verbose("propagating constants");
+
+        std::error_code EC;
+
         KernelConfiguration config = Kernel.getConfiguration();
         std::vector<char> args = Kernel.getHostArguments();
 
@@ -55,6 +58,12 @@ namespace pacxx
         PM.add(createSCCPPass());
         PM.add(createDeadCodeEliminationPass());
         PM.run(*_CPUMod);
+
+        __verbose("applied constant propagation");
+
+        //TODO remove
+        raw_fd_ostream OS1("moduleAfterConstant", EC, sys::fs::F_None);
+        _CPUMod->print(OS1, nullptr);
     }
 
     Kernel& NativeRuntime::getKernel(const std::string& name){
