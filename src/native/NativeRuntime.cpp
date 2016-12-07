@@ -63,6 +63,10 @@ namespace pacxx
         PM.add(createDeadCodeEliminationPass());
 
         _CPUMod = _compiler->compile(*_M);
+
+        void *fptr= nullptr;
+        fptr = _compiler->getKernelFptr(_CPUMod, Kernel.getName().c_str());
+        static_cast<NativeKernel &>(Kernel).overrideFptr(fptr);
     }
 
     Kernel& NativeRuntime::getKernel(const std::string& name){
