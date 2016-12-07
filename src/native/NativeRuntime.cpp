@@ -4,6 +4,8 @@
 #include <llvm/ExecutionEngine/ExecutionEngine.h>
 #include <llvm/ExecutionEngine/SectionMemoryManager.h>
 #include <llvm/Transforms/Utils/Cloning.h>
+#include <llvm/Transforms/Scalar.h>
+#include <llvm/Transforms/PACXXTransforms.h>
 #include "detail/native/NativeRuntime.h"
 #include "detail/common/Exceptions.h"
 
@@ -40,6 +42,17 @@ namespace pacxx
     void NativeRuntime::compileAndLink() {
         _CPUMod  = _compiler->compile(*_M);
         _delayed_compilation = false;
+    }
+
+    void NativeRuntime::propagateConstants(NativeKernel &Kernel) {
+        KernelConfiguration config = Kernel.getConfiguration();
+        std::vector<char> args = Kernel.getHostArguments();
+
+        legacy::PassManager PM = getPassManager();
+        PM.add(createPACXXConstantInserterPass(Kernel.getName(), config.threads.x, args));
+        PM.add(createSCCPPass());
+        PM.add(createDeadCodeEliminationPass());
+        PM.run(*_CPUMod);
     }
 
     Kernel& NativeRuntime::getKernel(const std::string& name){

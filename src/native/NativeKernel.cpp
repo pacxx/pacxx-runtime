@@ -20,28 +20,16 @@ namespace pacxx {
     NativeKernel::~NativeKernel() {}
 
     void NativeKernel::configurate(KernelConfiguration config) {
-      if (_config != config) {
-        _config = config;
-
-        std::vector<size_t> a(6);
-        a[0] = config.threads.x;
-        a[1] = config.threads.y;
-        a[2] = config.threads.z;
-        a[3] = config.blocks.x;
-        a[4] = config.blocks.y;
-        a[5] = config.blocks.z;
-
-        for (size_t i = 0; i < a.size(); ++i)
-            setStagedValue((i * -1) - 1, a[i], true);
-      }
+        if (_config != config) {
+            _config = config;
+        }
     }
 
     KernelConfiguration NativeKernel::getConfiguration() const { return _config; }
 
     void NativeKernel::setArguments(const std::vector<char> &arg_buffer) {
         _args = arg_buffer;
-
-        //TODO stage constant kernel args
+        _runtime.propagateConstants(*this);
     }
 
     const std::vector<char>& NativeKernel::getArguments() const { return _args; }

@@ -86,6 +86,8 @@ namespace pacxx
 
       virtual llvm::legacy::PassManager& getPassManager() override;
 
+      void propagateConstants(NativeKernel &Kernel);
+
     private:
       void compileAndLink();
 
