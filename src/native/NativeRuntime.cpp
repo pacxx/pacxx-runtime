@@ -62,8 +62,8 @@ namespace pacxx
 
         legacy::PassManager PM = getPassManager();
         PM.add(createPACXXNativeRuntimeOpts(Kernel.getName(), config.threads.x, args));
-        //PM.add(createSCCPPass());
-        //PM.add(createDeadCodeEliminationPass());
+        PM.add(createSCCPPass());
+        PM.add(createDeadCodeEliminationPass());
 
         _CPUMod = _compiler->compile(*_M);
 
