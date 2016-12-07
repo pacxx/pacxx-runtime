@@ -98,6 +98,7 @@ namespace pacxx
       std::map<std::string, std::unique_ptr<NativeKernel>> _kernels;
       std::list <std::unique_ptr<DeviceBufferBase>> _memory;
       bool _delayed_compilation;
+      bool _runtime_optimizations;
       v2::MSPEngine _msp_engine;
     };
 
