@@ -51,22 +51,26 @@ namespace pacxx
         _delayed_compilation = false;
     }
 
-    void NativeRuntime::propagateConstants(NativeKernel &Kernel) {
-        __verbose("propagating constants");
+    void NativeRuntime::executeRuntimeOptimizations(NativeKernel &Kernel) {
+        __verbose("runtime optimizations");
 
         KernelConfiguration config = Kernel.getConfiguration();
         std::vector<char> args = Kernel.getHostArguments();
 
-        legacy::PassManager PM = getPassManager();
+        legacy::PassManager PM;
         PM.add(createPACXXConstantInserterPass(Kernel.getName(), config.threads.x, args));
         PM.add(createSCCPPass());
         PM.add(createDeadCodeEliminationPass());
+
+        PM.run(*_M);
 
         _CPUMod = _compiler->compile(*_M);
 
         void *fptr= nullptr;
         fptr = _compiler->getKernelFptr(_CPUMod, Kernel.getName().c_str());
         static_cast<NativeKernel &>(Kernel).overrideFptr(fptr);
+
+        _delayed_compilation = false;
     }
 
     Kernel& NativeRuntime::getKernel(const std::string& name){

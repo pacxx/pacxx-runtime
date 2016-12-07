@@ -29,7 +29,7 @@ namespace pacxx {
 
     void NativeKernel::setArguments(const std::vector<char> &arg_buffer) {
         _args = arg_buffer;
-        _runtime.propagateConstants(*this);
+        _runtime.executeRuntimeOptimizations(*this);
     }
 
     const std::vector<char>& NativeKernel::getArguments() const { return _args; }
