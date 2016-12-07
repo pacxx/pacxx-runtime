@@ -4,6 +4,7 @@
 #include <llvm/ExecutionEngine/ExecutionEngine.h>
 #include <llvm/ExecutionEngine/SectionMemoryManager.h>
 #include <llvm/Transforms/Utils/Cloning.h>
+#include <llvm/LinkAllPasses.h>
 #include <llvm/Transforms/Scalar.h>
 #include <llvm/Transforms/PACXXTransforms.h>
 #include "detail/native/NativeRuntime.h"
