@@ -61,9 +61,9 @@ namespace pacxx
         std::vector<char> args = Kernel.getArguments();
 
         legacy::PassManager PM = getPassManager();
-        PM.add(createPACXXConstantInserterPass(Kernel.getName(), config.threads.x, args));
-        PM.add(createSCCPPass());
-        PM.add(createDeadCodeEliminationPass());
+        PM.add(createPACXXNativeRuntimeOpts(Kernel.getName(), config.threads.x, args));
+        //PM.add(createSCCPPass());
+        //PM.add(createDeadCodeEliminationPass());
 
         _CPUMod = _compiler->compile(*_M);
 
