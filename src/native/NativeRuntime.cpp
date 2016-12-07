@@ -32,6 +32,7 @@ namespace pacxx
       }
       else {
         __verbose("Module contains unresolved calls to __pacxx_reflect. Linking delayed!");
+        _CPUMod = _M.get();
         _delayed_compilation = true;
       }
     }
