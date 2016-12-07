@@ -157,7 +157,7 @@ namespace pacxx
 
       applyPasses(*TheModule);
 
-      TheModule->setDataLayout(_JITEngine->getDataLayout());
+      //TheModule->setDataLayout(_JITEngine->getDataLayout());
 
       __verbose("applied pass");
 
