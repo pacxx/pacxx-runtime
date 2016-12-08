@@ -60,8 +60,7 @@ namespace pacxx
         KernelConfiguration config = Kernel.getConfiguration();
         std::vector<char> args = Kernel.getArguments();
 
-        legacy::PassManager PM = getPassManager();
-        PM.add(createPACXXNativeRuntimeOpts(Kernel.getName(), config.threads.x, args));
+        getPassManager().add(createPACXXNativeRuntimeOpts(Kernel.getName(), config.threads.x, args));
         _CPUMod = _compiler->compile(*_M);
 
         void *fptr= nullptr;
