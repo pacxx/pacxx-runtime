@@ -18,7 +18,7 @@ namespace pacxx
   {
 
     NativeRuntime::NativeRuntime(unsigned)
-        : _compiler(std::make_unique<CompilerT>()), _delayed_compilation(false), _runtime_optimizations(true) {}
+        : _compiler(std::make_unique<CompilerT>()), _delayed_compilation(false), _runtime_optimizations(false) {}
 
     NativeRuntime::~NativeRuntime() {}
 
