@@ -58,7 +58,7 @@ namespace pacxx
         __verbose("runtime optimizations");
 
         KernelConfiguration config = Kernel.getConfiguration();
-        std::vector<char> args = Kernel.getHostArguments();
+        std::vector<char> args = Kernel.getArguments();
 
         legacy::PassManager PM = getPassManager();
         PM.add(createPACXXNativeRuntimeOpts(Kernel.getName(), config.threads.x, args));
