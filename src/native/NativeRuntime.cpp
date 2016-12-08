@@ -58,7 +58,7 @@ namespace pacxx
         __verbose("runtime optimizations");
 
         KernelConfiguration config = Kernel.getConfiguration();
-        std::vector<char> args = Kernel.getArguments();
+        std::vector<char> args = Kernel.getHostArguments();
 
         legacy::PassManager PM = getPassManager();
         PM.add(createPACXXNativeRuntimeOpts(Kernel.getName(), config.threads.x, args));
@@ -66,7 +66,7 @@ namespace pacxx
 
         void *fptr= nullptr;
         fptr = _compiler->getKernelFptr(_CPUMod, Kernel.getName().c_str());
-        static_cast<NativeKernel &>(Kernel).overrideFptr(fptr);
+        Kernel.overrideFptr(fptr);
 
         _delayed_compilation = false;
     }
@@ -118,9 +118,9 @@ namespace pacxx
     }
 
     void NativeRuntime::evaluateStagedFunctions(Kernel& K) {
-      __verbose("evaluating staged functions");
       if (K.requireStaging()) {
         if (_msp_engine.isDisabled()) return;
+        __verbose("evaluating staged functions");
         _msp_engine.evaluate(*_rawM->getFunction(K.getName()), K);
       }
     }
