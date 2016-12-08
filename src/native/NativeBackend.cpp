@@ -154,10 +154,9 @@ namespace pacxx
       TheModule->print(OS, nullptr);
 
       TheModule->setTargetTriple(_JITEngine->getTargetMachine()->getTargetTriple().str());
+      TheModule->setDataLayout(_JITEngine->getDataLayout());
 
       applyPasses(*TheModule);
-
-      TheModule->setDataLayout(_JITEngine->getDataLayout());
 
       __verbose("applied pass");
 
@@ -221,7 +220,7 @@ namespace pacxx
             _PM.add(createLoopSimplifyPass());
             _PM.add(createLCSSAPass());
             _PM.add(createSPMDVectorizer());
-            _PM.add(createPACXXNativeLinker());
+            //_PM.add(createPACXXNativeLinker());
             // add O3 optimizations
             PassManagerBuilder builder;
             builder.OptLevel = 3;
