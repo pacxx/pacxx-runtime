@@ -24,6 +24,8 @@ namespace pacxx
 
     void NativeRuntime::link(std::unique_ptr<llvm::Module> M) {
 
+      __verbose("linking");
+
       _rawM = std::move(M);
 
       _M.reset(CloneModule(_rawM.get()));
