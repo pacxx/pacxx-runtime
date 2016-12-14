@@ -1,0 +1,201 @@
+; ModuleID = 'pacxx-link'
+target datalayout = "e-m:e-i64:64-f80:128-n8:16:32:64-S128"
+target triple = "x86_64-unknown-linux-gnu"
+
+declare i32 @vprintf(i8* nocapture, i8*)
+
+define void @__printf(i8 addrspace(4)* %ptr, i8* %val) {
+entry:
+  %0 = addrspacecast i8 addrspace(4)* %ptr to i8*
+  %call = call i32 @vprintf(i8* %0, i8* %val)
+  ret void
+}
+
+; Function Attrs: nounwind readnone
+declare i32 @llvm.nvvm.read.ptx.sreg.ntid.x() #0
+
+; Function Attrs: nounwind readnone
+declare i32 @llvm.nvvm.read.ptx.sreg.ctaid.x() #0
+
+; Function Attrs: nounwind readnone
+declare i32 @llvm.nvvm.read.ptx.sreg.tid.x() #0
+
+; Function Attrs: nounwind readnone
+declare void @wfvMetadataFn() #0
+
+declare void @__vectorized__dummy_kernel(i64, i64, i64)
+
+define void @"__wrapped___ZN5pacxx2v213genericKernelILm0EZ4mainE12$_4028513607JPfS3_S3_iEEEvT0_DpNSt3__111conditionalIXsr3std12is_referenceIT1_EE5valueENS5_20add_lvalue_referenceINS0_17generic_to_globalIS7_E4typeEE4typeESB_E4typeE"(i32 %bidx, i32 %bidy, i32 %bidz, i32 %maxidx, i32 %maxidy, i32 %maxidz, i8* %args) {
+constructArgs:
+  %args1 = alloca i8*, align 8
+  store i8* %args, i8** %args1, align 8
+  %args2 = load i8*, i8** %args1, align 8
+  %0 = getelementptr inbounds i8, i8* %args2, i64 0
+  %1 = bitcast i8* %0 to i8*
+  %callable.coerce = load i8, i8* %1, align 8
+  %2 = getelementptr inbounds i8, i8* %args2, i64 8
+  %3 = bitcast i8* %2 to float addrspace(1)**
+  %args3 = load float addrspace(1)*, float addrspace(1)** %3, align 8
+  %4 = getelementptr inbounds i8, i8* %args2, i64 16
+  %5 = bitcast i8* %4 to float addrspace(1)**
+  %args14 = load float addrspace(1)*, float addrspace(1)** %5, align 8
+  %6 = getelementptr inbounds i8, i8* %args2, i64 24
+  %7 = bitcast i8* %6 to float addrspace(1)**
+  %args25 = load float addrspace(1)*, float addrspace(1)** %7, align 8
+  %8 = getelementptr inbounds i8, i8* %args2, i64 32
+  %9 = bitcast i8* %8 to i32*
+  %args36 = load i32, i32* %9, align 8
+  br label %entry
+
+entry:                                            ; preds = %constructArgs
+  %10 = alloca i32, align 4
+  %11 = alloca i32, align 4
+  %12 = alloca i32, align 4
+  %__z.i = alloca i32, align 4
+  %__y.i = alloca i32, align 4
+  %__x.i = alloca i32, align 4
+  %13 = bitcast i32* %10 to i8*
+  call void @llvm.lifetime.start(i64 4, i8* %13)
+  %14 = bitcast i32* %11 to i8*
+  call void @llvm.lifetime.start(i64 4, i8* %14)
+  %15 = bitcast i32* %12 to i8*
+  call void @llvm.lifetime.start(i64 4, i8* %15)
+  %16 = bitcast i32* %__z.i to i8*
+  call void @llvm.lifetime.start(i64 4, i8* %16)
+  %17 = bitcast i32* %__y.i to i8*
+  call void @llvm.lifetime.start(i64 4, i8* %17)
+  %18 = bitcast i32* %__x.i to i8*
+  call void @llvm.lifetime.start(i64 4, i8* %18)
+  store i32 %maxidx, i32* %10, align 4
+  store i32 %maxidy, i32* %11, align 4
+  store i32 %maxidz, i32* %12, align 4
+  store i32 0, i32* %__z.i, align 4
+  br label %19
+
+; <label>:19                                      ; preds = %56, %entry
+  %20 = load i32, i32* %__z.i, align 4
+  %21 = load i32, i32* %12, align 4
+  %22 = icmp ult i32 %20, %21
+  br i1 %22, label %23, label %foo.exit
+
+; <label>:23                                      ; preds = %19
+  store i32 0, i32* %__y.i, align 4
+  br label %24
+
+; <label>:24                                      ; preds = %53, %23
+  %25 = load i32, i32* %__y.i, align 4
+  %26 = load i32, i32* %11, align 4
+  %27 = icmp ult i32 %25, %26
+  br i1 %27, label %28, label %56
+
+; <label>:28                                      ; preds = %24
+  store i32 0, i32* %__x.i, align 4
+  br label %29
+
+; <label>:29                                      ; preds = %33, %28
+  %30 = load i32, i32* %__x.i, align 4
+  %31 = load i32, i32* %10, align 4
+  %32 = icmp ult i32 %30, %31
+  br i1 %32, label %33, label %53
+
+; <label>:33                                      ; preds = %29
+  %34 = load i32, i32* %__x.i, align 4
+  %35 = zext i32 %34 to i64
+  %36 = load i32, i32* %__y.i, align 4
+  %37 = zext i32 %36 to i64
+  %38 = load i32, i32* %__z.i, align 4
+  %39 = zext i32 %38 to i64
+  %40 = addrspacecast float addrspace(1)* %args3 to float*
+  %41 = addrspacecast float addrspace(1)* %args14 to float*
+  %42 = addrspacecast float addrspace(1)* %args25 to float*
+  %idx = load i32, i32* %__x.i
+  %43 = mul i32 %maxidx, %bidx
+  %44 = add i32 %43, %idx
+  %45 = sext i32 %44 to i64
+  %46 = getelementptr float, float* %40, i64 %45
+  %pktPtrCast.i = bitcast float* %46 to <8 x float>*
+  %47 = getelementptr float, float* %41, i64 %45
+  %pktPtrCast1.i = bitcast float* %47 to <8 x float>*
+  %48 = load <8 x float>, <8 x float>* %pktPtrCast.i, align 1
+  %49 = load <8 x float>, <8 x float>* %pktPtrCast1.i, align 1
+  %50 = fadd <8 x float> %48, %49
+  %51 = getelementptr float, float* %42, i64 %45
+  %pktPtrCast2.i = bitcast float* %51 to <8 x float>*
+  store <8 x float> %50, <8 x float>* %pktPtrCast2.i, align 1
+  %52 = load i32, i32* %__x.i, align 4
+  %inc.i = add i32 %52, 8
+  store i32 %inc.i, i32* %__x.i, align 4
+  br label %29, !llvm.loop !19
+
+; <label>:53                                      ; preds = %29
+  %54 = load i32, i32* %__y.i, align 4
+  %55 = add i32 %54, 1
+  store i32 %55, i32* %__y.i, align 4
+  br label %24
+
+; <label>:56                                      ; preds = %24
+  %57 = load i32, i32* %__z.i, align 4
+  %58 = add i32 %57, 1
+  store i32 %58, i32* %__z.i, align 4
+  br label %19
+
+foo.exit:                                         ; preds = %19
+  %59 = bitcast i32* %10 to i8*
+  call void @llvm.lifetime.end(i64 4, i8* %59)
+  %60 = bitcast i32* %11 to i8*
+  call void @llvm.lifetime.end(i64 4, i8* %60)
+  %61 = bitcast i32* %12 to i8*
+  call void @llvm.lifetime.end(i64 4, i8* %61)
+  %62 = bitcast i32* %__z.i to i8*
+  call void @llvm.lifetime.end(i64 4, i8* %62)
+  %63 = bitcast i32* %__y.i to i8*
+  call void @llvm.lifetime.end(i64 4, i8* %63)
+  %64 = bitcast i32* %__x.i to i8*
+  call void @llvm.lifetime.end(i64 4, i8* %64)
+  ret void
+}
+
+; Function Attrs: argmemonly nounwind
+declare void @llvm.lifetime.start(i64, i8* nocapture) #1
+
+; Function Attrs: argmemonly nounwind
+declare void @llvm.lifetime.end(i64, i8* nocapture) #1
+
+attributes #0 = { nounwind readnone }
+attributes #1 = { argmemonly nounwind }
+
+!llvm.ident = !{!0, !1, !2, !2}
+!nvvm.annotations = !{!3, !4, !5, !4, !6, !6, !6, !6, !7, !7, !6}
+!opencl.kernels = !{!8}
+!opencl.spir.version = !{!15}
+!opencl.ocl.version = !{!15}
+!opencl.enable.FP_CONTRACT = !{!16}
+!opencl.used.optional.core.features = !{!16}
+!opencl.used.extensions = !{!16}
+!opencl.compiler.options = !{!16}
+!nvvm.internalize.after.link = !{}
+!nvvmir.version = !{!15}
+!pacxx.kernel = !{!17}
+!pacxx.kernel._ZN5pacxx2v213genericKernelILm0EZ4mainE12$_4028513607JPfS3_S3_iEEEvT0_DpNSt3__111conditionalIXsr3std12is_referenceIT1_EE5valueENS5_20add_lvalue_referenceINS0_17generic_to_globalIS7_E4typeEE4typeESB_E4typeE = !{!18}
+
+!0 = !{!"PACXX"}
+!1 = !{!"clang version 3.8.0 (https://lklein14@bitbucket.org/mhaidl/clang.git 35a35447d041832b6e2e25acaf7c825860f8f407) (https://lklein14@bitbucket.org/lklein14/llvm.git 95e55b0d66d7a0c9851bbf090a9e63c01930a26a)"}
+!2 = !{!"clang version 3.8.0 (https://lklein14@bitbucket.org/mhaidl/clang.git 35a35447d041832b6e2e25acaf7c825860f8f407) (https://lklein14@bitbucket.org/lklein14/llvm.git 0645d2ecef7e124b06d0d0e4d14ec719b5e437f6)"}
+!3 = !{null, !"kernel", i32 1}
+!4 = !{null, !"align", i32 8}
+!5 = !{null, !"align", i32 8, !"align", i32 65544, !"align", i32 131080}
+!6 = !{null, !"align", i32 16}
+!7 = !{null, !"align", i32 16, !"align", i32 65552, !"align", i32 131088}
+!8 = !{null, !9, !10, !11, !12, !13, !14}
+!9 = !{!"kernel_arg_addr_space", i32 0, i32 1, i32 1, i32 1, i32 0}
+!10 = !{!"kernel_arg_type", !"class (lambda at vectorAdd.cpp:60:15)", !"std::conditional_t<std::is_reference<float*>::value, std::add_lvalue_reference_t<typename generic_to_global<float *>::type>, typename generic_to_global<float *>::type>", !"std::conditional_t<std::is_reference<float*>::value, std::add_lvalue_reference_t<typename generic_to_global<float *>::type>, typename generic_to_global<float *>::type>", !"std::conditional_t<std::is_reference<float*>::value, std::add_lvalue_reference_t<typename generic_to_global<float *>::type>, typename generic_to_global<float *>::type>", !"std::conditional_t<std::is_reference<int>::value, std::add_lvalue_reference_t<typename generic_to_global<int>::type>, typename generic_to_global<int>::type>"}
+!11 = !{!"kernel_arg_name", !"callable", !"args", !"args", !"args", !"args"}
+!12 = !{!"kernel_arg_access_qual", !"", !"", !"", !"", !""}
+!13 = !{!"kernel_arg_base_type", !"class (lambda at vectorAdd.cpp:60:15)", !" float*", !" float*", !" float*", !"int"}
+!14 = !{!"kernel_arg_type_qual", !"", !"", !"", !"", !""}
+!15 = !{i32 1, i32 2}
+!16 = !{}
+!17 = distinct !{null}
+!18 = !{i32 -1, i32 0, i32 0, i32 0, i32 0, i32 0, i32 0, i32 0, i32 0, i32 0, i32 0, i32 0, i32 -1, i32 0, i32 0}
+!19 = distinct !{!19, !20}
+!20 = !{!"llvm.loop.vectorize.enable", i1 false}
