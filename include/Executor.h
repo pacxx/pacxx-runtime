@@ -13,12 +13,14 @@
 #include <algorithm>
 #include <detail/DeviceBuffer.h>
 #include <detail/cuda/CUDARuntime.h>
+#include <detail/native/NativeRuntime.h>
 #include <detail/common/Exceptions.h>
 #include <detail/IRRuntime.h>
 #include <CodePolicy.h>
 #include <detail/CoreInitializer.h>
 #include <detail/common/Log.h>
 #include <detail/cuda/PTXBackend.h>
+#include <detail/native/NativeBackend.h>
 #include <detail/MemoryManager.h>
 #include <detail/KernelConfiguration.h>
 #include <detail/KernelArgument.h>
@@ -152,6 +154,7 @@ namespace pacxx {
         }
 
         size_t buffer_size = 0;
+        __verbose("Executor arg size ",F->arg_size());
         std::vector<size_t> arg_offsets(F->arg_size());
 
         int offset = 0;
@@ -293,8 +296,7 @@ namespace pacxx {
 
       _runtime->link(std::move(M));
 
-//      for (auto& p : _kernel_translation)
-//      {
+//    for (auto& p : _kernel_translation) {
 //        auto& K = _runtime->getKernel(p.second->getName().str());
 //        K.setName(p.second->getName().str());
 //        _runtime->evaluateStagedFunctions(K);
@@ -312,7 +314,7 @@ namespace pacxx {
     using RuntimeT = CUDARuntime;
 
     template<typename T = RuntimeT>
-    auto& get_executor() { return Executor<RuntimeT>::Create(); }
+    auto& get_executor() { return Executor<T>::Create(); }
 
   }
 }

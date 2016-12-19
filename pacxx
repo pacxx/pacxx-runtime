@@ -5,7 +5,7 @@ HARGS=( )
 FILES=( )
 ignore=false
 KRONOS_PATH=$PACXX_PATH/kronos
-PACXXRT_PATH=../../build_pacxx
+PACXXRT_PATH=../../build/pacxx_v2
 TECH=0
 CUDA_MODE=0
 FMA=0
@@ -20,7 +20,7 @@ PACXX_LD_FLAGS="-L$PACXX_PATH/lib -L$CUDA_PATH/lib64"
 PACXX_RT=""
 PACXX_RT_FLAG=""
 PACXX_DC_FILES=" "
-PACXX_RT_LIBS=" -lpacxxrt2 -lpacxxhook -lpacxxrt -lc++abi -lSpirEncoder -lcuda -lcudart -lOpenCL"
+PACXX_RT_LIBS=" -lpacxxrt2 -lpacxxhook -lpacxxrt -lc++abi -lSpirEncoder -lcuda -lcudart -lOpenCL -ltbb"
 PACXX_INCLUDES="-isystem $PACXX_PATH/include/c++/v1 -isystem $PACXX_PATH/include -isystem $CUDA_PATH/include "
 
 CUDA_RT_FLAG="-D__CUDA_RT"

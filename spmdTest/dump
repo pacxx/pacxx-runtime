@@ -1,0 +1,1038 @@
+
+### Whole-Function Vectorization of function '_ZN5pacxx2v213genericKernelILm0EZ4mainE12$_4028513607JPfS3_S3_iEEEvT0_DpNSt3__111conditionalIXsr3std12is_referenceIT1_EE5valueENS5_20add_lvalue_referenceINS0_17generic_to_globalIS7_E4typeEE4typeESB_E4typeE' (width 8, all analyses ENABLED)...
+findSCC(addrspacecast(0))
+findSCC(_Z13get_global_idj.exit(1))
+findSCC(_Z13get_global_idj.exit4(2))
+findSCC(_ZZ4mainENK12$_4028513607clEPKfS1_Pfj.exit(3))
+  new SCC:  *_ZZ4mainENK12$_4028513607clEPKfS1_Pfj.exit
+  new SCC:  *_Z13get_global_idj.exit4
+  new SCC:  *_Z13get_global_idj.exit
+  new SCC:  addrspacecast
+
+SCCs at level 0:
+
+SCCs:
+
+ValueInfoMap:
+
+  marking value:  as op_varying...
+  marking value:  as res_vector...
+  marking value:  as op_varying...
+  marking value:  as res_vector...
+  marking value:  as op_varying...
+  marking value:  as res_vector...
+  marking value:  as op_varying...
+  marking value:  as res_vector...
+  marking value:  as op_varying...
+  marking value:  as res_vector...
+  marking value:  as op_varying...
+  marking value:  as res_vector...
+  marking value:  as op_varying...
+  marking value:  as res_vector...
+  marking value:  as op_varying...
+  marking value:  as op_varying...
+  marking value:  as res_vector...
+  marking value:  as op_varying...
+  marking value:  as res_vector...
+  marking value:  as op_varying...
+  marking value:  as res_vector...
+    previously marked as OP_VARYING - ignored!
+  marking value:  as op_varying...
+  marking value:  as res_vector...
+  marking value:  as op_varying...
+  marking value:  as res_vector...
+    previously marked as OP_VARYING - ignored!
+  marking value:  as op_uniform...
+  marking value:  as op_uniform...
+  marking value:  as op_uniform...
+  marking value:  as op_uniform...
+  marking value:  as op_uniform...
+  marking value:  as op_uniform...
+  marking value:  as op_uniform...
+  marking value:  as op_uniform...
+    previously marked as op_uniform - ignored!
+  marking value:  as op_uniform...
+    previously marked as op_uniform - ignored!
+  marking value:  as op_uniform...
+    previously marked as op_uniform - ignored!
+  marking value:  as op_uniform...
+    previously marked as op_uniform - ignored!
+
+Marking divergent loops...
+
+
+Marking blocks that are always executed by all threads...
+
+  marking value: addrspacecast as always_by_all...
+  marking value: _Z13get_global_idj.exit as always_by_all...
+  marking value: _Z13get_global_idj.exit4 as always_by_all...
+  marking value: _ZZ4mainENK12$_4028513607clEPKfS1_Pfj.exit as always_by_all...
+
+Marking divergent blocks...
+
+
+isDivergent(addrspacecast)
+  has less than two incoming edges - NON_DIVERGENT!
+  marking value: addrspacecast as non_divergent...
+
+isDivergent(_Z13get_global_idj.exit)
+  has less than two incoming edges - NON_DIVERGENT!
+  marking value: _Z13get_global_idj.exit as non_divergent...
+
+isDivergent(_Z13get_global_idj.exit4)
+  has less than two incoming edges - NON_DIVERGENT!
+  marking value: _Z13get_global_idj.exit4 as non_divergent...
+
+isDivergent(_ZZ4mainENK12$_4028513607clEPKfS1_Pfj.exit)
+  has less than two incoming edges - NON_DIVERGENT!
+  marking value: _ZZ4mainENK12$_4028513607clEPKfS1_Pfj.exit as non_divergent...
+
+Updating phis with divergence information...
+
+
+Updating operations with possible side effects...
+
+
+Updating alloca uniform/varying information...
+
+
+Updating values that are live across loop boundaries...
+
+
+Marking divergent loops...
+
+
+Marking blocks that are always executed by all threads...
+
+  marking value: addrspacecast as always_by_all...
+    previously marked as always_by_all - ignored!
+  marking value: _Z13get_global_idj.exit as always_by_all...
+    previously marked as always_by_all - ignored!
+  marking value: _Z13get_global_idj.exit4 as always_by_all...
+    previously marked as always_by_all - ignored!
+  marking value: _ZZ4mainENK12$_4028513607clEPKfS1_Pfj.exit as always_by_all...
+    previously marked as always_by_all - ignored!
+
+Marking divergent blocks...
+
+
+isDivergent(addrspacecast)
+  has less than two incoming edges - NON_DIVERGENT!
+  marking value: addrspacecast as non_divergent...
+    previously marked as non_divergent - ignored!
+
+isDivergent(_Z13get_global_idj.exit)
+  has less than two incoming edges - NON_DIVERGENT!
+  marking value: _Z13get_global_idj.exit as non_divergent...
+    previously marked as non_divergent - ignored!
+
+isDivergent(_Z13get_global_idj.exit4)
+  has less than two incoming edges - NON_DIVERGENT!
+  marking value: _Z13get_global_idj.exit4 as non_divergent...
+    previously marked as non_divergent - ignored!
+
+isDivergent(_ZZ4mainENK12$_4028513607clEPKfS1_Pfj.exit)
+  has less than two incoming edges - NON_DIVERGENT!
+  marking value: _ZZ4mainENK12$_4028513607clEPKfS1_Pfj.exit as non_divergent...
+    previously marked as non_divergent - ignored!
+
+Updating phis with divergence information...
+
+
+Updating operations with possible side effects...
+
+
+Updating alloca uniform/varying information...
+
+
+Updating values that are live across loop boundaries...
+
+
+Marking mandatory/optional blocks...
+
+
+isMandatory(addrspacecast)
+  marking value: addrspacecast as optional...
+
+isMandatory(_Z13get_global_idj.exit)
+  marking value: _Z13get_global_idj.exit as optional...
+
+isMandatory(_Z13get_global_idj.exit4)
+  marking value: _Z13get_global_idj.exit4 as optional...
+
+isMandatory(_ZZ4mainENK12$_4028513607clEPKfS1_Pfj.exit)
+  marking value: _ZZ4mainENK12$_4028513607clEPKfS1_Pfj.exit as optional...
+  marking value:  as res_uniform...
+  marking value:  as res_uniform...
+  marking value:  as res_uniform...
+  marking value:  as res_uniform...
+  marking value:  as res_uniform...
+  marking value:  as res_uniform...
+  marking value:  as res_uniform...
+
+marking index/alignment info of arguments...
+marked UNIFORM argument: i8 %callable.coerce as INDEX_SAME / ALIGNED_FALSE!
+marked UNIFORM argument: float addrspace(1)* %args as INDEX_SAME / ALIGNED_TRUE!
+marked UNIFORM argument: float addrspace(1)* %args1 as INDEX_SAME / ALIGNED_TRUE!
+marked UNIFORM argument: float addrspace(1)* %args2 as INDEX_SAME / ALIGNED_TRUE!
+marked UNIFORM argument: i32 %args3 as INDEX_SAME / ALIGNED_FALSE!
+
+workSet:
+ *   %3 = call i32 @llvm.nvvm.read.ptx.sreg.ntid.x() #4, !idx !25, !op_varying !25, !res_vector !25
+ *   %4 = call i32 @llvm.nvvm.read.ptx.sreg.ctaid.x() #4, !idx !25, !op_varying !25, !res_vector !25
+ *   %5 = call i32 @llvm.nvvm.read.ptx.sreg.tid.x() #4, !idx !25, !op_varying !25, !res_vector !25
+ *   store float %13, float* %14, align 4, !op_varying !25
+
+marking instructions...
+markIndexAlignValueAndOps(1):   %3 = call i32 @llvm.nvvm.read.ptx.sreg.ntid.x() #4, !idx !25, !op_varying !25, !res_vector !25
+markIndexAlignValueAndOps(4):   %3 = call i32 @llvm.nvvm.read.ptx.sreg.ntid.x() #4, !idx !25, !op_varying !25, !res_vector !25
+  marked instruction as INDEX_RANDOM / ALIGN_FALSE!
+  marked value:   %3 = call i32 @llvm.nvvm.read.ptx.sreg.ntid.x() #4, !idx !25, !op_varying !25, !res_vector !25, !random !25, !unaligned !25
+markIndexAlignValueAndOps(1):   %4 = call i32 @llvm.nvvm.read.ptx.sreg.ctaid.x() #4, !idx !25, !op_varying !25, !res_vector !25
+markIndexAlignValueAndOps(4):   %4 = call i32 @llvm.nvvm.read.ptx.sreg.ctaid.x() #4, !idx !25, !op_varying !25, !res_vector !25
+  marked instruction as INDEX_RANDOM / ALIGN_FALSE!
+  marked value:   %4 = call i32 @llvm.nvvm.read.ptx.sreg.ctaid.x() #4, !idx !25, !op_varying !25, !res_vector !25, !random !25, !unaligned !25
+markIndexAlignValueAndOps(1):   %5 = call i32 @llvm.nvvm.read.ptx.sreg.tid.x() #4, !idx !25, !op_varying !25, !res_vector !25
+markIndexAlignValueAndOps(4):   %5 = call i32 @llvm.nvvm.read.ptx.sreg.tid.x() #4, !idx !25, !op_varying !25, !res_vector !25
+  marked instruction as INDEX_RANDOM / ALIGN_FALSE!
+  marked value:   %5 = call i32 @llvm.nvvm.read.ptx.sreg.tid.x() #4, !idx !25, !op_varying !25, !res_vector !25, !random !25, !unaligned !25
+markIndexAlignValueAndOps(1):   store float %13, float* %14, align 4, !op_varying !25
+markIndexAlignValueAndOps(1):   %13 = fadd float %11, %12, !op_varying !25, !res_vector !25
+markIndexAlignValueAndOps(1):   %11 = load float, float* %9, align 4, !op_varying !25, !res_vector !25
+markIndexAlignValueAndOps(1):   %9 = getelementptr inbounds float, float* %0, i64 %8, !op_varying !25, !res_vector !25
+markIndexAlignValueAndOps(1):   %0 = addrspacecast float addrspace(1)* %args to float*, !op_uniform !25, !res_uniform !25
+markIndexAlignValueAndOps(1): float addrspace(1)* %args
+  already marked as same / aligned - ignored!
+markIndexAlignValueAndOps(4):   %0 = addrspacecast float addrspace(1)* %args to float*, !op_uniform !25, !res_uniform !25
+  marked value:   %0 = addrspacecast float addrspace(1)* %args to float*, !op_uniform !25, !res_uniform !25, !same !25, !unaligned !25
+markIndexAlignValueAndOps(1):   %8 = sext i32 %7 to i64, !op_varying !25, !res_vector !25
+markIndexAlignValueAndOps(1):   %7 = add i32 %6, %5, !global_id_x !25, !op_varying !25, !res_vector !25, !consecutive !25
+  already marked as consecutive /  - ignored!
+markIndexAlignValueAndOps(4):   %8 = sext i32 %7 to i64, !op_varying !25, !res_vector !25
+  marked value:   %8 = sext i32 %7 to i64, !op_varying !25, !res_vector !25, !consecutive !25, !unaligned !25
+markIndexAlignValueAndOps(4):   %9 = getelementptr inbounds float, float* %0, i64 %8, !op_varying !25, !res_vector !25
+Analyzing   %9 = getelementptr inbounds float, float* %0, i64 %8, !op_varying !25, !res_vector !25
+Base flat : 1
+Target flat : 1    float*
+      isSOA : 0
+ii[0] same
+ii[1] consecutive
+-> Consecutive flat GEP
+
+  marked value:   %9 = getelementptr inbounds float, float* %0, i64 %8, !op_varying !25, !res_vector !25, !consecutive !25, !unaligned !25
+markIndexAlignValueAndOps(4):   %11 = load float, float* %9, align 4, !op_varying !25, !res_vector !25
+  marked instruction as INDEX_RANDOM / ALIGN_FALSE!
+  marked value:   %11 = load float, float* %9, align 4, !op_varying !25, !res_vector !25, !random !25, !unaligned !25
+markIndexAlignValueAndOps(1):   %12 = load float, float* %10, align 4, !op_varying !25, !res_vector !25
+markIndexAlignValueAndOps(1):   %10 = getelementptr inbounds float, float* %1, i64 %8, !op_varying !25, !res_vector !25
+markIndexAlignValueAndOps(1):   %1 = addrspacecast float addrspace(1)* %args1 to float*, !op_uniform !25, !res_uniform !25
+markIndexAlignValueAndOps(1): float addrspace(1)* %args1
+  already marked as same / aligned - ignored!
+markIndexAlignValueAndOps(4):   %1 = addrspacecast float addrspace(1)* %args1 to float*, !op_uniform !25, !res_uniform !25
+  marked value:   %1 = addrspacecast float addrspace(1)* %args1 to float*, !op_uniform !25, !res_uniform !25, !same !25, !unaligned !25
+markIndexAlignValueAndOps(1):   %8 = sext i32 %7 to i64, !op_varying !25, !res_vector !25, !consecutive !25, !unaligned !25
+  already marked as consecutive / unaligned - ignored!
+markIndexAlignValueAndOps(4):   %10 = getelementptr inbounds float, float* %1, i64 %8, !op_varying !25, !res_vector !25
+Analyzing   %10 = getelementptr inbounds float, float* %1, i64 %8, !op_varying !25, !res_vector !25
+Base flat : 1
+Target flat : 1    float*
+      isSOA : 0
+ii[0] same
+ii[1] consecutive
+-> Consecutive flat GEP
+
+  marked value:   %10 = getelementptr inbounds float, float* %1, i64 %8, !op_varying !25, !res_vector !25, !consecutive !25, !unaligned !25
+markIndexAlignValueAndOps(4):   %12 = load float, float* %10, align 4, !op_varying !25, !res_vector !25
+  marked instruction as INDEX_RANDOM / ALIGN_FALSE!
+  marked value:   %12 = load float, float* %10, align 4, !op_varying !25, !res_vector !25, !random !25, !unaligned !25
+markIndexAlignValueAndOps(4):   %13 = fadd float %11, %12, !op_varying !25, !res_vector !25
+  marked value:   %13 = fadd float %11, %12, !op_varying !25, !res_vector !25, !random !25, !unaligned !25
+markIndexAlignValueAndOps(1):   %14 = getelementptr inbounds float, float* %2, i64 %8, !op_varying !25, !res_vector !25
+markIndexAlignValueAndOps(1):   %2 = addrspacecast float addrspace(1)* %args2 to float*, !op_uniform !25, !res_uniform !25
+markIndexAlignValueAndOps(1): float addrspace(1)* %args2
+  already marked as same / aligned - ignored!
+markIndexAlignValueAndOps(4):   %2 = addrspacecast float addrspace(1)* %args2 to float*, !op_uniform !25, !res_uniform !25
+  marked value:   %2 = addrspacecast float addrspace(1)* %args2 to float*, !op_uniform !25, !res_uniform !25, !same !25, !unaligned !25
+markIndexAlignValueAndOps(1):   %8 = sext i32 %7 to i64, !op_varying !25, !res_vector !25, !consecutive !25, !unaligned !25
+  already marked as consecutive / unaligned - ignored!
+markIndexAlignValueAndOps(4):   %14 = getelementptr inbounds float, float* %2, i64 %8, !op_varying !25, !res_vector !25
+Analyzing   %14 = getelementptr inbounds float, float* %2, i64 %8, !op_varying !25, !res_vector !25
+Base flat : 1
+Target flat : 1    float*
+      isSOA : 0
+ii[0] same
+ii[1] consecutive
+-> Consecutive flat GEP
+
+  marked value:   %14 = getelementptr inbounds float, float* %2, i64 %8, !op_varying !25, !res_vector !25, !consecutive !25, !unaligned !25
+markIndexAlignValueAndOps(4):   store float %13, float* %14, align 4, !op_varying !25
+  has void type - ignored!
+
+Marking instructions that have to be split and executed sequentially instead of vectorized...
+testing if instruction has to be split:   %0 = addrspacecast float addrspace(1)* %args to float*, !op_uniform !25, !res_uniform !25, !same !25, !unaligned !25...
+  is OP_UNIFORM - ignored:   %0 = addrspacecast float addrspace(1)* %args to float*, !op_uniform !25, !res_uniform !25, !same !25, !unaligned !25
+testing if instruction has to be split:   %1 = addrspacecast float addrspace(1)* %args1 to float*, !op_uniform !25, !res_uniform !25, !same !25, !unaligned !25...
+  is OP_UNIFORM - ignored:   %1 = addrspacecast float addrspace(1)* %args1 to float*, !op_uniform !25, !res_uniform !25, !same !25, !unaligned !25
+testing if instruction has to be split:   %2 = addrspacecast float addrspace(1)* %args2 to float*, !op_uniform !25, !res_uniform !25, !same !25, !unaligned !25...
+  is OP_UNIFORM - ignored:   %2 = addrspacecast float addrspace(1)* %args2 to float*, !op_uniform !25, !res_uniform !25, !same !25, !unaligned !25
+testing if instruction has to be split:   br label %_Z13get_global_idj.exit, !op_uniform !25, !res_uniform !25...
+  is OP_UNIFORM - ignored:   br label %_Z13get_global_idj.exit, !op_uniform !25, !res_uniform !25
+testing if instruction has to be split:   br label %_Z13get_global_idj.exit4, !op_uniform !25, !res_uniform !25...
+  is OP_UNIFORM - ignored:   br label %_Z13get_global_idj.exit4, !op_uniform !25, !res_uniform !25
+testing if instruction has to be split:   %3 = call i32 @llvm.nvvm.read.ptx.sreg.ntid.x() #4, !idx !25, !op_varying !25, !res_vector !25, !random !25, !unaligned !25...
+  marking value:  as op_sequential...
+testing if instruction has to be split:   %4 = call i32 @llvm.nvvm.read.ptx.sreg.ctaid.x() #4, !idx !25, !op_varying !25, !res_vector !25, !random !25, !unaligned !25...
+  marking value:  as op_sequential...
+testing if instruction has to be split:   %5 = call i32 @llvm.nvvm.read.ptx.sreg.tid.x() #4, !idx !25, !op_varying !25, !res_vector !25, !random !25, !unaligned !25...
+  marking value:  as op_sequential...
+testing if instruction has to be split:   %6 = mul i32 %3, %4, !idx !25, !op_varying !25, !res_vector !25...
+testing if instruction has to be split:   %7 = add i32 %6, %5, !global_id_x !25, !op_varying !25, !res_vector !25, !consecutive !25...
+  is INDEX_CONSECUTIVE - ignored!
+testing if instruction has to be split:   %8 = sext i32 %7 to i64, !op_varying !25, !res_vector !25, !consecutive !25, !unaligned !25...
+  is INDEX_CONSECUTIVE - ignored!
+testing if instruction has to be split:   %9 = getelementptr inbounds float, float* %0, i64 %8, !op_varying !25, !res_vector !25, !consecutive !25, !unaligned !25...
+  is INDEX_CONSECUTIVE - ignored!
+testing if instruction has to be split:   %10 = getelementptr inbounds float, float* %1, i64 %8, !op_varying !25, !res_vector !25, !consecutive !25, !unaligned !25...
+  is INDEX_CONSECUTIVE - ignored!
+testing if instruction has to be split:   %11 = load float, float* %9, align 4, !op_varying !25, !res_vector !25, !random !25, !unaligned !25...
+    load can be VECTORIZED!
+testing if instruction has to be split:   %12 = load float, float* %10, align 4, !op_varying !25, !res_vector !25, !random !25, !unaligned !25...
+    load can be VECTORIZED!
+testing if instruction has to be split:   %13 = fadd float %11, %12, !op_varying !25, !res_vector !25, !random !25, !unaligned !25...
+testing if instruction has to be split:   %14 = getelementptr inbounds float, float* %2, i64 %8, !op_varying !25, !res_vector !25, !consecutive !25, !unaligned !25...
+  is INDEX_CONSECUTIVE - ignored!
+testing if instruction has to be split:   store float %13, float* %14, align 4, !op_varying !25...
+    store can be VECTORIZED!
+testing if instruction has to be split:   br label %"_ZZ4mainENK12$_4028513607clEPKfS1_Pfj.exit", !op_uniform !25, !res_uniform !25...
+  is OP_UNIFORM - ignored:   br label %"_ZZ4mainENK12$_4028513607clEPKfS1_Pfj.exit", !op_uniform !25, !res_uniform !25
+testing if instruction has to be split:   ret void, !op_uniform !25, !res_uniform !25...
+  is OP_UNIFORM - ignored:   ret void, !op_uniform !25, !res_uniform !25
+
+Marking instructions that have to be split and executed sequentially instead of vectorized...
+testing if instruction has to be split:   %0 = addrspacecast float addrspace(1)* %args to float*, !op_uniform !25, !res_uniform !25, !same !25, !unaligned !25...
+  is OP_UNIFORM - ignored:   %0 = addrspacecast float addrspace(1)* %args to float*, !op_uniform !25, !res_uniform !25, !same !25, !unaligned !25
+testing if instruction has to be split:   %1 = addrspacecast float addrspace(1)* %args1 to float*, !op_uniform !25, !res_uniform !25, !same !25, !unaligned !25...
+  is OP_UNIFORM - ignored:   %1 = addrspacecast float addrspace(1)* %args1 to float*, !op_uniform !25, !res_uniform !25, !same !25, !unaligned !25
+testing if instruction has to be split:   %2 = addrspacecast float addrspace(1)* %args2 to float*, !op_uniform !25, !res_uniform !25, !same !25, !unaligned !25...
+  is OP_UNIFORM - ignored:   %2 = addrspacecast float addrspace(1)* %args2 to float*, !op_uniform !25, !res_uniform !25, !same !25, !unaligned !25
+testing if instruction has to be split:   br label %_Z13get_global_idj.exit, !op_uniform !25, !res_uniform !25...
+  is OP_UNIFORM - ignored:   br label %_Z13get_global_idj.exit, !op_uniform !25, !res_uniform !25
+testing if instruction has to be split:   br label %_Z13get_global_idj.exit4, !op_uniform !25, !res_uniform !25...
+  is OP_UNIFORM - ignored:   br label %_Z13get_global_idj.exit4, !op_uniform !25, !res_uniform !25
+testing if instruction has to be split:   %3 = call i32 @llvm.nvvm.read.ptx.sreg.ntid.x() #4, !idx !25, !op_sequential !25, !res_vector !25, !random !25, !unaligned !25...
+  has been marked as OP_SEQUENTIAL/_GUARDED already - ignored:   %3 = call i32 @llvm.nvvm.read.ptx.sreg.ntid.x() #4, !idx !25, !op_sequential !25, !res_vector !25, !random !25, !unaligned !25
+testing if instruction has to be split:   %4 = call i32 @llvm.nvvm.read.ptx.sreg.ctaid.x() #4, !idx !25, !op_sequential !25, !res_vector !25, !random !25, !unaligned !25...
+  has been marked as OP_SEQUENTIAL/_GUARDED already - ignored:   %4 = call i32 @llvm.nvvm.read.ptx.sreg.ctaid.x() #4, !idx !25, !op_sequential !25, !res_vector !25, !random !25, !unaligned !25
+testing if instruction has to be split:   %5 = call i32 @llvm.nvvm.read.ptx.sreg.tid.x() #4, !idx !25, !op_sequential !25, !res_vector !25, !random !25, !unaligned !25...
+  has been marked as OP_SEQUENTIAL/_GUARDED already - ignored:   %5 = call i32 @llvm.nvvm.read.ptx.sreg.tid.x() #4, !idx !25, !op_sequential !25, !res_vector !25, !random !25, !unaligned !25
+testing if instruction has to be split:   %6 = mul i32 %3, %4, !idx !25, !op_varying !25, !res_vector !25...
+testing if instruction has to be split:   %7 = add i32 %6, %5, !global_id_x !25, !op_varying !25, !res_vector !25, !consecutive !25...
+  is INDEX_CONSECUTIVE - ignored!
+testing if instruction has to be split:   %8 = sext i32 %7 to i64, !op_varying !25, !res_vector !25, !consecutive !25, !unaligned !25...
+  is INDEX_CONSECUTIVE - ignored!
+testing if instruction has to be split:   %9 = getelementptr inbounds float, float* %0, i64 %8, !op_varying !25, !res_vector !25, !consecutive !25, !unaligned !25...
+  is INDEX_CONSECUTIVE - ignored!
+testing if instruction has to be split:   %10 = getelementptr inbounds float, float* %1, i64 %8, !op_varying !25, !res_vector !25, !consecutive !25, !unaligned !25...
+  is INDEX_CONSECUTIVE - ignored!
+testing if instruction has to be split:   %11 = load float, float* %9, align 4, !op_varying !25, !res_vector !25, !random !25, !unaligned !25...
+    load can be VECTORIZED!
+testing if instruction has to be split:   %12 = load float, float* %10, align 4, !op_varying !25, !res_vector !25, !random !25, !unaligned !25...
+    load can be VECTORIZED!
+testing if instruction has to be split:   %13 = fadd float %11, %12, !op_varying !25, !res_vector !25, !random !25, !unaligned !25...
+testing if instruction has to be split:   %14 = getelementptr inbounds float, float* %2, i64 %8, !op_varying !25, !res_vector !25, !consecutive !25, !unaligned !25...
+  is INDEX_CONSECUTIVE - ignored!
+testing if instruction has to be split:   store float %13, float* %14, align 4, !op_varying !25...
+    store can be VECTORIZED!
+testing if instruction has to be split:   br label %"_ZZ4mainENK12$_4028513607clEPKfS1_Pfj.exit", !op_uniform !25, !res_uniform !25...
+  is OP_UNIFORM - ignored:   br label %"_ZZ4mainENK12$_4028513607clEPKfS1_Pfj.exit", !op_uniform !25, !res_uniform !25
+testing if instruction has to be split:   ret void, !op_uniform !25, !res_uniform !25...
+  is OP_UNIFORM - ignored:   ret void, !op_uniform !25, !res_uniform !25
+
+Marking mask operations...
+
+define internal ptx_kernel void @"_ZN5pacxx2v213genericKernelILm0EZ4mainE12$_4028513607JPfS3_S3_iEEEvT0_DpNSt3__111conditionalIXsr3std12is_referenceIT1_EE5valueENS5_20add_lvalue_referenceINS0_17generic_to_globalIS7_E4typeEE4typeESB_E4typeE.wfv.tmp"(i8 %callable.coerce, float addrspace(1)* %args, float addrspace(1)* %args1, float addrspace(1)* %args2, i32 %args3) #2 {
+addrspacecast:
+  tail call void @wfvMetadataFn() #3, !wfv_arg_info !21, !always_by_all !27, !optional !27, !non_divergent !27
+  %0 = addrspacecast float addrspace(1)* %args to float*, !op_uniform !27, !res_uniform !27, !same !27, !unaligned !27
+  %1 = addrspacecast float addrspace(1)* %args1 to float*, !op_uniform !27, !res_uniform !27, !same !27, !unaligned !27
+  %2 = addrspacecast float addrspace(1)* %args2 to float*, !op_uniform !27, !res_uniform !27, !same !27, !unaligned !27
+  br label %_Z13get_global_idj.exit, !op_uniform !27, !res_uniform !27
+
+_Z13get_global_idj.exit:                          ; preds = %addrspacecast
+  tail call void @wfvMetadataFn() #3, !always_by_all !27, !optional !27, !non_divergent !27
+  br label %_Z13get_global_idj.exit4, !op_uniform !27, !res_uniform !27
+
+_Z13get_global_idj.exit4:                         ; preds = %_Z13get_global_idj.exit
+  tail call void @wfvMetadataFn() #3, !always_by_all !27, !optional !27, !non_divergent !27
+  %3 = call i32 @llvm.nvvm.read.ptx.sreg.ntid.x() #4, !idx !27, !op_sequential !27, !res_vector !27, !random !27, !unaligned !27
+  %4 = call i32 @llvm.nvvm.read.ptx.sreg.ctaid.x() #4, !idx !27, !op_sequential !27, !res_vector !27, !random !27, !unaligned !27
+  %5 = call i32 @llvm.nvvm.read.ptx.sreg.tid.x() #4, !idx !27, !op_sequential !27, !res_vector !27, !random !27, !unaligned !27
+  %6 = mul i32 %3, %4, !idx !27, !op_varying !27, !res_vector !27
+  %7 = add i32 %6, %5, !global_id_x !27, !op_varying !27, !res_vector !27, !consecutive !27
+  %8 = sext i32 %7 to i64, !op_varying !27, !res_vector !27, !consecutive !27, !unaligned !27
+  %9 = getelementptr inbounds float, float* %0, i64 %8, !op_varying !27, !res_vector !27, !consecutive !27, !unaligned !27
+  %10 = getelementptr inbounds float, float* %1, i64 %8, !op_varying !27, !res_vector !27, !consecutive !27, !unaligned !27
+  %11 = load float, float* %9, align 4, !op_varying !27, !res_vector !27, !random !27, !unaligned !27
+  %12 = load float, float* %10, align 4, !op_varying !27, !res_vector !27, !random !27, !unaligned !27
+  %13 = fadd float %11, %12, !op_varying !27, !res_vector !27, !random !27, !unaligned !27
+  %14 = getelementptr inbounds float, float* %2, i64 %8, !op_varying !27, !res_vector !27, !consecutive !27, !unaligned !27
+  store float %13, float* %14, align 4, !op_varying !27
+  br label %"_ZZ4mainENK12$_4028513607clEPKfS1_Pfj.exit", !op_uniform !27, !res_uniform !27
+
+"_ZZ4mainENK12$_4028513607clEPKfS1_Pfj.exit":     ; preds = %_Z13get_global_idj.exit4
+  tail call void @wfvMetadataFn() #3, !always_by_all !27, !optional !27, !non_divergent !27
+  ret void, !op_uniform !27, !res_uniform !27
+}
+
+define internal ptx_kernel void @"_ZN5pacxx2v213genericKernelILm0EZ4mainE12$_4028513607JPfS3_S3_iEEEvT0_DpNSt3__111conditionalIXsr3std12is_referenceIT1_EE5valueENS5_20add_lvalue_referenceINS0_17generic_to_globalIS7_E4typeEE4typeESB_E4typeE.wfv.tmp"(i8 %callable.coerce, float addrspace(1)* %args, float addrspace(1)* %args1, float addrspace(1)* %args2, i32 %args3) #2 {
+addrspacecast:
+  tail call void @wfvMetadataFn() #3, !wfv_arg_info !21, !always_by_all !27, !optional !27, !non_divergent !27
+  %0 = addrspacecast float addrspace(1)* %args to float*, !op_uniform !27, !res_uniform !27, !same !27, !unaligned !27
+  %1 = addrspacecast float addrspace(1)* %args1 to float*, !op_uniform !27, !res_uniform !27, !same !27, !unaligned !27
+  %2 = addrspacecast float addrspace(1)* %args2 to float*, !op_uniform !27, !res_uniform !27, !same !27, !unaligned !27
+  br label %_Z13get_global_idj.exit, !op_uniform !27, !res_uniform !27
+
+_Z13get_global_idj.exit:                          ; preds = %addrspacecast
+  tail call void @wfvMetadataFn() #3, !always_by_all !27, !optional !27, !non_divergent !27
+  br label %_Z13get_global_idj.exit4, !op_uniform !27, !res_uniform !27
+
+_Z13get_global_idj.exit4:                         ; preds = %_Z13get_global_idj.exit
+  tail call void @wfvMetadataFn() #3, !always_by_all !27, !optional !27, !non_divergent !27
+  %3 = call i32 @llvm.nvvm.read.ptx.sreg.ntid.x() #4, !idx !27, !op_sequential !27, !res_vector !27, !random !27, !unaligned !27
+  %4 = call i32 @llvm.nvvm.read.ptx.sreg.ctaid.x() #4, !idx !27, !op_sequential !27, !res_vector !27, !random !27, !unaligned !27
+  %5 = call i32 @llvm.nvvm.read.ptx.sreg.tid.x() #4, !idx !27, !op_sequential !27, !res_vector !27, !random !27, !unaligned !27
+  %6 = mul i32 %3, %4, !idx !27, !op_varying !27, !res_vector !27
+  %7 = add i32 %6, %5, !global_id_x !27, !op_varying !27, !res_vector !27, !consecutive !27
+  %8 = sext i32 %7 to i64, !op_varying !27, !res_vector !27, !consecutive !27, !unaligned !27
+  %9 = getelementptr inbounds float, float* %0, i64 %8, !op_varying !27, !res_vector !27, !consecutive !27, !unaligned !27
+  %10 = getelementptr inbounds float, float* %1, i64 %8, !op_varying !27, !res_vector !27, !consecutive !27, !unaligned !27
+  %11 = load float, float* %9, align 4, !op_varying !27, !res_vector !27, !random !27, !unaligned !27
+  %12 = load float, float* %10, align 4, !op_varying !27, !res_vector !27, !random !27, !unaligned !27
+  %13 = fadd float %11, %12, !op_varying !27, !res_vector !27, !random !27, !unaligned !27
+  %14 = getelementptr inbounds float, float* %2, i64 %8, !op_varying !27, !res_vector !27, !consecutive !27, !unaligned !27
+  store float %13, float* %14, align 4, !op_varying !27
+  br label %"_ZZ4mainENK12$_4028513607clEPKfS1_Pfj.exit", !op_uniform !27, !res_uniform !27
+
+"_ZZ4mainENK12$_4028513607clEPKfS1_Pfj.exit":     ; preds = %_Z13get_global_idj.exit4
+  tail call void @wfvMetadataFn() #3, !always_by_all !27, !optional !27, !non_divergent !27
+  ret void, !op_uniform !27, !res_uniform !27
+}
+
+
+after analysis
+#########################################################
+## MASK ANALYSIS
+#########################################################
+
+generating mask information for block 'addrspacecast'... 
+  entryMask (1): 0: i1 true
+
+  createExitMasks(addrspacecast)
+  exitMask  (1): 0: i1 true
+
+generated mask information for block 'addrspacecast':
+BlockMaskInfo for block 'addrspacecast':
+  entry mask : 0: i1 true
+
+  exit mask 0: 0: i1 true
+
+
+generating mask information for block '_Z13get_global_idj.exit'... 
+  entryMask (2): 1: i1 true
+
+  createExitMasks(_Z13get_global_idj.exit)
+  exitMask  (1): 1: i1 true
+
+generated mask information for block '_Z13get_global_idj.exit':
+BlockMaskInfo for block '_Z13get_global_idj.exit':
+  entry mask : 1: i1 true
+
+  exit mask 0: 1: i1 true
+
+
+generating mask information for block '_Z13get_global_idj.exit4'... 
+  entryMask (2): 2: i1 true
+
+  createExitMasks(_Z13get_global_idj.exit4)
+  exitMask  (1): 2: i1 true
+
+generated mask information for block '_Z13get_global_idj.exit4':
+BlockMaskInfo for block '_Z13get_global_idj.exit4':
+  entry mask : 2: i1 true
+
+  exit mask 0: 2: i1 true
+
+
+generating mask information for block '_ZZ4mainENK12$_4028513607clEPKfS1_Pfj.exit'... 
+  entryMask (2): 3: i1 true
+
+  createExitMasks(_ZZ4mainENK12$_4028513607clEPKfS1_Pfj.exit)
+generated mask information for block '_ZZ4mainENK12$_4028513607clEPKfS1_Pfj.exit':
+BlockMaskInfo for block '_ZZ4mainENK12$_4028513607clEPKfS1_Pfj.exit':
+  entry mask : 3: i1 true
+
+Masks:
+0: i1 true
+
+1: i1 true
+
+2: i1 true
+
+3: i1 true
+
+
+Block Mask Info:
+BlockMaskInfo for block 'addrspacecast':
+  entry mask : 0: i1 true
+
+  exit mask 0: 0: i1 true
+
+BlockMaskInfo for block '_Z13get_global_idj.exit4':
+  entry mask : 2: i1 true
+
+  exit mask 0: 2: i1 true
+
+BlockMaskInfo for block '_Z13get_global_idj.exit':
+  entry mask : 1: i1 true
+
+  exit mask 0: 1: i1 true
+
+BlockMaskInfo for block '_ZZ4mainENK12$_4028513607clEPKfS1_Pfj.exit':
+  entry mask : 3: i1 true
+
+
+Loop Mask Info:
+
+Loop Exit Mask Info:
+
+
+#########################################################
+## MASK GENERATION
+#########################################################
+
+define internal ptx_kernel void @"_ZN5pacxx2v213genericKernelILm0EZ4mainE12$_4028513607JPfS3_S3_iEEEvT0_DpNSt3__111conditionalIXsr3std12is_referenceIT1_EE5valueENS5_20add_lvalue_referenceINS0_17generic_to_globalIS7_E4typeEE4typeESB_E4typeE.wfv.tmp"(i8 %callable.coerce, float addrspace(1)* %args, float addrspace(1)* %args1, float addrspace(1)* %args2, i32 %args3) #2 {
+addrspacecast:
+  tail call void @wfvMetadataFn() #3, !wfv_arg_info !21, !always_by_all !27, !optional !27, !non_divergent !27
+  %0 = addrspacecast float addrspace(1)* %args to float*, !op_uniform !27, !res_uniform !27, !same !27, !unaligned !27
+  %1 = addrspacecast float addrspace(1)* %args1 to float*, !op_uniform !27, !res_uniform !27, !same !27, !unaligned !27
+  %2 = addrspacecast float addrspace(1)* %args2 to float*, !op_uniform !27, !res_uniform !27, !same !27, !unaligned !27
+  br label %_Z13get_global_idj.exit, !op_uniform !27, !res_uniform !27
+
+_Z13get_global_idj.exit:                          ; preds = %addrspacecast
+  tail call void @wfvMetadataFn() #3, !always_by_all !27, !optional !27, !non_divergent !27
+  br label %_Z13get_global_idj.exit4, !op_uniform !27, !res_uniform !27
+
+_Z13get_global_idj.exit4:                         ; preds = %_Z13get_global_idj.exit
+  tail call void @wfvMetadataFn() #3, !always_by_all !27, !optional !27, !non_divergent !27
+  %3 = call i32 @llvm.nvvm.read.ptx.sreg.ntid.x() #4, !idx !27, !op_sequential !27, !res_vector !27, !random !27, !unaligned !27
+  %4 = call i32 @llvm.nvvm.read.ptx.sreg.ctaid.x() #4, !idx !27, !op_sequential !27, !res_vector !27, !random !27, !unaligned !27
+  %5 = call i32 @llvm.nvvm.read.ptx.sreg.tid.x() #4, !idx !27, !op_sequential !27, !res_vector !27, !random !27, !unaligned !27
+  %6 = mul i32 %3, %4, !idx !27, !op_varying !27, !res_vector !27
+  %7 = add i32 %6, %5, !global_id_x !27, !op_varying !27, !res_vector !27, !consecutive !27
+  %8 = sext i32 %7 to i64, !op_varying !27, !res_vector !27, !consecutive !27, !unaligned !27
+  %9 = getelementptr inbounds float, float* %0, i64 %8, !op_varying !27, !res_vector !27, !consecutive !27, !unaligned !27
+  %10 = getelementptr inbounds float, float* %1, i64 %8, !op_varying !27, !res_vector !27, !consecutive !27, !unaligned !27
+  %11 = load float, float* %9, align 4, !op_varying !27, !res_vector !27, !random !27, !unaligned !27
+  %12 = load float, float* %10, align 4, !op_varying !27, !res_vector !27, !random !27, !unaligned !27
+  %13 = fadd float %11, %12, !op_varying !27, !res_vector !27, !random !27, !unaligned !27
+  %14 = getelementptr inbounds float, float* %2, i64 %8, !op_varying !27, !res_vector !27, !consecutive !27, !unaligned !27
+  store float %13, float* %14, align 4, !op_varying !27
+  br label %"_ZZ4mainENK12$_4028513607clEPKfS1_Pfj.exit", !op_uniform !27, !res_uniform !27
+
+"_ZZ4mainENK12$_4028513607clEPKfS1_Pfj.exit":     ; preds = %_Z13get_global_idj.exit4
+  tail call void @wfvMetadataFn() #3, !always_by_all !27, !optional !27, !non_divergent !27
+  ret void, !op_uniform !27, !res_uniform !27
+}
+analyzing function for values live across loop boundaries
+loop live value analysis finished.
+
+#########################################################
+## SELECT GENERATION
+#########################################################
+
+define internal ptx_kernel void @"_ZN5pacxx2v213genericKernelILm0EZ4mainE12$_4028513607JPfS3_S3_iEEEvT0_DpNSt3__111conditionalIXsr3std12is_referenceIT1_EE5valueENS5_20add_lvalue_referenceINS0_17generic_to_globalIS7_E4typeEE4typeESB_E4typeE.wfv.tmp"(i8 %callable.coerce, float addrspace(1)* %args, float addrspace(1)* %args1, float addrspace(1)* %args2, i32 %args3) #2 {
+addrspacecast:
+  tail call void @wfvMetadataFn() #3, !wfv_arg_info !21, !always_by_all !27, !optional !27, !non_divergent !27
+  %0 = addrspacecast float addrspace(1)* %args to float*, !op_uniform !27, !res_uniform !27, !same !27, !unaligned !27
+  %1 = addrspacecast float addrspace(1)* %args1 to float*, !op_uniform !27, !res_uniform !27, !same !27, !unaligned !27
+  %2 = addrspacecast float addrspace(1)* %args2 to float*, !op_uniform !27, !res_uniform !27, !same !27, !unaligned !27
+  br label %_Z13get_global_idj.exit, !op_uniform !27, !res_uniform !27
+
+_Z13get_global_idj.exit:                          ; preds = %addrspacecast
+  tail call void @wfvMetadataFn() #3, !always_by_all !27, !optional !27, !non_divergent !27
+  br label %_Z13get_global_idj.exit4, !op_uniform !27, !res_uniform !27
+
+_Z13get_global_idj.exit4:                         ; preds = %_Z13get_global_idj.exit
+  tail call void @wfvMetadataFn() #3, !always_by_all !27, !optional !27, !non_divergent !27
+  %3 = call i32 @llvm.nvvm.read.ptx.sreg.ntid.x() #4, !idx !27, !op_sequential !27, !res_vector !27, !random !27, !unaligned !27
+  %4 = call i32 @llvm.nvvm.read.ptx.sreg.ctaid.x() #4, !idx !27, !op_sequential !27, !res_vector !27, !random !27, !unaligned !27
+  %5 = call i32 @llvm.nvvm.read.ptx.sreg.tid.x() #4, !idx !27, !op_sequential !27, !res_vector !27, !random !27, !unaligned !27
+  %6 = mul i32 %3, %4, !idx !27, !op_varying !27, !res_vector !27
+  %7 = add i32 %6, %5, !global_id_x !27, !op_varying !27, !res_vector !27, !consecutive !27
+  %8 = sext i32 %7 to i64, !op_varying !27, !res_vector !27, !consecutive !27, !unaligned !27
+  %9 = getelementptr inbounds float, float* %0, i64 %8, !op_varying !27, !res_vector !27, !consecutive !27, !unaligned !27
+  %10 = getelementptr inbounds float, float* %1, i64 %8, !op_varying !27, !res_vector !27, !consecutive !27, !unaligned !27
+  %11 = load float, float* %9, align 4, !op_varying !27, !res_vector !27, !random !27, !unaligned !27
+  %12 = load float, float* %10, align 4, !op_varying !27, !res_vector !27, !random !27, !unaligned !27
+  %13 = fadd float %11, %12, !op_varying !27, !res_vector !27, !random !27, !unaligned !27
+  %14 = getelementptr inbounds float, float* %2, i64 %8, !op_varying !27, !res_vector !27, !consecutive !27, !unaligned !27
+  store float %13, float* %14, align 4, !op_varying !27
+  br label %"_ZZ4mainENK12$_4028513607clEPKfS1_Pfj.exit", !op_uniform !27, !res_uniform !27
+
+"_ZZ4mainENK12$_4028513607clEPKfS1_Pfj.exit":     ; preds = %_Z13get_global_idj.exit4
+  tail call void @wfvMetadataFn() #3, !always_by_all !27, !optional !27, !non_divergent !27
+  ret void, !op_uniform !27, !res_uniform !27
+}
+
+#########################################################
+## CFG LINEARIZATION
+#########################################################
+
+dc blocks:
+
+Clusters:
+
+determineNewEdges('addrspacecast')
+determineNewEdges('_Z13get_global_idj.exit')
+determineNewEdges('_Z13get_global_idj.exit4')
+determineNewEdges('_ZZ4mainENK12$_4028513607clEPKfS1_Pfj.exit')
+
+Linearize info:
+Block 'addrspacecast':
+  old successor : '_Z13get_global_idj.exit'
+  edge type     : 0
+  new successors: '_Z13get_global_idj.exit'
+  rewire-causing:
+Block '_Z13get_global_idj.exit4':
+  old successor : '_ZZ4mainENK12$_4028513607clEPKfS1_Pfj.exit'
+  edge type     : 0
+  new successors: '_ZZ4mainENK12$_4028513607clEPKfS1_Pfj.exit'
+  rewire-causing:
+Block '_Z13get_global_idj.exit':
+  old successor : '_Z13get_global_idj.exit4'
+  edge type     : 0
+  new successors: '_Z13get_global_idj.exit4'
+  rewire-causing:
+
+reg2mem:   %0 = addrspacecast float addrspace(1)* %args to float*, !op_uniform !25, !res_uniform !25, !same !25, !unaligned !25
+  block        ('addrspacecast')
+  alloca       ('addrspacecast'):   %.reg2mem = alloca float*, !op_uniform !19, !res_uniform !19, !same !19, !unaligned !19
+  new store    ('addrspacecast'):   store float* %0, float** %.reg2mem
+  new reload   ('_Z13get_global_idj.exit4'):   %.reload = load float*, float** %.reg2mem
+
+reg2mem:   %1 = addrspacecast float addrspace(1)* %args1 to float*, !op_uniform !19, !res_uniform !19, !same !19, !unaligned !19
+  block        ('addrspacecast')
+  alloca       ('addrspacecast'):   %.reg2mem1 = alloca float*, !op_uniform !19, !res_uniform !19, !same !19, !unaligned !19
+  new store    ('addrspacecast'):   store float* %1, float** %.reg2mem1
+  new reload   ('_Z13get_global_idj.exit4'):   %.reload2 = load float*, float** %.reg2mem1
+
+reg2mem:   %2 = addrspacecast float addrspace(1)* %args2 to float*, !op_uniform !19, !res_uniform !19, !same !19, !unaligned !19
+  block        ('addrspacecast')
+  alloca       ('addrspacecast'):   %.reg2mem3 = alloca float*, !op_uniform !19, !res_uniform !19, !same !19, !unaligned !19
+  new store    ('addrspacecast'):   store float* %2, float** %.reg2mem3
+  new reload   ('_Z13get_global_idj.exit4'):   %.reload4 = load float*, float** %.reg2mem3
+
+rewiring edges of block 'addrspacecast'...
+  successor '_Z13get_global_idj.exit'
+
+rewiring edges of block '_Z13get_global_idj.exit'...
+  successor '_Z13get_global_idj.exit4'
+
+rewiring edges of block '_Z13get_global_idj.exit4'...
+  successor '_ZZ4mainENK12$_4028513607clEPKfS1_Pfj.exit'
+
+Repairing SSA form after CFG linearization...
+
+mem2reg:   %.reg2mem = alloca float*, !op_uniform !19, !res_uniform !19, !same !19, !unaligned !19
+  block   ('addrspacecast')
+  store   ('addrspacecast'):   store float* %0, float** %.reg2mem
+  reload  ('_Z13get_global_idj.exit4'):   %.reload = load float*, float** %.reg2mem
+
+mem2reg:   %.reg2mem1 = alloca float*, !op_uniform !19, !res_uniform !19, !same !19, !unaligned !19
+  block   ('addrspacecast')
+  store   ('addrspacecast'):   store float* %1, float** %.reg2mem1
+  reload  ('_Z13get_global_idj.exit4'):   %.reload2 = load float*, float** %.reg2mem1
+
+mem2reg:   %.reg2mem3 = alloca float*, !op_uniform !19, !res_uniform !19, !same !19, !unaligned !19
+  block   ('addrspacecast')
+  store   ('addrspacecast'):   store float* %2, float** %.reg2mem3
+  reload  ('_Z13get_global_idj.exit4'):   %.reload4 = load float*, float** %.reg2mem3
+
+Linearization of function finished!
+
+define internal ptx_kernel void @"_ZN5pacxx2v213genericKernelILm0EZ4mainE12$_4028513607JPfS3_S3_iEEEvT0_DpNSt3__111conditionalIXsr3std12is_referenceIT1_EE5valueENS5_20add_lvalue_referenceINS0_17generic_to_globalIS7_E4typeEE4typeESB_E4typeE.wfv.tmp"(i8 %callable.coerce, float addrspace(1)* %args, float addrspace(1)* %args1, float addrspace(1)* %args2, i32 %args3) #2 {
+addrspacecast:
+  tail call void @wfvMetadataFn() #3, !wfv_arg_info !21, !always_by_all !27, !optional !27, !non_divergent !27
+  %0 = addrspacecast float addrspace(1)* %args to float*, !op_uniform !27, !res_uniform !27, !same !27, !unaligned !27
+  %1 = addrspacecast float addrspace(1)* %args1 to float*, !op_uniform !27, !res_uniform !27, !same !27, !unaligned !27
+  %2 = addrspacecast float addrspace(1)* %args2 to float*, !op_uniform !27, !res_uniform !27, !same !27, !unaligned !27
+  br label %_Z13get_global_idj.exit, !op_uniform !27, !res_uniform !27
+
+_Z13get_global_idj.exit:                          ; preds = %addrspacecast
+  tail call void @wfvMetadataFn() #3, !always_by_all !27, !optional !27, !non_divergent !27
+  br label %_Z13get_global_idj.exit4, !op_uniform !27, !res_uniform !27
+
+_Z13get_global_idj.exit4:                         ; preds = %_Z13get_global_idj.exit
+  tail call void @wfvMetadataFn() #3, !always_by_all !27, !optional !27, !non_divergent !27
+  %3 = call i32 @llvm.nvvm.read.ptx.sreg.ntid.x() #4, !idx !27, !op_sequential !27, !res_vector !27, !random !27, !unaligned !27
+  %4 = call i32 @llvm.nvvm.read.ptx.sreg.ctaid.x() #4, !idx !27, !op_sequential !27, !res_vector !27, !random !27, !unaligned !27
+  %5 = call i32 @llvm.nvvm.read.ptx.sreg.tid.x() #4, !idx !27, !op_sequential !27, !res_vector !27, !random !27, !unaligned !27
+  %6 = mul i32 %3, %4, !idx !27, !op_varying !27, !res_vector !27
+  %7 = add i32 %6, %5, !global_id_x !27, !op_varying !27, !res_vector !27, !consecutive !27
+  %8 = sext i32 %7 to i64, !op_varying !27, !res_vector !27, !consecutive !27, !unaligned !27
+  %9 = getelementptr inbounds float, float* %0, i64 %8, !op_varying !27, !res_vector !27, !consecutive !27, !unaligned !27
+  %10 = getelementptr inbounds float, float* %1, i64 %8, !op_varying !27, !res_vector !27, !consecutive !27, !unaligned !27
+  %11 = load float, float* %9, align 4, !op_varying !27, !res_vector !27, !random !27, !unaligned !27
+  %12 = load float, float* %10, align 4, !op_varying !27, !res_vector !27, !random !27, !unaligned !27
+  %13 = fadd float %11, %12, !op_varying !27, !res_vector !27, !random !27, !unaligned !27
+  %14 = getelementptr inbounds float, float* %2, i64 %8, !op_varying !27, !res_vector !27, !consecutive !27, !unaligned !27
+  store float %13, float* %14, align 4, !op_varying !27
+  br label %"_ZZ4mainENK12$_4028513607clEPKfS1_Pfj.exit", !op_uniform !27, !res_uniform !27
+
+"_ZZ4mainENK12$_4028513607clEPKfS1_Pfj.exit":     ; preds = %_Z13get_global_idj.exit4
+  tail call void @wfvMetadataFn() #3, !always_by_all !27, !optional !27, !non_divergent !27
+  ret void, !op_uniform !27, !res_uniform !27
+}
+
+#########################################################
+## INSTRUCTION VECTORIZATION
+#########################################################
+
+creating bitcast to equivalent vector type for argument: float addrspace(1)* %args
+  is no vector type - ignored!
+creating bitcast to equivalent vector type for argument: float addrspace(1)* %args1
+  is no vector type - ignored!
+creating bitcast to equivalent vector type for argument: float addrspace(1)* %args2
+define void @"__vectorized___ZN5pacxx2v213genericKernelILm0EZ4mainE12$_4028513607JPfS3_S3_iEEEvT0_DpNSt3__111conditionalIXsr3std12is_referenceIT1_EE5valueENS5_20add_lvalue_referenceINS0_17generic_to_globalIS7_E4typeEE4typeESB_E4typeE"(i8 %callable.coerce, float addrspace(1)* %args, float addrspace(1)* %args1, float addrspace(1)* %args2, i32 %args3) {
+addrspacecast.:
+  tail call void @wfvMetadataFn() #3, !wfv_arg_info !21, !always_by_all !27, !optional !27, !non_divergent !27
+  %0 = addrspacecast float addrspace(1)* %args to float*, !op_uniform !27, !res_uniform !27, !same !27, !unaligned !27
+  %1 = addrspacecast float addrspace(1)* %args1 to float*, !op_uniform !27, !res_uniform !27, !same !27, !unaligned !27
+  %2 = addrspacecast float addrspace(1)* %args2 to float*, !op_uniform !27, !res_uniform !27, !same !27, !unaligned !27
+  br label %_Z13get_global_idj.exit., !op_uniform !27, !res_uniform !27
+
+_Z13get_global_idj.exit.:                         ; preds = %addrspacecast.
+  tail call void @wfvMetadataFn() #3, !always_by_all !27, !optional !27, !non_divergent !27
+  br label %_Z13get_global_idj.exit4., !op_uniform !27, !res_uniform !27
+
+_Z13get_global_idj.exit4.:                        ; preds = %_Z13get_global_idj.exit.
+  tail call void @wfvMetadataFn() #3, !always_by_all !27, !optional !27, !non_divergent !27
+  %3 = call i32 @llvm.nvvm.read.ptx.sreg.ntid.x() #4, !idx !27, !op_sequential !27, !res_vector !27, !random !27, !unaligned !27
+  %4 = call i32 @llvm.nvvm.read.ptx.sreg.ctaid.x() #4, !idx !27, !op_sequential !27, !res_vector !27, !random !27, !unaligned !27
+  %5 = call i32 @llvm.nvvm.read.ptx.sreg.tid.x() #4, !idx !27, !op_sequential !27, !res_vector !27, !random !27, !unaligned !27
+  %6 = mul i32 %3, %4, !idx !27, !op_varying !27, !res_vector !27
+  %7 = add i32 %6, %5, !global_id_x !27, !op_varying !27, !res_vector !27, !consecutive !27
+  %8 = sext i32 %7 to i64, !op_varying !27, !res_vector !27, !consecutive !27, !unaligned !27
+  %9 = getelementptr inbounds float, float* %0, i64 %8, !op_varying !27, !res_vector !27, !consecutive !27, !unaligned !27
+  %10 = getelementptr inbounds float, float* %1, i64 %8, !op_varying !27, !res_vector !27, !consecutive !27, !unaligned !27
+  %11 = load float, float* %9, align 4, !op_varying !27, !res_vector !27, !random !27, !unaligned !27
+  %12 = load float, float* %10, align 4, !op_varying !27, !res_vector !27, !random !27, !unaligned !27
+  %13 = fadd float %11, %12, !op_varying !27, !res_vector !27, !random !27, !unaligned !27
+  %14 = getelementptr inbounds float, float* %2, i64 %8, !op_varying !27, !res_vector !27, !consecutive !27, !unaligned !27
+  store float %13, float* %14, align 4, !op_varying !27
+  br label %"_ZZ4mainENK12$_4028513607clEPKfS1_Pfj.exit.", !op_uniform !27, !res_uniform !27
+
+"_ZZ4mainENK12$_4028513607clEPKfS1_Pfj.exit.":    ; preds = %_Z13get_global_idj.exit4.
+  tail call void @wfvMetadataFn() #3, !always_by_all !27, !optional !27, !non_divergent !27
+  ret void, !op_uniform !27, !res_uniform !27
+}
+
+
+define void @"__vectorized___ZN5pacxx2v213genericKernelILm0EZ4mainE12$_4028513607JPfS3_S3_iEEEvT0_DpNSt3__111conditionalIXsr3std12is_referenceIT1_EE5valueENS5_20add_lvalue_referenceINS0_17generic_to_globalIS7_E4typeEE4typeESB_E4typeE"(i8 %callable.coerce, float addrspace(1)* %args, float addrspace(1)* %args1, float addrspace(1)* %args2, i32 %args3) {
+addrspacecast.:
+  tail call void @wfvMetadataFn() #3, !wfv_arg_info !21, !always_by_all !27, !optional !27, !non_divergent !27
+  %0 = addrspacecast float addrspace(1)* %args to float*, !op_uniform !27, !res_uniform !27, !same !27, !unaligned !27
+  %1 = addrspacecast float addrspace(1)* %args1 to float*, !op_uniform !27, !res_uniform !27, !same !27, !unaligned !27
+  %2 = addrspacecast float addrspace(1)* %args2 to float*, !op_uniform !27, !res_uniform !27, !same !27, !unaligned !27
+  br label %_Z13get_global_idj.exit., !op_uniform !27, !res_uniform !27
+
+_Z13get_global_idj.exit.:                         ; preds = %addrspacecast.
+  tail call void @wfvMetadataFn() #3, !always_by_all !27, !optional !27, !non_divergent !27
+  br label %_Z13get_global_idj.exit4., !op_uniform !27, !res_uniform !27
+
+_Z13get_global_idj.exit4.:                        ; preds = %_Z13get_global_idj.exit.
+  tail call void @wfvMetadataFn() #3, !always_by_all !27, !optional !27, !non_divergent !27
+  %3 = call i32 @llvm.nvvm.read.ptx.sreg.ntid.x() #4, !idx !27, !op_sequential !27, !res_vector !27, !random !27, !unaligned !27
+  %4 = call i32 @llvm.nvvm.read.ptx.sreg.ctaid.x() #4, !idx !27, !op_sequential !27, !res_vector !27, !random !27, !unaligned !27
+  %5 = call i32 @llvm.nvvm.read.ptx.sreg.tid.x() #4, !idx !27, !op_sequential !27, !res_vector !27, !random !27, !unaligned !27
+  %6 = mul i32 %3, %4, !idx !27, !op_varying !27, !res_vector !27
+  %7 = add i32 %6, %5, !global_id_x !27, !op_varying !27, !res_vector !27, !consecutive !27
+  %8 = sext i32 %7 to i64, !op_varying !27, !res_vector !27, !consecutive !27, !unaligned !27
+  %9 = getelementptr inbounds float, float* %0, i64 %8, !op_varying !27, !res_vector !27, !consecutive !27, !unaligned !27
+  %10 = getelementptr inbounds float, float* %1, i64 %8, !op_varying !27, !res_vector !27, !consecutive !27, !unaligned !27
+  %11 = load float, float* %9, align 4, !op_varying !27, !res_vector !27, !random !27, !unaligned !27
+  %12 = load float, float* %10, align 4, !op_varying !27, !res_vector !27, !random !27, !unaligned !27
+  %13 = fadd float %11, %12, !op_varying !27, !res_vector !27, !random !27, !unaligned !27
+  %14 = getelementptr inbounds float, float* %2, i64 %8, !op_varying !27, !res_vector !27, !consecutive !27, !unaligned !27
+  store float %13, float* %14, align 4, !op_varying !27
+  br label %"_ZZ4mainENK12$_4028513607clEPKfS1_Pfj.exit.", !op_uniform !27, !res_uniform !27
+
+"_ZZ4mainENK12$_4028513607clEPKfS1_Pfj.exit.":    ; preds = %_Z13get_global_idj.exit4.
+  tail call void @wfvMetadataFn() #3, !always_by_all !27, !optional !27, !non_divergent !27
+  ret void, !op_uniform !27, !res_uniform !27
+}
+
+
+  is no vector type - ignored!
+
+---------------------------------------------------------
+| INSERT PACK/UNPACK INTRINSICS
+---------------------------------------------------------
+
+after insertPackUnpackIntrinsics:
+---------------------------------------------------------
+| OPTIMIZE PACK/UNPACK OPERATIONS
+---------------------------------------------------------
+
+---------------------------------------------------------
+| DUPLICATE SPLIT INSTRUCTIONS
+---------------------------------------------------------
+
+after duplicateSplitInstructions:
+---------------------------------------------------------
+| VECTORIZE INSTRUCTIONS
+---------------------------------------------------------
+vectorizeInstruction(  %9 = getelementptr inbounds float, float* %0, i64 %8, !op_varying !25, !res_vector !25, !consecutive !25, !unaligned !25 )
+  GEP can be vectorized!
+  inserted new GEP:   %9 = getelementptr float, float* %0, i64 %8, !op_varying !25, !res_vector !25, !consecutive !25, !unaligned !25
+vectorizeInstruction(  %10 = getelementptr inbounds float, float* %1, i64 %8, !op_varying !25, !res_vector !25, !consecutive !25, !unaligned !25 )
+  GEP can be vectorized!
+  inserted new GEP:   %10 = getelementptr float, float* %1, i64 %8, !op_varying !25, !res_vector !25, !consecutive !25, !unaligned !25
+vectorizeInstruction(  %11 = load float, <8 x float>* %pktPtrCast, align 4, !op_varying !25, !res_vector !25, !random !25, !unaligned !25 )
+  pointer:   %pktPtrCast = bitcast float* %9 to <8 x float>*, !op_uniform !25, !res_vector !25, !consecutive !25, !unaligned !25, !wfv_pkt_ptr_cast !25
+  unaligned vector load required!
+LOAD WAS VECTORIZED (UNALIGNED)!
+vectorizeInstruction(  %12 = load float, <8 x float>* %pktPtrCast1, align 4, !op_varying !25, !res_vector !25, !random !25, !unaligned !25 )
+  pointer:   %pktPtrCast1 = bitcast float* %10 to <8 x float>*, !op_uniform !25, !res_vector !25, !consecutive !25, !unaligned !25, !wfv_pkt_ptr_cast !25
+  unaligned vector load required!
+LOAD WAS VECTORIZED (UNALIGNED)!
+vectorizeInstruction(  %13 = fadd <8 x float> %11, %12, !op_varying !25, !res_vector !25, !random !25, !unaligned !25 )
+vectorizeInstruction(  %14 = getelementptr inbounds float, float* %2, i64 %8, !op_varying !25, !res_vector !25, !consecutive !25, !unaligned !25 )
+  GEP can be vectorized!
+  inserted new GEP:   %14 = getelementptr float, float* %2, i64 %8, !op_varying !25, !res_vector !25, !consecutive !25, !unaligned !25
+vectorizeInstruction(  store <8 x float> %13, <8 x float>* %pktPtrCast2, align 4, !op_varying !25 )
+  pointer:   %pktPtrCast2 = bitcast float* %14 to <8 x float>*, !op_uniform !25, !res_vector !25, !consecutive !25, !unaligned !25, !wfv_pkt_ptr_cast !25
+  value:   %13 = fadd <8 x float> %11, %12, !op_varying !25, !res_vector !25, !random !25, !unaligned !25
+define void @"__vectorized___ZN5pacxx2v213genericKernelILm0EZ4mainE12$_4028513607JPfS3_S3_iEEEvT0_DpNSt3__111conditionalIXsr3std12is_referenceIT1_EE5valueENS5_20add_lvalue_referenceINS0_17generic_to_globalIS7_E4typeEE4typeESB_E4typeE"(i8 %callable.coerce, float addrspace(1)* %args, float addrspace(1)* %args1, float addrspace(1)* %args2, i32 %args3) {
+addrspacecast.:
+  tail call void @wfvMetadataFn() #3, !wfv_arg_info !21, !always_by_all !27, !optional !27, !non_divergent !27
+  %0 = addrspacecast float addrspace(1)* %args to float*, !op_uniform !27, !res_uniform !27, !same !27, !unaligned !27
+  %1 = addrspacecast float addrspace(1)* %args1 to float*, !op_uniform !27, !res_uniform !27, !same !27, !unaligned !27
+  %2 = addrspacecast float addrspace(1)* %args2 to float*, !op_uniform !27, !res_uniform !27, !same !27, !unaligned !27
+  br label %_Z13get_global_idj.exit., !op_uniform !27, !res_uniform !27
+
+_Z13get_global_idj.exit.:                         ; preds = %addrspacecast.
+  tail call void @wfvMetadataFn() #3, !always_by_all !27, !optional !27, !non_divergent !27
+  br label %_Z13get_global_idj.exit4., !op_uniform !27, !res_uniform !27
+
+_Z13get_global_idj.exit4.:                        ; preds = %_Z13get_global_idj.exit.
+  tail call void @wfvMetadataFn() #3, !always_by_all !27, !optional !27, !non_divergent !27
+  %3 = call i32 @llvm.nvvm.read.ptx.sreg.ntid.x() #4, !idx !27, !op_sequential !27, !res_vector !27, !random !27, !unaligned !27
+  %4 = call i32 @llvm.nvvm.read.ptx.sreg.ctaid.x() #4, !idx !27, !op_sequential !27, !res_vector !27, !random !27, !unaligned !27
+  %5 = call i32 @llvm.nvvm.read.ptx.sreg.tid.x() #4, !idx !27, !op_sequential !27, !res_vector !27, !random !27, !unaligned !27
+  %6 = mul i32 %3, %4, !idx !27, !op_varying !27, !res_vector !27
+  %7 = add i32 %6, %5, !global_id_x !27, !op_varying !27, !res_vector !27, !consecutive !27
+  %8 = sext i32 %7 to i64, !op_varying !27, !res_vector !27, !consecutive !27, !unaligned !27
+  %9 = getelementptr float, float* %0, i64 %8, !op_varying !27, !res_vector !27, !consecutive !27, !unaligned !27
+  %pktPtrCast = bitcast float* %9 to <8 x float>*, !op_uniform !27, !res_vector !27, !consecutive !27, !unaligned !27, !wfv_pkt_ptr_cast !27
+  %10 = getelementptr float, float* %1, i64 %8, !op_varying !27, !res_vector !27, !consecutive !27, !unaligned !27
+  %pktPtrCast1 = bitcast float* %10 to <8 x float>*, !op_uniform !27, !res_vector !27, !consecutive !27, !unaligned !27, !wfv_pkt_ptr_cast !27
+  %11 = load <8 x float>, <8 x float>* %pktPtrCast, align 1, !op_varying !27, !res_vector !27, !random !27, !unaligned !27
+  %12 = load <8 x float>, <8 x float>* %pktPtrCast1, align 1, !op_varying !27, !res_vector !27, !random !27, !unaligned !27
+  %13 = fadd <8 x float> %11, %12, !op_varying !27, !res_vector !27, !random !27, !unaligned !27
+  %14 = getelementptr float, float* %2, i64 %8, !op_varying !27, !res_vector !27, !consecutive !27, !unaligned !27
+  %pktPtrCast2 = bitcast float* %14 to <8 x float>*, !op_uniform !27, !res_vector !27, !consecutive !27, !unaligned !27, !wfv_pkt_ptr_cast !27
+  store <8 x float> %13, <8 x float>* %pktPtrCast2, align 1, !op_varying !27
+  br label %"_ZZ4mainENK12$_4028513607clEPKfS1_Pfj.exit.", !op_uniform !27, !res_uniform !27
+
+"_ZZ4mainENK12$_4028513607clEPKfS1_Pfj.exit.":    ; preds = %_Z13get_global_idj.exit4.
+  tail call void @wfvMetadataFn() #3, !always_by_all !27, !optional !27, !non_divergent !27
+  ret void, !op_uniform !27, !res_uniform !27
+}
+
+
+define void @"__vectorized___ZN5pacxx2v213genericKernelILm0EZ4mainE12$_4028513607JPfS3_S3_iEEEvT0_DpNSt3__111conditionalIXsr3std12is_referenceIT1_EE5valueENS5_20add_lvalue_referenceINS0_17generic_to_globalIS7_E4typeEE4typeESB_E4typeE"(i8 %callable.coerce, float addrspace(1)* %args, float addrspace(1)* %args1, float addrspace(1)* %args2, i32 %args3) {
+addrspacecast.:
+  tail call void @wfvMetadataFn() #3, !wfv_arg_info !21, !always_by_all !27, !optional !27, !non_divergent !27
+  %0 = addrspacecast float addrspace(1)* %args to float*, !op_uniform !27, !res_uniform !27, !same !27, !unaligned !27
+  %1 = addrspacecast float addrspace(1)* %args1 to float*, !op_uniform !27, !res_uniform !27, !same !27, !unaligned !27
+  %2 = addrspacecast float addrspace(1)* %args2 to float*, !op_uniform !27, !res_uniform !27, !same !27, !unaligned !27
+  br label %_Z13get_global_idj.exit., !op_uniform !27, !res_uniform !27
+
+_Z13get_global_idj.exit.:                         ; preds = %addrspacecast.
+  tail call void @wfvMetadataFn() #3, !always_by_all !27, !optional !27, !non_divergent !27
+  br label %_Z13get_global_idj.exit4., !op_uniform !27, !res_uniform !27
+
+_Z13get_global_idj.exit4.:                        ; preds = %_Z13get_global_idj.exit.
+  tail call void @wfvMetadataFn() #3, !always_by_all !27, !optional !27, !non_divergent !27
+  %3 = call i32 @llvm.nvvm.read.ptx.sreg.ntid.x() #4, !idx !27, !op_sequential !27, !res_vector !27, !random !27, !unaligned !27
+  %4 = call i32 @llvm.nvvm.read.ptx.sreg.ctaid.x() #4, !idx !27, !op_sequential !27, !res_vector !27, !random !27, !unaligned !27
+  %5 = call i32 @llvm.nvvm.read.ptx.sreg.tid.x() #4, !idx !27, !op_sequential !27, !res_vector !27, !random !27, !unaligned !27
+  %6 = mul i32 %3, %4, !idx !27, !op_varying !27, !res_vector !27
+  %7 = add i32 %6, %5, !global_id_x !27, !op_varying !27, !res_vector !27, !consecutive !27
+  %8 = sext i32 %7 to i64, !op_varying !27, !res_vector !27, !consecutive !27, !unaligned !27
+  %9 = getelementptr float, float* %0, i64 %8, !op_varying !27, !res_vector !27, !consecutive !27, !unaligned !27
+  %pktPtrCast = bitcast float* %9 to <8 x float>*, !op_uniform !27, !res_vector !27, !consecutive !27, !unaligned !27, !wfv_pkt_ptr_cast !27
+  %10 = getelementptr float, float* %1, i64 %8, !op_varying !27, !res_vector !27, !consecutive !27, !unaligned !27
+  %pktPtrCast1 = bitcast float* %10 to <8 x float>*, !op_uniform !27, !res_vector !27, !consecutive !27, !unaligned !27, !wfv_pkt_ptr_cast !27
+  %11 = load <8 x float>, <8 x float>* %pktPtrCast, align 1, !op_varying !27, !res_vector !27, !random !27, !unaligned !27
+  %12 = load <8 x float>, <8 x float>* %pktPtrCast1, align 1, !op_varying !27, !res_vector !27, !random !27, !unaligned !27
+  %13 = fadd <8 x float> %11, %12, !op_varying !27, !res_vector !27, !random !27, !unaligned !27
+  %14 = getelementptr float, float* %2, i64 %8, !op_varying !27, !res_vector !27, !consecutive !27, !unaligned !27
+  %pktPtrCast2 = bitcast float* %14 to <8 x float>*, !op_uniform !27, !res_vector !27, !consecutive !27, !unaligned !27, !wfv_pkt_ptr_cast !27
+  store <8 x float> %13, <8 x float>* %pktPtrCast2, align 1, !op_varying !27
+  br label %"_ZZ4mainENK12$_4028513607clEPKfS1_Pfj.exit.", !op_uniform !27, !res_uniform !27
+
+"_ZZ4mainENK12$_4028513607clEPKfS1_Pfj.exit.":    ; preds = %_Z13get_global_idj.exit4.
+  tail call void @wfvMetadataFn() #3, !always_by_all !27, !optional !27, !non_divergent !27
+  ret void, !op_uniform !27, !res_uniform !27
+}
+
+
+define void @"__vectorized___ZN5pacxx2v213genericKernelILm0EZ4mainE12$_4028513607JPfS3_S3_iEEEvT0_DpNSt3__111conditionalIXsr3std12is_referenceIT1_EE5valueENS5_20add_lvalue_referenceINS0_17generic_to_globalIS7_E4typeEE4typeESB_E4typeE"(i8 %callable.coerce, float addrspace(1)* %args, float addrspace(1)* %args1, float addrspace(1)* %args2, i32 %args3) {
+addrspacecast.:
+  tail call void @wfvMetadataFn() #3, !wfv_arg_info !21, !always_by_all !27, !optional !27, !non_divergent !27
+  %0 = addrspacecast float addrspace(1)* %args to float*, !op_uniform !27, !res_uniform !27, !same !27, !unaligned !27
+  %1 = addrspacecast float addrspace(1)* %args1 to float*, !op_uniform !27, !res_uniform !27, !same !27, !unaligned !27
+  %2 = addrspacecast float addrspace(1)* %args2 to float*, !op_uniform !27, !res_uniform !27, !same !27, !unaligned !27
+  br label %_Z13get_global_idj.exit., !op_uniform !27, !res_uniform !27
+
+_Z13get_global_idj.exit.:                         ; preds = %addrspacecast.
+  tail call void @wfvMetadataFn() #3, !always_by_all !27, !optional !27, !non_divergent !27
+  br label %_Z13get_global_idj.exit4., !op_uniform !27, !res_uniform !27
+
+_Z13get_global_idj.exit4.:                        ; preds = %_Z13get_global_idj.exit.
+  tail call void @wfvMetadataFn() #3, !always_by_all !27, !optional !27, !non_divergent !27
+  %3 = call i32 @llvm.nvvm.read.ptx.sreg.ntid.x() #4, !idx !27, !op_sequential !27, !res_vector !27, !random !27, !unaligned !27
+  %4 = call i32 @llvm.nvvm.read.ptx.sreg.ctaid.x() #4, !idx !27, !op_sequential !27, !res_vector !27, !random !27, !unaligned !27
+  %5 = call i32 @llvm.nvvm.read.ptx.sreg.tid.x() #4, !idx !27, !op_sequential !27, !res_vector !27, !random !27, !unaligned !27
+  %6 = mul i32 %3, %4, !idx !27, !op_varying !27, !res_vector !27
+  %7 = add i32 %6, %5, !global_id_x !27, !op_varying !27, !res_vector !27, !consecutive !27
+  %8 = sext i32 %7 to i64, !op_varying !27, !res_vector !27, !consecutive !27, !unaligned !27
+  %9 = getelementptr float, float* %0, i64 %8, !op_varying !27, !res_vector !27, !consecutive !27, !unaligned !27
+  %pktPtrCast = bitcast float* %9 to <8 x float>*, !op_uniform !27, !res_vector !27, !consecutive !27, !unaligned !27, !wfv_pkt_ptr_cast !27
+  %10 = getelementptr float, float* %1, i64 %8, !op_varying !27, !res_vector !27, !consecutive !27, !unaligned !27
+  %pktPtrCast1 = bitcast float* %10 to <8 x float>*, !op_uniform !27, !res_vector !27, !consecutive !27, !unaligned !27, !wfv_pkt_ptr_cast !27
+  %11 = load <8 x float>, <8 x float>* %pktPtrCast, align 1, !op_varying !27, !res_vector !27, !random !27, !unaligned !27
+  %12 = load <8 x float>, <8 x float>* %pktPtrCast1, align 1, !op_varying !27, !res_vector !27, !random !27, !unaligned !27
+  %13 = fadd <8 x float> %11, %12, !op_varying !27, !res_vector !27, !random !27, !unaligned !27
+  %14 = getelementptr float, float* %2, i64 %8, !op_varying !27, !res_vector !27, !consecutive !27, !unaligned !27
+  %pktPtrCast2 = bitcast float* %14 to <8 x float>*, !op_uniform !27, !res_vector !27, !consecutive !27, !unaligned !27, !wfv_pkt_ptr_cast !27
+  store <8 x float> %13, <8 x float>* %pktPtrCast2, align 1, !op_varying !27
+  br label %"_ZZ4mainENK12$_4028513607clEPKfS1_Pfj.exit.", !op_uniform !27, !res_uniform !27
+
+"_ZZ4mainENK12$_4028513607clEPKfS1_Pfj.exit.":    ; preds = %_Z13get_global_idj.exit4.
+  tail call void @wfvMetadataFn() #3, !always_by_all !27, !optional !27, !non_divergent !27
+  ret void, !op_uniform !27, !res_uniform !27
+}
+
+
+  block entry mask is FULLY_UNIFORM and pointer is not INDEX_RANDOM -> can use vector store!
+  unaligned vector store required!
+STORE WAS VECTORIZED (UNALIGNED)!
+
+after vectorizeInstructions:
+---------------------------------------------------------
+| GENERATE PACK/UNPACK OPERATIONS
+---------------------------------------------------------
+
+after generatePackUnpackCode:
+---------------------------------------------------------
+| GENERATE SIDE-EFFECT GUARDS
+---------------------------------------------------------
+
+after generateSideEffectGuards:
+---------------------------------------------------------
+| BROADCAST UNIFORM OPERANDS
+---------------------------------------------------------
+broadcastUniformOperands(  %6 = mul i32 %3, %4, !idx !25, !op_varying !25, !res_vector !25 )
+broadcastUniformOperands(  %11 = load <8 x float>, <8 x float>* %pktPtrCast, align 1, !op_varying !25, !res_vector !25, !random !25, !unaligned !25 )
+broadcastUniformOperands(  %12 = load <8 x float>, <8 x float>* %pktPtrCast1, align 1, !op_varying !25, !res_vector !25, !random !25, !unaligned !25 )
+broadcastUniformOperands(  %13 = fadd <8 x float> %11, %12, !op_varying !25, !res_vector !25, !random !25, !unaligned !25 )
+broadcastUniformOperands(  store <8 x float> %13, <8 x float>* %pktPtrCast2, align 1, !op_varying !25
+define void @"__vectorized___ZN5pacxx2v213genericKernelILm0EZ4mainE12$_4028513607JPfS3_S3_iEEEvT0_DpNSt3__111conditionalIXsr3std12is_referenceIT1_EE5valueENS5_20add_lvalue_referenceINS0_17generic_to_globalIS7_E4typeEE4typeESB_E4typeE"(i8 %callable.coerce, float addrspace(1)* %args, float addrspace(1)* %args1, float addrspace(1)* %args2, i32 %args3) {
+addrspacecast.:
+  tail call void @wfvMetadataFn() #3, !wfv_arg_info !21, !always_by_all !27, !optional !27, !non_divergent !27
+  %0 = addrspacecast float addrspace(1)* %args to float*, !op_uniform !27, !res_uniform !27, !same !27, !unaligned !27
+  %1 = addrspacecast float addrspace(1)* %args1 to float*, !op_uniform !27, !res_uniform !27, !same !27, !unaligned !27
+  %2 = addrspacecast float addrspace(1)* %args2 to float*, !op_uniform !27, !res_uniform !27, !same !27, !unaligned !27
+  br label %_Z13get_global_idj.exit., !op_uniform !27, !res_uniform !27
+
+_Z13get_global_idj.exit.:                         ; preds = %addrspacecast.
+  tail call void @wfvMetadataFn() #3, !always_by_all !27, !optional !27, !non_divergent !27
+  br label %_Z13get_global_idj.exit4., !op_uniform !27, !res_uniform !27
+
+_Z13get_global_idj.exit4.:                        ; preds = %_Z13get_global_idj.exit.
+  tail call void @wfvMetadataFn() #3, !always_by_all !27, !optional !27, !non_divergent !27
+  %3 = call i32 @llvm.nvvm.read.ptx.sreg.ntid.x() #4, !idx !27, !op_sequential !27, !res_vector !27, !random !27, !unaligned !27
+  %4 = call i32 @llvm.nvvm.read.ptx.sreg.ctaid.x() #4, !idx !27, !op_sequential !27, !res_vector !27, !random !27, !unaligned !27
+  %5 = call i32 @llvm.nvvm.read.ptx.sreg.tid.x() #4, !idx !27, !op_sequential !27, !res_vector !27, !random !27, !unaligned !27
+  %6 = mul i32 %3, %4, !idx !27, !op_varying !27, !res_vector !27
+  %7 = add i32 %6, %5, !global_id_x !27, !op_varying !27, !res_vector !27, !consecutive !27
+  %8 = sext i32 %7 to i64, !op_varying !27, !res_vector !27, !consecutive !27, !unaligned !27
+  %9 = getelementptr float, float* %0, i64 %8, !op_varying !27, !res_vector !27, !consecutive !27, !unaligned !27
+  %pktPtrCast = bitcast float* %9 to <8 x float>*, !op_uniform !27, !res_vector !27, !consecutive !27, !unaligned !27, !wfv_pkt_ptr_cast !27
+  %10 = getelementptr float, float* %1, i64 %8, !op_varying !27, !res_vector !27, !consecutive !27, !unaligned !27
+  %pktPtrCast1 = bitcast float* %10 to <8 x float>*, !op_uniform !27, !res_vector !27, !consecutive !27, !unaligned !27, !wfv_pkt_ptr_cast !27
+  %11 = load <8 x float>, <8 x float>* %pktPtrCast, align 1, !op_varying !27, !res_vector !27, !random !27, !unaligned !27
+  %12 = load <8 x float>, <8 x float>* %pktPtrCast1, align 1, !op_varying !27, !res_vector !27, !random !27, !unaligned !27
+  %13 = fadd <8 x float> %11, %12, !op_varying !27, !res_vector !27, !random !27, !unaligned !27
+  %14 = getelementptr float, float* %2, i64 %8, !op_varying !27, !res_vector !27, !consecutive !27, !unaligned !27
+  %pktPtrCast2 = bitcast float* %14 to <8 x float>*, !op_uniform !27, !res_vector !27, !consecutive !27, !unaligned !27, !wfv_pkt_ptr_cast !27
+  store <8 x float> %13, <8 x float>* %pktPtrCast2, align 1, !op_varying !27
+  br label %"_ZZ4mainENK12$_4028513607clEPKfS1_Pfj.exit.", !op_uniform !27, !res_uniform !27
+
+"_ZZ4mainENK12$_4028513607clEPKfS1_Pfj.exit.":    ; preds = %_Z13get_global_idj.exit4.
+  tail call void @wfvMetadataFn() #3, !always_by_all !27, !optional !27, !non_divergent !27
+  ret void, !op_uniform !27, !res_uniform !27
+}
+
+ )
+
+after broadcastUniformOperands:Cleaning up function after WFV... done.
+
+after cleanup:
+define void @"__vectorized___ZN5pacxx2v213genericKernelILm0EZ4mainE12$_4028513607JPfS3_S3_iEEEvT0_DpNSt3__111conditionalIXsr3std12is_referenceIT1_EE5valueENS5_20add_lvalue_referenceINS0_17generic_to_globalIS7_E4typeEE4typeESB_E4typeE"(i8 %callable.coerce, float addrspace(1)* %args, float addrspace(1)* %args1, float addrspace(1)* %args2, i32 %args3) {
+addrspacecast.:
+  %0 = addrspacecast float addrspace(1)* %args to float*, !op_uniform !21, !res_uniform !21, !same !21, !unaligned !21
+  %1 = addrspacecast float addrspace(1)* %args1 to float*, !op_uniform !21, !res_uniform !21, !same !21, !unaligned !21
+  %2 = addrspacecast float addrspace(1)* %args2 to float*, !op_uniform !21, !res_uniform !21, !same !21, !unaligned !21
+  br label %_Z13get_global_idj.exit., !op_uniform !21, !res_uniform !21
+
+_Z13get_global_idj.exit.:                         ; preds = %addrspacecast.
+  br label %_Z13get_global_idj.exit4., !op_uniform !21, !res_uniform !21
+
+_Z13get_global_idj.exit4.:                        ; preds = %_Z13get_global_idj.exit.
+  %3 = call i32 @llvm.nvvm.read.ptx.sreg.ntid.x() #4, !idx !21, !op_sequential !21, !res_vector !21, !random !21, !unaligned !21
+  %4 = call i32 @llvm.nvvm.read.ptx.sreg.ctaid.x() #4, !idx !21, !op_sequential !21, !res_vector !21, !random !21, !unaligned !21
+  %5 = call i32 @llvm.nvvm.read.ptx.sreg.tid.x() #4, !idx !21, !op_sequential !21, !res_vector !21, !random !21, !unaligned !21
+  %6 = mul i32 %3, %4, !idx !21, !op_varying !21, !res_vector !21
+  %7 = add i32 %6, %5, !global_id_x !21, !op_varying !21, !res_vector !21, !consecutive !21
+  %8 = sext i32 %7 to i64, !op_varying !21, !res_vector !21, !consecutive !21, !unaligned !21
+  %9 = getelementptr float, float* %0, i64 %8, !op_varying !21, !res_vector !21, !consecutive !21, !unaligned !21
+  %pktPtrCast = bitcast float* %9 to <8 x float>*, !op_uniform !21, !res_vector !21, !consecutive !21, !unaligned !21, !wfv_pkt_ptr_cast !21
+  %10 = getelementptr float, float* %1, i64 %8, !op_varying !21, !res_vector !21, !consecutive !21, !unaligned !21
+  %pktPtrCast1 = bitcast float* %10 to <8 x float>*, !op_uniform !21, !res_vector !21, !consecutive !21, !unaligned !21, !wfv_pkt_ptr_cast !21
+  %11 = load <8 x float>, <8 x float>* %pktPtrCast, align 1, !op_varying !21, !res_vector !21, !random !21, !unaligned !21
+  %12 = load <8 x float>, <8 x float>* %pktPtrCast1, align 1, !op_varying !21, !res_vector !21, !random !21, !unaligned !21
+  %13 = fadd <8 x float> %11, %12, !op_varying !21, !res_vector !21, !random !21, !unaligned !21
+  %14 = getelementptr float, float* %2, i64 %8, !op_varying !21, !res_vector !21, !consecutive !21, !unaligned !21
+  %pktPtrCast2 = bitcast float* %14 to <8 x float>*, !op_uniform !21, !res_vector !21, !consecutive !21, !unaligned !21, !wfv_pkt_ptr_cast !21
+  store <8 x float> %13, <8 x float>* %pktPtrCast2, align 1, !op_varying !21
+  br label %"_ZZ4mainENK12$_4028513607clEPKfS1_Pfj.exit.", !op_uniform !21, !res_uniform !21
+
+"_ZZ4mainENK12$_4028513607clEPKfS1_Pfj.exit.":    ; preds = %_Z13get_global_idj.exit4.
+  ret void, !op_uniform !21, !res_uniform !21
+}
+===-------------------------------------------------------------------------===
+                          Whole-Function Vectorization
+===-------------------------------------------------------------------------===
+  Total Execution Time: 0.0120 seconds (0.0113 wall clock)
+
+   --System Time--   --User+System--   ---Wall Time---  --- Name ---
+   0.0120 (100.0%)   0.0120 (100.0%)   0.0113 (100.0%)  Function Vectorizer
+   0.0120 (100.0%)   0.0120 (100.0%)   0.0113 (100.0%)  Total
+
+timed (pacxx): 58us
+Equal: 1
+### Whole-Function Vectorization of function '_ZN5pacxx2v213genericKernelILm0EZ4mainE12$_4028513607JPfS3_S3_iEEEvT0_DpNSt3__111conditionalIXsr3std12is_referenceIT1_EE5valueENS5_20add_lvalue_referenceINS0_17generic_to_globalIS7_E4typeEE4typeESB_E4typeE' SUCCESSFUL!
