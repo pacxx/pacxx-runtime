@@ -79,6 +79,7 @@ namespace pacxx {
           //end = std::chrono::high_resolution_clock::now();
 
           //auto  time_tbb = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
+          //__verbose("Time measured in runtime (TBB) : ", time_tbb / runs, " us (", runs, " iterations)");
 
           /*
           start = std::chrono::high_resolution_clock::now();
@@ -99,7 +100,6 @@ namespace pacxx {
           __verbose("Time measured in runtime (OMP) : ", time_omp / runs, " us (", runs, " iterations)");
            */
 
-          __verbose("Time measured in runtime (TBB) : ", time_tbb / runs, " us (", runs, " iterations)");
       }
 
       void NativeKernel::setStagedValue(int ref, long long value, bool inScope) {
