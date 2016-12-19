@@ -52,7 +52,7 @@ namespace pacxx
     void NativeRuntime::compileAndLink() {
         SCOPED_TIMING{
             _CPUMod = _compiler->compile(*_M);
-        }
+        };
         _delayed_compilation = false;
     }
 
