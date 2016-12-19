@@ -1,4 +1,4 @@
-; ModuleID = './tmp-161214-1752-dAKTWI/nvvm.bc'
+; ModuleID = './tmp-161219-1130-886hpW/nvvm.bc'
 target datalayout = "e-p:64:64:64-i1:8:8-i8:8:8-i16:16:16-i32:32:32-i64:64:64-f32:32:32-f64:64:64-v16:16:16-v32:32:32-v64:64:64-v128:128:128-n16:32:64"
 target triple = "nvptx64-unknown-unknown"
 
@@ -29,16 +29,16 @@ _Z13get_global_idj.exit4:                         ; preds = %_Z13get_global_idj.
   %10 = add i32 %9, %8
   %11 = sext i32 %10 to i64
   %12 = getelementptr float, float addrspace(1)* %args, i64 %11
-  %13 = ptrtoint float addrspace(1)* %12 to i64, !pacxx.addrspace !18
+  %13 = ptrtoint float addrspace(1)* %12 to i64, !pacxx.addrspace !17
   %14 = inttoptr i64 %13 to float*
   %15 = getelementptr float, float addrspace(1)* %args1, i64 %11
-  %16 = ptrtoint float addrspace(1)* %15 to i64, !pacxx.addrspace !18
+  %16 = ptrtoint float addrspace(1)* %15 to i64, !pacxx.addrspace !17
   %17 = inttoptr i64 %16 to float*
   %18 = load float, float* %14, align 4
   %19 = load float, float* %17, align 4
   %20 = fadd float %18, %19
   %21 = getelementptr float, float addrspace(1)* %args2, i64 %11
-  %22 = ptrtoint float addrspace(1)* %21 to i64, !pacxx.addrspace !18
+  %22 = ptrtoint float addrspace(1)* %21 to i64, !pacxx.addrspace !17
   %23 = inttoptr i64 %22 to float*
   store float %20, float* %23, align 4
   br label %"_ZZ4mainENK12$_4028513607clEPKfS1_Pfj.exit"
@@ -67,11 +67,11 @@ attributes #1 = { nounwind }
 !opencl.used.optional.core.features = !{!13}
 !opencl.used.extensions = !{!13}
 !opencl.compiler.options = !{!13}
-!llvm.ident = !{!14, !15, !15}
+!llvm.ident = !{!14, !14, !14}
 !nvvm.internalize.after.link = !{}
 !nvvmir.version = !{!12}
-!pacxx.kernel = !{!16}
-!pacxx.kernel._ZN5pacxx2v213genericKernelILm0EZ4mainE12$_4028513607JPfS3_S3_iEEEvT0_DpNSt3__111conditionalIXsr3std12is_referenceIT1_EE5valueENS5_20add_lvalue_referenceINS0_17generic_to_globalIS7_E4typeEE4typeESB_E4typeE = !{!17}
+!pacxx.kernel = !{!15}
+!pacxx.kernel._ZN5pacxx2v213genericKernelILm0EZ4mainE12$_4028513607JPfS3_S3_iEEEvT0_DpNSt3__111conditionalIXsr3std12is_referenceIT1_EE5valueENS5_20add_lvalue_referenceINS0_17generic_to_globalIS7_E4typeEE4typeESB_E4typeE = !{!16}
 
 !0 = !{void (i8, float addrspace(1)*, float addrspace(1)*, float addrspace(1)*, i32)* @"_ZN5pacxx2v213genericKernelILm0EZ4mainE12$_4028513607JPfS3_S3_iEEEvT0_DpNSt3__111conditionalIXsr3std12is_referenceIT1_EE5valueENS5_20add_lvalue_referenceINS0_17generic_to_globalIS7_E4typeEE4typeESB_E4typeE", !"kernel", i32 1}
 !1 = !{null, !"align", i32 8}
@@ -87,8 +87,7 @@ attributes #1 = { nounwind }
 !11 = !{!"kernel_arg_type_qual", !"", !"", !"", !"", !""}
 !12 = !{i32 1, i32 2}
 !13 = !{}
-!14 = !{!"clang version 3.8.0 (https://lklein14@bitbucket.org/mhaidl/clang.git 35a35447d041832b6e2e25acaf7c825860f8f407) (https://lklein14@bitbucket.org/lklein14/llvm.git 95e55b0d66d7a0c9851bbf090a9e63c01930a26a)"}
-!15 = !{!"clang version 3.8.0 (https://lklein14@bitbucket.org/mhaidl/clang.git 35a35447d041832b6e2e25acaf7c825860f8f407) (https://lklein14@bitbucket.org/lklein14/llvm.git 0645d2ecef7e124b06d0d0e4d14ec719b5e437f6)"}
-!16 = !{void (i8, float addrspace(1)*, float addrspace(1)*, float addrspace(1)*, i32)* @"_ZN5pacxx2v213genericKernelILm0EZ4mainE12$_4028513607JPfS3_S3_iEEEvT0_DpNSt3__111conditionalIXsr3std12is_referenceIT1_EE5valueENS5_20add_lvalue_referenceINS0_17generic_to_globalIS7_E4typeEE4typeESB_E4typeE"}
-!17 = !{i32 -1, i32 0, i32 0, i32 0, i32 0, i32 0, i32 0, i32 0, i32 0, i32 0, i32 0, i32 0, i32 -1, i32 0, i32 0}
-!18 = !{i64 0}
+!14 = !{!"clang version 3.8.0 (https://lklein14@bitbucket.org/mhaidl/clang.git 35a35447d041832b6e2e25acaf7c825860f8f407) (https://lklein14@bitbucket.org/lklein14/llvm.git 75875af22bb6eb137144abef917003682624712f)"}
+!15 = !{void (i8, float addrspace(1)*, float addrspace(1)*, float addrspace(1)*, i32)* @"_ZN5pacxx2v213genericKernelILm0EZ4mainE12$_4028513607JPfS3_S3_iEEEvT0_DpNSt3__111conditionalIXsr3std12is_referenceIT1_EE5valueENS5_20add_lvalue_referenceINS0_17generic_to_globalIS7_E4typeEE4typeESB_E4typeE"}
+!16 = !{i32 -1, i32 0, i32 0, i32 0, i32 0, i32 0, i32 0, i32 0, i32 0, i32 0, i32 0, i32 0, i32 -1, i32 0, i32 0}
+!17 = !{i64 0}

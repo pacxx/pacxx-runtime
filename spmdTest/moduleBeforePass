@@ -56,7 +56,7 @@ define void @foo(i32 %__maxx, i32 %__maxy, i32 %__maxz) #0 {
   %26 = load i32, i32* %__x, align 4
   %27 = add i32 %26, 1
   store i32 %27, i32* %__x, align 4
-  br label %14, !llvm.loop !19
+  br label %14, !llvm.loop !18
 
 ; <label>:28                                      ; preds = %14
   br label %29
@@ -109,16 +109,16 @@ _Z13get_global_idj.exit4:                         ; preds = %_Z13get_global_idj.
   %10 = add i32 %9, %8
   %11 = sext i32 %10 to i64
   %12 = getelementptr float, float addrspace(1)* %args, i64 %11
-  %13 = ptrtoint float addrspace(1)* %12 to i64, !pacxx.addrspace !21
+  %13 = ptrtoint float addrspace(1)* %12 to i64, !pacxx.addrspace !20
   %14 = inttoptr i64 %13 to float*
   %15 = getelementptr float, float addrspace(1)* %args1, i64 %11
-  %16 = ptrtoint float addrspace(1)* %15 to i64, !pacxx.addrspace !21
+  %16 = ptrtoint float addrspace(1)* %15 to i64, !pacxx.addrspace !20
   %17 = inttoptr i64 %16 to float*
   %18 = load float, float* %14, align 4
   %19 = load float, float* %17, align 4
   %20 = fadd float %18, %19
   %21 = getelementptr float, float addrspace(1)* %args2, i64 %11
-  %22 = ptrtoint float addrspace(1)* %21 to i64, !pacxx.addrspace !21
+  %22 = ptrtoint float addrspace(1)* %21 to i64, !pacxx.addrspace !20
   %23 = inttoptr i64 %22 to float*
   store float %20, float* %23, align 4
   br label %"_ZZ4mainENK12$_4028513607clEPKfS1_Pfj.exit"
@@ -141,39 +141,38 @@ attributes #1 = { "disable-tail-calls"="false" "less-precise-fpmad"="false" "no-
 attributes #2 = { nounwind readnone }
 attributes #3 = { nounwind }
 
-!llvm.ident = !{!0, !1, !2, !2}
-!nvvm.annotations = !{!3, !4, !5, !4, !6, !6, !6, !6, !7, !7, !6}
-!opencl.kernels = !{!8}
-!opencl.spir.version = !{!15}
-!opencl.ocl.version = !{!15}
-!opencl.enable.FP_CONTRACT = !{!16}
-!opencl.used.optional.core.features = !{!16}
-!opencl.used.extensions = !{!16}
-!opencl.compiler.options = !{!16}
+!llvm.ident = !{!0, !1, !1, !1}
+!nvvm.annotations = !{!2, !3, !4, !3, !5, !5, !5, !5, !6, !6, !5}
+!opencl.kernels = !{!7}
+!opencl.spir.version = !{!14}
+!opencl.ocl.version = !{!14}
+!opencl.enable.FP_CONTRACT = !{!15}
+!opencl.used.optional.core.features = !{!15}
+!opencl.used.extensions = !{!15}
+!opencl.compiler.options = !{!15}
 !nvvm.internalize.after.link = !{}
-!nvvmir.version = !{!15}
-!pacxx.kernel = !{!17}
-!pacxx.kernel._ZN5pacxx2v213genericKernelILm0EZ4mainE12$_4028513607JPfS3_S3_iEEEvT0_DpNSt3__111conditionalIXsr3std12is_referenceIT1_EE5valueENS5_20add_lvalue_referenceINS0_17generic_to_globalIS7_E4typeEE4typeESB_E4typeE = !{!18}
+!nvvmir.version = !{!14}
+!pacxx.kernel = !{!16}
+!pacxx.kernel._ZN5pacxx2v213genericKernelILm0EZ4mainE12$_4028513607JPfS3_S3_iEEEvT0_DpNSt3__111conditionalIXsr3std12is_referenceIT1_EE5valueENS5_20add_lvalue_referenceINS0_17generic_to_globalIS7_E4typeEE4typeESB_E4typeE = !{!17}
 
 !0 = !{!"PACXX"}
-!1 = !{!"clang version 3.8.0 (https://lklein14@bitbucket.org/mhaidl/clang.git 35a35447d041832b6e2e25acaf7c825860f8f407) (https://lklein14@bitbucket.org/lklein14/llvm.git 95e55b0d66d7a0c9851bbf090a9e63c01930a26a)"}
-!2 = !{!"clang version 3.8.0 (https://lklein14@bitbucket.org/mhaidl/clang.git 35a35447d041832b6e2e25acaf7c825860f8f407) (https://lklein14@bitbucket.org/lklein14/llvm.git 0645d2ecef7e124b06d0d0e4d14ec719b5e437f6)"}
-!3 = !{void (i8, float addrspace(1)*, float addrspace(1)*, float addrspace(1)*, i32)* @"_ZN5pacxx2v213genericKernelILm0EZ4mainE12$_4028513607JPfS3_S3_iEEEvT0_DpNSt3__111conditionalIXsr3std12is_referenceIT1_EE5valueENS5_20add_lvalue_referenceINS0_17generic_to_globalIS7_E4typeEE4typeESB_E4typeE", !"kernel", i32 1}
-!4 = !{null, !"align", i32 8}
-!5 = !{null, !"align", i32 8, !"align", i32 65544, !"align", i32 131080}
-!6 = !{null, !"align", i32 16}
-!7 = !{null, !"align", i32 16, !"align", i32 65552, !"align", i32 131088}
-!8 = !{void (i8, float addrspace(1)*, float addrspace(1)*, float addrspace(1)*, i32)* @"_ZN5pacxx2v213genericKernelILm0EZ4mainE12$_4028513607JPfS3_S3_iEEEvT0_DpNSt3__111conditionalIXsr3std12is_referenceIT1_EE5valueENS5_20add_lvalue_referenceINS0_17generic_to_globalIS7_E4typeEE4typeESB_E4typeE", !9, !10, !11, !12, !13, !14}
-!9 = !{!"kernel_arg_addr_space", i32 0, i32 1, i32 1, i32 1, i32 0}
-!10 = !{!"kernel_arg_type", !"class (lambda at vectorAdd.cpp:60:15)", !"std::conditional_t<std::is_reference<float*>::value, std::add_lvalue_reference_t<typename generic_to_global<float *>::type>, typename generic_to_global<float *>::type>", !"std::conditional_t<std::is_reference<float*>::value, std::add_lvalue_reference_t<typename generic_to_global<float *>::type>, typename generic_to_global<float *>::type>", !"std::conditional_t<std::is_reference<float*>::value, std::add_lvalue_reference_t<typename generic_to_global<float *>::type>, typename generic_to_global<float *>::type>", !"std::conditional_t<std::is_reference<int>::value, std::add_lvalue_reference_t<typename generic_to_global<int>::type>, typename generic_to_global<int>::type>"}
-!11 = !{!"kernel_arg_name", !"callable", !"args", !"args", !"args", !"args"}
-!12 = !{!"kernel_arg_access_qual", !"", !"", !"", !"", !""}
-!13 = !{!"kernel_arg_base_type", !"class (lambda at vectorAdd.cpp:60:15)", !" float*", !" float*", !" float*", !"int"}
-!14 = !{!"kernel_arg_type_qual", !"", !"", !"", !"", !""}
-!15 = !{i32 1, i32 2}
-!16 = !{}
-!17 = !{void (i8, float addrspace(1)*, float addrspace(1)*, float addrspace(1)*, i32)* @"_ZN5pacxx2v213genericKernelILm0EZ4mainE12$_4028513607JPfS3_S3_iEEEvT0_DpNSt3__111conditionalIXsr3std12is_referenceIT1_EE5valueENS5_20add_lvalue_referenceINS0_17generic_to_globalIS7_E4typeEE4typeESB_E4typeE"}
-!18 = !{i32 -1, i32 0, i32 0, i32 0, i32 0, i32 0, i32 0, i32 0, i32 0, i32 0, i32 0, i32 0, i32 -1, i32 0, i32 0}
-!19 = distinct !{!19, !20}
-!20 = !{!"llvm.loop.vectorize.enable", i1 false}
-!21 = !{i64 0}
+!1 = !{!"clang version 3.8.0 (https://lklein14@bitbucket.org/mhaidl/clang.git 35a35447d041832b6e2e25acaf7c825860f8f407) (https://lklein14@bitbucket.org/lklein14/llvm.git 75875af22bb6eb137144abef917003682624712f)"}
+!2 = !{void (i8, float addrspace(1)*, float addrspace(1)*, float addrspace(1)*, i32)* @"_ZN5pacxx2v213genericKernelILm0EZ4mainE12$_4028513607JPfS3_S3_iEEEvT0_DpNSt3__111conditionalIXsr3std12is_referenceIT1_EE5valueENS5_20add_lvalue_referenceINS0_17generic_to_globalIS7_E4typeEE4typeESB_E4typeE", !"kernel", i32 1}
+!3 = !{null, !"align", i32 8}
+!4 = !{null, !"align", i32 8, !"align", i32 65544, !"align", i32 131080}
+!5 = !{null, !"align", i32 16}
+!6 = !{null, !"align", i32 16, !"align", i32 65552, !"align", i32 131088}
+!7 = !{void (i8, float addrspace(1)*, float addrspace(1)*, float addrspace(1)*, i32)* @"_ZN5pacxx2v213genericKernelILm0EZ4mainE12$_4028513607JPfS3_S3_iEEEvT0_DpNSt3__111conditionalIXsr3std12is_referenceIT1_EE5valueENS5_20add_lvalue_referenceINS0_17generic_to_globalIS7_E4typeEE4typeESB_E4typeE", !8, !9, !10, !11, !12, !13}
+!8 = !{!"kernel_arg_addr_space", i32 0, i32 1, i32 1, i32 1, i32 0}
+!9 = !{!"kernel_arg_type", !"class (lambda at vectorAdd.cpp:60:15)", !"std::conditional_t<std::is_reference<float*>::value, std::add_lvalue_reference_t<typename generic_to_global<float *>::type>, typename generic_to_global<float *>::type>", !"std::conditional_t<std::is_reference<float*>::value, std::add_lvalue_reference_t<typename generic_to_global<float *>::type>, typename generic_to_global<float *>::type>", !"std::conditional_t<std::is_reference<float*>::value, std::add_lvalue_reference_t<typename generic_to_global<float *>::type>, typename generic_to_global<float *>::type>", !"std::conditional_t<std::is_reference<int>::value, std::add_lvalue_reference_t<typename generic_to_global<int>::type>, typename generic_to_global<int>::type>"}
+!10 = !{!"kernel_arg_name", !"callable", !"args", !"args", !"args", !"args"}
+!11 = !{!"kernel_arg_access_qual", !"", !"", !"", !"", !""}
+!12 = !{!"kernel_arg_base_type", !"class (lambda at vectorAdd.cpp:60:15)", !" float*", !" float*", !" float*", !"int"}
+!13 = !{!"kernel_arg_type_qual", !"", !"", !"", !"", !""}
+!14 = !{i32 1, i32 2}
+!15 = !{}
+!16 = !{void (i8, float addrspace(1)*, float addrspace(1)*, float addrspace(1)*, i32)* @"_ZN5pacxx2v213genericKernelILm0EZ4mainE12$_4028513607JPfS3_S3_iEEEvT0_DpNSt3__111conditionalIXsr3std12is_referenceIT1_EE5valueENS5_20add_lvalue_referenceINS0_17generic_to_globalIS7_E4typeEE4typeESB_E4typeE"}
+!17 = !{i32 -1, i32 0, i32 0, i32 0, i32 0, i32 0, i32 0, i32 0, i32 0, i32 0, i32 0, i32 0, i32 -1, i32 0, i32 0}
+!18 = distinct !{!18, !19}
+!19 = !{!"llvm.loop.vectorize.enable", i1 false}
+!20 = !{i64 0}
