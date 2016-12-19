@@ -79,8 +79,8 @@ namespace pacxx {
 
           start = std::chrono::high_resolution_clock::now();
 
-#pragma omp parallel for collapse(3)
           for(unsigned i = 0; i < runs; ++i) {
+#pragma omp parallel for collapse(3)
               for(unsigned bidz = 0; bidz < _config.blocks.z; ++bidz)
                   for(unsigned bidy = 0; bidy < _config.blocks.y; ++bidy)
                       for(unsigned bidx = 0; bidx < _config.blocks.x; ++bidx)
