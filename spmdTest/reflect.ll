@@ -1,4 +1,4 @@
-; ModuleID = './tmp-161214-1752-dAKTWI/spir.bc'
+; ModuleID = './tmp-161219-1130-886hpW/spir.bc'
 target datalayout = "e-m:e-i64:64-f80:128-n8:16:32:64-S128"
 target triple = "x86_64-unknown-linux-gnu"
 
@@ -10,7 +10,7 @@ target triple = "x86_64-unknown-linux-gnu"
 !opencl.used.optional.core.features = !{!9}
 !opencl.used.extensions = !{!9}
 !opencl.compiler.options = !{!9}
-!llvm.ident = !{!10, !11}
+!llvm.ident = !{!10, !10}
 
 !0 = !{void (i8, float addrspace(1)*, float addrspace(1)*, float addrspace(1)*, i32)* undef, !"kernel", i32 1}
 !1 = !{void (i8, float addrspace(1)*, float addrspace(1)*, float addrspace(1)*, i32)* undef, !2, !3, !4, !5, !6, !7}
@@ -22,5 +22,4 @@ target triple = "x86_64-unknown-linux-gnu"
 !7 = !{!"kernel_arg_type_qual", !"", !"", !"", !"", !""}
 !8 = !{i32 1, i32 2}
 !9 = !{}
-!10 = !{!"clang version 3.8.0 (https://lklein14@bitbucket.org/mhaidl/clang.git 35a35447d041832b6e2e25acaf7c825860f8f407) (https://lklein14@bitbucket.org/lklein14/llvm.git 95e55b0d66d7a0c9851bbf090a9e63c01930a26a)"}
-!11 = !{!"clang version 3.8.0 (https://lklein14@bitbucket.org/mhaidl/clang.git 35a35447d041832b6e2e25acaf7c825860f8f407) (https://lklein14@bitbucket.org/lklein14/llvm.git 0645d2ecef7e124b06d0d0e4d14ec719b5e437f6)"}
+!10 = !{!"clang version 3.8.0 (https://lklein14@bitbucket.org/mhaidl/clang.git 35a35447d041832b6e2e25acaf7c825860f8f407) (https://lklein14@bitbucket.org/lklein14/llvm.git 75875af22bb6eb137144abef917003682624712f)"}
