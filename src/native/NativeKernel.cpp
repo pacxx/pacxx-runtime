@@ -77,6 +77,7 @@ namespace pacxx {
 
           auto  time_tbb = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
 
+          /*
           start = std::chrono::high_resolution_clock::now();
 
           for(unsigned i = 0; i < runs; ++i) {
@@ -93,6 +94,8 @@ namespace pacxx {
           auto  time_omp = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
 
           __verbose("Time measured in runtime (OMP) : ", time_omp / runs, " us (", runs, " iterations)");
+           */
+
           __verbose("Time measured in runtime (TBB) : ", time_tbb / runs, " us (", runs, " iterations)");
       }
 

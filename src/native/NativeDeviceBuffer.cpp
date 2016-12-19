@@ -7,7 +7,7 @@
 
 namespace pacxx {
   namespace v2 {
-    NativeRawDeviceBuffer::NativeRawDeviceBuffer() : _size(0), _mercy(1) {}
+    NativeRawDeviceBuffer::NativeRawDeviceBuffer() : _size(0), _mercy(1), _isHost(false) {}
 
     void NativeRawDeviceBuffer::allocate(size_t bytes) {
         _buffer = (char*) malloc(bytes);
@@ -16,8 +16,14 @@ namespace pacxx {
       _size = bytes;
     }
 
+    void NativeRawDeviceBuffer::allocate(size_t bytes, char *host_ptr) {
+        _buffer = host_ptr;
+        _size = bytes;
+        _isHost = true;
+    }
+
     NativeRawDeviceBuffer::~NativeRawDeviceBuffer() {
-      if (_buffer) {
+      if (_buffer && !_isHost) {
         free(_buffer);
       }
     }
