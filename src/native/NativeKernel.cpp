@@ -77,7 +77,6 @@ namespace pacxx {
 
           auto  time_tbb = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
 
-#ifdef EVAL_OMP
           start = std::chrono::high_resolution_clock::now();
 
 #pragma omp parallel for collapse(3)
@@ -94,7 +93,6 @@ namespace pacxx {
           auto  time_omp = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
 
           __verbose("Time measured in runtime (OMP) : ", time_omp / runs, " us (", runs, " iterations)");
-#endif
           __verbose("Time measured in runtime (TBB) : ", time_tbb / runs, " us (", runs, " iterations)");
       }
 
