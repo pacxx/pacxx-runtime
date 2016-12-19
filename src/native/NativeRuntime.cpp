@@ -9,6 +9,7 @@
 #include <llvm/LinkAllPasses.h>
 #include "detail/native/NativeRuntime.h"
 #include "detail/common/Exceptions.h"
+#include <detail/common/Timing.h>
 
 using namespace llvm;
 
@@ -49,7 +50,9 @@ namespace pacxx
     }
 
     void NativeRuntime::compileAndLink() {
-        _CPUMod  = _compiler->compile(*_M);
+        SCOPED_TIMING{
+            _CPUMod = _compiler->compile(*_M);
+        }
         _delayed_compilation = false;
     }
 

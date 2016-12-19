@@ -6,6 +6,7 @@
 #include <detail/native/NativeRuntime.h>
 #include <detail/common/Log.h>
 #include <detail/common/Exceptions.h>
+#include <detail/common/Timing.h>
 #include <tbb/tbb.h>
 
 namespace pacxx {
@@ -60,22 +61,24 @@ namespace pacxx {
           std::chrono::high_resolution_clock::time_point start, end;
           unsigned runs = 1000;
 
-          start = std::chrono::high_resolution_clock::now();
+          //start = std::chrono::high_resolution_clock::now();
 
-          for(unsigned i = 0; i < runs; ++i) {
-              tbb::parallel_for(size_t(0), _config.blocks.z, [&](size_t bidz) {
-                  tbb::parallel_for(size_t(0), _config.blocks.y, [&](size_t bidy) {
-                      tbb::parallel_for(size_t(0), _config.blocks.x, [&](size_t bidx) {
-                          functor(bidx, bidy, bidz, _config.threads.x, _config.threads.y,
-                                  _config.threads.z, _args.data());
-                      });
-                  });
-              });
-          }
+          SCOPED_TIMING {
+                            for (unsigned i = 0; i < runs; ++i) {
+                                tbb::parallel_for(size_t(0), _config.blocks.z, [&](size_t bidz) {
+                                    tbb::parallel_for(size_t(0), _config.blocks.y, [&](size_t bidy) {
+                                        tbb::parallel_for(size_t(0), _config.blocks.x, [&](size_t bidx) {
+                                            functor(bidx, bidy, bidz, _config.threads.x, _config.threads.y,
+                                                    _config.threads.z, _args.data());
+                                        });
+                                    });
+                                });
+                            }
+          };
 
-          end = std::chrono::high_resolution_clock::now();
+          //end = std::chrono::high_resolution_clock::now();
 
-          auto  time_tbb = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
+          //auto  time_tbb = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
 
           /*
           start = std::chrono::high_resolution_clock::now();
