@@ -75,9 +75,27 @@ namespace pacxx {
 
           end = std::chrono::high_resolution_clock::now();
 
-          auto  time = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
+          auto  time_tbb = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
 
-          __verbose("Time measured in runtime : ", time / runs, " us (", runs, " iterations)");
+#ifdef EVAL_OMP
+          start = std::chrono::high_resolution_clock::now();
+
+#pragma omp parallel for collapse(3)
+          for(unsigned i = 0; i < runs; ++i) {
+              for(unsigned bidz = 0; bidz < _config.blocks.z; ++bidz)
+                  for(unsigned bidy = 0; bidy < _config.blocks.y; ++bidy)
+                      for(unsigned bidx = 0; bidx < _config.blocks.x; ++bidx)
+                          functor(bidx, bidy, bidz, _config.threads.x, _config.threads.y,
+                                  _config.threads.z, _args.data());
+          }
+
+          end = std::chrono::high_resolution_clock::now();
+
+          auto  time_omp = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
+
+          __verbose("Time measured in runtime (OMP) : ", time_omp / runs, " us (", runs, " iterations)");
+#endif
+          __verbose("Time measured in runtime (TBB) : ", time_tbb / runs, " us (", runs, " iterations)");
       }
 
       void NativeKernel::setStagedValue(int ref, long long value, bool inScope) {
