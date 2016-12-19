@@ -42,7 +42,9 @@ namespace pacxx {
       virtual size_t getPreferedMemoryAlignment() override;
 
       template<typename T>
-      DeviceBuffer<T>* allocateMemory(size_t count) {
+      DeviceBuffer<T>* allocateMemory(size_t count, T *host_ptr) {
+        if(host_ptr)
+            throw common::generic_exception("using host buffer with gpu is not allowed");
         CUDARawDeviceBuffer raw;
         raw.allocate(count * sizeof(T));
         auto wrapped = new CUDADeviceBuffer<T>(std::move(raw));

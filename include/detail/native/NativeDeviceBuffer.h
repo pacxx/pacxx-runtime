@@ -21,6 +21,8 @@ namespace pacxx {
 
             void allocate(size_t bytes);
 
+            void allocate(size_t bytes, char *host_ptr);
+
         public:
             virtual ~NativeRawDeviceBuffer();
 
@@ -50,6 +52,7 @@ namespace pacxx {
             virtual void mercy() override;
 
         private:
+            bool _isHost;
             char* _buffer;
             size_t _size;
             unsigned _mercy;
