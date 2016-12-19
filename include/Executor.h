@@ -242,7 +242,7 @@ namespace pacxx {
 
       template<typename T>
       DeviceBuffer<T>& allocate(size_t count, T *host_ptr = nullptr) {
-        return *_runtime->template allocateMemory<T>(count);
+        return *_runtime->template allocateMemory<T>(count, host_ptr);
       }
 
       RawDeviceBuffer& allocateRaw(size_t bytes) {
