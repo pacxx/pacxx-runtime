@@ -24,7 +24,7 @@ namespace pacxx
     std::unique_ptr<llvm::Module> ModuleLoader::loadIR(const std::string& IR) {
       SMDiagnostic Diag;
       auto mem = MemoryBuffer::getMemBuffer(IR, "llvm IR");
-      return parseIR(mem->getMemBufferRef(), Diag, getGlobalContext());
+      return parseIR(mem->getMemBufferRef(), Diag, _ctx);
     }
 
     std::unique_ptr<llvm::Module> ModuleLoader::loadFile(const std::string& filename)
@@ -32,7 +32,7 @@ namespace pacxx
       SMDiagnostic Diag;
       std::string bytes = common::read_file(filename);
       auto mem = MemoryBuffer::getMemBuffer(bytes, filename);
-      return parseIR(mem->getMemBufferRef(), Diag, getGlobalContext());
+      return parseIR(mem->getMemBufferRef(), Diag, _ctx);
     }
 
     std::unique_ptr<llvm::Module> ModuleLoader::loadInternal(const char* ptr, size_t size)
@@ -40,7 +40,7 @@ namespace pacxx
       SMDiagnostic Diag;
       std::string bytes(ptr, size);
       auto mem = MemoryBuffer::getMemBuffer(bytes, "internal IR");
-      return parseIR(mem->getMemBufferRef(), Diag, getGlobalContext());
+      return parseIR(mem->getMemBufferRef(), Diag, _ctx);
     }
 
     std::unique_ptr<llvm::Module> ModuleLoader::loadAndLink(std::unique_ptr<llvm::Module> old,
@@ -55,8 +55,8 @@ namespace pacxx
                                                      std::unique_ptr<llvm::Module> m2) {
 
       std::unique_ptr<llvm::Module> composite = std::move(m1);
-      Linker linker(composite.get());
-      linker.linkInModule(m2.get());
+      Linker linker(*composite);
+      linker.linkInModule(std::move(m2));
 
       return std::move(composite);
     }

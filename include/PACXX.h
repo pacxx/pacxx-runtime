@@ -147,11 +147,11 @@ namespace pacxx {
     //
 
     template<size_t _C, typename L, typename... ArgTys>
-    void
+    [[kernel]] void
     genericKernel(L callable, //const __attribute((address_space(1))) L& lambda,
                   std::conditional_t<std::is_reference<ArgTys>::value,
                       std::add_lvalue_reference_t<typename generic_to_global<ArgTys>::type>,
-                      typename generic_to_global<ArgTys>::type>... args) {
+                      typename generic_to_global<ArgTys>::type>... args) noexcept {
 #ifdef __device_code__
       // const auto& lambda_as0 = address_space_cast<const L&, 0>(lambda);
       // lambda_as0(address_space_cast<ArgTys, 0>(args)...);

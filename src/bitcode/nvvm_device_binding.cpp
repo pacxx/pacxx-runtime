@@ -3,7 +3,7 @@
 //
 
 
-#include <type_traits>
+//#include <type_traits>
 #include "detail/device/DeviceCode.h"
 #include "detail/device/DeviceFunctionDecls.h"
 
@@ -105,7 +105,7 @@ __forceinline__ __index_t get_num_groups(unsigned int dimindx) {
 __forceinline__ void barrier(unsigned int) { __syncthreads(); }
 
 ///////////////////////////// ATOMICS ////////////////////////////
-
+/*
 #define __to_string(v) #v
 #define __expand(v) __to_string(v)
 #define __ptx_atom(op, memory, type)                                           \
@@ -180,7 +180,7 @@ extern "C" {
   }
 }
 
-
+*/
 
 //__forceinline__ int atomic_add(global_mem_int_ptr ptr, int
 // value)

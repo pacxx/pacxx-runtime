@@ -57,7 +57,7 @@ namespace pacxx {
           _initialized = true;
 
         if (!_initialized) {
-          ModuleLoader loader;
+          ModuleLoader loader(instance.getLLVMContext());
           auto M = loader.loadInternal(llvm_start, llvm_size);
           instance.setModule(std::move(M));
           instance.setMSPModule(loader.loadInternal(reflection_start, reflection_size));
@@ -70,7 +70,7 @@ namespace pacxx {
         static Executor instance(0);
 
         if (!_initialized) {
-          ModuleLoader loader;
+          ModuleLoader loader(instance.getLLVMContext());
           auto M = loader.loadInternal(module_bytes.data(), module_bytes.size());
           instance.setModule(std::move(M));
           _initialized = true;
@@ -80,7 +80,7 @@ namespace pacxx {
 
     private:
       Executor(unsigned devID)
-          : _runtime(std::make_unique<RuntimeT>(devID)), _mem_manager(*_runtime) {
+          : _ctx(),  _runtime(std::make_unique<RuntimeT>(devID)), _mem_manager(*_runtime) {
         core::CoreInitializer::initialize();
       }
 
@@ -276,8 +276,10 @@ namespace pacxx {
 
       };
 
+      auto& getLLVMContext() { return _ctx; }
 
     private:
+      LLVMContext _ctx;
       std::unique_ptr<RuntimeT> _runtime;
       MemoryManager _mem_manager;
       std::map<std::string, const llvm::Function*> _kernel_translation;
@@ -304,7 +306,7 @@ namespace pacxx {
 
     template<typename T>
     void Executor<T>::setModule(std::string module_bytes) {
-      ModuleLoader loader;
+      ModuleLoader loader(_ctx);
       auto M = loader.loadInternal(module_bytes.data(), module_bytes.size());
       Create().setModule(std::move(M));
     }

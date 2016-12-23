@@ -33,7 +33,7 @@ namespace pacxx {
       initializeCodeGen(*Registry);
       initializeLoopStrengthReducePass(*Registry);
       initializeLowerIntrinsicsPass(*Registry);
-      initializeUnreachableBlockElimPass(*Registry);
+      initializeUnreachableMachineBlockElimPass(*Registry);
 
       _options.LessPreciseFPMADOption = false;
       _options.UnsafeFPMath = false;
@@ -86,9 +86,9 @@ namespace pacxx {
         _PM.add(createPACXXStaticEvalPass());
         _PM.add(createPACXXNvvmRegPass(true));
 
-
+	auto RM = Optional<Reloc::Model>();
         _machine.reset(_target->createTargetMachine(
-            TheTriple.getTriple(), _cpu, _features, _options, Reloc::Default,
+            TheTriple.getTriple(), _cpu, _features, _options, RM,
             CodeModel::Default, CodeGenOpt::None));
 
         if (_machine->addPassesToEmitFile(_PM, _ptxOS, TargetMachine::CGFT_AssemblyFile,
