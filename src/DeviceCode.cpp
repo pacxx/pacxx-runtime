@@ -14,10 +14,10 @@
 #define __CUDANVVM__ 1
 #define __CUDABE__ 1
 //#define __CUDACC_RTC__ 1
-#include <vector_types.h>
+//#include <vector_types.h>
 #include "detail/device/DeviceFunctionDecls.h"
 extern "C"{
-#include <device_functions_decls.h>
+//#include <device_functions_decls.h>
 int __nvvm_atom_cta_add_gen_i(volatile int *, int);
 int __nvvm_atom_sys_add_gen_i(volatile int *, int);
 long long __nvvm_atom_cta_add_gen_ll(volatile long long *, long long);
@@ -110,7 +110,7 @@ long long __nvvm_atom_sys_xor_gen_ll(volatile long long *, long long);
 
 
 
-#include <device_functions.h>
+//#include <device_functions.h>
 };
 namespace native {
 namespace index {
@@ -137,7 +137,7 @@ template <> unsigned int z<idx::global>() { return get_global_id(2); }
 }
 
 namespace native {
-namespace nvvm {
+/*namespace nvvm {
 int clz(int val) { return __nvvm_clz_i(val); }
 long long clz(long long val) { return __nvvm_clz_ll(val); }
 int popc(int val) { return __nvvm_popc_i(val); }
@@ -448,7 +448,7 @@ float bitcast_i2f(int val) { return __nvvm_bitcast_i2f(val); }
 double bitcast_ll2d(long long val) { return __nvvm_bitcast_ll2d(val); }
 long long bitcast_d2ll(double val) { return __nvvm_bitcast_d2ll(val); }
 }
-
+*/
 //float exp(float val) { return ::exp(val); }
 //
 //float log(float val) { return ::log(val); }
@@ -539,6 +539,8 @@ namespace native {
 
   void barrier(){/* noop */};
 }
+
+unsigned get_global_id(unsigned) { return 0; }
 
 #endif
 

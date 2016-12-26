@@ -13,6 +13,7 @@
 #include "Executor.h"
 #include "detail/device/DeviceCode.h"
 #include "detail/common/Meta.h"
+#include "detail/device/DeviceFunctionDecls.h"
 #include <regex>
 
 template<class U, U>
@@ -152,13 +153,7 @@ namespace pacxx {
                   std::conditional_t<std::is_reference<ArgTys>::value,
                       std::add_lvalue_reference_t<typename generic_to_global<ArgTys>::type>,
                       typename generic_to_global<ArgTys>::type>... args) noexcept {
-#ifdef __device_code__
-      // const auto& lambda_as0 = address_space_cast<const L&, 0>(lambda);
-      // lambda_as0(address_space_cast<ArgTys, 0>(args)...);
        callable(address_space_cast<ArgTys, 0>(args)...);
-#else
-      __message(typeid(args).name()...);
-#endif
     }
 
     template<size_t _C, typename T>
@@ -186,7 +181,7 @@ namespace pacxx {
         // In PACXX V2 we use the __device_code__ macro to distinguish between the two compilation phases
         // This approach has the advantage that we do not have to break up type safety.
 #ifdef __device_code__
-        [[kernel_call(config.blocks.getDim3(), config.threads.getDim3(), 0, 0)]] genericKernel<_C, L, ArgTys...>(
+        genericKernel<_C, L, ArgTys...>(
             address_space_cast<const L &, 1>(F), address_space_cast<ArgTys, 1>(args)...);
 #else
         auto& executor = Executor<RuntimeT>::Create();
@@ -206,7 +201,7 @@ namespace pacxx {
         // In PACXX V2 we use the __device_code__ macro to distinguish between the two compilation phases
         // This approach has the advantage that we do not have to break up type safety.
 #ifdef __device_code__
-        [[kernel_call(config.blocks.getDim3(), config.threads.getDim3(), 0, 0)]] genericKernel<_C, L, meta::add_gpu_reference_t<std::remove_reference_t<Ts>>...>(
+        genericKernel<_C, L, meta::add_gpu_reference_t<std::remove_reference_t<Ts>>...>(
             /*address_space_cast<const L &, 1>(F)*/ F, address_space_cast<meta::add_gpu_reference_t<std::remove_reference_t<Ts>>, 1>(args)...);
 #else
         auto& executor = Executor<RuntimeT>::Create();
@@ -223,7 +218,8 @@ namespace pacxx {
         // In PACXX V2 we use the __device_code__ macro to distinguish between the two compilation phases
         // This approach has the advantage that we do not have to break up type safety.
 #ifdef __device_code__
-        [[kernel_call(config.blocks.getDim3(), config.threads.getDim3(), 0, 0)]] genericKernel<_C, L, meta::add_gpu_reference_t<std::remove_reference_t<Ts>>...>(
+        // call the kernel to force code generation for the template
+        genericKernel<_C, L, meta::add_gpu_reference_t<std::remove_reference_t<Ts>>...>(
             /*address_space_cast<const L &, 1>(F)*/ F, address_space_cast<meta::add_gpu_reference_t<std::remove_reference_t<Ts>>, 1>(args)...);
 #else
         auto& executor = Executor<RuntimeT>::Create();

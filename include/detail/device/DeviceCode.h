@@ -4,6 +4,7 @@
 #define __forceinline__ __attribute__((always_inline))
 #endif
 
+/*
 #include <tuple>
 #include <type_traits>
 
@@ -34,7 +35,7 @@ namespace native {
 
 // extern "C"
 // void __printf(const char*, long x);
-
+*/
 #include "DeviceTypes.h"
 
 // atomics

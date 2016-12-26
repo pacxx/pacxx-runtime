@@ -43,7 +43,7 @@ namespace pacxx {
     void CUDARuntime::link(std::unique_ptr<llvm::Module> M) {
 
       _rawM = std::move(M);
-_rawM->dump();
+
       _M = CloneModule(_rawM.get());
       _M->setDataLayout(_rawM->getDataLayoutStr());
 
@@ -104,7 +104,8 @@ _rawM->dump();
         auto kernel = new CUDAKernel(*this, ptr);
         kernel->setName(name);
         _kernels[name].reset(kernel);
-
+        auto buffer_size = _msp_engine.getArgBufferSize(*_rawM->getFunction(name), *kernel);
+        kernel->setHostArgumentsSize(buffer_size);
         return *kernel;
       } else {
         return *It->second;
