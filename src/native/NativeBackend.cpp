@@ -4,6 +4,7 @@
 
 #include "detail/native/NativeBackend.h"
 #include <llvm/IR/LLVMContext.h>
+#include <llvm/IR/Verifier.h>
 #include <llvm/Support/SourceMgr.h>
 #include <llvm/IRReader/IRReader.h>
 #include <llvm/Transforms/PACXXTransforms.h>
@@ -222,6 +223,7 @@ namespace pacxx
             _PM.add(createLCSSAPass());
             //_PM.add(createSPMDVectorizer());
             _PM.add(createPACXXNativeLinker());
+            _PM.add(createVerifierPass());
             // add O3 optimizations
             PassManagerBuilder builder;
             builder.OptLevel = 3;
