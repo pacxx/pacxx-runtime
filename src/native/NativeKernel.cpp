@@ -31,7 +31,6 @@ namespace pacxx {
     void NativeKernel::setArguments(const std::vector<char> &arg_buffer) {
         __verbose("Set kernel args");
         _args = arg_buffer;
-        _runtime.executeRuntimeOptimizations(*this);
     }
 
     const std::vector<char>& NativeKernel::getArguments() const { return _args; }
