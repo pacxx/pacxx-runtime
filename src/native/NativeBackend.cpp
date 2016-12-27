@@ -218,10 +218,10 @@ namespace pacxx
             _PM.add(createTargetTransformInfoWrapperPass(_machine->getTargetIRAnalysis()));
             _PM.add(createPACXXAddrSpaceTransform());
             _PM.add(createPACXXIdRemover());
-            //_PM.add(createLoopSimplifyPass());
-            //_PM.add(createLCSSAPass());
-            //_PM.add(createSPMDVectorizer());
-            //_PM.add(createPACXXNativeLinker());
+            _PM.add(createLoopSimplifyPass());
+            _PM.add(createLCSSAPass());
+            _PM.add(createSPMDVectorizer());
+            _PM.add(createPACXXNativeLinker());
             // add O3 optimizations
             PassManagerBuilder builder;
             builder.OptLevel = 3;
