@@ -158,11 +158,12 @@ namespace pacxx
 
       applyPasses(*TheModule);
 
-      __verbose("applied pass");
 
       //TODO remove
       raw_fd_ostream OS1("moduleAfterPass", EC, sys::fs::F_None);
       TheModule->print(OS1, nullptr);
+
+      __verbose("applied pass");
 
       _JITEngine->finalizeObject();
 

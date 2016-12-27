@@ -50,25 +50,6 @@ namespace pacxx
         _delayed_compilation = false;
     }
 
-    void NativeRuntime::executeRuntimeOptimizations(NativeKernel &Kernel) {
-
-        if(!_delayed_compilation)  return;
-
-        __verbose("runtime optimizations");
-
-        KernelConfiguration config = Kernel.getConfiguration();
-        std::vector<char> args = Kernel.getArguments();
-
-        getPassManager().add(createPACXXNativeRuntimeOpts(Kernel.getName(), config.threads.x, args));
-        _CPUMod = _compiler->compile(*_M);
-
-        void *fptr= nullptr;
-        fptr = _compiler->getKernelFptr(_CPUMod, Kernel.getName().c_str());
-        Kernel.overrideFptr(fptr);
-
-        _delayed_compilation = false;
-    }
-
     Kernel& NativeRuntime::getKernel(const std::string& name){
       auto It = std::find_if(_kernels.begin(), _kernels.end(),
                              [&](const auto &p) { return name == p.first; });
