@@ -102,7 +102,6 @@ namespace pacxx
       bool _delayed_compilation;
       v2::MSPEngine _msp_engine;
       unsigned _cores;
-      tbb::task_scheduler_init _scheduler;
     };
 
   }

@@ -22,7 +22,6 @@ namespace pacxx
     NativeRuntime::NativeRuntime(unsigned)
         : _compiler(std::make_unique<CompilerT>()), _delayed_compilation(false) {
         _cores = std::thread::hardware_concurrency();
-        _scheduler = tbb::task_scheduler_init(_cores);
     }
 
     NativeRuntime::~NativeRuntime() {}
