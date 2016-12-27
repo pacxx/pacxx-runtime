@@ -10,6 +10,7 @@
 #include "detail/native/NativeRuntime.h"
 #include "detail/common/Exceptions.h"
 #include <detail/common/Timing.h>
+#include <tbb/task_scheduler_init.h>
 
 using namespace llvm;
 
@@ -19,7 +20,10 @@ namespace pacxx
   {
 
     NativeRuntime::NativeRuntime(unsigned)
-        : _compiler(std::make_unique<CompilerT>()), _delayed_compilation(false) {}
+        : _compiler(std::make_unique<CompilerT>()), _delayed_compilation(false) {
+        _cores = std::thread::hardware_concurrency();
+        _scheduler = tbb::task_scheduler_init(_cores);
+    }
 
     NativeRuntime::~NativeRuntime() {}
 

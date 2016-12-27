@@ -13,6 +13,7 @@
 #include <detail/msp/MSPEngine.h>
 #include <detail/common/Exceptions.h>
 #include <thread>
+#include <tbb/task_scheduler_init.h>
 #include "../IRRuntime.h"
 #include "NativeBackend.h"
 #include "NativeKernel.h"
@@ -100,6 +101,8 @@ namespace pacxx
       std::list <std::unique_ptr<DeviceBufferBase>> _memory;
       bool _delayed_compilation;
       v2::MSPEngine _msp_engine;
+      unsigned _cores;
+      tbb::task_scheduler_init _scheduler;
     };
 
   }

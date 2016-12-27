@@ -43,13 +43,13 @@ namespace pacxx {
 
       template<typename T>
       DeviceBuffer<T>* allocateMemory(size_t count, T *host_ptr) {
-        if(host_ptr)
-            throw common::generic_exception("using host buffer with gpu is not allowed");
         CUDARawDeviceBuffer raw;
         raw.allocate(count * sizeof(T));
         auto wrapped = new CUDADeviceBuffer<T>(std::move(raw));
         _memory.push_back(std::unique_ptr<DeviceBufferBase>(
             static_cast<DeviceBufferBase*>(wrapped)));
+        if(host_ptr)
+           wrapped->upload(host_ptr, count);
         return wrapped;
       }
 

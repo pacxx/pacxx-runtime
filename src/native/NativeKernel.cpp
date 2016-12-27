@@ -50,7 +50,8 @@ namespace pacxx {
 
           __verbose("Launching kernel: \nblocks(", _config.blocks.x, ",",
                 _config.blocks.y, ",", _config.blocks.z, ")\nthreads(",
-                _config.threads.x, ",", _config.threads.y, ",", _config.threads.z,")");
+                _config.threads.x, ",", _config.threads.y, ",", _config.threads.z,
+                ")\nshared_mem=", _config.sm_size);
 
           // The kernel wrapper always has this function signature.
           // The kernel args are constructed from the char buffer
@@ -58,7 +59,7 @@ namespace pacxx {
                                                 int, int, int, char*)>(_fptr);
 
           std::chrono::high_resolution_clock::time_point start, end;
-          unsigned runs = 1000;
+          unsigned runs = 1;
 
           start = std::chrono::high_resolution_clock::now();
 
