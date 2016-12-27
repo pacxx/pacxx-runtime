@@ -61,25 +61,24 @@ namespace pacxx {
           std::chrono::high_resolution_clock::time_point start, end;
           unsigned runs = 1000;
 
-          //start = std::chrono::high_resolution_clock::now();
+          start = std::chrono::high_resolution_clock::now();
 
-          SCOPED_TIMING {
-                            for (unsigned i = 0; i < runs; ++i) {
-                                tbb::parallel_for(size_t(0), _config.blocks.z, [&](size_t bidz) {
-                                    tbb::parallel_for(size_t(0), _config.blocks.y, [&](size_t bidy) {
-                                        tbb::parallel_for(size_t(0), _config.blocks.x, [&](size_t bidx) {
-                                            functor(bidx, bidy, bidz, _config.threads.x, _config.threads.y,
-                                                    _config.threads.z, _args.data());
-                                        });
-                                    });
-                                });
-                            }
-          };
+          for(unsigned i = 0; i < runs; ++i) {
+              tbb::parallel_for(size_t(0), _config.blocks.z, [&](size_t bidz) {
+                  tbb::parallel_for(size_t(0), _config.blocks.y, [&](size_t bidy) {
+                      tbb::parallel_for(size_t(0), _config.blocks.x, [&](size_t bidx) {
+                          functor(bidx, bidy, bidz, _config.threads.x, _config.threads.y,
+                                  _config.threads.z, _args.data());
+                      });
+                  });
+              });
+          }
 
-          //end = std::chrono::high_resolution_clock::now();
+          end = std::chrono::high_resolution_clock::now();
 
-          //auto  time_tbb = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
-          //__verbose("Time measured in runtime (TBB) : ", time_tbb / runs, " us (", runs, " iterations)");
+          auto  time_tbb = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
+
+          __verbose("Time measured in runtime (TBB) : ", time_tbb / runs, " us (", runs, " iterations)");
 
           /*
           start = std::chrono::high_resolution_clock::now();
