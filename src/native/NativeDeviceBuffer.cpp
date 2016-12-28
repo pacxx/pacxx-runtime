@@ -24,6 +24,7 @@ namespace pacxx {
 
     NativeRawDeviceBuffer::~NativeRawDeviceBuffer() {
       if (_buffer && !_isHost) {
+        __verbose("isHost", _isHost);
         free(_buffer);
       }
     }
