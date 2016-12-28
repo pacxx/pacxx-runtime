@@ -223,7 +223,7 @@ namespace pacxx
             _PM.add(createLCSSAPass());
             //_PM.add(createSPMDVectorizer());
             _PM.add(createPACXXNativeLinker());
-            //_PM.add(createVerifierPass());
+            _PM.add(createVerifierPass());
             // add O3 optimizations
             PassManagerBuilder builder;
             builder.OptLevel = 3;
