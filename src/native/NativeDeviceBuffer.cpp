@@ -17,13 +17,13 @@ namespace pacxx {
     }
 
     void NativeRawDeviceBuffer::allocate(size_t bytes, char *host_ptr) {
+        __verbose("allocating host buffer");
         _buffer = host_ptr;
         _size = bytes;
         _isHost = true;
     }
 
     NativeRawDeviceBuffer::~NativeRawDeviceBuffer() {
-      __verbose("isHost", _isHost);
       if (_buffer && !_isHost) {
         free(_buffer);
       }
