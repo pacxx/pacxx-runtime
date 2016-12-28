@@ -23,8 +23,8 @@ namespace pacxx {
     }
 
     NativeRawDeviceBuffer::~NativeRawDeviceBuffer() {
+      __verbose("isHost", _isHost);
       if (_buffer && !_isHost) {
-        __verbose("isHost", _isHost);
         free(_buffer);
       }
     }
