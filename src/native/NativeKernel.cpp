@@ -53,6 +53,8 @@ namespace pacxx {
                 _config.threads.x, ",", _config.threads.y, ",", _config.threads.z,
                 ")\nshared_mem=", _config.sm_size);
 
+
+
           // The kernel wrapper always has this function signature.
           // The kernel args are constructed from the char buffer
           auto functor = reinterpret_cast<void (*) (int, int, int,

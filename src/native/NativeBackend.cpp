@@ -221,8 +221,9 @@ namespace pacxx
             _PM.add(createPACXXIdRemover());
             _PM.add(createLoopSimplifyPass());
             _PM.add(createLCSSAPass());
+            _PM.add(createPACXXNativeBarrierPass());
             //_PM.add(createSPMDVectorizer());
-            _PM.add(createPACXXNativeLinker());
+            //_PM.add(createPACXXNativeLinker());
             _PM.add(createVerifierPass());
             // add O3 optimizations
             PassManagerBuilder builder;
