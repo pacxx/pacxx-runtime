@@ -4,8 +4,15 @@ ARGS=( )
 HARGS=( )
 FILES=( )
 ignore=false
+<<<<<<< HEAD
 KRONOS_PATH=$PACXX_PATH/kronos
 PACXXRT_PATH=../../build/pacxx_v2
+||||||| merged common ancestors
+KRONOS_PATH=$PACXX_PATH/kronos
+PACXXRT_PATH=../../build_pacxx
+=======
+PACXXRT_PATH=$HOME/pacxx_v2/build_rt
+>>>>>>> 010a19e028971da138727fa21becec2939775561
 TECH=0
 CUDA_MODE=0
 FMA=0
@@ -13,19 +20,29 @@ KEEP=0
 TMPDIR=.
 FILES_TO_REMOVE=( )
 PACXX_FLAGS="-fcolor-diagnostics -Wno-ignored-attributes"
-PACXX_HOST_FLAGS="-std=pacxx -stdlib=libc++ -O3 -fPIC -L"$PACXXRT_PATH
-PACXX_DEV_FLAGS="-std=pacxx -O0 -S -emit-llvm -target pacxx-unknown-unknown -D__STDC_CONSTANT_MACROS -D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS "
+PACXX_HOST_FLAGS="-std=c++14 -O3 -g -fPIC -rdynamic -L"$PACXXRT_PATH
+PACXX_DEV_FLAGS="-std=pacxx -O0 -S -emit-llvm -D__STDC_CONSTANT_MACROS -D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS -DNDEBUG"
 
 PACXX_LD_FLAGS="-L$PACXX_PATH/lib -L$CUDA_PATH/lib64"
 PACXX_RT=""
 PACXX_RT_FLAG=""
 PACXX_DC_FILES=" "
+<<<<<<< HEAD
 PACXX_RT_LIBS=" -lpacxxrt2 -lpacxxhook -lpacxxrt -lc++abi -lSpirEncoder -lcuda -lcudart -lOpenCL -ltbb -fopenmp"
 PACXX_INCLUDES="-isystem $PACXX_PATH/include/c++/v1 -isystem $PACXX_PATH/include -isystem $CUDA_PATH/include "
+||||||| merged common ancestors
+PACXX_RT_LIBS=" -lpacxxrt2 -lpacxxhook -lpacxxrt -lc++abi -lSpirEncoder -lcuda -lcudart -lOpenCL"
+PACXX_INCLUDES="-isystem $PACXX_PATH/include/c++/v1 -isystem $PACXX_PATH/include -isystem $CUDA_PATH/include "
+=======
+PACXX_RT_LIBS=" -lpacxxrt2 -lcuda -lcudart -lOpenCL"
+PACXX_INCLUDES="-isystem $PACXX_PATH/include -isystem $CUDA_PATH/include "
+>>>>>>> 010a19e028971da138727fa21becec2939775561
 
 CUDA_RT_FLAG="-D__CUDA_RT"
 
 PACXX=$PACXX_PATH/bin
+
+$PACXX/clang --version
 
 function clean_up
 {
@@ -144,7 +161,7 @@ fi
 cp $PACXXRT_PATH/*.bc $WORKING_DIR/
 mv *.ll $WORKING_DIR/
 
-$PACXX/llvm-link -suppress-warnings -S $WORKING_DIR/*.ll $WORKING_DIR/DeviceCode.bc -o $WORKING_DIR/cira.ll
+$PACXX/llvm-link -suppress-warnings -S $WORKING_DIR/*.ll -o $WORKING_DIR/pacxx.ll
 
 if [ $? -ne 0 ]; then
     echo "Failed to link LLVM IR"
@@ -152,20 +169,20 @@ if [ $? -ne 0 ]; then
     exit 2
 fi
 
-cp $WORKING_DIR/cira.ll opt0.ll
+cp $WORKING_DIR/pacxx.ll opt0.ll
 if [ $TECH -ne 0 ]; then 
 
-$PACXX/llvm-link $WORKING_DIR/nvvm_device_binding.bc  $WORKING_DIR/cira.ll -S -o $WORKING_DIR/kernel.ll
-$PACXX/opt -scalarrepl -mem2reg -targetlibinfo -tbaa -basicaa -loop-rotate -simplifycfg -basiccg -functionattrs -sroa -domtree -early-cse -lazy-value-info -correlated-propagation -reassociate -domtree -loops -lcssa -loop-rotate -slsr -licm -loop-unswitch -loop-idiom -loop-deletion -loop-unroll -instsimplify -domtree -loops -lcssa -memdep -gvn -break-crit-edges -constmerge -pacxx_reflection -pacxx_inline -pacxx_dce -scalarrepl -mem2reg -instcombine -simplifycfg -instcombine -spir -pacxx_classify -nvvm -die $WORKING_DIR/kernel.ll -S -o kernel.ll
+$PACXX/llvm-link $WORKING_DIR/nvvm_device_binding.bc  $WORKING_DIR/pacxx.ll -S -o $WORKING_DIR/kernel.ll
+$PACXX/opt -scalarizer -mem2reg -targetlibinfo -tbaa -basicaa -loop-rotate -simplifycfg -basiccg -functionattrs -sroa -domtree -early-cse -lazy-value-info -correlated-propagation -reassociate -domtree -loops -lcssa -loop-rotate -slsr -licm -loop-unswitch -loop-idiom -loop-deletion -loop-unroll -instsimplify -domtree -loops -lcssa -memdep -gvn -break-crit-edges -constmerge -pacxx_reflection -pacxx_inline -pacxx_dce -scalarizer -mem2reg -instcombine -simplifycfg -instcombine -spir -pacxx_classify -nvvm -die $WORKING_DIR/kernel.ll -S -o kernel.ll
 
-$PACXX/llvm-link -suppress-warnings kernel.ll $CUDA_PATH/nvvm/libdevice/libdevice.compute_35.10.bc -S -o kernel.ll
+$PACXX/llvm-link -suppress-warnings kernel.ll $NVVM_PATH/libdevice.compute_35.10.bc -S -o kernel.ll
 
 $PACXX/opt -nvvm_reg -pacxx_inline -pacxx_dce kernel.ll -S -o kernel.ll
 
 fi
 
 
-$PACXX/opt $WORKING_DIR/cira.ll -o $WORKING_DIR/pacxx.bc \
+$PACXX/opt $WORKING_DIR/pacxx.ll -o $WORKING_DIR/pacxx.bc \
         -pacxx_dce \
         -targetlibinfo \
         -tbaa \
@@ -177,7 +194,6 @@ $PACXX/opt $WORKING_DIR/cira.ll -o $WORKING_DIR/pacxx.bc \
         -simplifycfg \
         -basiccg \
         -prune-eh \
-        -inline-cost \
         -inline \
         -functionattrs \
         -sroa \
@@ -333,10 +349,10 @@ do
     fi
 done
 
-cp $KRONOS_PATH/*.S $WORKING_DIR
+cp $PACXXRT_PATH/*.S $WORKING_DIR
 
 if [ $TECH -ne 0 ]; then
-$PACXX/llvm-link -suppress-warnings $WORKING_DIR/nvvm.bc $CUDA_PATH/nvvm/libdevice/libdevice.compute_35.10.bc -o $WORKING_DIR/nvvm.bc
+$PACXX/llvm-link -suppress-warnings $WORKING_DIR/nvvm.bc $NVVM_PATH/libdevice.compute_35.10.bc -o $WORKING_DIR/nvvm.bc
 #$PACXX/opt -inline -constprop -simplifycfg -instcombine $WORKING_DIR/nvvm.bc -o $WORKING_DIR/nvvm.bc
 $PACXX/opt -inline $WORKING_DIR/nvvm.bc -o $WORKING_DIR/nvvm.bc
 $PACXX/opt -nvvm $WORKING_DIR/nvvm.bc -o $WORKING_DIR/nvvm.bc
@@ -349,7 +365,7 @@ $PACXX/opt -instcombine -pacxx_classify $WORKING_DIR/nvvm.bc -o $WORKING_DIR/nvv
 $PACXX/opt -nvvm_reg -pacxx_static -mem2reg -simplifycfg -pacxx_dce  $WORKING_DIR/nvvm.bc -o $WORKING_DIR/nvvm.bc
 $PACXX/opt -pacxx_verifier $WORKING_DIR/nvvm.bc -o $WORKING_DIR/nvvm.bc
 
-$PACXX/llvm-link -suppress-warnings $PACXX_PATH/kronos/src/syscalls.bc $WORKING_DIR/nvvm.bc -o $WORKING_DIR/nvvm.bc
+$PACXX/llvm-link -suppress-warnings $PACXXRT_PATH/syscalls.bc $WORKING_DIR/nvvm.bc -o $WORKING_DIR/nvvm.bc
 
 
 if [ $? -ne 0 ]; then
@@ -361,7 +377,7 @@ fi
 $PACXX/llvm-dis $WORKING_DIR/nvvm.bc -o nvvm.ll
 #mv nvvm.bac nvvm.ll
 #$PACXX/clang++ -DFILE='"'$WORKING_DIR'/nvvm.bc"' $WORKING_DIR/embed_llvm.S -c -o $WORKING_DIR/ir.o
-$PACXX/clang++ -DFILE='"nvvm.ll"' $WORKING_DIR/embed_llvm.S -c -o $WORKING_DIR/ir.o
+$PACXX/clang++ -DFILE='"kernel.ll"' $WORKING_DIR/embed_llvm.S -c -o $WORKING_DIR/ir.o
 else
 
 #$PACXX/clang++ -DFILE='"'$WORKING_DIR'/spir.bc"' $WORKING_DIR/embed_llvm.S -c -o $WORKING_DIR/ir.o
