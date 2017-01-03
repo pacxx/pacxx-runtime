@@ -19,4 +19,5 @@ add_library(pacxxrt2 ${SOURCE_FILES} src/DeviceCode.cpp include/Executor.h src/P
 
 add_custom_command(TARGET pacxxrt2 POST_BUILD COMMAND $ENV{PACXX_PATH}/bin/llvm-as ${CMAKE_SOURCE_DIR}/src/bitcode/syscalls.ll -o ${CMAKE_BINARY_DIR}/syscalls.bc)
 add_custom_command(TARGET pacxxrt2 POST_BUILD COMMAND $ENV{PACXX_PATH}/bin/clang ${PACXX_DEV_FLAGS} ${CMAKE_SOURCE_DIR}/src/bitcode/nvvm_device_binding.cpp -o ${CMAKE_BINARY_DIR}/nvvm_device_binding.bc)
+add_custom_command(TARGET pacxxrt2 POST_BUILD COMMAND cp ${CMAKE_SOURCE_DIR}/src/*.S ${CMAKE_BINARY_DIR}/)
 #add_custom_command(TARGET pacxxrt2 POST_BUILD COMMAND $ENV{PACXX_PATH}/bin/clang ${PACXX_DEV_FLAGS} ${CMAKE_SOURCE_DIR}/src/DeviceCode.cpp -o ${CMAKE_BINARY_DIR}/DeviceCode.bc)
