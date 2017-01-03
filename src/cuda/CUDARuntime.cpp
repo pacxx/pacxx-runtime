@@ -44,7 +44,7 @@ namespace pacxx {
 
       _rawM = std::move(M);
 
-      _M.reset(CloneModule(_rawM.get()));
+      _M = CloneModule(_rawM.get());
       _M->setDataLayout(_rawM->getDataLayoutStr());
 
       auto reflect = _M->getFunction("__pacxx_reflect");
@@ -104,7 +104,8 @@ namespace pacxx {
         auto kernel = new CUDAKernel(*this, ptr);
         kernel->setName(name);
         _kernels[name].reset(kernel);
-
+        auto buffer_size = _msp_engine.getArgBufferSize(*_rawM->getFunction(name), *kernel);
+        kernel->setHostArgumentsSize(buffer_size);
         return *kernel;
       } else {
         return *It->second;
@@ -150,7 +151,7 @@ namespace pacxx {
 
     void CUDARuntime::requestIRTransformation(Kernel &K) {
       if (_msp_engine.isDisabled()) return;
-      _M.reset(CloneModule(_rawM.get()));
+      _M = CloneModule(_rawM.get());
       _M->setDataLayout(_rawM->getDataLayoutStr());
 
       _msp_engine.transformModule(*_M, K);

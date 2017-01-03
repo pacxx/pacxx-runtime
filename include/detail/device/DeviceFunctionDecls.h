@@ -20,11 +20,11 @@ __index_t get_local_size(unsigned int dimindx);
 __index_t get_num_groups(unsigned int dimindx);
 
 
-#ifdef __CUDA_DEVICE_CODE
+//#ifdef __CUDA_DEVICE_CODE
 void barrier(unsigned int flags);
-#else
-void barrier(unsigned int flags) { __asm__ volatile("" : : : "memory"); }
-#endif
+//#else
+//void barrier(unsigned int flags) { __asm__ volatile("" : : : "memory"); }
+//#endif
 
 
 extern "C" double exp(double val);

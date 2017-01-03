@@ -12,7 +12,7 @@ namespace pacxx {
 
     CUDAKernel::CUDAKernel(CUDARuntime &runtime, CUfunction fptr) : _runtime(runtime), _fptr(fptr),
                                                                     _staged_values_changed(false),
-                                                                    _disable_staging(false) {}
+                                                                    _disable_staging(false), _hostArgBufferSize(0) {}
 
     CUDAKernel::~CUDAKernel() { }
 
@@ -73,7 +73,7 @@ namespace pacxx {
           _config.threads.x, _config.threads.y, _config.threads.z, _config.sm_size,
           NULL, nullptr, &_launch_args[0]));
       if (_callback)
-        SEC_CUDA_CALL(cudaStreamAddCallback(nullptr, CUDARuntime::fireCallback, &_callback, NULL));
+        SEC_CUDA_CALL(cudaStreamAddCallback(nullptr, CUDARuntime::fireCallback, &_callback, 0));
     }
 
 
@@ -104,6 +104,14 @@ namespace pacxx {
 
     bool CUDAKernel::requireStaging() {
       return !_disable_staging;
+    }
+
+    size_t CUDAKernel::getHostArgumentsSize() const {
+      return _hostArgBufferSize;
+    }
+
+    void CUDAKernel::setHostArgumentsSize(size_t size) {
+      _hostArgBufferSize = size;
     }
   }
 }

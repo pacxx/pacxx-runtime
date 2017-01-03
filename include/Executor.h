@@ -8,6 +8,7 @@
 #include <cuda.h>
 
 #include <llvm/IR/Module.h>
+#include <llvm/IR/Constants.h>
 #include <memory>
 #include <string>
 #include <algorithm>
@@ -59,7 +60,7 @@ namespace pacxx {
           _initialized = true;
 
         if (!_initialized) {
-          ModuleLoader loader;
+          ModuleLoader loader(instance.getLLVMContext());
           auto M = loader.loadInternal(llvm_start, llvm_size);
           instance.setModule(std::move(M));
           instance.setMSPModule(loader.loadInternal(reflection_start, reflection_size));
@@ -72,7 +73,7 @@ namespace pacxx {
         static Executor instance(0);
 
         if (!_initialized) {
-          ModuleLoader loader;
+          ModuleLoader loader(instance.getLLVMContext());
           auto M = loader.loadInternal(module_bytes.data(), module_bytes.size());
           instance.setModule(std::move(M));
           _initialized = true;
@@ -82,7 +83,7 @@ namespace pacxx {
 
     private:
       Executor(unsigned devID)
-          : _runtime(std::make_unique<RuntimeT>(devID)), _mem_manager(*_runtime) {
+          : _ctx(),  _runtime(std::make_unique<RuntimeT>(devID)), _mem_manager(*_runtime) {
         core::CoreInitializer::initialize();
       }
 
@@ -113,14 +114,16 @@ namespace pacxx {
       template<typename L, typename... Args>
       void run(const L& lambda, KernelConfiguration config, Args&& ... args) {
         // auto& dev_lambda = _mem_manager.getTemporaryLambda(lambda);
-        auto& K = get_kernel_by_name(typeid(L).name(), config, lambda, std::forward<Args>(args)...);
+        auto& K = get_kernel_by_name(typeid(L).name(), config, std::forward<const L>(lambda),
+                                     std::forward<Args>(args)...);
         K.launch();
       }
 
       template<typename L, typename CallbackFunc, typename... Args>
       void
       run_with_callback(const L& lambda, KernelConfiguration config, CallbackFunc&& cb, Args&& ... args) {
-        auto& K = get_kernel_by_name(typeid(L).name(), config, lambda, std::forward<Args>(args)...);
+        auto& K = get_kernel_by_name(typeid(L).name(), config, std::forward<const L>(lambda),
+                                     std::forward<Args>(args)...);
         K.setCallback(std::move(cb));
         K.launch();
       }
@@ -152,6 +155,9 @@ namespace pacxx {
           }
           throw common::generic_exception("Kernel function not found in module! " + cleanName(name));
         }
+        auto& K = _runtime->getKernel(F->getName().str());
+        K.setName(F->getName().str());
+        K.configurate(config);
 
         size_t buffer_size = 0;
         __verbose("Executor arg size ",F->arg_size());
@@ -170,28 +176,40 @@ namespace pacxx {
           return arg_offset;
         });
 
+
         std::vector<char> args_buffer(buffer_size);
-        std::vector<char> host_args_buffer(buffer_size);
+        __verbose("host arg buffer size is: ", K.getHostArgumentsSize());
+        std::vector<char> host_args_buffer(K.getHostArgumentsSize());
 
         auto ptr = args_buffer.data();
         auto hptr = host_args_buffer.data();
         size_t i = 0;
+        ptrdiff_t hoffset = 0;
+        void* lambdaPtr = nullptr;
 
-        common::for_each_in_arg_pack([&](auto&& arg) {
-          auto offset = arg_offsets[i++];
-          auto targ = meta::memory_translation{}(_mem_manager, arg);
-          std::memcpy(ptr + offset, &targ, sizeof(decltype(targ)));
-          if (i > 1) { // ignore the lambda
-            auto harg = meta::msp_memory_translation{}(arg);
-            std::memcpy(hptr, &harg, sizeof(decltype(harg)));
-          }
-          hptr += sizeof(decltype(targ));
-          //    __warning(sizeof(decltype(arg)), " ", sizeof(decltype(targ)));
+        common::for_first_in_arg_pack([&](auto& lambda) {
+          lambdaPtr = (void*) &lambda;
         }, std::forward<Args>(args)...);
 
-        auto& K = _runtime->getKernel(F->getName().str());
-        K.setName(F->getName().str());
-        K.configurate(config);
+        __message(lambdaPtr);
+
+        common::for_each_in_arg_pack([&](auto&& arg) {
+          if (i == 0) {
+            if (host_args_buffer.size() > 0)
+              std::memcpy(hptr + hoffset, &lambdaPtr, sizeof(decltype(lambdaPtr)));
+            hoffset += sizeof(decltype(lambdaPtr));
+          } else if (host_args_buffer.size() > 0) {
+            std::memcpy(hptr + hoffset, &arg, sizeof(decltype(arg)));
+            hoffset += sizeof(decltype(arg));
+          }
+
+          auto offset = arg_offsets[i++];
+          auto targ = meta::memory_translation{}(_mem_manager, arg);
+//          __warning(sizeof(decltype(arg)), " ", hoffset, " ", typeid(arg).name());
+          std::memcpy(ptr + offset, &targ, sizeof(decltype(targ)));
+        }, std::forward<Args>(args)...);
+
+
         K.setHostArguments(host_args_buffer);
         K.setArguments(args_buffer);
 
@@ -279,8 +297,10 @@ namespace pacxx {
 
       };
 
+      auto& getLLVMContext() { return _ctx; }
 
     private:
+      LLVMContext _ctx;
       std::unique_ptr<RuntimeT> _runtime;
       MemoryManager _mem_manager;
       std::map<std::string, const llvm::Function*> _kernel_translation;
@@ -306,7 +326,7 @@ namespace pacxx {
 
     template<typename T>
     void Executor<T>::setModule(std::string module_bytes) {
-      ModuleLoader loader;
+      ModuleLoader loader(_ctx);
       auto M = loader.loadInternal(module_bytes.data(), module_bytes.size());
       Create().setModule(std::move(M));
     }

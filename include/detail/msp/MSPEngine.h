@@ -30,6 +30,8 @@ namespace v2
 
     void initialize(std::unique_ptr<llvm::Module> M);
     void evaluate(const llvm::Function& KF, Kernel& kernel);
+
+    size_t getArgBufferSize(const llvm::Function& KF, Kernel& kernel);
     void transformModule(llvm::Module& M, Kernel& K);
     bool isDisabled();
 
@@ -37,9 +39,6 @@ namespace v2
     bool _disabled;
     llvm::ExecutionEngine* _engine;
     std::set<std::pair<llvm::Function*, int>> _stubs;
-
-    std::map<unsigned, stub_ptr_t> FStubs;
-    std::map<unsigned, i64_stub_ptr_t> i64FStubs;
   };
 }
 

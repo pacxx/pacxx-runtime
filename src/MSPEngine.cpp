@@ -5,6 +5,7 @@
 #include <llvm/Transforms/PACXXTransforms.h>
 #include <llvm/ExecutionEngine/ExecutionEngine.h>
 #include <llvm/ExecutionEngine/SectionMemoryManager.h>
+#include <llvm/ExecutionEngine/MCJIT.h>
 #include <detail/common/Exceptions.h>
 #include <llvm/IR/Constants.h>
 #include <detail/common/LLVMHelper.h>
@@ -29,7 +30,7 @@ namespace pacxx {
         EngineBuilder builder{std::move(M)};
 
         builder.setErrorStr(&ErrStr);
-
+        builder.setUseOrcMCJITReplacement(true);
         builder.setEngineKind(EngineKind::JIT);
 
         RTDyldMemoryManager* RTDyldMM = new SectionMemoryManager();
@@ -38,31 +39,49 @@ namespace pacxx {
             std::unique_ptr<RTDyldMemoryManager>(RTDyldMM));
         _engine = builder.create();
         if (!_engine) {
+          __error(ErrStr);
           throw new pacxx::common::generic_exception(ErrStr);
         }
 
         _engine->finalizeObject();
 
-        for (auto F : _stubs) {
-          auto raw_ptr = _engine->getPointerToFunction(F.first);
-          if (F.first->getArgumentList().front().getType()->isPointerTy()) // FIXME: find better solution
-          {
-            FStubs[F.second] =
-                reinterpret_cast<stub_ptr_t>(reinterpret_cast<intptr_t>(raw_ptr));
-          } else {
-            i64FStubs[F.second] = reinterpret_cast<i64_stub_ptr_t>(
-                reinterpret_cast<intptr_t>(raw_ptr));
-          }
-        }
-
-        __verbose("MSP Engine initialized: ", FStubs.size(), " generic stubs / ", i64FStubs.size(),
-                  " shortcuts");
+        __verbose("MSP Engine initialized: ", _stubs.size(), " stubs");
         _disabled = false;
       }
       else {
         __debug("MSP Engine disabled!");
       }
 
+    }
+
+    size_t MSPEngine::getArgBufferSize(const llvm::Function& KF, Kernel& kernel) {
+      size_t hostArgBufferSize = 0;
+      if (!kernel.requireStaging())
+        return hostArgBufferSize;
+      __verbose("reading ArgBufferSize for function: ", KF.getName().str());
+      bool kernelHasStagedFunction = false;
+      auto& M = *KF.getParent();
+      if (auto RF = M.getFunction("__pacxx_reflect")) {
+        for (auto U : RF->users()) {
+          if (CallInst* CI = dyn_cast<CallInst>(U)) {
+            int64_t value = 0;
+            if (CI->getParent()->getParent() == &KF) {
+              if (MDNode* MD = CI->getMetadata("pacxx.reflect.stage")) {
+                auto* ci32 = dyn_cast<ConstantInt>(
+                    dyn_cast<ValueAsMetadata>(MD->getOperand(0).get())->getValue());
+                auto cstage = (unsigned int) *ci32->getValue().getRawData();
+                auto FName = std::string("__pacxx_reflection_stub") + std::to_string(cstage);
+                if (auto F = _engine->FindFunctionNamed(FName.c_str())) {
+                  auto MD = F->getMetadata("pacxx.reflection.argBufferSize");
+                  hostArgBufferSize = *(dyn_cast<ConstantInt>(
+                      dyn_cast<ValueAsMetadata>(MD->getOperand(0).get())->getValue())->getValue().getRawData());
+                }
+              }
+            }
+          }
+        }
+      }
+      return hostArgBufferSize;
     }
 
     void MSPEngine::evaluate(const llvm::Function& KF, Kernel& kernel) {
@@ -90,10 +109,11 @@ namespace pacxx {
                     auto FP = reinterpret_cast<int64_t (*)(void*)>(rFP);
                     value = FP(&args[0]);
                   }
+
                   kernelHasStagedFunction = true;
                   inScope = true;
                 }
-                // __verbose("staging: ", FName, "  - result is ", value);
+              __verbose("staging: ", FName, "  - result is ", value);
 
                 if (auto* ci2 = dyn_cast<ConstantInt>(CI->getOperand(0))) {
                   kernel.setStagedValue(*(ci2->getValue().getRawData()), value, inScope);

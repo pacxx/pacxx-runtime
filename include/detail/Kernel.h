@@ -18,6 +18,10 @@ public:
   virtual KernelConfiguration getConfiguration() const = 0;
   virtual void setArguments(const std::vector<char> &arg_buffer) = 0;
   virtual const std::vector<char>& getArguments() const = 0;
+
+  virtual size_t getHostArgumentsSize() const = 0;
+
+  virtual void setHostArgumentsSize(size_t size) = 0;
   virtual void setHostArguments(const std::vector<char> &arg_buffer) = 0;
   virtual const std::vector<char>& getHostArguments() const = 0;
 
