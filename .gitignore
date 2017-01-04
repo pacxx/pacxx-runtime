@@ -1,4 +1,3 @@
-benchmarks
-spmdTest
-*.idea
-CMakeLists.txt
+benchmarks/
+spmdTest/
+.idea/
