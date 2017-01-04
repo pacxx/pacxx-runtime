@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.0)
 project(PACXX_V2)
 
+set(TBB_INCLUDE_DIR $ENV{PACXX_PATH}/include)
+
 find_package(LLVM REQUIRED CONFIG)
 find_package(CUDA REQUIRED)
 
