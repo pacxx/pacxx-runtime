@@ -102,6 +102,18 @@ __forceinline__ __index_t get_num_groups(unsigned int dimindx) {
   }
 }
 
+__forceinline__ __index_t get_grid_size(unsigned int dimindx) {
+  switch (dimindx) {
+  case 0:
+    return __nvvm_read_ptx_sreg_ntid_x() * __nvvm_read_ptx_sreg_nctaid_x();
+  case 1:
+    return __nvvm_read_ptx_sreg_ntid_y() * __nvvm_read_ptx_sreg_nctaid_y();
+  case 2:
+    return __nvvm_read_ptx_sreg_ntid_z() * __nvvm_read_ptx_sreg_nctaid_z();
+  default:
+    return 0;
+  }
+}
 __forceinline__ void barrier(unsigned int) { __syncthreads(); }
 
 ///////////////////////////// ATOMICS ////////////////////////////
