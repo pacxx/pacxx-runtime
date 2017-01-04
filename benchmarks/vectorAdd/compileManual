@@ -1,1 +1,0 @@
-clang++ -mavx -std=c++11 -lpthread  -L /home/l_klei14/tbb/build/linux_intel64_clang_cc5.4.0_libc2.23_kernel4.4.0_release  -ltbb  -I /home/l_klei14/pacxx/include -O3 Manual.cpp -o manual
