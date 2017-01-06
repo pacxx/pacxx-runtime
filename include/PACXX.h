@@ -217,7 +217,7 @@ private:
   CB _callback;
 };
 
-template <typename RuntimeT, typename Func, size_t versioning = __COUNTER__>
+template <typename RuntimeT = CUDARuntime, typename Func, size_t versioning = __COUNTER__>
 auto kernel(const Func &lambda, KernelConfiguration config) {
   return _kernel<decltype(lambda), RuntimeT, versioning>(lambda, config);
 };
