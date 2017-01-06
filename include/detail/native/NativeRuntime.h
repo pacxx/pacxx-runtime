@@ -46,6 +46,7 @@ namespace pacxx
           rawBuffer.allocate(count * sizeof(T), reinterpret_cast<char*>(host_ptr));
         else
           rawBuffer.allocate(count * sizeof(T));
+
         auto wrapped = new NativeDeviceBuffer<T>(std::move(rawBuffer));
         _memory.push_back(std::unique_ptr<DeviceBufferBase>(
             static_cast<DeviceBufferBase*>(wrapped)));

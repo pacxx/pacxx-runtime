@@ -34,6 +34,8 @@ namespace pacxx {
       rhs._buffer = nullptr;
       _size = rhs._size;
       rhs._size = 0;
+      _isHost = rhs._isHost;
+      rhs._isHost = false;
     }
 
     NativeRawDeviceBuffer& NativeRawDeviceBuffer::operator=(NativeRawDeviceBuffer&& rhs) {
@@ -41,6 +43,8 @@ namespace pacxx {
       rhs._buffer = nullptr;
       _size = rhs._size;
       rhs._size = 0;
+      _isHost = rhs._isHost;
+      rhs._isHost = false;
       return *this;
     }
 

@@ -161,7 +161,6 @@ namespace pacxx
 
       applyPasses(*TheModule);
 
-
       //TODO remove
       raw_fd_ostream OS1("moduleAfterPass", EC, sys::fs::F_None);
       TheModule->print(OS1, nullptr);
@@ -226,11 +225,11 @@ namespace pacxx
             _PM.add(createLCSSAPass());
             _PM.add(createSPMDVectorizer());
             _PM.add(createPACXXNativeLinker());
-            //_PM.add(createVerifierPass());
+            _PM.add(createVerifierPass());
             // add O3 optimizations
             PassManagerBuilder builder;
             builder.OptLevel = 3;
-            //builder.populateModulePassManager(_PM);
+            builder.populateModulePassManager(_PM);
             _pmInitialized = true;
         }
 
