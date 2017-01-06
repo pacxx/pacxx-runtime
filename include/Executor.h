@@ -191,7 +191,6 @@ namespace pacxx {
           lambdaPtr = (void*) &lambda;
         }, std::forward<Args>(args)...);
 
-        __message(lambdaPtr);
 
         common::for_each_in_arg_pack([&](auto&& arg) {
           if (i == 0) {
