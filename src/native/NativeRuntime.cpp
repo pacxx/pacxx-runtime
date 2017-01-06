@@ -21,7 +21,6 @@ namespace pacxx
 
     NativeRuntime::NativeRuntime(unsigned)
         : _compiler(std::make_unique<CompilerT>()), _delayed_compilation(false) {
-        _cores = std::thread::hardware_concurrency();
     }
 
     NativeRuntime::~NativeRuntime() {}
@@ -32,7 +31,7 @@ namespace pacxx
 
       _rawM = std::move(M);
 
-      _M.reset(CloneModule(_rawM.get()));
+      _M = CloneModule(_rawM.get());
       _M->setDataLayout(_rawM->getDataLayoutStr());
 
       auto reflect = _M->getFunction("__pacxx_reflect");
@@ -41,14 +40,13 @@ namespace pacxx
       }
       else {
         __verbose("Module contains unresolved calls to __pacxx_reflect. Linking delayed!");
-        _CPUMod = _M.get();
         _delayed_compilation = true;
       }
     }
 
     void NativeRuntime::compileAndLink() {
         SCOPED_TIMING{
-            _CPUMod = _compiler->compile(*_M);
+            _CPUMod = _compiler->compile(_M);
         };
         _delayed_compilation = false;
     }
@@ -110,11 +108,11 @@ namespace pacxx
     void NativeRuntime::requestIRTransformation(Kernel& K) {
         if (_msp_engine.isDisabled()) return;
 
-        _M.reset(CloneModule(_rawM.get()));
+        _M = CloneModule(_rawM.get());
         _M->setDataLayout(_rawM->getDataLayoutStr());
         _msp_engine.transformModule(*_M, K);
 
-        _CPUMod = _compiler->compile(*_M);
+        _CPUMod = _compiler->compile(_M);
 
         void *fptr= nullptr;
         fptr = _compiler->getKernelFptr(_CPUMod, K.getName().c_str());

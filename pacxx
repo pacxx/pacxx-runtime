@@ -4,15 +4,7 @@ ARGS=( )
 HARGS=( )
 FILES=( )
 ignore=false
-<<<<<<< HEAD
-KRONOS_PATH=$PACXX_PATH/kronos
-PACXXRT_PATH=../../build/pacxx_v2
-||||||| merged common ancestors
-KRONOS_PATH=$PACXX_PATH/kronos
-PACXXRT_PATH=../../build_pacxx
-=======
-PACXXRT_PATH=$HOME/pacxx_v2/build_rt
->>>>>>> 010a19e028971da138727fa21becec2939775561
+PACXXRT_PATH=$PACXX_PATH/build_rt
 TECH=0
 CUDA_MODE=0
 FMA=0
@@ -27,16 +19,8 @@ PACXX_LD_FLAGS="-L$PACXX_PATH/lib -L$CUDA_PATH/lib64"
 PACXX_RT=""
 PACXX_RT_FLAG=""
 PACXX_DC_FILES=" "
-<<<<<<< HEAD
-PACXX_RT_LIBS=" -lpacxxrt2 -lpacxxhook -lpacxxrt -lc++abi -lSpirEncoder -lcuda -lcudart -lOpenCL -ltbb -fopenmp"
-PACXX_INCLUDES="-isystem $PACXX_PATH/include/c++/v1 -isystem $PACXX_PATH/include -isystem $CUDA_PATH/include "
-||||||| merged common ancestors
-PACXX_RT_LIBS=" -lpacxxrt2 -lpacxxhook -lpacxxrt -lc++abi -lSpirEncoder -lcuda -lcudart -lOpenCL"
-PACXX_INCLUDES="-isystem $PACXX_PATH/include/c++/v1 -isystem $PACXX_PATH/include -isystem $CUDA_PATH/include "
-=======
-PACXX_RT_LIBS=" -lpacxxrt2 -lcuda -lcudart -lOpenCL"
+PACXX_RT_LIBS=" -lpacxxrt2  -lcuda -lcudart -lOpenCL -ltbb"
 PACXX_INCLUDES="-isystem $PACXX_PATH/include -isystem $CUDA_PATH/include "
->>>>>>> 010a19e028971da138727fa21becec2939775561
 
 CUDA_RT_FLAG="-D__CUDA_RT"
 

@@ -7,11 +7,11 @@
 
 #include <map>
 #include <string>
-#include "detail/Kernel.h"
-#include "detail/KernelConfiguration.h"
 #include <functional>
 #include <llvm/IR/Function.h>
 #include <llvm/ExecutionEngine/GenericValue.h>
+#include "detail/Kernel.h"
+#include "detail/KernelConfiguration.h"
 
 namespace pacxx {
 
@@ -40,6 +40,9 @@ namespace pacxx {
 
             virtual void disableStaging() override;
 
+            virtual size_t getHostArgumentsSize() const override;
+            virtual void setHostArgumentsSize(size_t size) override;
+
             virtual bool requireStaging() override;
             virtual const std::map<int, long long>& getStagedValues() const override;
 
@@ -64,6 +67,7 @@ namespace pacxx {
             std::string _name;
             std::function<void()> _callback;
             bool _disable_staging;
+            size_t _hostArgBufferSize;
         };
 
     } // v2 namespace

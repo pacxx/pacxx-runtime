@@ -1,7 +1,9 @@
 cmake_minimum_required(VERSION 3.0)
 project(PACXX_V2)
 
-set(TBB_INCLUDE_DIR $ENV{PACXX_PATH}/include)
+set(TBB_INCLUDE_DIR "$ENV{PACXX_PATH}/include" CACHE FILEPATH "include directory of tbb")
+
+set(LLVM_DIR $ENV{PACXX_PATH}/lib/cmake/llvm/)
 
 find_package(LLVM REQUIRED CONFIG)
 find_package(CUDA REQUIRED)
@@ -24,3 +26,9 @@ add_custom_command(TARGET pacxxrt2 POST_BUILD COMMAND $ENV{PACXX_PATH}/bin/llvm-
 add_custom_command(TARGET pacxxrt2 POST_BUILD COMMAND $ENV{PACXX_PATH}/bin/clang ${PACXX_DEV_FLAGS} ${CMAKE_SOURCE_DIR}/src/bitcode/nvvm_device_binding.cpp -o ${CMAKE_BINARY_DIR}/nvvm_device_binding.bc)
 add_custom_command(TARGET pacxxrt2 POST_BUILD COMMAND cp ${CMAKE_SOURCE_DIR}/src/*.S ${CMAKE_BINARY_DIR}/)
 #add_custom_command(TARGET pacxxrt2 POST_BUILD COMMAND $ENV{PACXX_PATH}/bin/clang ${PACXX_DEV_FLAGS} ${CMAKE_SOURCE_DIR}/src/DeviceCode.cpp -o ${CMAKE_BINARY_DIR}/DeviceCode.bc)
+
+file(GLOB PACXX_FILES ${CMAKE_BINARY_DIR}/*.a ${CMAKE_BINARY_DIR}/*.bc ${CMAKE_BINARY_DIR}/*.S)
+
+install (FILES ${PACXX_FILES} DESTINATION build_rt)
+
+

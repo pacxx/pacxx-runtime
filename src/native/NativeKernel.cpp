@@ -16,7 +16,8 @@ namespace pacxx {
         _runtime(runtime),
         _fptr(fptr),
         _staged_values_changed(false),
-        _disable_staging(false) {}
+        _disable_staging(false),
+        _hostArgBufferSize(0) {}
 
     NativeKernel::~NativeKernel() {}
 
@@ -127,5 +128,13 @@ namespace pacxx {
       }
 
       bool NativeKernel::requireStaging() { return !_disable_staging; }
+
+      size_t NativeKernel::getHostArgumentsSize() const {
+        return _hostArgBufferSize;
+      }
+
+      void NativeKernel::setHostArgumentsSize(size_t size) {
+        _hostArgBufferSize = size;
+      }
   }
 }

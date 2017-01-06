@@ -5,13 +5,13 @@
 #include "detail/native/NativeBackend.h"
 #include <llvm/IR/LLVMContext.h>
 #include <llvm/IR/Verifier.h>
+#include <llvm/IR/GVMaterializer.h>
 #include <llvm/Support/SourceMgr.h>
 #include <llvm/IRReader/IRReader.h>
 #include <llvm/Transforms/PACXXTransforms.h>
 #include <detail/common/Exceptions.h>
 #include <llvm/Analysis/TargetLibraryInfo.h>
 #include <llvm/ExecutionEngine/SectionMemoryManager.h>
-#include <llvm/Bitcode/ReaderWriter.h>
 #include <llvm/Transforms/Scalar.h>
 #include <llvm/Transforms/Vectorize.h>
 #include <llvm/LinkAllPasses.h>
@@ -19,6 +19,7 @@
 #include <llvm/Analysis/LoopInfo.h>
 #include "llvm/Analysis/LoopPass.h"
 #include <llvm/Transforms/IPO/PassManagerBuilder.h>
+#include <Executor.h>
 
 namespace {
 const std::string native_loop_ir(R"(
@@ -109,17 +110,17 @@ attributes #1 = { "disable-tail-calls"="false" "less-precise-fpmad"="false" "no-
 )");
 }
 
+using namespace llvm;
+
 namespace pacxx
 {
   namespace v2
   {
-    NativeBackend::NativeBackend() : _composite(std::make_unique<Module>("pacxx-link", getGlobalContext())),
-                                     _linker(_composite.get()),
-                                     _pmInitialized(false){ }
+    NativeBackend::NativeBackend() : _pmInitialized(false){ }
 
     NativeBackend::~NativeBackend() {}
 
-    Module* NativeBackend::compile(Module &M) {
+    Module* NativeBackend::compile(std::unique_ptr<Module>& M) {
 
         std::string error;
         std::error_code EC;
@@ -127,6 +128,7 @@ namespace pacxx
         LLVMInitializeNativeTarget();
 
         linkInModule(M);
+
         Module *TheModule = _composite.get();
 
         EngineBuilder builder{std::move(_composite)};
@@ -191,10 +193,12 @@ namespace pacxx
         return _JITEngine->getPointerToFunction(kernel);
     }
 
-    void NativeBackend::linkInModule(Module& M) {
-        std::unique_ptr<Module> functionModule = NativeBackend::createModule(_composite->getContext(), native_loop_ir);
-        _linker.linkInModule(functionModule.get(), Linker::Flags::None, nullptr);
-        _linker.linkInModule(&M, Linker::Flags::None, nullptr);
+    void NativeBackend::linkInModule(std::unique_ptr<Module>& M) {
+        _composite = std::make_unique<Module>("pacxx-link", M->getContext());
+        std::unique_ptr<Module> functionModule = NativeBackend::createModule(M->getContext(), native_loop_ir);
+        auto linker = Linker(*_composite);
+        linker.linkInModule(std::move(functionModule), Linker::Flags::None);
+        linker.linkInModule(std::move(M), Linker::Flags::None);
         _composite->setTargetTriple(sys::getProcessTriple());
     }
 
@@ -204,7 +208,6 @@ namespace pacxx
         std::unique_ptr<Module> Result = parseIR(buffer, Err, Context);
         if (!Result)
             Err.print("createModule", errs());
-        Result->materializeMetadata();
         return Result;
     }
 
@@ -221,10 +224,9 @@ namespace pacxx
             _PM.add(createPACXXIdRemover());
             _PM.add(createLoopSimplifyPass());
             _PM.add(createLCSSAPass());
-            _PM.add(createPACXXNativeBarrierPass());
-            //_PM.add(createSPMDVectorizer());
-            //_PM.add(createPACXXNativeLinker());
-            _PM.add(createVerifierPass());
+            _PM.add(createSPMDVectorizer());
+            _PM.add(createPACXXNativeLinker());
+            //_PM.add(createVerifierPass());
             // add O3 optimizations
             PassManagerBuilder builder;
             builder.OptLevel = 3;

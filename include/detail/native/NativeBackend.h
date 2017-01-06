@@ -6,6 +6,7 @@
 #define PACXX_V2_NATIVEBACKEND_H
 
 #include <llvm/Linker/Linker.h>
+#include <llvm/IR/LLVMContext.h>
 #include <llvm/IR/LegacyPassManager.h>
 #include <llvm/Support/TargetRegistry.h>
 #include <llvm/ExecutionEngine/ExecutionEngine.h>
@@ -22,7 +23,7 @@ namespace pacxx
 
       llvm::legacy::PassManager& getPassManager();
 
-      llvm::Module* compile(llvm::Module& M);
+      llvm::Module* compile(std::unique_ptr<llvm::Module> &M);
 
       void* getKernelFptr(llvm::Module* module, const std::string name);
 
@@ -30,14 +31,13 @@ namespace pacxx
 
     private:
       llvm::SmallVector<std::string, 10> getTargetFeatures();
-      void linkInModule(llvm::Module& M);
+      void linkInModule(std::unique_ptr<llvm::Module>& M);
       void applyPasses(llvm::Module& M);
 
     private:
       llvm::legacy::PassManager _PM;
       llvm::TargetMachine* _machine;
       std::unique_ptr<llvm::Module> _composite;
-      llvm::Linker _linker;
       llvm::ExecutionEngine *_JITEngine;
       bool _pmInitialized;
 
