@@ -9,6 +9,7 @@
 #include <llvm/IR/LegacyPassManager.h>
 #include <llvm/IR/Module.h>
 #include <llvm/Support/TargetRegistry.h>
+#include <llvm/ADT/Statistic.h>
 #include <llvm/Target/TargetLowering.h>
 
 #include <detail/common/Exceptions.h>
@@ -55,7 +56,7 @@ namespace pacxx {
       }
 
       _ptxString.clear();
-
+      EnableStatistics();
       if (!_pmInitialized) {
         TargetLibraryInfoImpl TLII(Triple(M.getTargetTriple()));
         _PM.add(new TargetLibraryInfoWrapperPass(TLII));
