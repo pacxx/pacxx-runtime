@@ -219,12 +219,13 @@ namespace pacxx
             TargetLibraryInfoImpl TLII(Triple(M.getTargetTriple()));
             _PM.add(new TargetLibraryInfoWrapperPass(TLII));
             _PM.add(createTargetTransformInfoWrapperPass(_machine->getTargetIRAnalysis()));
-            _PM.add(createPACXXAddrSpaceTransform());
-            _PM.add(createPACXXIdRemover());
+            _PM.add(createPACXXAddrSpaceTransformPass());
+            _PM.add(createPACXXIdRemoverPass());
             _PM.add(createLoopSimplifyPass());
             _PM.add(createLCSSAPass());
-            _PM.add(createSPMDVectorizer());
-            _PM.add(createPACXXNativeLinker());
+            _PM.add(createSPMDVectorizerPass());
+            _PM.add(createPACXXNativeBarrierPass());
+            _PM.add(createPACXXNativeLinkerPass());
             _PM.add(createVerifierPass());
             // add O3 optimizations
             PassManagerBuilder builder;
