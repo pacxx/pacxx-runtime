@@ -30,5 +30,6 @@ add_custom_command(TARGET pacxxrt2 POST_BUILD COMMAND cp ${CMAKE_SOURCE_DIR}/src
 file(GLOB PACXX_FILES ${CMAKE_BINARY_DIR}/*.a ${CMAKE_BINARY_DIR}/*.bc ${CMAKE_BINARY_DIR}/*.S)
 
 install (FILES ${PACXX_FILES} DESTINATION build_rt)
+install(DIRECTORY ${CMAKE_SOURCE_DIR}/include/ DESTINATION $ENV{PACXX_PATH}/include/pacxx)
 
 
