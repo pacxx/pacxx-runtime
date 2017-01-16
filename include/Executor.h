@@ -42,6 +42,12 @@ extern const char reflection_start[];
 extern int reflection_size;
 #endif
 
+#ifdef __PACXX_V2_NATIVE_RUNTIME
+  using Runtime = pacxx::v2::NativeRuntime;
+#else
+  using Runtime = pacxx::v2::CUDARuntime;
+#endif
+
 namespace pacxx {
   namespace v2 {
 
@@ -330,9 +336,8 @@ namespace pacxx {
       Create().setModule(std::move(M));
     }
 
-    using RuntimeT = CUDARuntime;
 
-    template<typename T = RuntimeT>
+    template<typename T = Runtime>
     auto& get_executor() { return Executor<T>::Create(); }
 
   }
