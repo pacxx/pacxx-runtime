@@ -152,8 +152,7 @@ namespace pacxx
         throw new common::generic_exception(error);
       }
 
-      // TODO remove
-      raw_fd_ostream OS("moduleBeforePass", EC, sys::fs::F_None);
+      raw_fd_ostream OS("moduleBeforePass.ll", EC, sys::fs::F_None);
       TheModule->print(OS, nullptr);
 
       TheModule->setTargetTriple(_JITEngine->getTargetMachine()->getTargetTriple().str());
@@ -161,8 +160,7 @@ namespace pacxx
 
       applyPasses(*TheModule);
 
-      //TODO remove
-      raw_fd_ostream OS1("moduleAfterPass", EC, sys::fs::F_None);
+      raw_fd_ostream OS1("moduleAfterPass.ll", EC, sys::fs::F_None);
       TheModule->print(OS1, nullptr);
 
       __verbose("applied pass");
