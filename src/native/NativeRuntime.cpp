@@ -39,6 +39,7 @@ namespace pacxx
             compileAndLink();
       }
       else {
+        _CPUMod = _M.get();
         __verbose("Module contains unresolved calls to __pacxx_reflect. Linking delayed!");
         _delayed_compilation = true;
       }
@@ -112,7 +113,7 @@ namespace pacxx
         _M->setDataLayout(_rawM->getDataLayoutStr());
         _msp_engine.transformModule(*_M, K);
 
-        _CPUMod = _compiler->compile(_M);
+        compileAndLink();
 
         void *fptr= nullptr;
         fptr = _compiler->getKernelFptr(_CPUMod, K.getName().c_str());

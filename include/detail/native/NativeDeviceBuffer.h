@@ -52,10 +52,10 @@ namespace pacxx {
             virtual void mercy() override;
 
         private:
-            bool _isHost;
             char* _buffer;
             size_t _size;
             unsigned _mercy;
+            bool _isHost;
     };
 
     template<typename T>

@@ -83,6 +83,7 @@ namespace pacxx {
 
           __verbose("Time measured in runtime (TBB) : ", time_tbb / runs, " us (", runs, " iterations)");
 
+
           /*
           start = std::chrono::high_resolution_clock::now();
 
@@ -92,7 +93,7 @@ namespace pacxx {
                   for(unsigned bidy = 0; bidy < _config.blocks.y; ++bidy)
                       for(unsigned bidx = 0; bidx < _config.blocks.x; ++bidx)
                           functor(bidx, bidy, bidz, _config.threads.x, _config.threads.y,
-                                  _config.threads.z, _args.data());
+                                  _config.threads.z, _config.sm_size, _args.data());
           }
 
           end = std::chrono::high_resolution_clock::now();
@@ -100,8 +101,10 @@ namespace pacxx {
           auto  time_omp = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
 
           __verbose("Time measured in runtime (OMP) : ", time_omp / runs, " us (", runs, " iterations)");
-           */
+          */
 
+          if(_callback)
+            _callback();
       }
 
       void NativeKernel::setStagedValue(int ref, long long value, bool inScope) {
