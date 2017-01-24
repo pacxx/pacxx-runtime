@@ -26,8 +26,6 @@ CUDA_RT_FLAG="-D__CUDA_RT"
 
 PACXX=$PACXX_PATH/bin
 
-$PACXX/clang --version
-
 function clean_up
 {
   if [ $KEEP -eq 0 ]; then 
@@ -156,12 +154,13 @@ fi
 cp $WORKING_DIR/pacxx.ll opt0.ll
 if [ $TECH -ne 0 ]; then 
 
-$PACXX/llvm-link $WORKING_DIR/nvvm_device_binding.bc  $WORKING_DIR/pacxx.ll -S -o $WORKING_DIR/kernel.ll
+$PACXX/llvm-link -suppress-warnings $WORKING_DIR/nvvm_device_binding.bc  $WORKING_DIR/pacxx.ll -S -o $WORKING_DIR/kernel.ll
 $PACXX/opt -scalarizer -mem2reg -targetlibinfo -tbaa -basicaa -loop-rotate -simplifycfg -basiccg -functionattrs -sroa -domtree -early-cse -lazy-value-info -correlated-propagation -reassociate -domtree -loops -lcssa -loop-rotate -slsr -licm -loop-unswitch -loop-idiom -loop-deletion -loop-unroll -instsimplify -domtree -loops -lcssa -memdep -gvn -break-crit-edges -constmerge -pacxx_reflection -pacxx_inline -pacxx_dce -scalarizer -mem2reg -instcombine -simplifycfg -instcombine -spir -pacxx_classify -nvvm -die $WORKING_DIR/kernel.ll -S -o kernel.ll
 
 $PACXX/llvm-link -suppress-warnings kernel.ll $NVVM_PATH/libdevice.compute_35.10.bc -S -o kernel.ll
 
-$PACXX/opt -nvvm_reg -pacxx_inline -pacxx_dce kernel.ll -S -o kernel.ll
+#$PACXX/opt -nvvm_reg -pacxx_inline -pacxx_dce -nvptx-infer-addrspace -sroa -mem2reg -dse -instcombine -O3 kernel.ll -S -o kernel.ll
+$PACXX/opt -nvvm_reg -pacxx_inline -pacxx_dce -simplifycfg -nvptx-infer-addrspace -sroa -mem2reg -dse -instcombine -simplifycfg -sroa -mem2reg -instcombine -nvptx-infer-addrspace -stats kernel.ll -S -o kernel.ll
 
 fi
 
@@ -250,7 +249,7 @@ if [ $? -ne 0 ]; then
     exit 3
 fi
 
-$PACXX/opt -inline -instcombine -pacxx_reflection_cleaner -simplifycfg -dce -instcombine -pacxx_dce $WORKING_DIR/spir.bc -S -o reflect.ll
+$PACXX/opt -inline -instcombine -pacxx_reflection_cleaner -O3 $WORKING_DIR/spir.bc -S -o reflect.ll
 if [ $? -ne 0 ]; then
 	 echo "Failed to generate Reflection IR!"
     exit 3

@@ -82,7 +82,7 @@ namespace pacxx {
     private:
       Executor(unsigned devID)
           : _ctx(),  _runtime(std::make_unique<RuntimeT>(devID)), _mem_manager(*_runtime) {
-        core::CoreInitializer::initialize();
+            core::CoreInitializer::initialize();
       }
 
       std::string cleanName(const std::string& name) {
