@@ -10,6 +10,16 @@
 #include <detail/common/LLVMHelper.h>
 #include <detail/common/Timing.h>
 
+#include <llvm/Transforms/PACXXTransforms.h>
+#include <llvm/Transforms/Scalar.h>
+#include <llvm/Transforms/Vectorize.h>
+
+namespace llvm{
+    FunctionPass *createNVPTXInferAddressSpacesPass();
+}
+
+using namespace llvm;
+
 namespace pacxx {
   namespace v2 {
     CUDARuntime::CUDARuntime(unsigned dev_id) : _context(nullptr), _compiler(std::make_unique<CompilerT>()),
@@ -43,6 +53,28 @@ namespace pacxx {
     void CUDARuntime::link(std::unique_ptr<llvm::Module> M) {
 
       _rawM = std::move(M);
+        llvm::legacy::PassManager PM;
+
+        PM.add(createPACXXSpirPass());
+        PM.add(createPACXXClassifyPass());
+        PM.add(createPACXXNvvmPass());
+
+        PM.add(createPACXXNvvmRegPass(false));
+        PM.add(createPACXXInlinerPass());
+        PM.add(createPACXXDeadCodeElimPass());
+        PM.add(createCFGSimplificationPass());
+        PM.add(createNVPTXInferAddressSpacesPass());
+        PM.add(createSROAPass());
+        PM.add(createPromoteMemoryToRegisterPass());
+        PM.add(createDeadStoreEliminationPass());
+        PM.add(createInstructionCombiningPass());
+        PM.add(createCFGSimplificationPass());
+        PM.add(createSROAPass());
+        PM.add(createPromoteMemoryToRegisterPass());
+        PM.add(createInstructionCombiningPass());
+        PM.add(createNVPTXInferAddressSpacesPass());
+
+        PM.run(*_rawM);
 
       _M = CloneModule(_rawM.get());
       _M->setDataLayout(_rawM->getDataLayoutStr());

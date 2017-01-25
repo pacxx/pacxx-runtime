@@ -17,7 +17,12 @@
 #include <llvm/Transforms/Scalar.h>
 #include <llvm/Transforms/Vectorize.h>
 #include <llvm/Analysis/TargetLibraryInfo.h>
+
 #include <detail/common/Timing.h>
+
+namespace llvm{
+    FunctionPass *createNVPTXInferAddressSpacesPass();
+}
 
 using namespace llvm;
 
@@ -59,7 +64,6 @@ namespace pacxx {
       if (!_pmInitialized) {
         TargetLibraryInfoImpl TLII(Triple(M.getTargetTriple()));
         _PM.add(new TargetLibraryInfoWrapperPass(TLII));
-
         _PM.add(createReassociatePass());
 
         _PM.add(createConstantPropagationPass());

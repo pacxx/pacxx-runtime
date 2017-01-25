@@ -7,6 +7,10 @@ find_package(CUDA REQUIRED)
 include_directories(${LLVM_INCLUDE_DIRS})
 include_directories(${CUDA_TOOLKIT_INCLUDE})
 
+set(NVPTX_DIR "" CACHE PATH "Path to the NVPTX backend")
+
+include_directories(${NVPTX_DIR})
+
 add_compile_options(-std=c++14)
 
 add_definitions(${LLVM_DEFINITIONS})
