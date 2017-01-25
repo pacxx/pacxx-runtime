@@ -155,18 +155,19 @@ cp $WORKING_DIR/pacxx.ll opt0.ll
 if [ $TECH -ne 0 ]; then 
 
 $PACXX/llvm-link -suppress-warnings $WORKING_DIR/nvvm_device_binding.bc  $WORKING_DIR/pacxx.ll -S -o $WORKING_DIR/kernel.ll
-$PACXX/opt -scalarizer -mem2reg -targetlibinfo -tbaa -basicaa -loop-rotate -simplifycfg -basiccg -functionattrs -sroa -domtree -early-cse -lazy-value-info -correlated-propagation -reassociate -domtree -loops -lcssa -loop-rotate -slsr -licm -loop-unswitch -loop-idiom -loop-deletion -loop-unroll -instsimplify -domtree -loops -lcssa -memdep -gvn -break-crit-edges -constmerge -pacxx_reflection -pacxx_inline -pacxx_dce -scalarizer -mem2reg -instcombine -simplifycfg -instcombine -spir -pacxx_classify -nvvm -die $WORKING_DIR/kernel.ll -S -o kernel.ll
+$PACXX/opt -scalarizer -mem2reg -targetlibinfo -tbaa -basicaa -loop-rotate -simplifycfg -basiccg -functionattrs -sroa -domtree -early-cse -lazy-value-info -correlated-propagation -reassociate -domtree -loops -lcssa -loop-rotate -slsr -licm -loop-unswitch -loop-idiom -loop-deletion -loop-unroll -instsimplify -domtree -loops -lcssa -memdep -gvn -break-crit-edges -constmerge -pacxx_reflection -pacxx_inline -pacxx_dce -scalarizer -mem2reg -instcombine -simplifycfg -instcombine -pacxx_inline -pacxx_dce  $WORKING_DIR/kernel.ll -S -o kernel.ll
 
-$PACXX/llvm-link -suppress-warnings kernel.ll $NVVM_PATH/libdevice.compute_35.10.bc -S -o kernel.ll
+$PACXX/opt -pacxx_reflection_cleaner -inline -instcombine kernel.ll -S -o reflect.ll
+
+#$PACXX/llvm-link -suppress-warnings kernel.ll $NVVM_PATH/libdevice.compute_35.10.bc -S -o kernel.ll
 
 #$PACXX/opt -nvvm_reg -pacxx_inline -pacxx_dce -nvptx-infer-addrspace -sroa -mem2reg -dse -instcombine -O3 kernel.ll -S -o kernel.ll
-$PACXX/opt -nvvm_reg -pacxx_inline -pacxx_dce -simplifycfg -nvptx-infer-addrspace -sroa -mem2reg -dse -instcombine -simplifycfg -sroa -mem2reg -instcombine -nvptx-infer-addrspace -stats kernel.ll -S -o kernel.ll
+#$PACXX/opt -pacxx_inline -pacxx_dce -simplifycfg -sroa -mem2reg -dse -instcombine -simplifycfg -sroa -mem2reg -instcombine  kernel.ll -S -o kernel.ll
 
 fi
 
 
 $PACXX/opt $WORKING_DIR/pacxx.ll -o $WORKING_DIR/pacxx.bc \
-        -pacxx_dce \
         -targetlibinfo \
         -tbaa \
         -basicaa \
@@ -242,44 +243,20 @@ $PACXX/opt -mem2reg -pacxx_reflection $WORKING_DIR/pacxx.bc -o $WORKING_DIR/pacx
 
 $PACXX/llvm-dis $WORKING_DIR/pacxx.bc -o opt2.ll
 
-$PACXX/opt -pacxx_inline -spir -pacxx_dce $WORKING_DIR/pacxx.bc -o $WORKING_DIR/spir.bc  
+#$PACXX/opt -pacxx_inline -pacxx_dce $WORKING_DIR/pacxx.bc -o $WORKING_DIR/spir.bc  
 
 if [ $? -ne 0 ]; then
 	 echo "Failed to generate SPIR!"
     exit 3
 fi
 
-$PACXX/opt -inline -instcombine -pacxx_reflection_cleaner -O3 $WORKING_DIR/spir.bc -S -o reflect.ll
+#$PACXX/opt -inline -instcombine -pacxx_reflection_cleaner  $WORKING_DIR/pacxx.bc -S -o reflect.ll
 if [ $? -ne 0 ]; then
 	 echo "Failed to generate Reflection IR!"
     exit 3
 fi
 
 
-
-if [ $TECH -ne 1 ]; then
-
-$PACXX/opt -pacxx_classify $WORKING_DIR/spir.bc -o $WORKING_DIR/spir.bc
-
-fi
-
-if [ $? -ne 0 ]; then
-	 echo "Failed to generate SPIR!"
-    exit 3
-fi
-
-
-$PACXX/llvm-dis $WORKING_DIR/spir.bc -o spir.ll
-
-if [ $TECH -ne 0 ]; then
-	$PACXX/llvm-link -suppress-warnings $WORKING_DIR/spir.bc $WORKING_DIR/nvvm_device_binding.bc -o $WORKING_DIR/cira.bc
-        $PACXX/opt -inline $WORKING_DIR/cira.bc -o $WORKING_DIR/cira.bc
-	$PACXX/opt -nvvm $WORKING_DIR/cira.bc -o $WORKING_DIR/nvvm.bc  
-	#if [ $? -ne 0 ]; then
-	#	exit 4
-	#fi
-	#$PACXX/llvm-dis $WORKING_DIR/nvvm.bc -o nvvm.ll
-fi
 
 if [ $? -ne 0 ]; then
    echo "Device Code generation failed"
@@ -334,38 +311,12 @@ done
 
 cp $PACXXRT_PATH/*.S $WORKING_DIR
 
-if [ $TECH -ne 0 ]; then
-$PACXX/llvm-link -suppress-warnings $WORKING_DIR/nvvm.bc $NVVM_PATH/libdevice.compute_35.10.bc -o $WORKING_DIR/nvvm.bc
-#$PACXX/opt -inline -constprop -simplifycfg -instcombine $WORKING_DIR/nvvm.bc -o $WORKING_DIR/nvvm.bc
-$PACXX/opt -inline $WORKING_DIR/nvvm.bc -o $WORKING_DIR/nvvm.bc
-$PACXX/opt -nvvm $WORKING_DIR/nvvm.bc -o $WORKING_DIR/nvvm.bc
-
-#$PACXX/opt -inline -instcombine -constprop -simplifycfg -instcombine $WORKING_DIR/nvvm.bc -o $WORKING_DIR/nvvm.bc
-$PACXX/opt -nvvm $WORKING_DIR/nvvm.bc -o $WORKING_DIR/nvvm.bc
-
-$PACXX/opt -instcombine -pacxx_classify $WORKING_DIR/nvvm.bc -o $WORKING_DIR/nvvm.bc
-
-$PACXX/opt -nvvm_reg -pacxx_static -mem2reg -simplifycfg -pacxx_dce  $WORKING_DIR/nvvm.bc -o $WORKING_DIR/nvvm.bc
-$PACXX/opt -pacxx_verifier $WORKING_DIR/nvvm.bc -o $WORKING_DIR/nvvm.bc
-
-$PACXX/llvm-link -suppress-warnings $PACXXRT_PATH/syscalls.bc $WORKING_DIR/nvvm.bc -o $WORKING_DIR/nvvm.bc
-
-
 if [ $? -ne 0 ]; then
    echo "Module verification failed"
    #clean_up
    exit 6
 fi
-#$PACXX/opt -O3 $WORKING_DIR/nvvm.bc -o $WORKING_DIR/nvvm.bc
-$PACXX/llvm-dis $WORKING_DIR/nvvm.bc -o nvvm.ll
-#mv nvvm.bac nvvm.ll
-#$PACXX/clang++ -DFILE='"'$WORKING_DIR'/nvvm.bc"' $WORKING_DIR/embed_llvm.S -c -o $WORKING_DIR/ir.o
 $PACXX/clang++ -DFILE='"kernel.ll"' $WORKING_DIR/embed_llvm.S -c -o $WORKING_DIR/ir.o
-else
-
-#$PACXX/clang++ -DFILE='"'$WORKING_DIR'/spir.bc"' $WORKING_DIR/embed_llvm.S -c -o $WORKING_DIR/ir.o
-$PACXX/clang++ -DFILE='"spir.ll"' $WORKING_DIR/embed_llvm.S -c -o $WORKING_DIR/ir.o
-fi
 
 $PACXX/clang++ -DFILE='"reflect.ll"' $WORKING_DIR/embed_reflection.S -c -o $WORKING_DIR/reflect.o
 
