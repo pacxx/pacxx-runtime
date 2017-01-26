@@ -9,7 +9,6 @@
 #include <llvm/IR/LegacyPassManager.h>
 #include <llvm/IR/Module.h>
 #include <llvm/Support/TargetRegistry.h>
-#include <llvm/ADT/Statistic.h>
 #include <llvm/Target/TargetLowering.h>
 
 #include <detail/common/Exceptions.h>
@@ -18,7 +17,12 @@
 #include <llvm/Transforms/Scalar.h>
 #include <llvm/Transforms/Vectorize.h>
 #include <llvm/Analysis/TargetLibraryInfo.h>
+
 #include <detail/common/Timing.h>
+
+namespace llvm{
+    FunctionPass *createNVPTXInferAddressSpacesPass();
+}
 
 using namespace llvm;
 
@@ -29,13 +33,14 @@ namespace pacxx {
 
     void PTXBackend::initialize(unsigned CC) {
       _cpu = "sm_" + std::to_string(CC);
+      __verbose("Intializing LLVM components for PTX generation!"); 
       PassRegistry* Registry = PassRegistry::getPassRegistry();
       initializeCore(*Registry);
       initializeCodeGen(*Registry);
       initializeLoopStrengthReducePass(*Registry);
       initializeLowerIntrinsicsPass(*Registry);
       initializeUnreachableMachineBlockElimPass(*Registry);
-
+      
       _options.LessPreciseFPMADOption = false;
       _options.UnsafeFPMath = false;
       _options.NoInfsFPMath = false;
@@ -56,11 +61,9 @@ namespace pacxx {
       }
 
       _ptxString.clear();
-      EnableStatistics();
       if (!_pmInitialized) {
         TargetLibraryInfoImpl TLII(Triple(M.getTargetTriple()));
         _PM.add(new TargetLibraryInfoWrapperPass(TLII));
-
         _PM.add(createReassociatePass());
 
         _PM.add(createConstantPropagationPass());

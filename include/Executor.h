@@ -90,7 +90,7 @@ namespace pacxx {
     private:
       Executor(unsigned devID)
           : _ctx(),  _runtime(std::make_unique<RuntimeT>(devID)), _mem_manager(*_runtime) {
-        core::CoreInitializer::initialize();
+            core::CoreInitializer::initialize();
       }
 
       std::string cleanName(const std::string& name) {
@@ -138,31 +138,27 @@ namespace pacxx {
       template<typename... Args>
       auto& get_kernel_by_name(std::string name, KernelConfiguration config, Args&& ... args) {
 
-        const llvm::Function* F = nullptr;
+        std::string FName;
         const llvm::Module& M = _runtime->getModule();
         auto it = _kernel_translation.find(name);
         if (it == _kernel_translation.end()) {
           auto clean_name = cleanName(name);
           for (auto& p : _kernel_translation)
             if (p.first.find(clean_name) != std::string::npos) {
-              F = p.second;
-              _kernel_translation[name] = F;
+              FName = p.second;
+              //_kernel_translation[name] = F.getName().str();
             }
         }
         else
-          F = it->second;
+          FName = it->second;
 
+        auto F = M.getFunction(FName); 
         if (!F) {
-          __error(cleanName(name));
-          for (auto& Func : M.getFunctionList()) {
-            auto fname = cleanName(Func.getName().str());
-            __warning(fname);
-
-          }
           throw common::generic_exception("Kernel function not found in module! " + cleanName(name));
         }
-        auto& K = _runtime->getKernel(F->getName().str());
-        K.setName(F->getName().str());
+
+        auto& K = _runtime->getKernel(FName);
+        K.setName(FName);
         K.configurate(config);
 
         size_t buffer_size = 0;
@@ -308,7 +304,7 @@ namespace pacxx {
       LLVMContext _ctx;
       std::unique_ptr<RuntimeT> _runtime;
       MemoryManager _mem_manager;
-      std::map<std::string, const llvm::Function*> _kernel_translation;
+      std::map<std::string, std::string> _kernel_translation;
     };
 
     template<typename T>
@@ -316,17 +312,12 @@ namespace pacxx {
 
     template<typename T>
     void Executor<T>::setModule(std::unique_ptr<llvm::Module> M) {
-      for (auto& F : M->getFunctionList())
-        _kernel_translation[cleanName(F.getName().str())] = &F;
 
       _runtime->link(std::move(M));
 
-//    for (auto& p : _kernel_translation) {
-//        auto& K = _runtime->getKernel(p.second->getName().str());
-//        K.setName(p.second->getName().str());
-//        _runtime->evaluateStagedFunctions(K);
-//      }
-
+      auto& nM = _runtime->getModule();
+      for (auto& F : nM.getFunctionList())
+        _kernel_translation[cleanName(F.getName().str())] = F.getName().str();
     }
 
     template<typename T>
