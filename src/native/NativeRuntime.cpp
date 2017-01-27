@@ -29,7 +29,23 @@ namespace pacxx
 
       __verbose("linking");
 
+      llvm::legacy::PassManager PM;
+
       _rawM = std::move(M);
+
+      PM.add(createPACXXInlinerPass());
+      PM.add(createPACXXDeadCodeElimPass());
+      PM.add(createCFGSimplificationPass());
+      PM.add(createSROAPass());
+      PM.add(createPromoteMemoryToRegisterPass());
+      PM.add(createDeadStoreEliminationPass());
+      PM.add(createInstructionCombiningPass());
+      PM.add(createCFGSimplificationPass());
+      PM.add(createSROAPass());
+      PM.add(createPromoteMemoryToRegisterPass());
+      PM.add(createInstructionCombiningPass());
+      PM.run(*_rawM);
+
 
       _M = CloneModule(_rawM.get());
       _M->setDataLayout(_rawM->getDataLayoutStr());
@@ -120,7 +136,7 @@ namespace pacxx
         static_cast<NativeKernel &>(K).overrideFptr(fptr);
     }
 
-    const llvm::Module& NativeRuntime::getModule() { return *_CPUMod; }
+    const llvm::Module& NativeRuntime::getModule() { return *_rawM; }
 
     void NativeRuntime::synchronize() {};
 
