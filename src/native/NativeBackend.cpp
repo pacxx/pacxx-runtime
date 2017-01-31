@@ -221,6 +221,8 @@ namespace pacxx
             _PM.add(createTargetTransformInfoWrapperPass(_machine->getTargetIRAnalysis()));
             _PM.add(createPACXXAddrSpaceTransformPass());
             _PM.add(createPACXXIdRemoverPass());
+            _PM.add(createAggressiveDCEPass());
+            _PM.add(createCFGSimplificationPass());
             _PM.add(createLoopSimplifyPass());
             _PM.add(createLCSSAPass());
             _PM.add(createSPMDVectorizerPass());
