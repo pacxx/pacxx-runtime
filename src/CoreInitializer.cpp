@@ -2,12 +2,12 @@
 // Created by mhaidl on 29/05/16.
 //
 
-#include <llvm/Support/TargetSelect.h>
 #include <llvm/CodeGen/LinkAllAsmWriterComponents.h>
 #include <llvm/CodeGen/LinkAllCodegenComponents.h>
+#include <llvm/Support/TargetSelect.h>
 
-#include "detail/common/Log.h"
-#include "detail/CoreInitializer.h"
+#include "pacxx/detail/CoreInitializer.h"
+#include "pacxx/detail/common/Log.h"
 
 using namespace llvm;
 
@@ -23,7 +23,7 @@ CoreInitializer::CoreInitializer() : _initialized(false) {}
 
 void CoreInitializer::initializeCore() {
   if (!_initialized) {
-    auto& log = common::Log::get();
+    auto &log = common::Log::get();
     InitializeAllTargets();
     InitializeAllTargetMCs();
     InitializeAllAsmPrinters();
@@ -32,8 +32,6 @@ void CoreInitializer::initializeCore() {
     __verbose("Core components initialized!");
   }
 }
-  CoreInitializer::~CoreInitializer() {
-  }
-
+CoreInitializer::~CoreInitializer() {}
 }
 }

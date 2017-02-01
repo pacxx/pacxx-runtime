@@ -4,8 +4,8 @@
 
 
 //#include <type_traits>
-#include "detail/device/DeviceCode.h"
-#include "detail/device/DeviceFunctionDecls.h"
+#include "pacxx/detail/device/DeviceCode.h"
+#include "pacxx/detail/device/DeviceFunctionDecls.h"
 
 #ifdef __CUDA_DEVICE_CODE
 #ifdef __device_code__
