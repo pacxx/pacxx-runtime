@@ -36,68 +36,65 @@ define void @foo(i32 %__maxx, i32 %__maxy, i32 %__maxz) #0 {
     store i32 0, i32* %__z, align 4
     br label %4
 
-    ; <label>:4                                       ; preds = %33, %0
+    ; <label>:4                                       ; preds = %27, %0
     %5 = load i32, i32* %__z, align 4
     %6 = load i32, i32* %3, align 4
     %7 = icmp ult i32 %5, %6
-    br i1 %7, label %8, label %36
+    br i1 %7, label %8, label %30
 
     ; <label>:8                                       ; preds = %4
-    store i32 0, i32* %__y, align 4 br label %9 ; <label>:9                                       ; preds = %29, %8
+    store i32 0, i32* %__y, align 4
+    br label %9
+
+    ; <label>:9                                       ; preds = %23, %8
     %10 = load i32, i32* %__y, align 4
     %11 = load i32, i32* %2, align 4
     %12 = icmp ult i32 %10, %11
-    br i1 %12, label %13, label %32
+    br i1 %12, label %13, label %26
 
     ; <label>:13                                      ; preds = %9
     store i32 0, i32* %__x, align 4
     br label %14
 
-    ; <label>:14                                      ; preds = %25, %13
+    ; <label>:14                                      ; preds = %19, %13
     %15 = load i32, i32* %__x, align 4
     %16 = load i32, i32* %1, align 4
     %17 = icmp ult i32 %15, %16
-    br i1 %17, label %18, label %28
+    br i1 %17, label %18, label %22
 
     ; <label>:18                                      ; preds = %14
-    %19 = load i32, i32* %__x, align 4
-    %20 = zext i32 %19 to i64
-    %21 = load i32, i32* %__y, align 4
-    %22 = zext i32 %21 to i64
-    %23 = load i32, i32* %__z, align 4
-    %24 = zext i32 %23 to i64
-    call void @__dummy_kernel(i64 %20, i64 %22, i64 %24)
-    br label %25
+    call void @__dummy_kernel()
+    br label %19
 
-    ; <label>:25                                      ; preds = %18
-    %26 = load i32, i32* %__x, align 4
-    %27 = add i32 %26, 1
-    store i32 %27, i32* %__x, align 4
+    ; <label>:19                                      ; preds = %18
+    %20 = load i32, i32* %__x, align 4
+    %21 = add i32 %20, 1
+    store i32 %21, i32* %__x, align 4
     br label %14, !llvm.loop !1
 
-    ; <label>:28                                      ; preds = %14
-    br label %29
+    ; <label>:22                                      ; preds = %14
+    br label %23
 
-    ; <label>:29                                      ; preds = %28
-    %30 = load i32, i32* %__y, align 4
-    %31 = add i32 %30, 1
-    store i32 %31, i32* %__y, align 4
+    ; <label>:23                                      ; preds = %22
+    %24 = load i32, i32* %__y, align 4
+    %25 = add i32 %24, 1
+    store i32 %25, i32* %__y, align 4
     br label %9
 
-    ; <label>:32                                      ; preds = %9
-    br label %33
+    ; <label>:26                                      ; preds = %9
+    br label %27
 
-    ; <label>:33                                      ; preds = %32
-    %34 = load i32, i32* %__z, align 4
-    %35 = add i32 %34, 1
-    store i32 %35, i32* %__z, align 4
+    ; <label>:27                                      ; preds = %26
+    %28 = load i32, i32* %__z, align 4
+    %29 = add i32 %28, 1
+    store i32 %29, i32* %__z, align 4
     br label %4
 
-    ; <label>:36                                      ; preds = %4
+    ; <label>:30                                      ; preds = %4
     ret void
 }
 
-declare void @__dummy_kernel(i64, i64, i64) #1
+declare void @__dummy_kernel() #1
 
 attributes #0 = { uwtable "disable-tail-calls"="false" "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-ma  th"="false" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+fxsr,+mmx,+sse,+sse2" "unsafe-fp-math"="false" "use-soft-float"="false" }
 attributes #1 = { "disable-tail-calls"="false" "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="fal  se" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+fxsr,+mmx,+sse,+sse2, +avx" "unsafe-fp-math"="false" "use-soft-float"="false" }
@@ -128,10 +125,11 @@ Module *NativeBackend::compile(std::unique_ptr<Module> &M) {
   linkInModule(M);
 
   Module *TheModule = _composite.get();
-
   EngineBuilder builder{std::move(_composite)};
 
   builder.setErrorStr(&error);
+
+  builder.setUseOrcMCJITReplacement(true);
 
   builder.setEngineKind(EngineKind::JIT);
 
@@ -210,33 +208,33 @@ std::unique_ptr<Module> NativeBackend::createModule(LLVMContext &Context,
   return Result;
 }
 
-void NativeBackend::applyPasses(Module &M) {
+void NativeBackend::applyPasses(Module& M) {
 
-  if (!_machine)
-    throw common::generic_exception("Can not get target machine");
-  if (!_pmInitialized) {
+        if(!_machine)
+            throw common::generic_exception("Can not get target machine");
+        if(!_pmInitialized) {
 
-    TargetLibraryInfoImpl TLII(Triple(M.getTargetTriple()));
-    _PM.add(new TargetLibraryInfoWrapperPass(TLII));
-    _PM.add(
-        createTargetTransformInfoWrapperPass(_machine->getTargetIRAnalysis()));
-    _PM.add(createPACXXAddrSpaceTransformPass());
-    _PM.add(createPACXXIdRemoverPass());
-    _PM.add(createLoopSimplifyPass());
-    _PM.add(createLCSSAPass());
-    _PM.add(createSPMDVectorizerPass());
-    _PM.add(createPACXXNativeBarrierPass());
-    _PM.add(createPACXXNativeLinkerPass());
-    _PM.add(createVerifierPass());
-    // add O3 optimizations
-    PassManagerBuilder builder;
-    builder.OptLevel = 3;
-    builder.populateModulePassManager(_PM);
-    _pmInitialized = true;
-  }
+            PassManagerBuilder builder;
+            builder.OptLevel = 3;
 
-  _PM.run(M);
-}
+            TargetLibraryInfoImpl TLII(Triple(M.getTargetTriple()));
+            _PM.add(new TargetLibraryInfoWrapperPass(TLII));
+            _PM.add(createTargetTransformInfoWrapperPass(_machine->getTargetIRAnalysis()));
+            _PM.add(createPACXXAddrSpaceTransformPass());
+            _PM.add(createPACXXIdRemoverPass());
+            _PM.add(createCFGSimplificationPass());
+            _PM.add(createLoopSimplifyPass());
+            _PM.add(createLCSSAPass());
+            _PM.add(createSPMDVectorizerPass());
+            _PM.add(createPACXXNativeBarrierPass());
+            _PM.add(createPACXXNativeLinkerPass());
+            _PM.add(createVerifierPass());
+            builder.populateModulePassManager(_PM);
+            _pmInitialized = true;
+        }
+
+        _PM.run(M);
+    }
 
 legacy::PassManager &NativeBackend::getPassManager() { return _PM; }
 }

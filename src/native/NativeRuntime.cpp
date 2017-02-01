@@ -25,11 +25,27 @@ NativeRuntime::~NativeRuntime() {}
 void NativeRuntime::link(std::unique_ptr<llvm::Module> M) {
 
   __verbose("linking");
+      llvm::legacy::PassManager PM;
 
-  _rawM = std::move(M);
+      _rawM = std::move(M);
 
-  _M = CloneModule(_rawM.get());
-  _M->setDataLayout(_rawM->getDataLayoutStr());
+      PM.add(createPACXXInlinerPass());
+      PM.add(createPACXXDeadCodeElimPass());
+      PM.add(createCFGSimplificationPass());
+      PM.add(createSROAPass());
+      PM.add(createPromoteMemoryToRegisterPass());
+      PM.add(createDeadStoreEliminationPass());
+      PM.add(createInstructionCombiningPass());
+      PM.add(createCFGSimplificationPass());
+      PM.add(createSROAPass());
+      PM.add(createPromoteMemoryToRegisterPass());
+      PM.add(createInstructionCombiningPass());
+      PM.run(*_rawM);
+
+
+      _M = CloneModule(_rawM.get());
+      _M->setDataLayout(_rawM->getDataLayoutStr());
+
 
   auto reflect = _M->getFunction("__pacxx_reflect");
   if (!reflect || reflect->getNumUses() == 0) {
@@ -121,7 +137,7 @@ void NativeRuntime::requestIRTransformation(Kernel &K) {
   static_cast<NativeKernel &>(K).overrideFptr(fptr);
 }
 
-const llvm::Module &NativeRuntime::getModule() { return *_CPUMod; }
+const llvm::Module& NativeRuntime::getModule() { return *_rawM; }
 
 void NativeRuntime::synchronize(){};
 

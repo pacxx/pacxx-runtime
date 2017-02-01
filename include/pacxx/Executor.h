@@ -7,9 +7,9 @@
 
 #include <cuda.h>
 
-#include "pacxx/CodePolicy.h"
-#include "pacxx/ModuleLoader.h"
-#include "pacxx/Promise.h"
+#include "CodePolicy.h"
+#include "ModuleLoader.h"
+#include "Promise.h"
 #include "pacxx/detail/CoreInitializer.h"
 #include "pacxx/detail/DeviceBuffer.h"
 #include "pacxx/detail/IRRuntime.h"
@@ -171,6 +171,7 @@ public:
     K.configurate(config);
 
     size_t buffer_size = 0;
+    __verbose("Executor arg size ", F->arg_size());
     std::vector<size_t> arg_offsets(F->arg_size());
 
     int offset = 0;
