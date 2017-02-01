@@ -60,7 +60,7 @@ namespace pacxx {
         PM.add(createPACXXNvvmPass());
 
         PM.add(createPACXXNvvmRegPass(false));
-        PM.add(createPACXXInlinerPass());
+        PM.add(createPACXXInlinerPass());git
         PM.add(createPACXXDeadCodeElimPass());
         PM.add(createCFGSimplificationPass());
         PM.add(createNVPTXInferAddressSpacesPass());
@@ -79,7 +79,6 @@ namespace pacxx {
       _M = CloneModule(_rawM.get());
       _M->setDataLayout(_rawM->getDataLayoutStr());
 
-      auto reflect = _M->getFunction("__pacxx_reflect");
       if (!reflect || reflect->getNumUses() == 0) {
         compileAndLink();
       }
