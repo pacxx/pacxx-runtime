@@ -7,6 +7,8 @@
 
 #include "KernelConfiguration.h"
 #include <vector>
+#include <map>
+#include <functional>
 
 namespace pacxx {
 namespace v2 {

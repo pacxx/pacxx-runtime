@@ -8,6 +8,7 @@
 #include "IRRuntime.h"
 #include "pacxx/detail/common/Log.h"
 #include "pacxx/detail/common/Meta.h"
+#include "pacxx/detail/common/Exceptions.h"
 #include <map>
 #include <memory>
 
