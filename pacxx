@@ -4,7 +4,7 @@ ARGS=( )
 HARGS=( )
 FILES=( )
 ignore=false
-PACXXRT_PATH=$HOME/pacxx_v2/build_rt
+PACXXRT_PATH=$PACXX_PATH/build_rt
 TECH=0
 CUDA_MODE=0
 FMA=0
@@ -19,7 +19,7 @@ PACXX_LD_FLAGS="-L$PACXX_PATH/lib -L$CUDA_PATH/lib64"
 PACXX_RT=""
 PACXX_RT_FLAG=""
 PACXX_DC_FILES=" "
-PACXX_RT_LIBS=" -lpacxxrt2 -lcuda -lcudart -lOpenCL"
+PACXX_RT_LIBS=" -lpacxxrt2  -lcuda -lcudart -lOpenCL -ltbb"
 PACXX_INCLUDES="-isystem $PACXX_PATH/include -isystem $CUDA_PATH/include "
 
 CUDA_RT_FLAG="-D__CUDA_RT"

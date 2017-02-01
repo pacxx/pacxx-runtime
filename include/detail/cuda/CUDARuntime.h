@@ -42,12 +42,14 @@ namespace pacxx {
       virtual size_t getPreferedMemoryAlignment() override;
 
       template<typename T>
-      DeviceBuffer<T>* allocateMemory(size_t count) {
+      DeviceBuffer<T>* allocateMemory(size_t count, T *host_ptr) {
         CUDARawDeviceBuffer raw;
         raw.allocate(count * sizeof(T));
         auto wrapped = new CUDADeviceBuffer<T>(std::move(raw));
         _memory.push_back(std::unique_ptr<DeviceBufferBase>(
             static_cast<DeviceBufferBase*>(wrapped)));
+        if(host_ptr)
+           wrapped->upload(host_ptr, count);
         return wrapped;
       }
 

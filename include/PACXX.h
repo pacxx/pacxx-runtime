@@ -57,7 +57,7 @@ public:
     sm_ptr = reinterpret_cast<decltype(sm_ptr)>(ptr);
   }
 
-  template <typename U = T,
+template <typename U = T,
             typename std::enable_if<!std::is_void<U>::value &&
                                     __sm_size != 0>::type * = nullptr>
   shared_memory() {
@@ -99,11 +99,11 @@ template <size_t _C, typename L, typename... ArgTys>
   callable(args...);
 }
 
-template <size_t _C, typename T>
-struct kernel_caller : public kernel_caller<_C, decltype(&T::operator())> {};
+template <typename RuntimeT, size_t _C, typename T>
+struct kernel_caller : public kernel_caller<RuntimeT, _C, decltype(&T::operator())> {};
 
-template <size_t _C, typename FType, typename RType, typename... ArgTys>
-struct kernel_caller<_C, RType (FType::*)(ArgTys...) const> {
+template <typename RuntimeT, size_t _C, typename FType, typename RType, typename... ArgTys>
+struct kernel_caller<RuntimeT, _C, RType (FType::*)(ArgTys...) const> {
   enum { arity = sizeof...(ArgTys) };
 
   template <size_t i> struct ArgTy {
@@ -131,7 +131,8 @@ struct kernel_caller<_C, RType (FType::*)(ArgTys...) const> {
   }
 };
 
-template <size_t _C> struct exp_kernel_caller {
+template <typename RuntimeT, size_t _C> struct 
+exp_kernel_caller {
   template <typename L, typename... Ts>
   static void call(const L &F, const KernelConfiguration &config,
                    Ts &&... args) {
@@ -174,7 +175,7 @@ template <size_t _C> struct exp_kernel_caller {
   }
 };
 
-template <typename L, size_t _C> class _kernel {
+template <typename L, typename RuntimeT, size_t _C> class _kernel {
 public:
   _kernel(const L &lambda, KernelConfiguration config)
       : _function(lambda), _config(config) {}
@@ -182,7 +183,7 @@ public:
   template <typename... Ts> void operator()(Ts &&... args) const {
     // using caller = kernel_caller<_C,
     // decltype(&std::remove_const_t<std::remove_reference_t<L>>::operator())>;
-    using caller = exp_kernel_caller<_C>;
+    using caller = exp_kernel_caller<RuntimeT, _C>;
 
     caller::call(_function, _config, std::forward<Ts>(args)...);
   }
@@ -194,7 +195,7 @@ private:
   KernelConfiguration _config;
 };
 
-template <typename L, typename CB, size_t _C> class _kernel_with_cb {
+template <typename L, typename CB, typename RuntimeT, size_t _C> class _kernel_with_cb {
 public:
   _kernel_with_cb(const L &lambda, KernelConfiguration config, CB &&callback)
       : _function(lambda), _config(config), _callback(std::move(callback)) {}
@@ -202,7 +203,7 @@ public:
   template <typename... Ts> void operator()(Ts &&... args) {
     // using caller = kernel_caller<_C,
     // decltype(&std::remove_const_t<std::remove_reference_t<L>>::operator())>;
-    using caller = exp_kernel_caller<_C>;
+    using caller = exp_kernel_caller<RuntimeT, _C>;
 
     caller::call_with_cb(_function, _config, _callback,
                          std::forward<Ts>(args)...);
@@ -216,15 +217,15 @@ private:
   CB _callback;
 };
 
-template <typename Func, size_t versioning = __COUNTER__>
+template <typename RuntimeT = Runtime, typename Func, size_t versioning = __COUNTER__>
 auto kernel(const Func &lambda, KernelConfiguration config) {
-  return _kernel<decltype(lambda), versioning>(lambda, config);
+  return _kernel<decltype(lambda), RuntimeT, versioning>(lambda, config);
 };
 
-template <typename Func, typename CallbackFunc, size_t versioning = __COUNTER__>
+template <typename Func, typename CallbackFunc, typename RuntimeT = Runtime , size_t versioning = __COUNTER__>
 auto kernel_with_cb(const Func &lambda, KernelConfiguration config,
                     CallbackFunc &&CB) {
-  return _kernel_with_cb<decltype(lambda), CallbackFunc, versioning>(
+  return _kernel_with_cb<decltype(lambda), CallbackFunc, RuntimeT, versioning>(
       lambda, config, std::forward<CallbackFunc>(CB));
 };
 

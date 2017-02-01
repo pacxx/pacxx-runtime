@@ -14,12 +14,14 @@
 #include <algorithm>
 #include <detail/DeviceBuffer.h>
 #include <detail/cuda/CUDARuntime.h>
+#include <detail/native/NativeRuntime.h>
 #include <detail/common/Exceptions.h>
 #include <detail/IRRuntime.h>
 #include <CodePolicy.h>
 #include <detail/CoreInitializer.h>
 #include <detail/common/Log.h>
 #include <detail/cuda/PTXBackend.h>
+#include <detail/native/NativeBackend.h>
 #include <detail/MemoryManager.h>
 #include <detail/KernelConfiguration.h>
 #include <detail/KernelArgument.h>
@@ -38,6 +40,12 @@ extern const char llvm_start[];
 extern int llvm_size;
 extern const char reflection_start[];
 extern int reflection_size;
+#endif
+
+#ifdef __PACXX_V2_NATIVE_RUNTIME
+  using Runtime = pacxx::v2::NativeRuntime;
+#else
+  using Runtime = pacxx::v2::CUDARuntime;
 #endif
 
 namespace pacxx {
@@ -154,7 +162,6 @@ namespace pacxx {
         K.configurate(config);
 
         size_t buffer_size = 0;
-       
         std::vector<size_t> arg_offsets(F->arg_size());
 
         int offset = 0;
@@ -252,8 +259,8 @@ namespace pacxx {
       }
 
       template<typename T>
-      DeviceBuffer<T>& allocate(size_t count) {
-        return *_runtime->template allocateMemory<T>(count);
+      DeviceBuffer<T>& allocate(size_t count, T *host_ptr = nullptr) {
+        return *_runtime->template allocateMemory<T>(count, host_ptr);
       }
 
       RawDeviceBuffer& allocateRaw(size_t bytes) {
@@ -319,10 +326,9 @@ namespace pacxx {
       Create().setModule(std::move(M));
     }
 
-    using RuntimeT = CUDARuntime;
 
-    template<typename T = RuntimeT>
-    auto& get_executor() { return Executor<RuntimeT>::Create(); }
+    template<typename T = Runtime>
+    auto& get_executor() { return Executor<T>::Create(); }
 
   }
 }
