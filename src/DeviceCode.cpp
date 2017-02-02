@@ -8,15 +8,15 @@
 * Written by Michael Haidl <michael.haidl@uni-muenster.de>, 2010-2014
 */
 
-#include "detail/device/DeviceCode.h"
+#include "pacxx/detail/device/DeviceCode.h"
 #ifdef __device_code__
 
 #define __CUDANVVM__ 1
 #define __CUDABE__ 1
 //#define __CUDACC_RTC__ 1
 //#include <vector_types.h>
-#include "detail/device/DeviceFunctionDecls.h"
-extern "C"{
+#include "pacxx/detail/device/DeviceFunctionDecls.h"
+extern "C" {
 //#include <device_functions_decls.h>
 int __nvvm_atom_cta_add_gen_i(volatile int *, int);
 int __nvvm_atom_sys_add_gen_i(volatile int *, int);
@@ -24,12 +24,14 @@ long long __nvvm_atom_cta_add_gen_ll(volatile long long *, long long);
 long long __nvvm_atom_sys_add_gen_ll(volatile long long *, long long);
 unsigned int __nvvm_atom_cta_add_gen_ui(volatile unsigned int *, unsigned int);
 unsigned int __nvvm_atom_sys_add_gen_ui(volatile unsigned int *, unsigned int);
-unsigned long long __nvvm_atom_cta_add_gen_ull(volatile unsigned long long *, unsigned long long);
-unsigned long long __nvvm_atom_sys_add_gen_ull(volatile unsigned long long *, unsigned long long);
-float __nvvm_atom_cta_add_gen_f(volatile float*, float); 
-float __nvvm_atom_sys_add_gen_f(volatile float*, float); 
-double __nvvm_atom_cta_add_gen_d(volatile double*, double); 
-double __nvvm_atom_sys_add_gen_d(volatile double*, double); 
+unsigned long long __nvvm_atom_cta_add_gen_ull(volatile unsigned long long *,
+                                               unsigned long long);
+unsigned long long __nvvm_atom_sys_add_gen_ull(volatile unsigned long long *,
+                                               unsigned long long);
+float __nvvm_atom_cta_add_gen_f(volatile float *, float);
+float __nvvm_atom_sys_add_gen_f(volatile float *, float);
+double __nvvm_atom_cta_add_gen_d(volatile double *, double);
+double __nvvm_atom_sys_add_gen_d(volatile double *, double);
 
 int __nvvm_atom_cta_min_gen_i(volatile int *, int);
 int __nvvm_atom_sys_min_gen_i(volatile int *, int);
@@ -37,12 +39,14 @@ long long __nvvm_atom_cta_min_gen_ll(volatile long long *, long long);
 long long __nvvm_atom_sys_min_gen_ll(volatile long long *, long long);
 unsigned int __nvvm_atom_cta_min_gen_ui(volatile unsigned int *, unsigned int);
 unsigned int __nvvm_atom_sys_min_gen_ui(volatile unsigned int *, unsigned int);
-unsigned long long __nvvm_atom_cta_min_gen_ull(volatile unsigned long long *, unsigned long long);
-unsigned long long __nvvm_atom_sys_min_gen_ull(volatile unsigned long long *, unsigned long long);
-float __nvvm_atom_cta_min_gen_f(volatile float*, float); 
-float __nvvm_atom_sys_min_gen_f(volatile float*, float); 
-double __nvvm_atom_cta_min_gen_d(volatile double*, double); 
-double __nvvm_atom_sys_min_gen_d(volatile double*, double); 
+unsigned long long __nvvm_atom_cta_min_gen_ull(volatile unsigned long long *,
+                                               unsigned long long);
+unsigned long long __nvvm_atom_sys_min_gen_ull(volatile unsigned long long *,
+                                               unsigned long long);
+float __nvvm_atom_cta_min_gen_f(volatile float *, float);
+float __nvvm_atom_sys_min_gen_f(volatile float *, float);
+double __nvvm_atom_cta_min_gen_d(volatile double *, double);
+double __nvvm_atom_sys_min_gen_d(volatile double *, double);
 
 int __nvvm_atom_cta_max_gen_i(volatile int *, int);
 int __nvvm_atom_sys_max_gen_i(volatile int *, int);
@@ -50,12 +54,14 @@ long long __nvvm_atom_cta_max_gen_ll(volatile long long *, long long);
 long long __nvvm_atom_sys_max_gen_ll(volatile long long *, long long);
 unsigned int __nvvm_atom_cta_max_gen_ui(volatile unsigned int *, unsigned int);
 unsigned int __nvvm_atom_sys_max_gen_ui(volatile unsigned int *, unsigned int);
-unsigned long long __nvvm_atom_cta_max_gen_ull(volatile unsigned long long *, unsigned long long);
-unsigned long long __nvvm_atom_sys_max_gen_ull(volatile unsigned long long *, unsigned long long);
-float __nvvm_atom_cta_max_gen_f(volatile float*, float); 
-float __nvvm_atom_sys_max_gen_f(volatile float*, float); 
-double __nvvm_atom_cta_max_gen_d(volatile double*, double); 
-double __nvvm_atom_sys_max_gen_d(volatile double*, double); 
+unsigned long long __nvvm_atom_cta_max_gen_ull(volatile unsigned long long *,
+                                               unsigned long long);
+unsigned long long __nvvm_atom_sys_max_gen_ull(volatile unsigned long long *,
+                                               unsigned long long);
+float __nvvm_atom_cta_max_gen_f(volatile float *, float);
+float __nvvm_atom_sys_max_gen_f(volatile float *, float);
+double __nvvm_atom_cta_max_gen_d(volatile double *, double);
+double __nvvm_atom_sys_max_gen_d(volatile double *, double);
 
 int __nvvm_atom_cta_xchg_gen_i(volatile int *, int);
 int __nvvm_atom_sys_xchg_gen_i(volatile int *, int);
@@ -63,12 +69,14 @@ long long __nvvm_atom_cta_xchg_gen_ll(volatile long long *, long long);
 long long __nvvm_atom_sys_xchg_gen_ll(volatile long long *, long long);
 unsigned int __nvvm_atom_cta_xchg_gen_ui(volatile unsigned int *, unsigned int);
 unsigned int __nvvm_atom_sys_xchg_gen_ui(volatile unsigned int *, unsigned int);
-unsigned long long __nvvm_atom_cta_xchg_gen_ull(volatile unsigned long long *, unsigned long long);
-unsigned long long __nvvm_atom_sys_xchg_gen_ull(volatile unsigned long long *, unsigned long long);
-float __nvvm_atom_cta_xchg_gen_f(volatile float*, float); 
-float __nvvm_atom_sys_xchg_gen_f(volatile float*, float); 
-double __nvvm_atom_cta_xchg_gen_d(volatile double*, double); 
-double __nvvm_atom_sys_xchg_gen_d(volatile double*, double); 
+unsigned long long __nvvm_atom_cta_xchg_gen_ull(volatile unsigned long long *,
+                                                unsigned long long);
+unsigned long long __nvvm_atom_sys_xchg_gen_ull(volatile unsigned long long *,
+                                                unsigned long long);
+float __nvvm_atom_cta_xchg_gen_f(volatile float *, float);
+float __nvvm_atom_sys_xchg_gen_f(volatile float *, float);
+double __nvvm_atom_cta_xchg_gen_d(volatile double *, double);
+double __nvvm_atom_sys_xchg_gen_d(volatile double *, double);
 
 int __nvvm_atom_cta_inc_gen_i(volatile int *, int);
 int __nvvm_atom_sys_inc_gen_i(volatile int *, int);
@@ -76,8 +84,10 @@ long long __nvvm_atom_cta_inc_gen_ll(volatile long long *, long long);
 long long __nvvm_atom_sys_inc_gen_ll(volatile long long *, long long);
 unsigned int __nvvm_atom_cta_inc_gen_ui(volatile unsigned int *, unsigned int);
 unsigned int __nvvm_atom_sys_inc_gen_ui(volatile unsigned int *, unsigned int);
-unsigned long long __nvvm_atom_cta_inc_gen_ull(volatile unsigned long long *, unsigned long long);
-unsigned long long __nvvm_atom_sys_inc_gen_ull(volatile unsigned long long *, unsigned long long);
+unsigned long long __nvvm_atom_cta_inc_gen_ull(volatile unsigned long long *,
+                                               unsigned long long);
+unsigned long long __nvvm_atom_sys_inc_gen_ull(volatile unsigned long long *,
+                                               unsigned long long);
 
 int __nvvm_atom_cta_dec_gen_i(volatile int *, int);
 int __nvvm_atom_sys_dec_gen_i(volatile int *, int);
@@ -85,13 +95,17 @@ long long __nvvm_atom_cta_dec_gen_ll(volatile long long *, long long);
 long long __nvvm_atom_sys_dec_gen_ll(volatile long long *, long long);
 unsigned int __nvvm_atom_cta_dec_gen_ui(volatile unsigned int *, unsigned int);
 unsigned int __nvvm_atom_sys_dec_gen_ui(volatile unsigned int *, unsigned int);
-unsigned long long __nvvm_atom_cta_dec_gen_ull(volatile unsigned long long *, unsigned long long);
-unsigned long long __nvvm_atom_sys_dec_gen_ull(volatile unsigned long long *, unsigned long long);
+unsigned long long __nvvm_atom_cta_dec_gen_ull(volatile unsigned long long *,
+                                               unsigned long long);
+unsigned long long __nvvm_atom_sys_dec_gen_ull(volatile unsigned long long *,
+                                               unsigned long long);
 
 int __nvvm_atom_cta_cas_gen_i(volatile int *, int, int);
 int __nvvm_atom_sys_cas_gen_i(volatile int *, int, int);
-long long __nvvm_atom_cta_cas_gen_ll(volatile long long *, long long, long long);
-long long __nvvm_atom_sys_cas_gen_ll(volatile long long *, long long, long long);
+long long __nvvm_atom_cta_cas_gen_ll(volatile long long *, long long,
+                                     long long);
+long long __nvvm_atom_sys_cas_gen_ll(volatile long long *, long long,
+                                     long long);
 
 int __nvvm_atom_cta_and_gen_i(volatile int *, int);
 int __nvvm_atom_sys_and_gen_i(volatile int *, int);
@@ -107,8 +121,6 @@ int __nvvm_atom_cta_xor_gen_i(volatile int *, int);
 int __nvvm_atom_sys_xor_gen_i(volatile int *, int);
 long long __nvvm_atom_cta_xor_gen_ll(volatile long long *, long long);
 long long __nvvm_atom_sys_xor_gen_ll(volatile long long *, long long);
-
-
 
 //#include <device_functions.h>
 };
@@ -449,19 +461,19 @@ double bitcast_ll2d(long long val) { return __nvvm_bitcast_ll2d(val); }
 long long bitcast_d2ll(double val) { return __nvvm_bitcast_d2ll(val); }
 }
 */
-//float exp(float val) { return ::exp(val); }
+// float exp(float val) { return ::exp(val); }
 //
-//float log(float val) { return ::log(val); }
+// float log(float val) { return ::log(val); }
 //
-//float sqrt(float val) { return ::sqrt(val); }
+// float sqrt(float val) { return ::sqrt(val); }
 //
-//double rsqrt(double val) { return ::rsqrt(val); }
-//float rsqrt(float val) { return ::rsqrtf(val); }
+// double rsqrt(double val) { return ::rsqrt(val); }
+// float rsqrt(float val) { return ::rsqrtf(val); }
 //
-//float sin(float val) { return ::sin(val); }
+// float sin(float val) { return ::sin(val); }
 //
-//float cos(float val) { return ::cos(val); }
-//float fabs(float val) { return ::fabs(val); }
+// float cos(float val) { return ::cos(val); }
+// float fabs(float val) { return ::fabs(val); }
 
 // barriers
 
@@ -473,23 +485,23 @@ void barrier() {
 }
 
 //
-//namespace atomic {
-//namespace global {
-//int add(int *ptr, int value) {
+// namespace atomic {
+// namespace global {
+// int add(int *ptr, int value) {
 //  return ::atomic_add((global_mem_int_ptr)ptr, value);
 //}
 //
-//unsigned int add(unsigned int *ptr, unsigned int value) {
+// unsigned int add(unsigned int *ptr, unsigned int value) {
 //  return ::atomic_add((global_mem_uint_ptr)ptr, value);
 //}
 //}
 //
-//namespace shared {
-//int add(int *ptr, int value) {
+// namespace shared {
+// int add(int *ptr, int value) {
 //  return ::atomic_add((shared_mem_int_ptr)ptr, value);
 //}
 //
-//unsigned int add(unsigned int *ptr, unsigned int value) {
+// unsigned int add(unsigned int *ptr, unsigned int value) {
 //  return ::atomic_add((shared_mem_uint_ptr)ptr, value);
 //}
 //}
@@ -502,42 +514,42 @@ void barrier() {
 
 namespace native {
 
-  namespace index {
-    template <> unsigned int x<idx::thread>() { return 0; }
-    template <> unsigned int y<idx::thread>() { return 0; }
-    template <> unsigned int z<idx::thread>() { return 0; }
+namespace index {
+template <> unsigned int x<idx::thread>() { return 0; }
+template <> unsigned int y<idx::thread>() { return 0; }
+template <> unsigned int z<idx::thread>() { return 0; }
 
-    template <> unsigned int x<dim::block>() { return 1; }
-    template <> unsigned int y<dim::block>() { return 1; }
-    template <> unsigned int z<dim::block>() { return 1; }
+template <> unsigned int x<dim::block>() { return 1; }
+template <> unsigned int y<dim::block>() { return 1; }
+template <> unsigned int z<dim::block>() { return 1; }
 
-    template <> unsigned int x<idx::block>() { return 0; }
-    template <> unsigned int y<idx::block>() { return 0; }
-    template <> unsigned int z<idx::block>() { return 0; }
+template <> unsigned int x<idx::block>() { return 0; }
+template <> unsigned int y<idx::block>() { return 0; }
+template <> unsigned int z<idx::block>() { return 0; }
 
-    template <> unsigned int x<dim::grid>() { return 1; }
-    template <> unsigned int y<dim::grid>() { return 1; }
-    template <> unsigned int z<dim::grid>() { return 1; }
+template <> unsigned int x<dim::grid>() { return 1; }
+template <> unsigned int y<dim::grid>() { return 1; }
+template <> unsigned int z<dim::grid>() { return 1; }
 
-    template <> unsigned int x<idx::global>() { return 0; }
-    template <> unsigned int y<idx::global>() { return 0; }
-    template <> unsigned int z<idx::global>() { return 0; }
-  }
+template <> unsigned int x<idx::global>() { return 0; }
+template <> unsigned int y<idx::global>() { return 0; }
+template <> unsigned int z<idx::global>() { return 0; }
+}
 
-  float sin(float val) { return std::sin(val); }
+float sin(float val) { return std::sin(val); }
 
-  float fabs(float val) { return std::abs(val); }
+float fabs(float val) { return std::abs(val); }
 
-  float exp(float val) { return std::exp(val); }
+float exp(float val) { return std::exp(val); }
 
-  float log(float val) { return std::log(val); }
+float log(float val) { return std::log(val); }
 
-  float sqrt(float val) { return std::sqrt(val); }
+float sqrt(float val) { return std::sqrt(val); }
 
-  extern "C" float __log2f(float val){ return std::log2(val); }
-  extern "C" float __powf(float val, float e) { return std::pow(val, e); }
+extern "C" float __log2f(float val) { return std::log2(val); }
+extern "C" float __powf(float val, float e) { return std::pow(val, e); }
 
-  void barrier(){/* noop */};
+void barrier(){/* noop */};
 }
 
 unsigned get_global_id(unsigned) { return 0; }
@@ -548,17 +560,17 @@ Thread Thread::get() {
   using namespace native::index;
   return {
       {static_cast<int>(x<idx::thread>()), static_cast<int>(y<idx::thread>()),
-          static_cast<int>(z<idx::thread>())},
+       static_cast<int>(z<idx::thread>())},
       {static_cast<int>(x<idx::global>()), static_cast<int>(y<idx::global>()),
-          static_cast<int>(z<idx::global>())}};
+       static_cast<int>(z<idx::global>())}};
 }
 
 Block Block::get() {
   using namespace native::index;
   return {{static_cast<int>(x<idx::block>()), static_cast<int>(y<idx::block>()),
-              static_cast<int>(z<idx::block>())},
+           static_cast<int>(z<idx::block>())},
           {static_cast<int>(x<dim::block>()), static_cast<int>(y<dim::block>()),
-              static_cast<int>(z<dim::block>())}};
+           static_cast<int>(z<dim::block>())}};
 }
 
 void Block::synchronize() { native::barrier(); }
@@ -566,5 +578,5 @@ void Block::synchronize() { native::barrier(); }
 Grid Grid::get() {
   using namespace native::index;
   return {{static_cast<int>(x<dim::grid>()), static_cast<int>(y<dim::grid>()),
-              static_cast<int>(z<dim::grid>())}};
+           static_cast<int>(z<dim::grid>())}};
 }

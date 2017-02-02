@@ -2,24 +2,24 @@
 // Created by mhaidl on 14/06/16.
 //
 
-#include "detail/native/NativeBackend.h"
+#include "pacxx/detail/native/NativeBackend.h"
+#include "pacxx/Executor.h"
+#include "pacxx/detail/common/Exceptions.h"
+#include <llvm/Analysis/LoopInfo.h>
+#include <llvm/Analysis/LoopPass.h>
+#include <llvm/Analysis/TargetLibraryInfo.h>
+#include <llvm/Analysis/TargetTransformInfo.h>
+#include <llvm/ExecutionEngine/SectionMemoryManager.h>
+#include <llvm/IR/GVMaterializer.h>
 #include <llvm/IR/LLVMContext.h>
 #include <llvm/IR/Verifier.h>
-#include <llvm/IR/GVMaterializer.h>
-#include <llvm/Support/SourceMgr.h>
 #include <llvm/IRReader/IRReader.h>
+#include <llvm/LinkAllPasses.h>
+#include <llvm/Support/SourceMgr.h>
+#include <llvm/Transforms/IPO/PassManagerBuilder.h>
 #include <llvm/Transforms/PACXXTransforms.h>
-#include <detail/common/Exceptions.h>
-#include <llvm/Analysis/TargetLibraryInfo.h>
-#include <llvm/ExecutionEngine/SectionMemoryManager.h>
 #include <llvm/Transforms/Scalar.h>
 #include <llvm/Transforms/Vectorize.h>
-#include <llvm/LinkAllPasses.h>
-#include <llvm/Analysis/TargetTransformInfo.h>
-#include <llvm/Analysis/LoopInfo.h>
-#include "llvm/Analysis/LoopPass.h"
-#include <llvm/Transforms/IPO/PassManagerBuilder.h>
-#include <Executor.h>
 
 namespace {
 const std::string native_loop_ir(R"(
@@ -109,105 +109,106 @@ attributes #1 = { "disable-tail-calls"="false" "less-precise-fpmad"="false" "no-
 
 using namespace llvm;
 
-namespace pacxx
-{
-  namespace v2
-  {
-    NativeBackend::NativeBackend() : _pmInitialized(false){ }
+namespace pacxx {
+namespace v2 {
+NativeBackend::NativeBackend() : _pmInitialized(false) {}
 
-    NativeBackend::~NativeBackend() {}
+NativeBackend::~NativeBackend() {}
 
-    Module* NativeBackend::compile(std::unique_ptr<Module>& M) {
+Module *NativeBackend::compile(std::unique_ptr<Module> &M) {
 
-        std::string error;
-        std::error_code EC;
+  std::string error;
+  std::error_code EC;
 
-        LLVMInitializeNativeTarget();
+  LLVMInitializeNativeTarget();
 
-        linkInModule(M);
+  linkInModule(M);
 
-        Module *TheModule = _composite.get();
+  Module *TheModule = _composite.get();
+  EngineBuilder builder{std::move(_composite)};
 
-        EngineBuilder builder{std::move(_composite)};
+  builder.setErrorStr(&error);
 
-        builder.setErrorStr(&error);
+  builder.setUseOrcMCJITReplacement(true);
 
-        builder.setUseOrcMCJITReplacement(true);
+  builder.setEngineKind(EngineKind::JIT);
 
-        builder.setEngineKind(EngineKind::JIT);
+  builder.setOptLevel(CodeGenOpt::Aggressive);
 
-        builder.setOptLevel(CodeGenOpt::Aggressive);
+  _machine = builder.selectTarget(Triple(sys::getProcessTriple()), "",
+                                  sys::getHostCPUName(), getTargetFeatures());
 
-        _machine = builder.selectTarget(Triple(sys::getProcessTriple()), "",
-                                        sys::getHostCPUName(), getTargetFeatures());
+  builder.setMCJITMemoryManager(std::unique_ptr<RTDyldMemoryManager>(
+      static_cast<RTDyldMemoryManager *>(new SectionMemoryManager())));
 
-        builder.setMCJITMemoryManager(
-                std::unique_ptr<RTDyldMemoryManager>(
-                        static_cast<RTDyldMemoryManager*>(new SectionMemoryManager())));
+  _JITEngine = builder.create(_machine);
 
-      _JITEngine = builder.create(_machine);
+  if (!_JITEngine) {
+    throw new common::generic_exception(error);
+  }
 
-      if (!_JITEngine) {
-        throw new common::generic_exception(error);
-      }
+  raw_fd_ostream OS("moduleBeforePass.ll", EC, sys::fs::F_None);
+  TheModule->print(OS, nullptr);
 
-      raw_fd_ostream OS("moduleBeforePass.ll", EC, sys::fs::F_None);
-      TheModule->print(OS, nullptr);
+  TheModule->setTargetTriple(
+      _JITEngine->getTargetMachine()->getTargetTriple().str());
+  TheModule->setDataLayout(_JITEngine->getDataLayout());
 
-      TheModule->setTargetTriple(_JITEngine->getTargetMachine()->getTargetTriple().str());
-      TheModule->setDataLayout(_JITEngine->getDataLayout());
+  applyPasses(*TheModule);
 
-      applyPasses(*TheModule);
+  raw_fd_ostream OS1("moduleAfterPass.ll", EC, sys::fs::F_None);
+  TheModule->print(OS1, nullptr);
 
-      raw_fd_ostream OS1("moduleAfterPass.ll", EC, sys::fs::F_None);
-      TheModule->print(OS1, nullptr);
+  __verbose("applied pass");
 
-      __verbose("applied pass");
+  _JITEngine->finalizeObject();
 
-      _JITEngine->finalizeObject();
+  return TheModule;
+}
 
-      return TheModule;
-    }
+SmallVector<std::string, 10> NativeBackend::getTargetFeatures() {
+  StringMap<bool> HostFeatures;
+  SmallVector<std::string, 10> attr;
 
-    SmallVector<std::string, 10> NativeBackend::getTargetFeatures() {
-        StringMap<bool> HostFeatures;
-        SmallVector<std::string,10> attr;
+  llvm::sys::getHostCPUFeatures(HostFeatures);
 
-        llvm::sys::getHostCPUFeatures(HostFeatures);
+  for (StringMap<bool>::const_iterator it = HostFeatures.begin();
+       it != HostFeatures.end(); it++) {
+    std::string att = it->getValue() ? it->getKey().str()
+                                     : std::string("-") + it->getKey().str();
+    attr.append(1, att);
+  }
 
-        for (StringMap<bool>::const_iterator it = HostFeatures.begin(); it != HostFeatures.end(); it++) {
-            std::string att = it->getValue() ? it->getKey().str() : std::string("-") + it->getKey().str();
-            attr.append(1, att);
-        }
+  return attr;
+}
 
-        return attr;
-    }
+void *NativeBackend::getKernelFptr(Module *module, const std::string name) {
+  Function *kernel = module->getFunction("__wrapped__" + name);
+  // get the kernel wrapper function from the module
+  return _JITEngine->getPointerToFunction(kernel);
+}
 
-    void* NativeBackend::getKernelFptr(Module *module, const std::string name) {
-        Function *kernel = module->getFunction("__wrapped__"+name);
-        //get the kernel wrapper function from the module
-        return _JITEngine->getPointerToFunction(kernel);
-    }
+void NativeBackend::linkInModule(std::unique_ptr<Module> &M) {
+  _composite = std::make_unique<Module>("pacxx-link", M->getContext());
+  std::unique_ptr<Module> functionModule =
+      NativeBackend::createModule(M->getContext(), native_loop_ir);
+  auto linker = Linker(*_composite);
+  linker.linkInModule(std::move(functionModule), Linker::Flags::None);
+  linker.linkInModule(std::move(M), Linker::Flags::None);
+  _composite->setTargetTriple(sys::getProcessTriple());
+}
 
-    void NativeBackend::linkInModule(std::unique_ptr<Module>& M) {
-        _composite = std::make_unique<Module>("pacxx-link", M->getContext());
-        std::unique_ptr<Module> functionModule = NativeBackend::createModule(M->getContext(), native_loop_ir);
-        auto linker = Linker(*_composite);
-        linker.linkInModule(std::move(functionModule), Linker::Flags::None);
-        linker.linkInModule(std::move(M), Linker::Flags::None);
-        _composite->setTargetTriple(sys::getProcessTriple());
-    }
+std::unique_ptr<Module> NativeBackend::createModule(LLVMContext &Context,
+                                                    const std::string IR) {
+  SMDiagnostic Err;
+  MemoryBufferRef buffer(IR, "loop-buffer");
+  std::unique_ptr<Module> Result = parseIR(buffer, Err, Context);
+  if (!Result)
+    Err.print("createModule", errs());
+  return Result;
+}
 
-    std::unique_ptr<Module> NativeBackend::createModule(LLVMContext& Context, const std::string IR) {
-        SMDiagnostic Err;
-        MemoryBufferRef buffer(IR, "loop-buffer");
-        std::unique_ptr<Module> Result = parseIR(buffer, Err, Context);
-        if (!Result)
-            Err.print("createModule", errs());
-        return Result;
-    }
-
-    void NativeBackend::applyPasses(Module& M) {
+void NativeBackend::applyPasses(Module& M) {
 
         if(!_machine)
             throw common::generic_exception("Can not get target machine");
@@ -235,7 +236,6 @@ namespace pacxx
         _PM.run(M);
     }
 
-    legacy::PassManager& NativeBackend::getPassManager() { return _PM; }
-
-  }
+legacy::PassManager &NativeBackend::getPassManager() { return _PM; }
+}
 }
