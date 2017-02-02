@@ -1,8 +1,6 @@
-CC=../../pacxx
-PACXXV2_HOME = /data/repos/Masterarbeit/code/pacxx/include/pacxx
-
-CXX_FLAGS=-nvvm -D__PACXX_V2 -Wno-invalid-noreturn -Wno-zero-length-array 
-CXX_INCLUDES=-I$(PACXXV2_HOME)
+CC=clang++
+CXX_FLAGS= -O3 -L /opt/intel/intel-opencl-1.2-6.2.0.1760/opencl-1.2-sdk-6.2.0.1760/lib64/ -lOpenCL
+CXX_INCLUDES=
 
 all : vadd matmul dot mandel
 

@@ -26,5 +26,5 @@ attributes #0 = { alwaysinline }
 !llvm.ident = !{!0, !0}
 !nvvm.annotations = !{!1}
 
-!0 = !{!"clang version 5.0.0 (https://lklein14@bitbucket.org/mhaidl/clang_v2.git 2904b703a745e9588c3f2b172c9e3178db89e088) (https://lklein14@bitbucket.org/mhaidl/llvm_v2.git abe9a99c1000ee259fd76b9e00f4fd47498e0fea)"}
+!0 = !{!"clang version 5.0.0 (https://lklein14@bitbucket.org/mhaidl/clang_v2.git 437c6114787c7112dd7976fef5df73c494d66578) (https://lklein14@bitbucket.org/mhaidl/llvm_v2.git faaf5abbec4de280db0baf4c3d4226183d57f591)"}
 !1 = !{void (i8, i32*, float, float, float, float)* undef, !"kernel", i32 1}

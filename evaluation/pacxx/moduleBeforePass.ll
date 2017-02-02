@@ -173,7 +173,7 @@ attributes #4 = { nounwind }
 !nvvm.annotations = !{!2}
 
 !0 = !{!"PACXX"}
-!1 = !{!"clang version 5.0.0 (https://lklein14@bitbucket.org/mhaidl/clang_v2.git 2904b703a745e9588c3f2b172c9e3178db89e088) (https://lklein14@bitbucket.org/mhaidl/llvm_v2.git abe9a99c1000ee259fd76b9e00f4fd47498e0fea)"}
+!1 = !{!"clang version 5.0.0 (https://lklein14@bitbucket.org/mhaidl/clang_v2.git 437c6114787c7112dd7976fef5df73c494d66578) (https://lklein14@bitbucket.org/mhaidl/llvm_v2.git faaf5abbec4de280db0baf4c3d4226183d57f591)"}
 !2 = !{void (i8, i32*, float, float, float, float)* @"_ZN5pacxx2v213genericKernelILm0EZ4mainE3$_0JPiffffEEEvT0_DpT1_", !"kernel", i32 1}
 !3 = distinct !{!3, !4}
 !4 = !{!"llvm.loop.vectorize.enable", i1 false}

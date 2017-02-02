@@ -1,4 +1,4 @@
-; ModuleID = './tmp-170201-1143-xAY4S7/pacxx.bc'
+; ModuleID = './tmp-170202-1253-ZN7zhg/pacxx.bc'
 source_filename = "llvm-link"
 target datalayout = "e-m:e-i64:64-f80:128-n8:16:32:64-S128"
 target triple = "x86_64-unknown-linux-gnu"
@@ -5129,7 +5129,7 @@ entry:
   %call2 = call dereferenceable(8) %"class.pacxx::v2::IRRuntime"* @_ZN5pacxx2v28ExecutorINS0_13NativeRuntimeEE8allocateIiEERNS0_12DeviceBufferIT_EEmPS6_(%"class.pacxx::v2::Executor"* nonnull %call, i64 12582912, i32* %call1)
   %call4 = call i32 @_Z6div_upjj(i32 1024, i32 512)
   %conv = zext i32 %call4 to i64
-  %call5 = call i32 @_Z6div_upjj(i32 1024, i32 1)
+  %call5 = call i32 @_Z6div_upjj(i32 1024, i32 1024)
   %conv6 = zext i32 %call5 to i64
   call void @_ZN5pacxx2v210Dimension3C1Emmm(%"struct.pacxx::v2::Dimension3"* nonnull %agg.tmp3, i64 %conv, i64 %conv6, i64 1)
   call void @_ZN5pacxx2v210Dimension3C1Emmm(%"struct.pacxx::v2::Dimension3"* nonnull %agg.tmp7, i64 512, i64 1024, i64 1)
@@ -40526,7 +40526,7 @@ attributes #17 = { builtin nounwind }
 !llvm.ident = !{!1}
 
 !0 = !{void (i8, i32*, float, float, float, float)* @"_ZN5pacxx2v213genericKernelILm0EZ4mainE3$_0JPiffffEEEvT0_DpT1_", !"kernel", i32 1}
-!1 = !{!"clang version 5.0.0 (https://lklein14@bitbucket.org/mhaidl/clang_v2.git 2904b703a745e9588c3f2b172c9e3178db89e088) (https://lklein14@bitbucket.org/mhaidl/llvm_v2.git abe9a99c1000ee259fd76b9e00f4fd47498e0fea)"}
+!1 = !{!"clang version 5.0.0 (https://lklein14@bitbucket.org/mhaidl/clang_v2.git 437c6114787c7112dd7976fef5df73c494d66578) (https://lklein14@bitbucket.org/mhaidl/llvm_v2.git faaf5abbec4de280db0baf4c3d4226183d57f591)"}
 !2 = !{i32 0, i32 0, i32 0, i32 0, i32 0, i32 0}
 !3 = !{!"none", !"none", !"none", !"none", !"none", !"none"}
 !4 = !{!"(lambda at mandel.cpp:64:15)", !"int*", !"float", !"float", !"float", !"float"}

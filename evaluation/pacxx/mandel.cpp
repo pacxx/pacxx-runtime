@@ -93,7 +93,7 @@ int main(int argc, char **argv) {
   auto& dev_c = exec.allocate<int>(buffer_size, c.data());
 
   auto mandel =
-      kernel<NativeRuntime>(test, {{div_up(width, 512), div_up(height, 1)}, {512, 1024}});
+      kernel<NativeRuntime>(test, {{div_up(width, 512), div_up(height, 1024)}, {512, 1024}});
 
   mandel(dev_c.get(), cr1, cr2, ci1, ci2);
 
