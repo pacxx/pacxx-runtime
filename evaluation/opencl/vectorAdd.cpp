@@ -8,7 +8,7 @@ float* M;
 float* N;
 float* P_opencl;
 float* P_seq;
-int Width;
+size_t Width;
 int Num_Threads;
 
 // fill f width size many random float values
@@ -40,7 +40,7 @@ void printPlatform(cl_platform_id* platform, cl_uint platformCount) {
 }
 
 // compares every pair lhs[i] and rhs[i] for i < width
-void compare(float* lhs, float* rhs, int width) {
+void compare(float* lhs, float* rhs, size_t width) {
   int errors = 0;
   int i;
   for (i = 0; i < width; i+=1) {
@@ -138,7 +138,7 @@ void makeKernel() {
   cl_int err;
   // Kernel Quellcode
   const char* kernelSource = "__kernel \
-void MatrixMultKernel(__global float* Md, \
+void vadd(__global float* Md, \
                       __global float* Nd, \
                       __global float* Pd, int width) { \
   int idx = get_global_id(0); \
@@ -158,12 +158,12 @@ void MatrixMultKernel(__global float* Md, \
     printBuildLog(program, device);
   else
     printf("program build successfully\n");
-  kernel = clCreateKernel(program, "MatrixMultKernel", &err);
+  kernel = clCreateKernel(program, "vadd", &err);
   checkError(err);
   printf("kernel created\n");
 }
 
-void VectorAddOpenCL(float* M, float* N, float* P, int width) {
+void VectorAddOpenCL(float* M, float* N, float* P, size_t width) {
   cl_int err;
 
   int size = width * sizeof(float);

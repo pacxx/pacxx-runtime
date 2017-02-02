@@ -1,6 +1,3 @@
-#include <stdio.h>
-#include <iostream>
-#include <stdlib.h>
 #include <CL/cl.h>
 #include <string.h>
 #include <vector>
@@ -16,11 +13,11 @@
 std::vector<int> M;
 std::vector<int> N;
 std::vector<int> P_opencl;
-int Width;
+size_t Width;
 int Num_Threads;
 
 // fill f width size many random int values
-void fill(float* f, int size) {
+void fill(int* f, int size) {
   for(unsigned i = 0; i < size; ++i)
     f[i] = std::rand();
 }
@@ -121,7 +118,7 @@ void makeKernel() {
   cl_int err;
   // Kernel Quellcode
   const char* kernelSource = "__kernel \
-void dot(__global int* Md, \
+void dotKernel(__global int* Md, \
                       __global int* Nd, \
                       __global int* Pd, \
                       __local int* sm, \
@@ -129,7 +126,7 @@ void dot(__global int* Md, \
   int tmp = 0; \
   size_t local_x = get_local_id(0); \
   size_t global_size = get_num_groups(0) * get_local_size(0); \
-  for(auto global_x = get_global_id(0); global_x < width; global_x += global_size) { \
+  for(size_t global_x = get_global_id(0); global_x < width; global_x += global_size) { \
     tmp += Md[global_x] * Nd[global_x]; \
   }\
   sm[local_x] = tmp;\
@@ -155,12 +152,12 @@ void dot(__global int* Md, \
     printBuildLog(program, device);
   else
     printf("program build successfully\n");
-  kernel = clCreateKernel(program, "MatrixMultKernel", &err);
+  kernel = clCreateKernel(program, "dotKernel", &err);
   checkError(err);
   printf("kernel created\n");
 }
 
-void dotOpenCL(int* M, int* N, int* P, int width) {
+void dotOpenCL(int* M, int* N, int* P, size_t width) {
   cl_int err;
 
   int size = width * sizeof(int);
@@ -244,10 +241,10 @@ void init() {
 
 int main(void) {
   init();
-  dotOpenCL(M, N, P_opencl, Width);
+  dotOpenCL(M.data(), N.data(), P_opencl.data(), Width);
   int openCL = std::accumulate(P_opencl.begin(), P_opencl.end(), 0);
-  int seq = std::inner_product(M.begin(), M.end(), N.begin(), 0, std::plus<>(), std::multiplies<>());
-  std::cout << "Equal: " << seq == openCL << std::endl;
+  int seq = std::inner_product(M.begin(), M.end(), N.begin(), 0, std::plus<int>(), std::multiplies<int>());
+  std::cout << "Equal: " << (seq == openCL) << std::endl;
   return 0;
 }
 

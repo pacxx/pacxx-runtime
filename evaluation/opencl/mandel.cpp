@@ -13,8 +13,8 @@
 #include <limits>
 
 
-int Width;
-int Height;
+size_t Width;
+size_t Height;
 const int bailout = 1000;
 float cr1, cr2, ci1, ci2;
 
@@ -27,18 +27,18 @@ typedef unsigned char u8;
 void GetTranslatedCoordinates(float* cr1, float* cr2, float* ci1, float* ci2, float center_r, float center_i, float zoom) {
   *cr1 = center_r - zoom;
   *cr2 = center_r + zoom;
-  float aspect_ratio = (float)width / (float)height;
+  float aspect_ratio = (float)Width / (float)Height;
   *ci1 = center_i - (zoom / aspect_ratio);
   *ci2 = center_i + (zoom / aspect_ratio);
 }
 
 
 void writePPM(int* mandel_bailouts) {
-  ofstream ofs("mandelbrot.ppm", ios::binary);
-  ofs << "P6" << "\n" << width << " " << height << " " << 255 << "\n";
-  for (u32 y = 0; y < height; ++y) {
-    for (u32 x = 0; x < width; ++x) {
-      int v = mandel_bailouts[x + (y * width)];
+  std::ofstream ofs("mandelbrot.ppm", std::ios::binary);
+  ofs << "P6" << "\n" << Width << " " << Height << " " << 255 << "\n";
+  for (u32 y = 0; y < Height; ++y) {
+    for (u32 x = 0; x < Width; ++x) {
+      int v = mandel_bailouts[x + (y * Width)];
       if (v > 255) {
         v = 255;
       }
@@ -150,20 +150,23 @@ void makeKernel() {
   cl_int err;
   // Kernel Quellcode
   const char* kernelSource = "__kernel \
-void dot(__global int* Md, \
+void mandel(__global int* Md, \
                       float cr1, \
                       float cr2, \
                       float ci1, \
-                      float ci2) { \
-  u32 x(get_group_id(0) * get_local_size(0) + get_local_id(0)); \
-  u32 y(get_group_id(1) * get_local_size(1) + get_local_id(1)); \
+                      float ci2, \
+                      size_t width, \
+                      size_t height, \
+                      size_t bailout) { \
+  size_t x = get_group_id(0) * get_local_size(0) + get_local_id(0); \
+  size_t y = get_group_id(1) * get_local_size(1) + get_local_id(1); \
   if (x >= width || y >= height) { \
     return; \
   }\
   float cr = (x / (float)width) * (cr2 - cr1) + cr1; \
   float ci = (y / (float)height) * (ci2 - ci1) + ci1; \
   float zi = 0.0f, zr = 0.0f, zr2 = 0.0f, zi2 = 0.0f, zit; \
-  u32 iter = bailout; \
+  int iter = bailout; \
   while(--iter && zr2 + zi2 < 4.0f) { \
     zit = zr * zi; \
     zi = zit + zit + ci; \
@@ -174,7 +177,7 @@ void dot(__global int* Md, \
   if (iter) { \
     iter = bailout - iter; \
   } \
-  out[x + y * width] = iter * 5.0f; \
+  Md[x + y * width] = iter * 5.0f; \
 }";
   // Laenge des Kernel Quellcodes
   size_t sourceLength = strlen(kernelSource);
@@ -189,7 +192,7 @@ void dot(__global int* Md, \
     printBuildLog(program, device);
   else
     printf("program build successfully\n");
-  kernel = clCreateKernel(program, "MatrixMultKernel", &err);
+  kernel = clCreateKernel(program, "mandel", &err);
   checkError(err);
   printf("kernel created\n");
 }
@@ -199,35 +202,23 @@ void mandelOpenCL(int* buffer, float cr1, float cr2, float ci1, float ci2) {
 
   int size = Width * Height * 3 * sizeof(int);
 
-  size_t globalSize[] = {div_up(Width, 512), div_up(Height, 1024)};
-  size_t localSize[] = {512, 1024};
+  size_t globalSize[] = {Width, Height};
+  size_t localSize[] = {512, 1};
 
   // Buffer Md erzeugen und direkt auf das Device kopieren
-  cl_mem Md = clCreateBuffer(context, CL_MEM_READ_ONLY|CL_MEM_COPY_HOST_PTR, size, M, &err);
+  cl_mem Md = clCreateBuffer(context, CL_MEM_READ_ONLY|CL_MEM_COPY_HOST_PTR, size, buffer, &err);
   checkError(err);
   printf("buffer md created and copied\n");
 
-  // Buffer ND erzeugen ohne zu kopieren
-  cl_mem Nd = clCreateBuffer(context, CL_MEM_READ_ONLY, size, NULL, &err);
-  checkError(err);
-  printf("buffer nd created\n");
-  // Daten explizit auf das Device kopieren
-  // Dieser Aufruf ist nicht blockierend (CL_FALSE)
-  err = clEnqueueWriteBuffer(commandQueue, Nd, CL_FALSE, 0, size, N, 0, NULL, NULL);
-  checkError(err);
-  printf("enqueued write buffer nd\n");
-
-  // Speicher fuer Ergebnis Matrix reservieren
-  cl_mem Pd = clCreateBuffer(context, CL_MEM_READ_WRITE, size, NULL, &err);
-  checkError(err);
-  printf("buffer pd created and memory allocated\n");
-
   // Setze Argument fuer den Kernel
-  err  = clSetKernelArg( kernel, 0, sizeof(cl_mem), &buffer );
+  err  = clSetKernelArg( kernel, 0, sizeof(cl_mem), &Md);
   err |= clSetKernelArg( kernel, 1, sizeof(float), &cr1 );
   err |= clSetKernelArg( kernel, 2, sizeof(float), &cr2 );
   err |= clSetKernelArg( kernel, 3, sizeof(float), &ci1);
   err |= clSetKernelArg( kernel, 4, sizeof(float), &ci2);
+  err |= clSetKernelArg( kernel, 5, sizeof(size_t), &Width);
+  err |= clSetKernelArg( kernel, 6, sizeof(size_t), &Height);
+  err |= clSetKernelArg( kernel, 7, sizeof(size_t), &bailout);
   checkError(err);
   printf("kernel arguments set\n");
 
@@ -238,7 +229,7 @@ void mandelOpenCL(int* buffer, float cr1, float cr2, float ci1, float ci2) {
   for(unsigned i = 0; i < runs; ++i) {
     cl_event event;
     cl_ulong time_start, time_end;
-    err = clEnqueueNDRangeKernel( commandQueue, kernel, 1, NULL, globalSize, localSize, 0, NULL, &event);
+    err = clEnqueueNDRangeKernel( commandQueue, kernel, 2, NULL, globalSize, localSize, 0, NULL, &event);
     checkError(err);
     clWaitForEvents(1, &event);
     clFinish(commandQueue);
@@ -256,7 +247,7 @@ void mandelOpenCL(int* buffer, float cr1, float cr2, float ci1, float ci2) {
 
   // Daten vom Device kopieren
   // Dieser Aufruf ist blockierend (CL_TRUE)
-  err = clEnqueueReadBuffer( commandQueue, Pd,  CL_TRUE, 0, size, P, 0, NULL, NULL );
+  err = clEnqueueReadBuffer( commandQueue, Md,  CL_TRUE, 0, size, buffer, 0, NULL, NULL );
   checkError(err);
   printf("enqueued read buffer pd\n");
 }
@@ -282,7 +273,7 @@ void init() {
 
 int main(void) {
   init();
-  mandelOpenCL(buffer, cr1, cr2, ci1, ci2);
+  mandelOpenCL(buffer.data(), cr1, cr2, ci1, ci2);
   writePPM(buffer.data());
   return 0;
 }
