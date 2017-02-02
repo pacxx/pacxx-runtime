@@ -1,5 +1,5 @@
 CC=../../pacxx
-PACXXV2_HOME = /data/repos/Masterarbeit/code/pacxx/include/pacxx
+PACXXV2_HOME = $(PACXX_PATH)/include/pacxx
 
 CXX_FLAGS=-nvvm -D__PACXX_V2 -Wno-invalid-noreturn -Wno-zero-length-array 
 CXX_INCLUDES=-I$(PACXXV2_HOME)

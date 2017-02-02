@@ -3,6 +3,16 @@
 #include <stdlib.h>
 #include <CL/cl.h>
 #include <string.h>
+#include <vector>
+#include <random>
+#include <PACXX.h>
+#include <type_traits>
+#include <typeinfo>
+#include <cstdio>
+#include <iostream>
+#include <fstream>
+#include <limits>
+
 
 int Width;
 int Height;
