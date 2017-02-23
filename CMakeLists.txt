@@ -1,7 +1,6 @@
 cmake_minimum_required(VERSION 3.0)
 project(PACXX_V2)
 
-set(TBB_INCLUDE_DIR "$ENV{PACXX_PATH}/include" CACHE FILEPATH "include directory of tbb")
 
 set(LLVM_DIR $ENV{PACXX_PATH}/lib/cmake/llvm/)
 
@@ -9,9 +8,18 @@ find_package(LLVM REQUIRED CONFIG)
 find_package(CUDA REQUIRED)
 include_directories("./include")
 
+set(TBB_INCLUDE_DIR "$ENV{PACXX_PATH}/include" CACHE FILEPATH "include directory of tbb")
+
 include_directories(${LLVM_INCLUDE_DIRS})
 include_directories(${CUDA_TOOLKIT_INCLUDE})
 include_directories(${TBB_INCLUDE_DIR})
+
+option(OpenMP "use OpenMP instead of TBB" OFF)
+
+if(OpenMP)
+  add_definitions(-D__PACXX_OMP)
+  add_compile_options(-fopenmp)
+endif(OpenMP)
 
 add_compile_options(-std=c++14)
 

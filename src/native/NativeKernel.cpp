@@ -7,6 +7,7 @@
 #include "pacxx/detail/common/Log.h"
 #include "pacxx/detail/common/Timing.h"
 #include "pacxx/detail/native/NativeRuntime.h"
+#include <omp.h>
 #include <tbb/tbb.h>
 
 namespace pacxx {
@@ -65,6 +66,19 @@ void NativeKernel::launch() {
 
   start = std::chrono::high_resolution_clock::now();
 
+#ifdef __PACXX_OMP
+  __verbose("Using OpenMP \n");
+  for(unsigned i = 0; i < runs; ++i) {
+    #pragma omp parallel for collapse(3)
+    for(unsigned bidz = 0; bidz < _config.blocks.z; ++bidz)
+      for(unsigned bidy = 0; bidy < _config.blocks.y; ++bidy)
+        for(unsigned bidx = 0; bidx < _config.blocks.x; ++bidx)
+          functor(bidx, bidy, bidz, _config.blocks.x, _config.blocks.y,
+                  _config.blocks.z, _config.threads.x, _config.threads.y,
+                  _config.threads.z, _config.sm_size, _args.data());
+  }
+#else
+  __verbose("Using TBB \n");
   for (unsigned i = 0; i < runs; ++i) {
     tbb::parallel_for(size_t(0), _config.blocks.z, [&](size_t bidz) {
       tbb::parallel_for(size_t(0), _config.blocks.y, [&](size_t bidy) {
@@ -76,37 +90,13 @@ void NativeKernel::launch() {
       });
     });
   }
+#endif
 
   end = std::chrono::high_resolution_clock::now();
 
-  auto time_tbb =
-      std::chrono::duration_cast<std::chrono::microseconds>(end - start)
-          .count();
+  auto time = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
 
-  __verbose("Time measured in runtime (TBB) : ", time_tbb / runs, " us (", runs,
-            " iterations)");
-
-  /*
-  start = std::chrono::high_resolution_clock::now();
-
-  for(unsigned i = 0; i < runs; ++i) {
-#pragma omp parallel for collapse(3) schedule(dynamic)
-      for(unsigned bidz = 0; bidz < _config.blocks.z; ++bidz)
-          for(unsigned bidy = 0; bidy < _config.blocks.y; ++bidy)
-              for(unsigned bidx = 0; bidx < _config.blocks.x; ++bidx)
-                  functor(bidx, bidy, bidz, _config.threads.x,
-_config.threads.y,
-                          _config.threads.z, _config.sm_size, _args.data());
-  }
-
-  end = std::chrono::high_resolution_clock::now();
-
-  auto  time_omp = std::chrono::duration_cast<std::chrono::microseconds>(end -
-start).count();
-
-  __verbose("Time measured in runtime (OMP) : ", time_omp / runs, " us (", runs,
-" iterations)");
-  */
+  __verbose("Time measured in runtime : ", time / runs, " us (", runs, " iterations)");
 
   if (_callback)
     _callback();

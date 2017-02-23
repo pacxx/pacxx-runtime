@@ -19,7 +19,7 @@ PACXX_LD_FLAGS="-L$PACXX_PATH/lib -L$CUDA_PATH/lib64"
 PACXX_RT=""
 PACXX_RT_FLAG=""
 PACXX_DC_FILES=" "
-PACXX_RT_LIBS=" -lpacxxrt2  -lcuda -lcudart -lOpenCL -ltbb"
+PACXX_RT_LIBS=" -lpacxxrt2  -lcuda -lcudart -lOpenCL -ltbb -fopenmp"
 PACXX_INCLUDES="-isystem $PACXX_PATH/include -isystem $CUDA_PATH/include "
 
 CUDA_RT_FLAG="-D__CUDA_RT"

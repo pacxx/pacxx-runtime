@@ -220,14 +220,15 @@ void NativeBackend::applyPasses(Module& M) {
             TargetLibraryInfoImpl TLII(Triple(M.getTargetTriple()));
             _PM.add(new TargetLibraryInfoWrapperPass(TLII));
             _PM.add(createTargetTransformInfoWrapperPass(_machine->getTargetIRAnalysis()));
-            _PM.add(createPACXXAddrSpaceTransformPass());
-            _PM.add(createPACXXIdRemoverPass());
+            //_PM.add(createPACXXAddrSpaceTransformPass());
+            //_PM.add(createPACXXIdRemoverPass());
             _PM.add(createCFGSimplificationPass());
             _PM.add(createLoopSimplifyPass());
             _PM.add(createLCSSAPass());
             _PM.add(createSPMDVectorizerPass());
             _PM.add(createPACXXNativeBarrierPass());
             _PM.add(createPACXXNativeLinkerPass());
+            _PM.add(createPACXXNativeSMPass());
             _PM.add(createVerifierPass());
             builder.populateModulePassManager(_PM);
             _pmInitialized = true;
