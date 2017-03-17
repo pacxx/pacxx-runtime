@@ -23,7 +23,7 @@
 
 namespace {
 const std::string native_loop_ir(R"(
-define void @foo(i32 %__maxx, i32 %__maxy, i32 %__maxz) #0 {
+define void @foo(i32 %__maxx, i32 %__maxy, i32 %__maxz) {
     %1 = alloca i32, align 4
     %2 = alloca i32, align 4
     %3 = alloca i32, align 4
@@ -94,10 +94,7 @@ define void @foo(i32 %__maxx, i32 %__maxy, i32 %__maxz) #0 {
     ret void
 }
 
-declare void @__dummy_kernel() #1
-
-attributes #0 = { uwtable "disable-tail-calls"="false" "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-ma  th"="false" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+fxsr,+mmx,+sse,+sse2" "unsafe-fp-math"="false" "use-soft-float"="false" }
-attributes #1 = { "disable-tail-calls"="false" "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="fal  se" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+fxsr,+mmx,+sse,+sse2, +avx" "unsafe-fp-math"="false" "use-soft-float"="false" }
+declare void @__dummy_kernel()
 
 !llvm.ident = !{!0}
 
@@ -147,12 +144,11 @@ Module *NativeBackend::compile(std::unique_ptr<Module> &M) {
     throw new common::generic_exception(error);
   }
 
+  TheModule->setTargetTriple(_JITEngine->getTargetMachine()->getTargetTriple().str());
+  TheModule->setDataLayout(_JITEngine->getDataLayout());
+
   raw_fd_ostream OS("moduleBeforePass.ll", EC, sys::fs::F_None);
   TheModule->print(OS, nullptr);
-
-  TheModule->setTargetTriple(
-      _JITEngine->getTargetMachine()->getTargetTriple().str());
-  TheModule->setDataLayout(_JITEngine->getDataLayout());
 
   applyPasses(*TheModule);
 
