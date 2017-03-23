@@ -20,6 +20,7 @@
 #include <llvm/Transforms/PACXXTransforms.h>
 #include <llvm/Transforms/Scalar.h>
 #include <llvm/Transforms/Vectorize.h>
+#include "llvm/CodeGen/MachineModuleInfo.h"
 
 namespace {
 const std::string native_loop_ir(R"(
@@ -118,6 +119,8 @@ Module *NativeBackend::compile(std::unique_ptr<Module> &M) {
   std::error_code EC;
 
   LLVMInitializeNativeTarget();
+  LLVMInitializeNativeAsmPrinter();
+  LLVMInitializeNativeAsmParser();;
 
   linkInModule(M);
 
@@ -134,7 +137,6 @@ Module *NativeBackend::compile(std::unique_ptr<Module> &M) {
 
   _machine = builder.selectTarget(Triple(sys::getProcessTriple()), "",
                                   sys::getHostCPUName(), getTargetFeatures());
-
   builder.setMCJITMemoryManager(std::unique_ptr<RTDyldMemoryManager>(
       static_cast<RTDyldMemoryManager *>(new SectionMemoryManager())));
 
@@ -158,6 +160,7 @@ Module *NativeBackend::compile(std::unique_ptr<Module> &M) {
   __verbose("applied pass");
 
   _JITEngine->finalizeObject();
+
 
   return TheModule;
 }
@@ -227,11 +230,16 @@ void NativeBackend::applyPasses(Module& M) {
             _PM.add(createPACXXNativeSMPass());
             _PM.add(createVerifierPass());
             builder.populateModulePassManager(_PM);
+
             _pmInitialized = true;
         }
 
+        std::error_code EC;
+        raw_fd_ostream OS2("assembly.asm", EC, sys::fs::F_None);
+        _machine->addPassesToEmitFile(_PM, OS2, TargetMachine::CGFT_AssemblyFile);
+
         _PM.run(M);
-    }
+}
 
 legacy::PassManager &NativeBackend::getPassManager() { return _PM; }
 }
