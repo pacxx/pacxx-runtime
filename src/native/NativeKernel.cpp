@@ -62,7 +62,7 @@ void NativeKernel::launch() {
                                            int, int, int, char *)>(_fptr);
 
   std::chrono::high_resolution_clock::time_point start, end;
-  unsigned runs = 1;
+  unsigned runs = 100;
 
   start = std::chrono::high_resolution_clock::now();
 
