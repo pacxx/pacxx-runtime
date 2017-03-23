@@ -14,10 +14,6 @@
 #include <llvm/Transforms/Scalar.h>
 #include <llvm/Transforms/Vectorize.h>
 
-namespace llvm {
-FunctionPass *createNVPTXInferAddressSpacesPass();
-}
-
 using namespace llvm;
 
 namespace pacxx {
@@ -63,7 +59,7 @@ void CUDARuntime::link(std::unique_ptr<llvm::Module> M) {
   PM.add(createPACXXInlinerPass());
   PM.add(createPACXXDeadCodeElimPass());
   PM.add(createCFGSimplificationPass());
-  PM.add(createNVPTXInferAddressSpacesPass());
+  PM.add(createInferAddressSpacesPass());
   PM.add(createSROAPass());
   PM.add(createPromoteMemoryToRegisterPass());
   PM.add(createDeadStoreEliminationPass());
@@ -72,7 +68,7 @@ void CUDARuntime::link(std::unique_ptr<llvm::Module> M) {
   PM.add(createSROAPass());
   PM.add(createPromoteMemoryToRegisterPass());
   PM.add(createInstructionCombiningPass());
-  PM.add(createNVPTXInferAddressSpacesPass());
+  PM.add(createInferAddressSpacesPass());
 
   PM.run(*_rawM);
 

@@ -20,9 +20,6 @@
 
 #include "pacxx/detail/common/Timing.h"
 
-namespace llvm {
-FunctionPass *createNVPTXInferAddressSpacesPass();
-}
 
 using namespace llvm;
 
@@ -65,14 +62,14 @@ std::string PTXBackend::compile(llvm::Module &M) {
     TargetLibraryInfoImpl TLII(Triple(M.getTargetTriple()));
     _PM.add(new TargetLibraryInfoWrapperPass(TLII));
     _PM.add(createReassociatePass());
-
+    _PM.add(createInferAddressSpacesPass());
     _PM.add(createConstantPropagationPass());
     _PM.add(createSCCPPass());
     _PM.add(createConstantHoistingPass());
     _PM.add(createCorrelatedValuePropagationPass());
     _PM.add(createInstructionCombiningPass());
     _PM.add(createLICMPass());
-
+    _PM.add(createInferAddressSpacesPass());
     _PM.add(createIndVarSimplifyPass());
     _PM.add(createLoopRotatePass());
     _PM.add(createLoopSimplifyPass());
@@ -90,9 +87,8 @@ std::string PTXBackend::compile(llvm::Module &M) {
     _PM.add(createPACXXStaticEvalPass());
     _PM.add(createPACXXNvvmRegPass(true));
 
-    auto RM = Optional<Reloc::Model>();
     _machine.reset(_target->createTargetMachine(
-        TheTriple.getTriple(), _cpu, _features, _options, RM,
+        TheTriple.getTriple(), _cpu, _features, _options, Reloc::Model::Static,
         CodeModel::Default, CodeGenOpt::None));
 
     if (_machine->addPassesToEmitFile(

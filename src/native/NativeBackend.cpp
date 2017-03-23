@@ -24,7 +24,7 @@
 
 namespace {
 const std::string native_loop_ir(R"(
-define void @foo(i32 %__maxx, i32 %__maxy, i32 %__maxz) {
+define void @foo(i32 %__maxx, i32 %__maxy, i32 %__maxz) #0 {
     %1 = alloca i32, align 4
     %2 = alloca i32, align 4
     %3 = alloca i32, align 4
@@ -94,6 +94,8 @@ define void @foo(i32 %__maxx, i32 %__maxy, i32 %__maxz) {
     ; <label>:30                                      ; preds = %4
     ret void
 }
+
+attributes #0 = { nounwind }
 
 declare void @__dummy_kernel()
 
@@ -234,9 +236,9 @@ void NativeBackend::applyPasses(Module& M) {
             _pmInitialized = true;
         }
 
-        std::error_code EC;
-        raw_fd_ostream OS2("assembly.asm", EC, sys::fs::F_None);
-        _machine->addPassesToEmitFile(_PM, OS2, TargetMachine::CGFT_AssemblyFile);
+      //  std::error_code EC;
+      //  raw_fd_ostream OS2("assembly.asm", EC, sys::fs::F_None);
+      //  _machine->addPassesToEmitFile(_PM, OS2, TargetMachine::CGFT_AssemblyFile);
 
         _PM.run(M);
 }

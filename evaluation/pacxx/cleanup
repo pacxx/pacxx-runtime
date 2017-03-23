@@ -1,1 +1,0 @@
-find . ! -name '*.cpp' ! -name 'cleanup' ! -name 'Makefile' -delete
