@@ -137,6 +137,11 @@ Module *NativeBackend::compile(std::unique_ptr<Module> &M) {
 
   _machine = builder.selectTarget(Triple(sys::getProcessTriple()), "",
                                   sys::getHostCPUName(), getTargetFeatures());
+
+  for(auto &F : TheModule->getFunctionList()) {
+      F.addFnAttr("target-cpu", _machine->getTargetCPU().str());
+      F.addFnAttr("target-features", _machine->getTargetFeatureString().str());
+  }
   builder.setMCJITMemoryManager(std::unique_ptr<RTDyldMemoryManager>(
       static_cast<RTDyldMemoryManager *>(new SectionMemoryManager())));
 
@@ -215,6 +220,8 @@ void NativeBackend::applyPasses(Module& M) {
 
             PassManagerBuilder builder;
             builder.OptLevel = 3;
+
+            __verbose(_machine->getTargetFeatureString().str());
 
             TargetLibraryInfoImpl TLII(Triple(M.getTargetTriple()));
             _PM.add(new TargetLibraryInfoWrapperPass(TLII));
