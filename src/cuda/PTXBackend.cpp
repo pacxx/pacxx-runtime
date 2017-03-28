@@ -39,7 +39,6 @@ void PTXBackend::initialize(unsigned CC) {
   initializeLowerIntrinsicsPass(*Registry);
   initializeUnreachableMachineBlockElimPass(*Registry);
 
-  _options.LessPreciseFPMADOption = false;
   _options.UnsafeFPMath = false;
   _options.NoInfsFPMath = false;
   _options.NoNaNsFPMath = false;

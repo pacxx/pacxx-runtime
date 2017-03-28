@@ -24,7 +24,7 @@
 
 namespace {
 const std::string native_loop_ir(R"(
-define void @foo(i32 %__maxx, i32 %__maxy, i32 %__maxz) #0 {
+define void @foo(i32 %__maxx, i32 %__maxy, i32 %__maxz) {
     %1 = alloca i32, align 4
     %2 = alloca i32, align 4
     %3 = alloca i32, align 4
@@ -95,8 +95,6 @@ define void @foo(i32 %__maxx, i32 %__maxy, i32 %__maxz) #0 {
     ret void
 }
 
-attributes #0 = { nounwind }
-
 declare void @__dummy_kernel()
 
 !llvm.ident = !{!0}
@@ -139,6 +137,11 @@ Module *NativeBackend::compile(std::unique_ptr<Module> &M) {
 
   _machine = builder.selectTarget(Triple(sys::getProcessTriple()), "",
                                   sys::getHostCPUName(), getTargetFeatures());
+
+  for(auto &F : TheModule->getFunctionList()) {
+      F.addFnAttr("target-cpu", _machine->getTargetCPU().str());
+      F.addFnAttr("target-features", _machine->getTargetFeatureString().str());
+  }
   builder.setMCJITMemoryManager(std::unique_ptr<RTDyldMemoryManager>(
       static_cast<RTDyldMemoryManager *>(new SectionMemoryManager())));
 
@@ -218,6 +221,8 @@ void NativeBackend::applyPasses(Module& M) {
             PassManagerBuilder builder;
             builder.OptLevel = 3;
 
+            __verbose(_machine->getTargetFeatureString().str());
+
             TargetLibraryInfoImpl TLII(Triple(M.getTargetTriple()));
             _PM.add(new TargetLibraryInfoWrapperPass(TLII));
             _PM.add(createTargetTransformInfoWrapperPass(_machine->getTargetIRAnalysis()));
@@ -236,9 +241,12 @@ void NativeBackend::applyPasses(Module& M) {
             _pmInitialized = true;
         }
 
-      //  std::error_code EC;
-      //  raw_fd_ostream OS2("assembly.asm", EC, sys::fs::F_None);
-      //  _machine->addPassesToEmitFile(_PM, OS2, TargetMachine::CGFT_AssemblyFile);
+        /*
+        std::error_code EC;
+        raw_fd_ostream OS2("assembly.asm", EC, sys::fs::F_None);
+        _machine->addPassesToEmitFile(_PM, OS2, TargetMachine::CGFT_AssemblyFile);
+         */
+
 
         _PM.run(M);
 }

@@ -62,7 +62,30 @@ void NativeKernel::launch() {
                                            int, int, int, char *)>(_fptr);
 
   std::chrono::high_resolution_clock::time_point start, end;
-  unsigned runs = 1;
+  unsigned runs = 100;
+
+  // warmup run
+#ifdef __PACXX_OMP
+  __verbose("Using OpenMP \n");
+    #pragma omp parallel for collapse(3)
+    for(unsigned bidz = 0; bidz < _config.blocks.z; ++bidz)
+      for(unsigned bidy = 0; bidy < _config.blocks.y; ++bidy)
+        for(unsigned bidx = 0; bidx < _config.blocks.x; ++bidx)
+          functor(bidx, bidy, bidz, _config.blocks.x, _config.blocks.y,
+                  _config.blocks.z, _config.threads.x, _config.threads.y,
+                  _config.threads.z, _config.sm_size, _args.data());
+#else
+  __verbose("Using TBB \n");
+    tbb::parallel_for(size_t(0), _config.blocks.z, [&](size_t bidz) {
+      tbb::parallel_for(size_t(0), _config.blocks.y, [&](size_t bidy) {
+        tbb::parallel_for(size_t(0), _config.blocks.x, [&](size_t bidx) {
+          functor(bidx, bidy, bidz, _config.blocks.x, _config.blocks.y,
+                  _config.blocks.z, _config.threads.x, _config.threads.y,
+                  _config.threads.z, _config.sm_size, _args.data());
+        });
+      });
+    });
+#endif
 
   start = std::chrono::high_resolution_clock::now();
 
