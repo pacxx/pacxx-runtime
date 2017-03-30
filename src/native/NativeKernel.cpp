@@ -9,6 +9,7 @@
 #include "pacxx/detail/native/NativeRuntime.h"
 #include <omp.h>
 #include <tbb/tbb.h>
+#include <fstream>
 
 namespace pacxx {
 namespace v2 {
@@ -123,6 +124,9 @@ void NativeKernel::launch() {
 #endif
 
   __verbose("Time measured in runtime : ", median(times.begin(), times.end()), " us (", runs, " iterations)");
+  std::ofstream f("times");
+  std::ostream_iterator<unsigned> output_iterator(f, "\n");
+  std::copy(times.begin(), times.end(), output_iterator);
 
   if (_callback)
     _callback();
