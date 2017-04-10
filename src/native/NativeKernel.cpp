@@ -9,6 +9,7 @@
 #include "pacxx/detail/native/NativeRuntime.h"
 #include <omp.h>
 #include <tbb/tbb.h>
+#include <fstream>
 
 namespace pacxx {
 namespace v2 {
@@ -62,7 +63,8 @@ void NativeKernel::launch() {
                                            int, int, int, char *)>(_fptr);
 
   std::chrono::high_resolution_clock::time_point start, end;
-  unsigned runs = 100;
+  unsigned runs = 1000;
+  std::vector<unsigned> times(runs);
 
   // warmup run
 #ifdef __PACXX_OMP
@@ -87,11 +89,11 @@ void NativeKernel::launch() {
     });
 #endif
 
-  start = std::chrono::high_resolution_clock::now();
 
 #ifdef __PACXX_OMP
   __verbose("Using OpenMP \n");
   for(unsigned i = 0; i < runs; ++i) {
+    start = std::chrono::high_resolution_clock::now();
     #pragma omp parallel for collapse(3)
     for(unsigned bidz = 0; bidz < _config.blocks.z; ++bidz)
       for(unsigned bidy = 0; bidy < _config.blocks.y; ++bidy)
@@ -99,10 +101,14 @@ void NativeKernel::launch() {
           functor(bidx, bidy, bidz, _config.blocks.x, _config.blocks.y,
                   _config.blocks.z, _config.threads.x, _config.threads.y,
                   _config.threads.z, _config.sm_size, _args.data());
+
+    end = std::chrono::high_resolution_clock::now();
+    times[i] = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
   }
 #else
   __verbose("Using TBB \n");
   for (unsigned i = 0; i < runs; ++i) {
+    start = std::chrono::high_resolution_clock::now();
     tbb::parallel_for(size_t(0), _config.blocks.z, [&](size_t bidz) {
       tbb::parallel_for(size_t(0), _config.blocks.y, [&](size_t bidy) {
         tbb::parallel_for(size_t(0), _config.blocks.x, [&](size_t bidx) {
@@ -112,14 +118,15 @@ void NativeKernel::launch() {
         });
       });
     });
+    end = std::chrono::high_resolution_clock::now();
+    times[i] = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
   }
 #endif
 
-  end = std::chrono::high_resolution_clock::now();
-
-  auto time = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
-
-  __verbose("Time measured in runtime : ", time / runs, " us (", runs, " iterations)");
+  __verbose("Time measured in runtime : ", median(times.begin(), times.end()), " us (", runs, " iterations)");
+  std::ofstream f("times");
+  std::ostream_iterator<unsigned> output_iterator(f, "\n");
+  std::copy(times.begin(), times.end(), output_iterator);
 
   if (_callback)
     _callback();

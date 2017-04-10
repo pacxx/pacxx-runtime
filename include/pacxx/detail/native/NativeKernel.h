@@ -72,6 +72,16 @@ private:
   size_t _hostArgBufferSize;
 };
 
+// Get the median of an unordered set of numbers of arbitrary
+// type (this will modify the underlying dataset).
+template <typename It>
+typename std::iterator_traits<It>::value_type median(It begin, It end)
+{
+    auto size = std::distance(begin, end);
+    std::nth_element(begin, begin + size / 2, end);
+    return *std::next(begin, size / 2);
+}
+
 } // v2 namespace
 
 } // pacxx namespace
