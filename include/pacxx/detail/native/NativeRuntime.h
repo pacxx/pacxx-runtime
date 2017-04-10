@@ -22,12 +22,14 @@
 namespace pacxx {
 namespace v2 {
 
-class NativeRuntime : public IRRuntime<NativeRuntime> {
+class NativeRuntime : public IRRuntime {
 public:
   using CompilerT = NativeBackend;
 
   NativeRuntime(unsigned dev_id);
   virtual ~NativeRuntime();
+
+  virtual RuntimeType getRuntimeType() override;
 
   virtual void link(std::unique_ptr<llvm::Module> M) override;
 

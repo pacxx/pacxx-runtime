@@ -22,6 +22,10 @@ NativeRuntime::NativeRuntime(unsigned)
 
 NativeRuntime::~NativeRuntime() {}
 
+RuntimeType NativeRuntime::getRuntimeType(){
+  return RuntimeType::NativeRuntimeTy;
+};
+
 void NativeRuntime::link(std::unique_ptr<llvm::Module> M) {
 
   __verbose("linking");

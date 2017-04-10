@@ -10,11 +10,11 @@
 namespace pacxx {
 namespace v2 {
 
-template <typename RuntimeT> class Executor;
+class Executor;
 
 template <typename PromisedTy> class BindingPromise {
 private:
-  template <typename T> friend class Executor;
+  friend class Executor;
 
   template <typename... Ts>
   BindingPromise(Ts &&... args) : _bound(std::forward<Ts>(args)...) {}

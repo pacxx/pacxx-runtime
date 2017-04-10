@@ -19,8 +19,6 @@
 #include "pacxx/detail/common/Exceptions.h"
 #include "pacxx/detail/common/Log.h"
 #include "pacxx/detail/cuda/CUDARuntime.h"
-#include "pacxx/detail/cuda/PTXBackend.h"
-#include "pacxx/detail/native/NativeBackend.h"
 #include "pacxx/detail/native/NativeRuntime.h"
 #include <algorithm>
 #include <cstdlib>
@@ -51,51 +49,70 @@ using Runtime = pacxx::v2::CUDARuntime;
 namespace pacxx {
 namespace v2 {
 
-template <typename RuntimeT> class Executor {
-private:
-  static bool _initialized;
+class Executor;
 
+Executor &get_executor(unsigned id = 0);
+template<typename T = Runtime, typename... Ts> Executor &get_executor(Ts... args);
+
+class Executor {
 public:
-  using CompilerT = typename RuntimeT::CompilerT;
 
-  static auto &
-  Create(bool load_internal = true) { // TODO: make dynamic fo different devices
-    static Executor instance(0);
+  static auto& getExecutors(){
+    static std::vector<Executor>* executors  = new std::vector<Executor>();
+    return *executors; // TODO: free resources at application's exit
+  }
 
-    if (!load_internal)
-      _initialized = true;
+  static Executor& get(unsigned id = 0) {
+    auto& executors = getExecutors();
+    if (executors.empty()) {
+      __debug("Default executor crated!");
+      Create<Runtime>(0); // TODO: make dynamic fo different devices
+    }
+    return executors[id];
+  }
 
-    if (!_initialized) {
-      ModuleLoader loader(instance.getLLVMContext());
+  template<typename T = Runtime, typename... Ts> static Executor &Create(Ts... args) {
+    std::unique_ptr<IRRuntime> rt(new T(args...));
+    return Executor::Create(std::move(rt));
+  }
+
+  static Executor& Create(std::unique_ptr<IRRuntime> rt, std::string module_bytes = "") {
+    auto& executors = getExecutors();
+    executors.emplace_back(std::move(rt));
+    auto& instance = executors.back();
+
+    instance._id = executors.size() - 1;
+
+    ModuleLoader loader(instance.getLLVMContext());
+    if (module_bytes == "") {
       auto M = loader.loadInternal(llvm_start, llvm_size);
       instance.setModule(std::move(M));
       instance.setMSPModule(
           loader.loadInternal(reflection_start, reflection_size));
-      _initialized = true;
-    }
-    return instance;
-  }
-
-  static auto &
-  Create(std::string module_bytes) { // TODO: make dynamic fo different devices
-    static Executor instance(0);
-
-    if (!_initialized) {
+    } else{
       ModuleLoader loader(instance.getLLVMContext());
       auto M = loader.loadInternal(module_bytes.data(), module_bytes.size());
       instance.setModule(std::move(M));
-      _initialized = true;
     }
+
     return instance;
   }
 
-private:
-  Executor(unsigned devID)
-      : _ctx(), _runtime(std::make_unique<RuntimeT>(devID)),
-        _mem_manager(*_runtime) {
+  Executor(std::unique_ptr<IRRuntime> &&rt) :
+      _ctx(new LLVMContext()), _runtime(std::move(rt)),
+      _mem_manager(*_runtime) {
     core::CoreInitializer::initialize();
   }
 
+  Executor(Executor&& other) : _mem_manager(std::move(other._mem_manager)){
+    _ctx = std::move(other._ctx);
+    _runtime = std::move(other._runtime);
+    _id = other._id;
+    _kernel_translation = std::move(other._kernel_translation);
+  }
+
+
+private:
   std::string cleanName(const std::string &name) {
     auto cleaned_name =
         std::regex_replace(name, std::regex("S[0-9A-Z]{0,9}_"), "");
@@ -116,6 +133,9 @@ private:
   }
 
 public:
+
+  unsigned getID() { return _id; };
+
   void setMSPModule(std::unique_ptr<llvm::Module> M) {
     _runtime->initializeMSP(std::move(M));
   }
@@ -124,7 +144,7 @@ public:
 
   void setModule(std::string module_bytes);
 
-  template <typename L, typename... Args>
+  template<typename L, typename... Args>
   void run(const L &lambda, KernelConfiguration config, Args &&... args) {
     // auto& dev_lambda = _mem_manager.getTemporaryLambda(lambda);
     auto &K = get_kernel_by_name(typeid(L).name(), config,
@@ -133,7 +153,7 @@ public:
     K.launch();
   }
 
-  template <typename L, typename CallbackFunc, typename... Args>
+  template<typename L, typename CallbackFunc, typename... Args>
   void run_with_callback(const L &lambda, KernelConfiguration config,
                          CallbackFunc &&cb, Args &&... args) {
     auto &K = get_kernel_by_name(typeid(L).name(), config,
@@ -143,7 +163,7 @@ public:
     K.launch();
   }
 
-  template <typename... Args>
+  template<typename... Args>
   auto &get_kernel_by_name(std::string name, KernelConfiguration config,
                            Args &&... args) {
 
@@ -163,7 +183,7 @@ public:
     auto F = M.getFunction(FName);
     if (!F) {
       throw common::generic_exception("Kernel function not found in module! " +
-                                      cleanName(name));
+          cleanName(name));
     }
 
     auto &K = _runtime->getKernel(FName);
@@ -201,7 +221,7 @@ public:
     void *lambdaPtr = nullptr;
 
     common::for_first_in_arg_pack(
-        [&](auto &lambda) { lambdaPtr = (void *)&lambda; },
+        [&](auto &lambda) { lambdaPtr = (void *) &lambda; },
         std::forward<Args>(args)...);
 
     common::for_each_in_arg_pack(
@@ -232,7 +252,7 @@ public:
     return K;
   }
 
-  template <typename... Args>
+  template<typename... Args>
   void run_interop(std::string name, KernelConfiguration config,
                    const std::vector<KernelArgument> &args) {
 
@@ -241,7 +261,7 @@ public:
 
     if (!F)
       throw common::generic_exception("Kernel function not found in module! " +
-                                      name);
+          name);
 
     size_t buffer_size = 0;
     std::vector<size_t> arg_offsets(F->arg_size());
@@ -277,17 +297,34 @@ public:
     K.launch();
   }
 
-  template <typename T>
+  template<typename T>
   DeviceBuffer<T> &allocate(size_t count, T *host_ptr = nullptr) {
-    return *_runtime->template allocateMemory<T>(count, host_ptr);
+    __verbose("allocating memory: ", sizeof(T) * count);
+
+    switch(_runtime->getRuntimeType())
+    {
+    case RuntimeType::CUDARuntimeTy:
+      return *static_cast<CUDARuntime&>(*_runtime).template allocateMemory(count, host_ptr);
+    case RuntimeType::NativeRuntimeTy:
+      return *static_cast<NativeRuntime&>(*_runtime).template allocateMemory(count, host_ptr);
+    }
+
+    throw pacxx::common::generic_exception("unreachable code");
   }
 
   RawDeviceBuffer &allocateRaw(size_t bytes) {
+    __verbose("allocating raw memory: ", bytes);
     return *_runtime->allocateRawMemory(bytes);
   }
 
-  template <typename T> void free(DeviceBuffer<T> &buffer) {
-    _runtime->template deleteMemory(&buffer);
+  template<typename T> void free(DeviceBuffer<T> &buffer) {
+    switch(_runtime->getRuntimeType())
+    {
+    case RuntimeType::CUDARuntimeTy:
+      return *static_cast<CUDARuntime&>(*_runtime).template deleteMemory(buffer);
+    case RuntimeType::NativeRuntimeTy:
+      return *static_cast<NativeRuntime&>(*_runtime).template deleteMemory(buffer);
+    }
   }
 
   void freeRaw(RawDeviceBuffer &buffer) { _runtime->deleteRawMemory(&buffer); }
@@ -300,48 +337,27 @@ public:
 
   auto &getPassManager() { return _runtime->getPassManager(); }
 
-  template <typename PromisedTy, typename... Ts>
+  template<typename PromisedTy, typename... Ts>
   auto &getPromise(Ts &&... args) {
     auto promise = new BindingPromise<PromisedTy>(std::forward<Ts>(args)...);
     return *promise;
   };
 
-  template <typename PromisedTy>
+  template<typename PromisedTy>
   void forgetPromise(BindingPromise<PromisedTy> &instance) {
 
     delete &instance;
   };
 
-  auto &getLLVMContext() { return _ctx; }
+  LLVMContext &getLLVMContext() { return *_ctx; }
 
 private:
-  LLVMContext _ctx;
-  std::unique_ptr<RuntimeT> _runtime;
+  std::unique_ptr<LLVMContext> _ctx;
+  std::unique_ptr<IRRuntime> _runtime;
   MemoryManager _mem_manager;
   std::map<std::string, std::string> _kernel_translation;
+  unsigned _id;
 };
-
-template <typename T> bool Executor<T>::_initialized = false;
-
-template <typename T>
-void Executor<T>::setModule(std::unique_ptr<llvm::Module> M) {
-
-  _runtime->link(std::move(M));
-
-  auto &nM = _runtime->getModule();
-  for (auto &F : nM.getFunctionList())
-    _kernel_translation[cleanName(F.getName().str())] = F.getName().str();
-}
-
-template <typename T> void Executor<T>::setModule(std::string module_bytes) {
-  ModuleLoader loader(_ctx);
-  auto M = loader.loadInternal(module_bytes.data(), module_bytes.size());
-  Create().setModule(std::move(M));
-}
-
-template <typename T = Runtime> auto &get_executor() {
-  return Executor<T>::Create();
-}
 }
 }
 

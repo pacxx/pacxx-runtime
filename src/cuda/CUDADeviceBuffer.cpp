@@ -61,7 +61,7 @@ void CUDARawDeviceBuffer::downloadAsync(void *dest, size_t bytes,
 void CUDARawDeviceBuffer::abandon() {
   --_mercy;
   if (_mercy == 0) {
-    Executor<CUDARuntime>::Create().freeRaw(*this);
+    Executor::get().freeRaw(*this); // FIXME: support valid executor id
     _buffer = nullptr;
   }
 }

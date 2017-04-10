@@ -16,7 +16,7 @@ namespace pacxx {
 namespace v2 {
 class MemoryManager {
 public:
-  MemoryManager(IRRuntimeBase &runtime) : _runtime(runtime) {}
+  MemoryManager(IRRuntime &runtime) : _runtime(runtime) {}
 
   virtual ~MemoryManager() {}
 
@@ -79,7 +79,7 @@ public:
   }
 
 private:
-  IRRuntimeBase &_runtime;
+  IRRuntime &_runtime;
   std::map<const void *, RawDeviceBuffer *> _managed_vectors;
   std::map<const void *, RawDeviceBuffer *> _temporaries;
 };

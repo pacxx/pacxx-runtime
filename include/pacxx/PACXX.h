@@ -2,8 +2,8 @@
 // Created by mhaidl on 04/06/16.
 //
 
-#ifndef PACXX_V2_KERNEL_H_H
-#define PACXX_V2_KERNEL_H_H
+#ifndef PACXX_V2_PACXX_H
+#define PACXX_V2_PACXX_H
 
 #include "pacxx/Executor.h"
 #include "pacxx/detail/KernelConfiguration.h"
@@ -99,13 +99,13 @@ template <size_t _C, typename L, typename... ArgTys>
   callable(args...);
 }
 
-template <typename RuntimeT, size_t _C, typename T>
+template <size_t _C, typename T>
 struct kernel_caller
-    : public kernel_caller<RuntimeT, _C, decltype(&T::operator())> {};
+    : public kernel_caller<_C, decltype(&T::operator())> {};
 
-template <typename RuntimeT, size_t _C, typename FType, typename RType,
+template <size_t _C, typename FType, typename RType,
           typename... ArgTys>
-struct kernel_caller<RuntimeT, _C, RType (FType::*)(ArgTys...) const> {
+struct kernel_caller<_C, RType (FType::*)(ArgTys...) const> {
   enum { arity = sizeof...(ArgTys) };
 
   template <size_t i> struct ArgTy {
@@ -127,13 +127,13 @@ struct kernel_caller<RuntimeT, _C, RType (FType::*)(ArgTys...) const> {
 #ifdef __device_code__
     genericKernel<_C, L, ArgTys...>(F, args...);
 #else
-    auto &executor = Executor<RuntimeT>::Create();
+    auto &executor = Executor::get(config.executor);
     executor.run(typeid(L).name(), config, nullptr, std::forward<Ts>(args)...);
 #endif
   }
 };
 
-template <typename RuntimeT, size_t _C> struct exp_kernel_caller {
+template <size_t _C> struct exp_kernel_caller {
   template <typename L, typename... Ts>
   static void call(const L &F, const KernelConfiguration &config,
                    Ts &&... args) {
@@ -149,7 +149,8 @@ template <typename RuntimeT, size_t _C> struct exp_kernel_caller {
                   meta::add_gpu_reference_t<std::remove_reference_t<Ts>>...>(
         F, args...);
 #else
-    auto &executor = Executor<RuntimeT>::Create();
+    __verbose("launching kernel: ", typeid(F).name(), " with executor: ", config.executor);
+    auto &executor = Executor::get(config.executor);
     executor.run(F, config, std::forward<Ts>(args)...);
 #endif
   }
@@ -170,13 +171,14 @@ template <typename RuntimeT, size_t _C> struct exp_kernel_caller {
                   meta::add_gpu_reference_t<std::remove_reference_t<Ts>>...>(
         F, args...);
 #else
-    auto &executor = Executor<RuntimeT>::Create();
+    __verbose("launching kernel with callback: ", typeid(F).name(), " with executor: ", config.executor);
+    auto &executor = Executor::get(config.executor);
     executor.run_with_callback(F, config, callback, std::forward<Ts>(args)...);
 #endif
   }
 };
 
-template <typename L, typename RuntimeT, size_t _C> class _kernel {
+template <typename L, size_t _C> class _kernel {
 public:
   _kernel(const L &lambda, KernelConfiguration config)
       : _function(lambda), _config(config) {}
@@ -184,7 +186,7 @@ public:
   template <typename... Ts> void operator()(Ts &&... args) const {
     // using caller = kernel_caller<_C,
     // decltype(&std::remove_const_t<std::remove_reference_t<L>>::operator())>;
-    using caller = exp_kernel_caller<RuntimeT, _C>;
+    using caller = exp_kernel_caller<_C>;
 
     caller::call(_function, _config, std::forward<Ts>(args)...);
   }
@@ -196,7 +198,7 @@ private:
   KernelConfiguration _config;
 };
 
-template <typename L, typename CB, typename RuntimeT, size_t _C>
+template <typename L, typename CB, size_t _C>
 class _kernel_with_cb {
 public:
   _kernel_with_cb(const L &lambda, KernelConfiguration config, CB &&callback)
@@ -205,7 +207,7 @@ public:
   template <typename... Ts> void operator()(Ts &&... args) {
     // using caller = kernel_caller<_C,
     // decltype(&std::remove_const_t<std::remove_reference_t<L>>::operator())>;
-    using caller = exp_kernel_caller<RuntimeT, _C>;
+    using caller = exp_kernel_caller<_C>;
 
     caller::call_with_cb(_function, _config, _callback,
                          std::forward<Ts>(args)...);
@@ -219,17 +221,17 @@ private:
   CB _callback;
 };
 
-template <typename RuntimeT = Runtime, typename Func,
+template <typename Func,
           size_t versioning = __COUNTER__>
 auto kernel(const Func &lambda, KernelConfiguration config) {
-  return _kernel<decltype(lambda), RuntimeT, versioning>(lambda, config);
+  return _kernel<decltype(lambda), versioning>(lambda, config);
 };
 
-template <typename Func, typename CallbackFunc, typename RuntimeT = Runtime,
+template <typename Func, typename CallbackFunc,
           size_t versioning = __COUNTER__>
 auto kernel_with_cb(const Func &lambda, KernelConfiguration config,
                     CallbackFunc &&CB) {
-  return _kernel_with_cb<decltype(lambda), CallbackFunc, RuntimeT, versioning>(
+  return _kernel_with_cb<decltype(lambda), CallbackFunc, versioning>(
       lambda, config, std::forward<CallbackFunc>(CB));
 };
 

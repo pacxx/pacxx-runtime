@@ -46,6 +46,10 @@ CUDARuntime::CUDARuntime(unsigned dev_id)
 
 CUDARuntime::~CUDARuntime() {}
 
+RuntimeType CUDARuntime::getRuntimeType(){
+  return RuntimeType::CUDARuntimeTy;
+};
+
 void CUDARuntime::link(std::unique_ptr<llvm::Module> M) {
 
   _rawM = std::move(M);

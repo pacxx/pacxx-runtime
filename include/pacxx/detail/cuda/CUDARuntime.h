@@ -26,13 +26,15 @@ typedef struct CUmod_st *CUmodule;
 namespace pacxx {
 namespace v2 {
 
-class CUDARuntime : public IRRuntime<CUDARuntime> {
+class CUDARuntime : public IRRuntime {
 public:
   using CompilerT = PTXBackend;
 
   CUDARuntime(unsigned dev_id);
 
   virtual ~CUDARuntime();
+
+  virtual RuntimeType getRuntimeType() override;
 
   virtual void link(std::unique_ptr<llvm::Module> M) override;
 
