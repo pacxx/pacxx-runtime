@@ -120,7 +120,7 @@ Module *NativeBackend::compile(std::unique_ptr<Module> &M) {
 
   LLVMInitializeNativeTarget();
   LLVMInitializeNativeAsmPrinter();
-  LLVMInitializeNativeAsmParser();;
+  LLVMInitializeNativeAsmParser();
 
   linkInModule(M);
 

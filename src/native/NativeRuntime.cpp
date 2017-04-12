@@ -11,6 +11,7 @@
 #include <llvm/Transforms/Scalar.h>
 #include <llvm/Transforms/Utils/Cloning.h>
 #include <tbb/task_scheduler_init.h>
+#include <thread>
 
 using namespace llvm;
 
@@ -18,7 +19,9 @@ namespace pacxx {
 namespace v2 {
 
 NativeRuntime::NativeRuntime(unsigned)
-    : _compiler(std::make_unique<CompilerT>()), _delayed_compilation(false) {}
+    : _compiler(std::make_unique<CompilerT>()), _delayed_compilation(false) {
+  llvm::sys::getHostCPUFeatures(_host_features);
+}
 
 NativeRuntime::~NativeRuntime() {}
 
@@ -148,5 +151,30 @@ void NativeRuntime::synchronize(){};
 llvm::legacy::PassManager &NativeRuntime::getPassManager() {
   return _compiler->getPassManager();
 };
+
+size_t NativeRuntime::getPreferedVectorSize(size_t dtype_size) {
+
+  for (auto &p : _host_features) {
+    if (p.second)
+      __verbose(p.first().str());
+  }
+
+  if (_host_features["avx"] || _host_features["avx2"])
+    return 32 / dtype_size;
+  if (_host_features["sse2"] || _host_features["altivec"])
+    return 16 / dtype_size;
+  if (_host_features["mmx"])
+    return 8 / dtype_size;
+
+  return 1;
+}
+
+size_t NativeRuntime::getConcurrentCores() {
+  auto n = std::thread::hardware_concurrency();
+  if (n == 0)
+    return 1;
+  return n;
+}
+
 }
 }

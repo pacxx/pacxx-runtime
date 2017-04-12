@@ -42,6 +42,10 @@ public:
 
   virtual size_t getPreferedMemoryAlignment() override;
 
+  virtual size_t getPreferedVectorSize(size_t dtype_size) override;
+
+  virtual size_t getConcurrentCores() override;
+
   template <typename T>
   DeviceBuffer<T> *allocateMemory(size_t count, T *host_ptr) {
     CUDARawDeviceBuffer raw;
@@ -133,6 +137,7 @@ private:
   std::unique_ptr<llvm::Module> _M, _rawM;
   std::map<std::string, std::unique_ptr<CUDAKernel>> _kernels;
   std::list<std::unique_ptr<DeviceBufferBase>> _memory;
+  std::vector<cudaDeviceProp> _dev_props;
 
   struct callback_mem {
     size_t size;

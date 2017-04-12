@@ -37,6 +37,10 @@ public:
 
   virtual size_t getPreferedMemoryAlignment() override;
 
+  virtual size_t getPreferedVectorSize(size_t dtype_size) override;
+
+  virtual size_t getConcurrentCores() override;
+
   template <typename T>
   DeviceBuffer<T> *allocateMemory(size_t count, T *host_ptr) {
     NativeRawDeviceBuffer rawBuffer;
@@ -99,6 +103,7 @@ private:
   std::unique_ptr<CompilerT> _compiler;
   std::map<std::string, std::unique_ptr<NativeKernel>> _kernels;
   std::list<std::unique_ptr<DeviceBufferBase>> _memory;
+  llvm::StringMap<bool> _host_features;
   bool _delayed_compilation;
   v2::MSPEngine _msp_engine;
 };

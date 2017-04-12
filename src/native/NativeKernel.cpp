@@ -63,7 +63,7 @@ void NativeKernel::launch() {
                                            int, int, int, char *)>(_fptr);
 
   std::chrono::high_resolution_clock::time_point start, end;
-  unsigned runs = 1000;
+  unsigned runs = 100;
   std::vector<unsigned> times(runs);
 
   // warmup run

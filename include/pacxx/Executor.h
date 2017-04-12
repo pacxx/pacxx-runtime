@@ -51,19 +51,24 @@ namespace v2 {
 
 class Executor;
 
+enum ExecutingDevice {
+  GPUNvidia,
+  CPU
+};
+
 Executor &get_executor(unsigned id = 0);
 template<typename T = Runtime, typename... Ts> Executor &get_executor(Ts... args);
 
 class Executor {
 public:
 
-  static auto& getExecutors(){
-    static std::vector<Executor>* executors  = new std::vector<Executor>();
+  static auto &getExecutors() {
+    static std::vector<Executor> *executors = new std::vector<Executor>();
     return *executors; // TODO: free resources at application's exit
   }
 
-  static Executor& get(unsigned id = 0) {
-    auto& executors = getExecutors();
+  static Executor &get(unsigned id = 0) {
+    auto &executors = getExecutors();
     if (executors.empty()) {
       __debug("Default executor crated!");
       Create<Runtime>(0); // TODO: make dynamic fo different devices
@@ -76,10 +81,10 @@ public:
     return Executor::Create(std::move(rt));
   }
 
-  static Executor& Create(std::unique_ptr<IRRuntime> rt, std::string module_bytes = "") {
-    auto& executors = getExecutors();
+  static Executor &Create(std::unique_ptr<IRRuntime> rt, std::string module_bytes = "") {
+    auto &executors = getExecutors();
     executors.emplace_back(std::move(rt));
-    auto& instance = executors.back();
+    auto &instance = executors.back();
 
     instance._id = executors.size() - 1;
 
@@ -89,7 +94,7 @@ public:
       instance.setModule(std::move(M));
       instance.setMSPModule(
           loader.loadInternal(reflection_start, reflection_size));
-    } else{
+    } else {
       ModuleLoader loader(instance.getLLVMContext());
       auto M = loader.loadInternal(module_bytes.data(), module_bytes.size());
       instance.setModule(std::move(M));
@@ -104,13 +109,12 @@ public:
     core::CoreInitializer::initialize();
   }
 
-  Executor(Executor&& other) : _mem_manager(std::move(other._mem_manager)){
+  Executor(Executor &&other) : _mem_manager(std::move(other._mem_manager)) {
     _ctx = std::move(other._ctx);
     _runtime = std::move(other._runtime);
     _id = other._id;
     _kernel_translation = std::move(other._kernel_translation);
   }
-
 
 private:
   std::string cleanName(const std::string &name) {
@@ -138,6 +142,22 @@ public:
 
   void setMSPModule(std::unique_ptr<llvm::Module> M) {
     _runtime->initializeMSP(std::move(M));
+  }
+
+  template<typename T>
+  auto getVectorizationWidth() {
+    return _runtime->getPreferedVectorSize(sizeof(T));
+  }
+
+  auto getConcurrentCores() {
+    return _runtime->getConcurrentCores();
+  }
+
+  auto getExecutingDeviceType() {
+    switch (_runtime->getRuntimeType()) {
+    case RuntimeType::CUDARuntimeTy:return ExecutingDevice::GPUNvidia;
+    case RuntimeType::NativeRuntimeTy:return ExecutingDevice::CPU;
+    }
   }
 
   void setModule(std::unique_ptr<llvm::Module> M);
@@ -301,12 +321,13 @@ public:
   DeviceBuffer<T> &allocate(size_t count, T *host_ptr = nullptr) {
     __verbose("allocating memory: ", sizeof(T) * count);
 
-    switch(_runtime->getRuntimeType())
-    {
+    switch (_runtime->getRuntimeType()) {
     case RuntimeType::CUDARuntimeTy:
-      return *static_cast<CUDARuntime&>(*_runtime).template allocateMemory(count, host_ptr);
+      return *static_cast<CUDARuntime &>(*_runtime).template allocateMemory(count,
+                                                                            host_ptr);
     case RuntimeType::NativeRuntimeTy:
-      return *static_cast<NativeRuntime&>(*_runtime).template allocateMemory(count, host_ptr);
+      return *static_cast<NativeRuntime &>(*_runtime).template allocateMemory(count,
+                                                                              host_ptr);
     }
 
     throw pacxx::common::generic_exception("unreachable code");
@@ -318,12 +339,9 @@ public:
   }
 
   template<typename T> void free(DeviceBuffer<T> &buffer) {
-    switch(_runtime->getRuntimeType())
-    {
-    case RuntimeType::CUDARuntimeTy:
-      return *static_cast<CUDARuntime&>(*_runtime).template deleteMemory(buffer);
-    case RuntimeType::NativeRuntimeTy:
-      return *static_cast<NativeRuntime&>(*_runtime).template deleteMemory(buffer);
+    switch (_runtime->getRuntimeType()) {
+    case RuntimeType::CUDARuntimeTy:return *static_cast<CUDARuntime &>(*_runtime).template deleteMemory(buffer);
+    case RuntimeType::NativeRuntimeTy:return *static_cast<NativeRuntime &>(*_runtime).template deleteMemory(buffer);
     }
   }
 

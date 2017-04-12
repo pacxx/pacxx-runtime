@@ -20,7 +20,7 @@ namespace pacxx {
 namespace v2 {
 CUDARuntime::CUDARuntime(unsigned dev_id)
     : _context(nullptr), _compiler(std::make_unique<CompilerT>()),
-      _delayed_compilation(false) {
+      _delayed_compilation(false), _dev_props(16) {
   SEC_CUDA_CALL(cuInit(0));
   CUcontext old;
   SEC_CUDA_CALL(cuCtxGetCurrent(&old)); // check if there is already a context
@@ -34,7 +34,8 @@ CUDARuntime::CUDARuntime(unsigned dev_id)
     __verbose("Creating cudaCtx for device: ", dev_id, " ", device, " ",
               _context);
   }
-  cudaDeviceProp prop;
+
+  auto &prop = _dev_props[dev_id];
   SEC_CUDA_CALL(cudaGetDeviceProperties(&prop, dev_id));
 
   unsigned CC = prop.major * 10 + prop.minor;
@@ -203,5 +204,17 @@ void CUDARuntime::synchronize() { SEC_CUDA_CALL(cudaDeviceSynchronize()); }
 llvm::legacy::PassManager &CUDARuntime::getPassManager() {
   return _compiler->getPassManager();
 }
+
+size_t CUDARuntime::getPreferedVectorSize(size_t dtype_size) {
+  return 1;
+}
+
+size_t CUDARuntime::getConcurrentCores() {
+  int dev = -1;
+  SEC_CUDA_CALL(cudaGetDevice(&dev));
+  return _dev_props[dev].multiProcessorCount;
+}
+
+
 }
 }

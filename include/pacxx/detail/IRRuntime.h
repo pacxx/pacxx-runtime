@@ -36,6 +36,10 @@ public:
 
   virtual size_t getPreferedMemoryAlignment() = 0;
 
+  virtual size_t getPreferedVectorSize(size_t dtype_size) = 0;
+
+  virtual size_t getConcurrentCores() = 0;
+
   virtual RawDeviceBuffer *allocateRawMemory(size_t bytes) = 0;
 
   virtual void deleteRawMemory(RawDeviceBuffer *ptr) = 0;
