@@ -71,7 +71,7 @@ public:
     auto &executors = getExecutors();
     if (executors.empty()) {
       __debug("Default executor crated!");
-      Create<Runtime>(0); // TODO: make dynamic fo different devices
+      Create<Runtime>(0); // TODO: make dynamic for different devices
     }
     return executors[id];
   }
