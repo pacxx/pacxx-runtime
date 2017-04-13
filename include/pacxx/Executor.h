@@ -70,8 +70,14 @@ public:
   static Executor &get(unsigned id = 0) {
     auto &executors = getExecutors();
     if (executors.empty()) {
-      __debug("Default executor crated!");
-      Create<Runtime>(0); // TODO: make dynamic for different devices
+
+      if (CUDARuntime::checkSupportedHardware()) {
+        Create<CUDARuntime>(0); // TODO: make dynamic for different devices
+      }
+      else {
+        __verbose("No CUDA Device found: Using Fallback to NativeRuntime for CPU execution as default Executor");
+        Create<NativeRuntime>(0);
+      }
     }
     return executors[id];
   }

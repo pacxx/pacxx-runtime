@@ -30,6 +30,8 @@ class CUDARuntime : public IRRuntime {
 public:
   using CompilerT = PTXBackend;
 
+  static bool checkSupportedHardware();
+
   CUDARuntime(unsigned dev_id);
 
   virtual ~CUDARuntime();

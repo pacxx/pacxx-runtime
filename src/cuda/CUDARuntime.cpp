@@ -215,6 +215,13 @@ size_t CUDARuntime::getConcurrentCores() {
   return _dev_props[dev].multiProcessorCount;
 }
 
+bool CUDARuntime::checkSupportedHardware() {
+  int count = -1;
+  SEC_CUDA_CALL(cudaGetDeviceCount(&count));
+  __verbose("CUDARuntime has found ", count, " CUDA devices");
+  return count != 0;
+}
+
 
 }
 }
