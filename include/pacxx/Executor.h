@@ -5,8 +5,6 @@
 #ifndef PACXX_V2_EXECUTOR_H
 #define PACXX_V2_EXECUTOR_H
 
-#include <cuda.h>
-
 #include "CodePolicy.h"
 #include "ModuleLoader.h"
 #include "Promise.h"
