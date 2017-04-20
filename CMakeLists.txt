@@ -4,6 +4,7 @@ project(PACXX_V2)
 set(CMAKE_MODULE_PATH $ENV{PACXX_PATH}/lib/cmake/llvm/)
 set(LLVM_DIR $ENV{PACXX_PATH}/lib/cmake/llvm/)
 find_package(LLVM REQUIRED CONFIG)
+find_package(CUDA)
 
 include_directories("./include")
 
@@ -13,7 +14,7 @@ include_directories(${LLVM_INCLUDE_DIRS})
 include_directories(${TBB_INCLUDE_DIR})
 
 option(OpenMP "use OpenMP instead of TBB" OFF)
-option(USE_CUDA "Build the CUDA backend" ON)
+option(USE_CUDA "Build the CUDA backend" ${CUDA_FOUND})
 
 if(OpenMP)
   add_definitions(-D__PACXX_OMP)
@@ -56,6 +57,7 @@ set(SOURCE_FILES include/pacxx/Executor.h
         include/pacxx/detail/native/NativeDeviceBuffer.h
         src/native/NativeDeviceBuffer.cpp)
 
+
 if (USE_CUDA)
     add_definitions(-DPACXX_ENABLE_CUDA)
     find_package(CUDA REQUIRED)
@@ -82,10 +84,10 @@ set(PACXX_DEV_FLAGS -std=pacxx -O0 -c -emit-llvm -target nvptx64-unknown-unknown
 
 add_library(pacxxrt2 ${SOURCE_FILES} ${CUDA_SOURCE_FILES})
 
-add_custom_command(TARGET pacxxrt2 POST_BUILD COMMAND $ENV{PACXX_PATH}/bin/llvm-as ${CMAKE_SOURCE_DIR}/src/bitcode/syscalls.ll -o ${CMAKE_BINARY_DIR}/syscalls.bc)
-add_custom_command(TARGET pacxxrt2 POST_BUILD COMMAND $ENV{PACXX_PATH}/bin/clang ${PACXX_DEV_FLAGS} ${CMAKE_SOURCE_DIR}/src/bitcode/nvvm_device_binding.cpp -o ${CMAKE_BINARY_DIR}/nvvm_device_binding.bc)
+add_custom_command(TARGET pacxxrt2 POST_BUILD COMMAND ${LLVM_TOOLS_BINARY_DIR}/llvm-as ${CMAKE_SOURCE_DIR}/src/bitcode/syscalls.ll -o ${CMAKE_BINARY_DIR}/syscalls.bc)
+add_custom_command(TARGET pacxxrt2 POST_BUILD COMMAND ${LLVM_TOOLS_BINARY_DIR}/clang ${PACXX_DEV_FLAGS} ${CMAKE_SOURCE_DIR}/src/bitcode/nvvm_device_binding.cpp -o ${CMAKE_BINARY_DIR}/nvvm_device_binding.bc)
 add_custom_command(TARGET pacxxrt2 POST_BUILD COMMAND cp ${CMAKE_SOURCE_DIR}/src/*.S ${CMAKE_BINARY_DIR}/)
-#add_custom_command(TARGET pacxxrt2 POST_BUILD COMMAND $ENV{PACXX_PATH}/bin/clang ${PACXX_DEV_FLAGS} ${CMAKE_SOURCE_DIR}/src/DeviceCode.cpp -o ${CMAKE_BINARY_DIR}/DeviceCode.bc)
+#add_custom_command(TARGET pacxxrt2 POST_BUILD COMMAND ${LLVM_TOOLS_BINARY_DIR}/clang ${PACXX_DEV_FLAGS} ${CMAKE_SOURCE_DIR}/src/DeviceCode.cpp -o ${CMAKE_BINARY_DIR}/DeviceCode.bc)
 
 file(GLOB PACXX_FILES ${CMAKE_BINARY_DIR}/*.a ${CMAKE_BINARY_DIR}/*.bc ${CMAKE_BINARY_DIR}/*.S)
 
