@@ -6,7 +6,6 @@
 #define PACXX_V2_KERNELCONFIGURATION_H
 
 #include <cstddef>
-#include <vector_types.h>
 
 #define DIV_UP(a, b) (((a) + (b)-1) / (b))
 #define NTHREADS 128
@@ -16,8 +15,6 @@ namespace v2 {
 
 struct Dimension3 {
   Dimension3(size_t vx = 1, size_t vy = 1, size_t vz = 1);
-  Dimension3(dim3 px);
-  dim3 getDim3() const;
 
   bool operator==(const Dimension3 &rhs) {
     return x == rhs.x && y == rhs.y && z == rhs.z;
