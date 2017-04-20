@@ -4,13 +4,12 @@ project(PACXX_V2)
 set(CMAKE_MODULE_PATH $ENV{PACXX_PATH}/lib/cmake/llvm/)
 set(LLVM_DIR $ENV{PACXX_PATH}/lib/cmake/llvm/)
 find_package(LLVM REQUIRED CONFIG)
-find_package(CUDA REQUIRED)
+
 include_directories("./include")
 
 set(TBB_INCLUDE_DIR "$ENV{PACXX_PATH}/include" CACHE FILEPATH "include directory of tbb")
 
 include_directories(${LLVM_INCLUDE_DIRS})
-include_directories(${CUDA_TOOLKIT_INCLUDE})
 include_directories(${TBB_INCLUDE_DIR})
 
 option(OpenMP "use OpenMP instead of TBB" OFF)
@@ -58,6 +57,8 @@ set(SOURCE_FILES include/pacxx/Executor.h
 
 if (USE_CUDA)
     add_definitions(-DPACXX_ENABLE_CUDA)
+    find_package(CUDA REQUIRED)
+    include_directories(${CUDA_TOOLKIT_INCLUDE})
     set(SOURCE_FILES src/cuda/PTXBackend.cpp
             include/pacxx/detail/cuda/PTXBackend.h
             include/pacxx/detail/cuda/CUDARuntime.h
