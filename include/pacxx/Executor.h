@@ -18,7 +18,9 @@
 #include "pacxx/detail/MemoryManager.h"
 #include "pacxx/detail/common/Exceptions.h"
 #include "pacxx/detail/common/Log.h"
+#ifdef PACXX_ENABLE_CUDA
 #include "pacxx/detail/cuda/CUDARuntime.h"
+#endif
 #include "pacxx/detail/native/NativeRuntime.h"
 #include <algorithm>
 #include <cstdlib>
@@ -40,7 +42,7 @@ extern const char reflection_start[];
 extern int reflection_size;
 #endif
 
-#ifdef __PACXX_V2_NATIVE_RUNTIME
+#ifndef PACXX_ENABLE_CUDA
 using Runtime = pacxx::v2::NativeRuntime;
 #else
 using Runtime = pacxx::v2::CUDARuntime;
@@ -71,13 +73,17 @@ public:
     auto &executors = getExecutors();
     if (executors.empty()) {
 
+#ifdef PACXX_ENABLE_CUDA
       if (CUDARuntime::checkSupportedHardware()) {
         Create<CUDARuntime>(0); // TODO: make dynamic for different devices
       }
       else {
         __verbose("No CUDA Device found: Using Fallback to NativeRuntime for CPU execution as default Executor");
+#endif
         Create<NativeRuntime>(0);
+#ifdef PACXX_ENABLE_CUDA
       }
+#endif
     }
     return executors[id];
   }
@@ -328,9 +334,11 @@ public:
     __verbose("allocating memory: ", sizeof(T) * count);
 
     switch (_runtime->getRuntimeType()) {
+#ifdef PACXX_ENABLE_CUDA
     case RuntimeType::CUDARuntimeTy:
       return *static_cast<CUDARuntime &>(*_runtime).template allocateMemory(count,
-                                                                            host_ptr);
+                                                                  host_ptr);
+#endif
     case RuntimeType::NativeRuntimeTy:
       return *static_cast<NativeRuntime &>(*_runtime).template allocateMemory(count,
                                                                               host_ptr);
@@ -346,7 +354,9 @@ public:
 
   template<typename T> void free(DeviceBuffer<T> &buffer) {
     switch (_runtime->getRuntimeType()) {
+#ifdef PACXX_ENABLE_CUDA
     case RuntimeType::CUDARuntimeTy:return *static_cast<CUDARuntime &>(*_runtime).template deleteMemory(buffer);
+#endif
     case RuntimeType::NativeRuntimeTy:return *static_cast<NativeRuntime &>(*_runtime).template deleteMemory(buffer);
     }
   }
