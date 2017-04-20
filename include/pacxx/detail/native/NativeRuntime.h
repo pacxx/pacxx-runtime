@@ -16,7 +16,9 @@
 #include <map>
 #include <memory>
 #include <string>
+#ifndef PACXX_DISABLE_TBB
 #include <tbb/task_scheduler_init.h>
+#endif
 #include <thread>
 
 namespace pacxx {

@@ -8,7 +8,9 @@
 #include "pacxx/detail/common/Timing.h"
 #include "pacxx/detail/native/NativeRuntime.h"
 #include <omp.h>
+#ifndef PACXX_DISABLE_TBB
 #include <tbb/tbb.h>
+#endif
 #include <fstream>
 
 namespace pacxx {

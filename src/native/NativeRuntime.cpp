@@ -10,7 +10,9 @@
 #include <llvm/Transforms/PACXXTransforms.h>
 #include <llvm/Transforms/Scalar.h>
 #include <llvm/Transforms/Utils/Cloning.h>
+#ifndef PACXX_DISABLE_TBB
 #include <tbb/task_scheduler_init.h>
+#endif
 #include <thread>
 
 using namespace llvm;

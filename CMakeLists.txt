@@ -17,6 +17,7 @@ option(USE_CUDA "Build the CUDA backend" ON)
 
 if(OpenMP)
   add_definitions(-D__PACXX_OMP)
+  add_definitions(-DPACXX_DISABLE_TBB)
   add_compile_options(-fopenmp)
 endif(OpenMP)
 
@@ -59,7 +60,7 @@ if (USE_CUDA)
     add_definitions(-DPACXX_ENABLE_CUDA)
     find_package(CUDA REQUIRED)
     include_directories(${CUDA_TOOLKIT_INCLUDE})
-    set(SOURCE_FILES src/cuda/PTXBackend.cpp
+    set(CUDA_SOURCE_FILES src/cuda/PTXBackend.cpp
             include/pacxx/detail/cuda/PTXBackend.h
             include/pacxx/detail/cuda/CUDARuntime.h
             src/cuda/CUDARuntime.cpp
@@ -79,7 +80,7 @@ add_definitions(${LLVM_DEFINITIONS})
 
 set(PACXX_DEV_FLAGS -std=pacxx -O0 -c -emit-llvm -target nvptx64-unknown-unknown -D__STDC_CONSTANT_MACROS -D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS -D__CUDA_DEVICE_CODE -isystem $ENV{PACXX_PATH}/include/c++/v1 -isystem $ENV{PACXX_PATH}include -isystem ${CUDA_TOOLKIT_INCLUDE} -I ${CMAKE_SOURCE_DIR}/include)
 
-add_library(pacxxrt2 ${SOURCE_FILES})
+add_library(pacxxrt2 ${SOURCE_FILES} ${CUDA_SOURCE_FILES})
 
 add_custom_command(TARGET pacxxrt2 POST_BUILD COMMAND $ENV{PACXX_PATH}/bin/llvm-as ${CMAKE_SOURCE_DIR}/src/bitcode/syscalls.ll -o ${CMAKE_BINARY_DIR}/syscalls.bc)
 add_custom_command(TARGET pacxxrt2 POST_BUILD COMMAND $ENV{PACXX_PATH}/bin/clang ${PACXX_DEV_FLAGS} ${CMAKE_SOURCE_DIR}/src/bitcode/nvvm_device_binding.cpp -o ${CMAKE_BINARY_DIR}/nvvm_device_binding.bc)
