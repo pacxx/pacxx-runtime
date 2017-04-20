@@ -2,7 +2,6 @@
 // Created by mhaidl on 31/05/16.
 //
 #include "pacxx/detail/KernelConfiguration.h"
-#include <vector_types.h>
 
 namespace pacxx {
 namespace v2 {
