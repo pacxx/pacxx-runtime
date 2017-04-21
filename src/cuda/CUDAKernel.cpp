@@ -103,5 +103,36 @@ size_t CUDAKernel::getHostArgumentsSize() const { return _hostArgBufferSize; }
 void CUDAKernel::setHostArgumentsSize(size_t size) {
   _hostArgBufferSize = size;
 }
+
+const std::vector<size_t> &CUDAKernel::getArugmentBufferOffsets() {
+  if (_arg_offsets.size() == 0) {
+    auto &M = _runtime.getModule();
+    auto F = M.getFunction(_name);
+    size_t offset = 0;
+    _arg_offsets.resize(F->arg_size());
+    std::transform(F->arg_begin(), F->arg_end(), _arg_offsets.begin(),
+                   [&](const auto &arg) {
+                     auto arg_size =
+                         M.getDataLayout().getTypeAllocSize(arg.getType());
+                     auto arg_alignment =
+                         M.getDataLayout().getPrefTypeAlignment(arg.getType());
+
+                     auto arg_offset =
+                         (offset + arg_alignment - 1) & ~(arg_alignment - 1);
+                     offset = arg_offset + arg_size;
+                     _argBufferSize = offset;
+                     return arg_offset;
+                   });
+  }
+
+  return _arg_offsets;
+
+}
+
+size_t CUDAKernel::getArgBufferSize() {
+  return _argBufferSize;
+}
+
+
 }
 }

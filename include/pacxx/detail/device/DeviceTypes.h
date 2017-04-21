@@ -4,9 +4,6 @@
 
 #ifndef PACXX_V2_DEVICETYPES_H
 #define PACXX_V2_DEVICETYPES_H
-#include <type_traits>
-
-using size_t = std::conditional_t<sizeof(void *) == 4, unsigned int, unsigned long>;
 
 using ulong = unsigned long;
 using uint = unsigned int;

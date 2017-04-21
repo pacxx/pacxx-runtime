@@ -160,5 +160,37 @@ size_t NativeKernel::getHostArgumentsSize() const { return _hostArgBufferSize; }
 void NativeKernel::setHostArgumentsSize(size_t size) {
   _hostArgBufferSize = size;
 }
+
+const std::vector<size_t> &NativeKernel::getArugmentBufferOffsets() {
+  if (_arg_offsets.size() == 0) {
+    auto &M = _runtime.getModule();
+    auto F = M.getFunction(_name);
+    size_t offset = 0;
+    size_t old = 0;
+    _arg_offsets.resize(F->arg_size());
+    std::transform(F->arg_begin(), F->arg_end(), _arg_offsets.begin(),
+                   [&](const auto &arg) {
+                     auto arg_size =
+                         M.getDataLayout().getTypeAllocSize(arg.getType());
+                     auto arg_alignment =
+                         M.getDataLayout().getPrefTypeAlignment(arg.getType());
+
+                     auto arg_offset =
+                         (offset + arg_alignment - 1) & ~(arg_alignment - 1);
+                     __warning(arg_size, " ", arg_alignment, " ", arg_offset);
+                     offset = arg_offset + arg_size;
+                     _argBufferSize = offset;
+                     return arg_offset;
+                   });
+  }
+
+  return _arg_offsets;
+
+}
+
+size_t NativeKernel::getArgBufferSize() {
+  return _argBufferSize;
+}
+
 }
 }

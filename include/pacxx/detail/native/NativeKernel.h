@@ -35,6 +35,9 @@ public:
   virtual const std::vector<char> &getArguments() const override;
   virtual void setHostArguments(const std::vector<char> &arg_buffer) override;
   virtual const std::vector<char> &getHostArguments() const override;
+  virtual const std::vector<size_t> &getArugmentBufferOffsets() override;
+  virtual size_t getArgBufferSize() override;
+
 
   virtual void setStagedValue(int ref, long long value, bool inScope) override;
 
@@ -62,6 +65,7 @@ private:
   NativeRuntime &_runtime;
   KernelConfiguration _config;
   std::vector<char> _args;
+  std::vector<size_t> _arg_offsets;
   std::vector<char> _host_args;
   void *_fptr;
   std::map<int, long long> _staged_values;
@@ -69,6 +73,7 @@ private:
   std::string _name;
   std::function<void()> _callback;
   bool _disable_staging;
+  size_t _argBufferSize;
   size_t _hostArgBufferSize;
 };
 

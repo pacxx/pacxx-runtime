@@ -220,25 +220,10 @@ public:
     K.setName(FName);
     K.configurate(config);
 
-    size_t buffer_size = 0;
+
     __verbose("Executor arg size ", F->arg_size());
-    std::vector<size_t> arg_offsets(F->arg_size());
-
-    int offset = 0;
-
-    std::transform(F->arg_begin(), F->arg_end(), arg_offsets.begin(),
-                   [&](const auto &arg) {
-                     auto arg_size =
-                         M.getDataLayout().getTypeAllocSize(arg.getType());
-                     auto arg_alignment =
-                         M.getDataLayout().getPrefTypeAlignment(arg.getType());
-
-                     auto arg_offset =
-                         (offset + arg_alignment - 1) & ~(arg_alignment - 1);
-                     offset = arg_offset + arg_size;
-                     buffer_size = offset;
-                     return arg_offset;
-                   });
+    const std::vector<size_t> &arg_offsets = K.getArugmentBufferOffsets();
+    size_t buffer_size = K.getArgBufferSize();
 
     std::vector<char> args_buffer(buffer_size);
     __verbose("host arg buffer size is: ", K.getHostArgumentsSize());
