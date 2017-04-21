@@ -69,6 +69,8 @@ void NativeRuntime::link(std::unique_ptr<llvm::Module> M) {
 
 void NativeRuntime::compileAndLink() {
   SCOPED_TIMING { _CPUMod = _compiler->compile(_M); };
+  _rawM->setDataLayout(_CPUMod->getDataLayout());
+  _rawM->setTargetTriple(_CPUMod->getTargetTriple());
   _delayed_compilation = false;
 }
 
