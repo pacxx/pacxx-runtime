@@ -177,7 +177,7 @@ const std::vector<size_t> &NativeKernel::getArugmentBufferOffsets() {
 
                      auto arg_offset =
                          (offset + arg_alignment - 1) & ~(arg_alignment - 1);
-                     __warning(arg_size, " ", arg_alignment, " ", arg_offset);
+
                      offset = arg_offset + arg_size;
                      _argBufferSize = offset;
                      return arg_offset;

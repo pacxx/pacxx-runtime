@@ -113,6 +113,24 @@ NativeBackend::NativeBackend() : _pmInitialized(false) {}
 
 NativeBackend::~NativeBackend() {}
 
+void NativeBackend::prepareModule(llvm::Module &M) {
+  llvm::legacy::PassManager PM;
+
+  PM.add(createPACXXInlinerPass());
+  PM.add(createPACXXDeadCodeElimPass());
+  PM.add(createCFGSimplificationPass());
+  PM.add(createSROAPass());
+  PM.add(createPromoteMemoryToRegisterPass());
+  PM.add(createDeadStoreEliminationPass());
+  PM.add(createInstructionCombiningPass());
+  PM.add(createCFGSimplificationPass());
+  PM.add(createSROAPass());
+  PM.add(createPromoteMemoryToRegisterPass());
+  PM.add(createInstructionCombiningPass());
+
+  PM.run(M);
+}
+
 Module *NativeBackend::compile(std::unique_ptr<Module> &M) {
 
   std::string error;
@@ -138,9 +156,9 @@ Module *NativeBackend::compile(std::unique_ptr<Module> &M) {
   _machine = builder.selectTarget(Triple(sys::getProcessTriple()), "",
                                   sys::getHostCPUName(), getTargetFeatures());
 
-  for(auto &F : TheModule->getFunctionList()) {
-      F.addFnAttr("target-cpu", _machine->getTargetCPU().str());
-      F.addFnAttr("target-features", _machine->getTargetFeatureString().str());
+  for (auto &F : TheModule->getFunctionList()) {
+    F.addFnAttr("target-cpu", _machine->getTargetCPU().str());
+    F.addFnAttr("target-features", _machine->getTargetFeatureString().str());
   }
   builder.setMCJITMemoryManager(std::unique_ptr<RTDyldMemoryManager>(
       static_cast<RTDyldMemoryManager *>(new SectionMemoryManager())));
@@ -165,7 +183,6 @@ Module *NativeBackend::compile(std::unique_ptr<Module> &M) {
   __verbose("applied pass");
 
   _JITEngine->finalizeObject();
-
 
   return TheModule;
 }
@@ -212,43 +229,43 @@ std::unique_ptr<Module> NativeBackend::createModule(LLVMContext &Context,
   return Result;
 }
 
-void NativeBackend::applyPasses(Module& M) {
+void NativeBackend::applyPasses(Module &M) {
 
-        if(!_machine)
-            throw common::generic_exception("Can not get target machine");
-        if(!_pmInitialized) {
+  if (!_machine)
+    throw common::generic_exception("Can not get target machine");
+  if (!_pmInitialized) {
 
-            PassManagerBuilder builder;
-            builder.OptLevel = 3;
+    PassManagerBuilder builder;
+    builder.OptLevel = 3;
 
-            __verbose(_machine->getTargetFeatureString().str());
+    __verbose(_machine->getTargetFeatureString().str());
 
-            TargetLibraryInfoImpl TLII(Triple(M.getTargetTriple()));
-            _PM.add(new TargetLibraryInfoWrapperPass(TLII));
-            _PM.add(createTargetTransformInfoWrapperPass(_machine->getTargetIRAnalysis()));
-            //_PM.add(createPACXXAddrSpaceTransformPass());
-            //_PM.add(createPACXXIdRemoverPass());
-            _PM.add(createCFGSimplificationPass());
-            _PM.add(createLoopSimplifyPass());
-            _PM.add(createLCSSAPass());
-            _PM.add(createSPMDVectorizerPass());
-            _PM.add(createPACXXNativeBarrierPass());
-            _PM.add(createPACXXNativeLinkerPass());
-            _PM.add(createPACXXNativeSMPass());
-            _PM.add(createVerifierPass());
-            builder.populateModulePassManager(_PM);
+    TargetLibraryInfoImpl TLII(Triple(M.getTargetTriple()));
+    _PM.add(new TargetLibraryInfoWrapperPass(TLII));
+    _PM.add(createTargetTransformInfoWrapperPass(_machine->getTargetIRAnalysis()));
+    //_PM.add(createPACXXAddrSpaceTransformPass());
+    //_PM.add(createPACXXIdRemoverPass());
+    _PM.add(createCFGSimplificationPass());
+    _PM.add(createLoopSimplifyPass());
+    _PM.add(createLCSSAPass());
+    _PM.add(createSPMDVectorizerPass());
+    _PM.add(createPACXXNativeBarrierPass());
+    _PM.add(createPACXXNativeLinkerPass());
+    _PM.add(createPACXXNativeSMPass());
+    _PM.add(createVerifierPass());
+    builder.populateModulePassManager(_PM);
 
-            _pmInitialized = true;
-        }
+    _pmInitialized = true;
+  }
 
-        /*
-        std::error_code EC;
-        raw_fd_ostream OS2("assembly.asm", EC, sys::fs::F_None);
-        _machine->addPassesToEmitFile(_PM, OS2, TargetMachine::CGFT_AssemblyFile);
-         */
+  /*
+  std::error_code EC;
+  raw_fd_ostream OS2("assembly.asm", EC, sys::fs::F_None);
+  _machine->addPassesToEmitFile(_PM, OS2, TargetMachine::CGFT_AssemblyFile);
+   */
 
 
-        _PM.run(M);
+  _PM.run(M);
 }
 
 legacy::PassManager &NativeBackend::getPassManager() { return _PM; }

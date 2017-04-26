@@ -46,6 +46,31 @@ void PTXBackend::initialize(unsigned CC) {
   _options.AllowFPOpFusion = FPOpFusion::Fast;
 }
 
+void PTXBackend::prepareModule(llvm::Module &M) {
+  llvm::legacy::PassManager PM;
+
+  PM.add(createPACXXSpirPass());
+  PM.add(createPACXXClassifyPass());
+  PM.add(createPACXXNvvmPass());
+
+  PM.add(createPACXXNvvmRegPass(false));
+  PM.add(createPACXXInlinerPass());
+  PM.add(createPACXXDeadCodeElimPass());
+  PM.add(createCFGSimplificationPass());
+  PM.add(createInferAddressSpacesPass());
+  PM.add(createSROAPass());
+  PM.add(createPromoteMemoryToRegisterPass());
+  PM.add(createDeadStoreEliminationPass());
+  PM.add(createInstructionCombiningPass());
+  PM.add(createCFGSimplificationPass());
+  PM.add(createSROAPass());
+  PM.add(createPromoteMemoryToRegisterPass());
+  PM.add(createInstructionCombiningPass());
+  PM.add(createInferAddressSpacesPass());
+
+  PM.run(M);
+}
+
 std::string PTXBackend::compile(llvm::Module &M) {
   Triple TheTriple = Triple(M.getTargetTriple());
   std::string Error;

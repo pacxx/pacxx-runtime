@@ -26,6 +26,8 @@ public:
 
   void initialize(unsigned CC);
 
+  void prepareModule(llvm::Module &M);
+
   llvm::legacy::PassManager &getPassManager();
 
   std::string compile(llvm::Module &M);

@@ -208,6 +208,7 @@ function(pacxx_embed_ir targetName bcFiles binDir)
             OUTPUT ${outFile}.o
             COMMAND ${PACXX_COMPILER} -DFILE='"${outFile}"' ${PACXX_ASM_WRAPPER} -c -o ${outFile}.o
             WORKING_DIRECTORY ${binDir}
+            DEPENDS ${outFile}
             COMMENT "Preparing Kernel IR for linking")
 
     add_custom_command(
@@ -221,8 +222,8 @@ function(pacxx_embed_ir targetName bcFiles binDir)
             OUTPUT ${mspFile}.o
             COMMAND ${PACXX_COMPILER} -DFILE='"${mspFile}"' ${PACXX_ASM_WRAPPER_MSP} -c -o ${mspFile}.o
             WORKING_DIRECTORY ${binDir}
+            DEPENDS ${mspFile}
             COMMENT "Preparing MSP IR for linking")
-
 
     add_custom_target(${kernelName} DEPENDS ${outFile} ${outFile}.o)
     add_custom_target(${mspName} DEPENDS ${mspFile} ${mspFile}.o)

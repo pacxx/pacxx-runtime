@@ -5,6 +5,7 @@
 #ifndef PACXX_V2_EXECUTOR_H
 #define PACXX_V2_EXECUTOR_H
 
+#include "pacxx/config.h"
 #include "CodePolicy.h"
 #include "ModuleLoader.h"
 #include "Promise.h"
@@ -165,7 +166,9 @@ public:
 
   auto getExecutingDeviceType() {
     switch (_runtime->getRuntimeType()) {
+#ifdef PACXX_ENABLE_CUDA
     case RuntimeType::CUDARuntimeTy:return ExecutingDevice::GPUNvidia;
+#endif
     case RuntimeType::NativeRuntimeTy:return ExecutingDevice::CPU;
     }
   }

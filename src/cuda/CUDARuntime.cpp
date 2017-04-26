@@ -54,28 +54,8 @@ RuntimeType CUDARuntime::getRuntimeType(){
 void CUDARuntime::link(std::unique_ptr<llvm::Module> M) {
 
   _rawM = std::move(M);
-  llvm::legacy::PassManager PM;
 
-  PM.add(createPACXXSpirPass());
-  PM.add(createPACXXClassifyPass());
-  PM.add(createPACXXNvvmPass());
-
-  PM.add(createPACXXNvvmRegPass(false));
-  PM.add(createPACXXInlinerPass());
-  PM.add(createPACXXDeadCodeElimPass());
-  PM.add(createCFGSimplificationPass());
-  PM.add(createInferAddressSpacesPass());
-  PM.add(createSROAPass());
-  PM.add(createPromoteMemoryToRegisterPass());
-  PM.add(createDeadStoreEliminationPass());
-  PM.add(createInstructionCombiningPass());
-  PM.add(createCFGSimplificationPass());
-  PM.add(createSROAPass());
-  PM.add(createPromoteMemoryToRegisterPass());
-  PM.add(createInstructionCombiningPass());
-  PM.add(createInferAddressSpacesPass());
-
-  PM.run(*_rawM);
+  _compiler->prepareModule(*_rawM);
 
   _M = CloneModule(_rawM.get());
   _M->setDataLayout(_rawM->getDataLayoutStr());

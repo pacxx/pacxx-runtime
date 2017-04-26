@@ -370,5 +370,6 @@ extern "C" __forceinline__ float exp10f(float a) { return __nv_exp10f(a); }
 extern "C" __forceinline__ double log10(double a) { return __nv_log10(a); }
 extern "C" __forceinline__ double exp10(double a) { return __nv_exp10(a); }
 
+
 #endif
 #endif

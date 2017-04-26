@@ -27,34 +27,21 @@ NativeRuntime::NativeRuntime(unsigned)
 
 NativeRuntime::~NativeRuntime() {}
 
-RuntimeType NativeRuntime::getRuntimeType(){
+RuntimeType NativeRuntime::getRuntimeType() {
   return RuntimeType::NativeRuntimeTy;
 };
 
 void NativeRuntime::link(std::unique_ptr<llvm::Module> M) {
 
   __verbose("linking");
-      llvm::legacy::PassManager PM;
+  llvm::legacy::PassManager PM;
 
-      _rawM = std::move(M);
+  _rawM = std::move(M);
 
-      PM.add(createPACXXInlinerPass());
-      PM.add(createPACXXDeadCodeElimPass());
-      PM.add(createCFGSimplificationPass());
-      PM.add(createSROAPass());
-      PM.add(createPromoteMemoryToRegisterPass());
-      PM.add(createDeadStoreEliminationPass());
-      PM.add(createInstructionCombiningPass());
-      PM.add(createCFGSimplificationPass());
-      PM.add(createSROAPass());
-      PM.add(createPromoteMemoryToRegisterPass());
-      PM.add(createInstructionCombiningPass());
-      PM.run(*_rawM);
+  _compiler->prepareModule(*_rawM);
 
-
-      _M = CloneModule(_rawM.get());
-      _M->setDataLayout(_rawM->getDataLayoutStr());
-
+  _M = CloneModule(_rawM.get());
+  _M->setDataLayout(_rawM->getDataLayoutStr());
 
   auto reflect = _M->getFunction("__pacxx_reflect");
   if (!reflect || reflect->getNumUses() == 0) {
@@ -62,7 +49,7 @@ void NativeRuntime::link(std::unique_ptr<llvm::Module> M) {
   } else {
     _CPUMod = _M.get();
     __verbose("Module contains unresolved calls to __pacxx_reflect. Linking "
-              "delayed!");
+                  "delayed!");
     _delayed_compilation = true;
   }
 }
@@ -110,7 +97,7 @@ RawDeviceBuffer *NativeRuntime::allocateRawMemory(size_t bytes) {
 void NativeRuntime::deleteRawMemory(RawDeviceBuffer *ptr) {
   auto It = std::find_if(_memory.begin(), _memory.end(), [&](const auto &uptr) {
     return static_cast<NativeDeviceBuffer<char> *>(uptr.get())
-               ->getRawBuffer() == ptr;
+        ->getRawBuffer() == ptr;
   });
   if (It != _memory.end())
     _memory.erase(It);
@@ -148,9 +135,9 @@ void NativeRuntime::requestIRTransformation(Kernel &K) {
   static_cast<NativeKernel &>(K).overrideFptr(fptr);
 }
 
-const llvm::Module& NativeRuntime::getModule() { return *_rawM; }
+const llvm::Module &NativeRuntime::getModule() { return *_rawM; }
 
-void NativeRuntime::synchronize(){};
+void NativeRuntime::synchronize() {};
 
 llvm::legacy::PassManager &NativeRuntime::getPassManager() {
   return _compiler->getPassManager();

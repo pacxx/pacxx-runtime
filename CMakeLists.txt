@@ -55,12 +55,13 @@ set(SOURCE_FILES include/pacxx/Executor.h
         src/native/NativeKernel.cpp
         include/pacxx/detail/native/NativeKernel.h
         include/pacxx/detail/native/NativeDeviceBuffer.h
-        src/native/NativeDeviceBuffer.cpp)
+        src/native/NativeDeviceBuffer.cpp
+        include/pacxx/config.h)
 
 
 if (USE_CUDA)
-    add_definitions(-DPACXX_ENABLE_CUDA)
     find_package(CUDA REQUIRED)
+    set(PACXX_CUDA_BACKEND 1)
     include_directories(${CUDA_TOOLKIT_INCLUDE})
     set(CUDA_SOURCE_FILES src/cuda/PTXBackend.cpp
             include/pacxx/detail/cuda/PTXBackend.h
@@ -73,16 +74,29 @@ if (USE_CUDA)
             include/pacxx/detail/cuda/CUDADeviceBuffer.h
             include/pacxx/detail/cuda/CUDAUtility.h
             src/cuda/CUDADeviceBuffer.cpp)
+else (USE_CUDA)
+    set(PACXX_CUDA_BACKEND 0)
 endif (USE_CUDA)
+
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config/config.h.in ${CMAKE_CURRENT_SOURCE_DIR}/include/pacxx/config.h)
 
 
 add_compile_options(-std=c++14)
+add_compile_options(-include ${CMAKE_CURRENT_SOURCE_DIR}/include/pacxx/config.h)
 
 add_definitions(${LLVM_DEFINITIONS})
 
-set(PACXX_DEV_FLAGS -std=pacxx -O0 -c -emit-llvm -target nvptx64-unknown-unknown -D__STDC_CONSTANT_MACROS -D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS -D__CUDA_DEVICE_CODE -isystem $ENV{PACXX_PATH}/include/c++/v1 -isystem $ENV{PACXX_PATH}include -isystem ${CUDA_TOOLKIT_INCLUDE} -I ${CMAKE_SOURCE_DIR}/include)
+set(PACXX_DEV_FLAGS -std=pacxx -O0 -c -emit-llvm -D__STDC_CONSTANT_MACROS -D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS -D__CUDA_DEVICE_CODE -isystem $ENV{PACXX_PATH}/include/c++/v1 -isystem $ENV{PACXX_PATH}include -isystem ${CUDA_TOOLKIT_INCLUDE} -I ${CMAKE_SOURCE_DIR}/include)
 
 add_library(pacxxrt2 ${SOURCE_FILES} ${CUDA_SOURCE_FILES})
+
+if (${CMAKE_SIZEOF_VOID_P} EQUAL 8)
+    set(PACXX_DEV_FLAGS ${PACXX_DEV_FLAGS} -target nvptx64-unknown-unknown)
+else ()
+    set(PACXX_DEV_FLAGS ${PACXX_DEV_FLAGS} -target nvptx-unknown-unknown)
+endif ()
+
+message(${PACXX_DEV_FLAGS})
 
 add_custom_command(TARGET pacxxrt2 POST_BUILD COMMAND ${LLVM_TOOLS_BINARY_DIR}/llvm-as ${CMAKE_SOURCE_DIR}/src/bitcode/syscalls.ll -o ${CMAKE_BINARY_DIR}/syscalls.bc)
 add_custom_command(TARGET pacxxrt2 POST_BUILD COMMAND ${LLVM_TOOLS_BINARY_DIR}/clang ${PACXX_DEV_FLAGS} ${CMAKE_SOURCE_DIR}/src/bitcode/nvvm_device_binding.cpp -o ${CMAKE_BINARY_DIR}/nvvm_device_binding.bc)
@@ -91,7 +105,7 @@ add_custom_command(TARGET pacxxrt2 POST_BUILD COMMAND cp ${CMAKE_SOURCE_DIR}/src
 
 file(GLOB PACXX_FILES ${CMAKE_BINARY_DIR}/*.a ${CMAKE_BINARY_DIR}/*.bc ${CMAKE_BINARY_DIR}/*.S)
 
-install (FILES ${PACXX_FILES} DESTINATION lib)
+install(FILES ${PACXX_FILES} DESTINATION lib)
 install(DIRECTORY ${CMAKE_SOURCE_DIR}/include/ DESTINATION include)
 install(DIRECTORY ${CMAKE_SOURCE_DIR}/cmake/ DESTINATION lib/cmake)
 

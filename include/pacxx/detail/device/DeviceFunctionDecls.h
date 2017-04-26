@@ -25,16 +25,17 @@ void barrier(unsigned int flags);
 // void barrier(unsigned int flags) { __asm__ volatile("" : : : "memory"); }
 //#endif
 
-extern "C" double exp(double val);
-extern "C" double log(double val);
-extern "C" double sin(double val);
-extern "C" double cos(double val);
-extern "C" float expf(float val);
-extern "C" float logf(float val);
-extern "C" float sinf(float val);
-extern "C" float cosf(float val);
+extern "C" float rsqrtf(float val);
+extern "C" double rsqrt(double val);
 
-// function declarations for the device functions provided by Nvidia's NVVM
+
+//extern "C" double exp(double val);
+//extern "C" double log(double val);
+//extern "C" double sin(double val);
+//extern "C" double cos(double val);
+//extern "C" float expf(float val);
+//extern "C" float logf(float val);
+//extern "C" float sinf(float val);
 
 extern "C" float __nv_fast_sinf(float x);
 
