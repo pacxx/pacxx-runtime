@@ -49,6 +49,7 @@ void PTXBackend::initialize(unsigned CC) {
 void PTXBackend::prepareModule(llvm::Module &M) {
   llvm::legacy::PassManager PM;
 
+  PM.add(createPACXXTargetSelectPass({"GPU", "GENERIC"}));
   PM.add(createPACXXSpirPass());
   PM.add(createPACXXClassifyPass());
   PM.add(createPACXXNvvmPass());
