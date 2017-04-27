@@ -15,7 +15,7 @@ endif ()
 
 set(PACXX_DIR ${PACXX_DIR} CACHE PATH "Path to PACXX")
 
-find_package(OpenMP)
+find_package(OpenMP REQUIRED)
 if (OPENMP_FOUND)
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
@@ -203,7 +203,7 @@ function(pacxx_embed_ir targetName bcFiles binDir)
     add_custom_command(
             OUTPUT ${outFile}
             COMMAND ${PACXX_LINK} ${PACXX_LINK_FLAGS} ${bcFiles} -o ${outFile}
-            COMMAND ${PACXX_LINK} ${PACXX_LINK_FLAGS} ${PACXX_NVVM_DEVICE_BINDING} ${outFile} -o ${outFile}
+            #  COMMAND ${PACXX_LINK} ${PACXX_LINK_FLAGS} ${PACXX_NVVM_DEVICE_BINDING} ${outFile} -o ${outFile}
             COMMAND ${PACXX_OPT} ${PACXX_OPT_FLAGS} ${outFile} -o ${outFile}
             WORKING_DIRECTORY ${binDir}
             COMMENT "Generating Kernel IR")

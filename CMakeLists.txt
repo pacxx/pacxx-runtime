@@ -88,7 +88,7 @@ add_definitions(${LLVM_DEFINITIONS})
 
 set(PACXX_DEV_FLAGS -std=pacxx -O0 -c -emit-llvm -D__STDC_CONSTANT_MACROS -D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS -D__CUDA_DEVICE_CODE -isystem $ENV{PACXX_PATH}/include/c++/v1 -isystem $ENV{PACXX_PATH}include -isystem ${CUDA_TOOLKIT_INCLUDE} -I ${CMAKE_SOURCE_DIR}/include)
 
-add_library(pacxxrt2 ${SOURCE_FILES} ${CUDA_SOURCE_FILES})
+
 
 if (${CMAKE_SIZEOF_VOID_P} EQUAL 8)
     set(PACXX_DEV_FLAGS ${PACXX_DEV_FLAGS} -target nvptx64-unknown-unknown)
@@ -96,12 +96,40 @@ else ()
     set(PACXX_DEV_FLAGS ${PACXX_DEV_FLAGS} -target nvptx-unknown-unknown)
 endif ()
 
-message(${PACXX_DEV_FLAGS})
+
+set(ndbFile nvptx_device_binding)
+
+add_custom_command(
+        OUTPUT ${ndbFile}.bc
+        COMMAND ${LLVM_TOOLS_BINARY_DIR}/clang ${PACXX_DEV_FLAGS} ${CMAKE_SOURCE_DIR}/src/bitcode/nvvm_device_binding.cpp -o ${CMAKE_BINARY_DIR}/${ndbFile}.bc
+        WORKING_DIRECTORY ${binDir}
+        COMMENT "Generating NVPTX Device Binding")
+
+add_custom_command(
+        OUTPUT ${ndbFile}.o
+        COMMAND ${LLVM_TOOLS_BINARY_DIR}/clang -DFILE='"${CMAKE_BINARY_DIR}/${ndbFile}.bc"' ${CMAKE_SOURCE_DIR}/src/embed_nvptx_binding.S -c -o ${ndbFile}.o
+        WORKING_DIRECTORY ${binDir}
+        DEPENDS ${ndbFile}.bc
+        COMMENT "Preparing NVPTX Device Binding for linking")
+
+add_custom_target(${ndbFile}_target DEPENDS ${ndbFile}.bc ${ndbFile}.o)
+
+add_library(${ndbFile} STATIC ${ndbFile}.o)
+add_library(pacxxrt2 ${SOURCE_FILES} ${CUDA_SOURCE_FILES} ${ndbFile}.o)
+
+
+set_source_files_properties(${ndbFile}.o PROPERTIES EXTERNAL_OBJECT true GENERATED true)
+set_target_properties(${ndbFile} PROPERTIES LINKER_LANGUAGE C)
+
+add_dependencies(pacxxrt2 ${ndbFile}_target)
+
+#target_link_libraries(pacxxrt2 ${ndbFile})
 
 add_custom_command(TARGET pacxxrt2 POST_BUILD COMMAND ${LLVM_TOOLS_BINARY_DIR}/llvm-as ${CMAKE_SOURCE_DIR}/src/bitcode/syscalls.ll -o ${CMAKE_BINARY_DIR}/syscalls.bc)
 add_custom_command(TARGET pacxxrt2 POST_BUILD COMMAND ${LLVM_TOOLS_BINARY_DIR}/clang ${PACXX_DEV_FLAGS} ${CMAKE_SOURCE_DIR}/src/bitcode/nvvm_device_binding.cpp -o ${CMAKE_BINARY_DIR}/nvvm_device_binding.bc)
 add_custom_command(TARGET pacxxrt2 POST_BUILD COMMAND cp ${CMAKE_SOURCE_DIR}/src/*.S ${CMAKE_BINARY_DIR}/)
 #add_custom_command(TARGET pacxxrt2 POST_BUILD COMMAND ${LLVM_TOOLS_BINARY_DIR}/clang ${PACXX_DEV_FLAGS} ${CMAKE_SOURCE_DIR}/src/DeviceCode.cpp -o ${CMAKE_BINARY_DIR}/DeviceCode.bc)
+
 
 file(GLOB PACXX_FILES ${CMAKE_BINARY_DIR}/*.a ${CMAKE_BINARY_DIR}/*.bc ${CMAKE_BINARY_DIR}/*.S)
 

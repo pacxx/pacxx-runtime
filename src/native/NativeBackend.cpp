@@ -116,7 +116,7 @@ NativeBackend::~NativeBackend() {}
 void NativeBackend::prepareModule(llvm::Module &M) {
   llvm::legacy::PassManager PM;
 
-  PM.add(createPACXXTargetSelectPass({"CPU", "GENERIC"}));
+  PM.add(createPACXXTargetSelectPass({"CPU", "Generic"}));
   PM.add(createPACXXInlinerPass());
   PM.add(createPACXXDeadCodeElimPass());
   PM.add(createCFGSimplificationPass());

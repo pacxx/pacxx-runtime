@@ -17,9 +17,14 @@
 #include <llvm/Transforms/PACXXTransforms.h>
 #include <llvm/Transforms/Scalar.h>
 #include <llvm/Transforms/Vectorize.h>
+#include <llvm/Linker/Linker.h>
+#include "pacxx/ModuleLoader.h"
 
 #include "pacxx/detail/common/Timing.h"
 
+// nvptx device binding
+extern const char nvptx_binding_start[];
+extern int nvptx_binding_size;
 
 using namespace llvm;
 
@@ -47,9 +52,23 @@ void PTXBackend::initialize(unsigned CC) {
 }
 
 void PTXBackend::prepareModule(llvm::Module &M) {
+
+  ModuleLoader loader(M.getContext());
+  auto binding = loader.loadInternal(nvptx_binding_start, nvptx_binding_size);
+
+  M.setDataLayout(binding->getDataLayout());
+  M.setTargetTriple(binding->getTargetTriple());
+
+  auto linker = Linker(M);
+  linker.linkInModule(std::move(binding), Linker::Flags::None);
+
+  M.dump();
+
+
+
   llvm::legacy::PassManager PM;
 
-  PM.add(createPACXXTargetSelectPass({"GPU", "GENERIC"}));
+  PM.add(createPACXXTargetSelectPass({"GPU", "Generic"}));
   PM.add(createPACXXSpirPass());
   PM.add(createPACXXClassifyPass());
   PM.add(createPACXXNvvmPass());
