@@ -62,10 +62,6 @@ void PTXBackend::prepareModule(llvm::Module &M) {
   auto linker = Linker(M);
   linker.linkInModule(std::move(binding), Linker::Flags::None);
 
-  M.dump();
-
-
-
   llvm::legacy::PassManager PM;
 
   PM.add(createPACXXTargetSelectPass({"GPU", "Generic"}));
