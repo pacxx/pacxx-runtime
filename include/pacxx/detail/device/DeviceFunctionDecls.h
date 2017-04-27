@@ -12,12 +12,12 @@ using __index_t = unsigned int;
 using __index_t = unsigned long;
 #endif
 
-__index_t get_global_id(unsigned int dimindx);
-__index_t get_local_id(unsigned int dimindx);
-__index_t get_group_id(unsigned int dimindx);
-__index_t get_local_size(unsigned int dimindx);
-__index_t get_num_groups(unsigned int dimindx);
-__index_t get_grid_size(unsigned int dimindx);
+__index_t get_global_id(unsigned int dimindx)  __attribute__ ((const));
+__index_t get_local_id(unsigned int dimindx)   __attribute__ ((const));
+__index_t get_group_id(unsigned int dimindx)   __attribute__ ((const));
+__index_t get_local_size(unsigned int dimindx) __attribute__ ((const));
+__index_t get_num_groups(unsigned int dimindx) __attribute__ ((const));
+__index_t get_grid_size(unsigned int dimindx)  __attribute__ ((const));
 
 //#ifdef __CUDA_DEVICE_CODE
 void barrier(unsigned int flags);
