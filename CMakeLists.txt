@@ -91,44 +91,68 @@ set(PACXX_DEV_FLAGS -std=pacxx -O0 -c -emit-llvm -D__STDC_CONSTANT_MACROS -D__ST
 
 
 if (${CMAKE_SIZEOF_VOID_P} EQUAL 8)
-    set(PACXX_DEV_FLAGS ${PACXX_DEV_FLAGS} -target nvptx64-unknown-unknown)
+    set(PACXX_CUDA_DEV_FLAGS ${PACXX_DEV_FLAGS} -target nvptx64-unknown-unknown)
 else ()
-    set(PACXX_DEV_FLAGS ${PACXX_DEV_FLAGS} -target nvptx-unknown-unknown)
+    set(PACXX_CUDA_DEV_FLAGS ${PACXX_DEV_FLAGS} -target nvptx-unknown-unknown)
 endif ()
 
-
-set(ndbFile nvptx_device_binding)
+# generate the nvptx device binding
+set(nvdbFile nvptx_device_binding)
 
 add_custom_command(
-        OUTPUT ${ndbFile}.bc
-        COMMAND ${LLVM_TOOLS_BINARY_DIR}/clang ${PACXX_DEV_FLAGS} ${CMAKE_SOURCE_DIR}/src/bitcode/nvvm_device_binding.cpp -o ${CMAKE_BINARY_DIR}/${ndbFile}.bc
+        OUTPUT ${nvdbFile}.bc
+        COMMAND ${LLVM_TOOLS_BINARY_DIR}/clang ${PACXX_CUDA_DEV_FLAGS} ${CMAKE_SOURCE_DIR}/src/bitcode/${nvdbFile}.cpp -o ${CMAKE_BINARY_DIR}/${nvdbFile}.bc
         WORKING_DIRECTORY ${binDir}
         COMMENT "Generating NVPTX Device Binding")
 
 add_custom_command(
         OUTPUT ${ndbFile}.o
-        COMMAND ${LLVM_TOOLS_BINARY_DIR}/clang -DFILE='"${CMAKE_BINARY_DIR}/${ndbFile}.bc"' ${CMAKE_SOURCE_DIR}/src/embed_nvptx_binding.S -c -o ${ndbFile}.o
+        COMMAND ${LLVM_TOOLS_BINARY_DIR}/clang -DFILE='"${CMAKE_BINARY_DIR}/${nvdbFile}.bc"' ${CMAKE_SOURCE_DIR}/src/embed_nvptx_binding.S -c -o ${nvdbFile}.o
         WORKING_DIRECTORY ${binDir}
         DEPENDS ${ndbFile}.bc
         COMMENT "Preparing NVPTX Device Binding for linking")
 
-add_custom_target(${ndbFile}_target DEPENDS ${ndbFile}.bc ${ndbFile}.o)
+add_custom_target(${nvdbFile}_target DEPENDS ${nvdbFile}.bc ${nvdbFile}.o)
 
-add_library(${ndbFile} STATIC ${ndbFile}.o)
-add_library(pacxxrt2 ${SOURCE_FILES} ${CUDA_SOURCE_FILES} ${ndbFile}.o)
+add_library(${nvdbFile} STATIC ${nvdbFile}.o)
 
 
-set_source_files_properties(${ndbFile}.o PROPERTIES EXTERNAL_OBJECT true GENERATED true)
-set_target_properties(${ndbFile} PROPERTIES LINKER_LANGUAGE C)
+set_source_files_properties(${nvdbFile}.o PROPERTIES EXTERNAL_OBJECT true GENERATED true)
+set_target_properties(${nvdbFile} PROPERTIES LINKER_LANGUAGE C)
 
-add_dependencies(pacxxrt2 ${ndbFile}_target)
 
-#target_link_libraries(pacxxrt2 ${ndbFile})
+# generate the native device binding
+set(nadbFile native_device_binding)
+
+add_custom_command(
+        OUTPUT ${nadbFile}.bc
+        COMMAND ${LLVM_TOOLS_BINARY_DIR}/clang ${PACXX_DEV_FLAGS} ${CMAKE_SOURCE_DIR}/src/bitcode/${nadbFile}.cpp -o ${CMAKE_BINARY_DIR}/${nadbFile}.bc
+        WORKING_DIRECTORY ${binDir}
+        COMMENT "Generating Native Device Binding")
+
+add_custom_command(
+        OUTPUT ${nadbFile}.o
+        COMMAND ${LLVM_TOOLS_BINARY_DIR}/clang -DFILE='"${CMAKE_BINARY_DIR}/${nadbFile}.bc"' ${CMAKE_SOURCE_DIR}/src/embed_native_binding.S -c -o ${nadbFile}.o
+        WORKING_DIRECTORY ${binDir}
+        DEPENDS ${nadbFile}.bc
+        COMMENT "Preparing Native Device Binding for linking")
+
+add_custom_target(${nadbFile}_target DEPENDS ${nadbFile}.bc ${nadbFile}.o)
+add_library(${nadbFile} STATIC ${nadbFile}.o)
+
+set_source_files_properties(${nadbFile}.o PROPERTIES EXTERNAL_OBJECT true GENERATED true)
+set_target_properties(${nadbFile} PROPERTIES LINKER_LANGUAGE C)
+
+
+add_library(pacxxrt2 ${SOURCE_FILES} ${CUDA_SOURCE_FILES} ${nvdbFile}.o ${nadbFile}.o)
+
+add_dependencies(pacxxrt2 ${nvdbFile}_target)
+add_dependencies(pacxxrt2 ${nadbFile}_target)
+
 
 add_custom_command(TARGET pacxxrt2 POST_BUILD COMMAND ${LLVM_TOOLS_BINARY_DIR}/llvm-as ${CMAKE_SOURCE_DIR}/src/bitcode/syscalls.ll -o ${CMAKE_BINARY_DIR}/syscalls.bc)
-add_custom_command(TARGET pacxxrt2 POST_BUILD COMMAND ${LLVM_TOOLS_BINARY_DIR}/clang ${PACXX_DEV_FLAGS} ${CMAKE_SOURCE_DIR}/src/bitcode/nvvm_device_binding.cpp -o ${CMAKE_BINARY_DIR}/nvvm_device_binding.bc)
+
 add_custom_command(TARGET pacxxrt2 POST_BUILD COMMAND cp ${CMAKE_SOURCE_DIR}/src/*.S ${CMAKE_BINARY_DIR}/)
-#add_custom_command(TARGET pacxxrt2 POST_BUILD COMMAND ${LLVM_TOOLS_BINARY_DIR}/clang ${PACXX_DEV_FLAGS} ${CMAKE_SOURCE_DIR}/src/DeviceCode.cpp -o ${CMAKE_BINARY_DIR}/DeviceCode.bc)
 
 
 file(GLOB PACXX_FILES ${CMAKE_BINARY_DIR}/*.a ${CMAKE_BINARY_DIR}/*.bc ${CMAKE_BINARY_DIR}/*.S)

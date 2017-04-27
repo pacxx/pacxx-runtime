@@ -107,6 +107,11 @@ declare void @__dummy_kernel()
 
 using namespace llvm;
 
+// native device binding
+extern const char native_binding_start[];
+extern int native_binding_size;
+
+
 namespace pacxx {
 namespace v2 {
 NativeBackend::NativeBackend() : _pmInitialized(false) {}
@@ -114,6 +119,13 @@ NativeBackend::NativeBackend() : _pmInitialized(false) {}
 NativeBackend::~NativeBackend() {}
 
 void NativeBackend::prepareModule(llvm::Module &M) {
+
+  ModuleLoader loader(M.getContext());
+  auto binding = loader.loadInternal(native_binding_start, native_binding_size);
+
+  auto linker = Linker(M);
+  linker.linkInModule(std::move(binding), Linker::Flags::None);
+
   llvm::legacy::PassManager PM;
 
   PM.add(createPACXXTargetSelectPass({"CPU", "Generic"}));
