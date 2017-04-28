@@ -81,13 +81,7 @@ public:
 
   virtual void deleteRawMemory(RawDeviceBuffer *ptr) override;
 
-  virtual void initializeMSP(std::unique_ptr<llvm::Module> M) override;
-
-  virtual void evaluateStagedFunctions(Kernel &K) override;
-
   virtual void requestIRTransformation(Kernel &K) override;
-
-  virtual const llvm::Module &getModule() override;
 
   virtual void synchronize() override;
 
@@ -98,13 +92,13 @@ private:
 
 private:
   llvm::Module *_CPUMod;
-  std::unique_ptr<llvm::Module> _M, _rawM;
+
   std::unique_ptr<CompilerT> _compiler;
   std::map<std::string, std::unique_ptr<NativeKernel>> _kernels;
   std::list<std::unique_ptr<DeviceBufferBase>> _memory;
   llvm::StringMap<bool> _host_features;
   bool _delayed_compilation;
-  v2::MSPEngine _msp_engine;
+
 };
 }
 }

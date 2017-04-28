@@ -21,7 +21,7 @@ namespace pacxx {
 namespace v2 {
 
 NativeRuntime::NativeRuntime(unsigned)
-    : _compiler(std::make_unique<CompilerT>()), _delayed_compilation(false) {
+    : IRRuntime(), _compiler(std::make_unique<CompilerT>()), _delayed_compilation(false) {
   llvm::sys::getHostCPUFeatures(_host_features);
 }
 
@@ -105,21 +105,6 @@ void NativeRuntime::deleteRawMemory(RawDeviceBuffer *ptr) {
     __error("ptr to delete not found");
 }
 
-void NativeRuntime::initializeMSP(std::unique_ptr<llvm::Module> M) {
-  if (!_msp_engine.isDisabled())
-    return;
-  _msp_engine.initialize(std::move(M));
-}
-
-void NativeRuntime::evaluateStagedFunctions(Kernel &K) {
-  if (K.requireStaging()) {
-    if (_msp_engine.isDisabled())
-      return;
-    __verbose("evaluating staged functions");
-    _msp_engine.evaluate(*_rawM->getFunction(K.getName()), K);
-  }
-}
-
 void NativeRuntime::requestIRTransformation(Kernel &K) {
   if (_msp_engine.isDisabled())
     return;
@@ -134,8 +119,6 @@ void NativeRuntime::requestIRTransformation(Kernel &K) {
   fptr = _compiler->getKernelFptr(_CPUMod, K.getName().c_str());
   static_cast<NativeKernel &>(K).overrideFptr(fptr);
 }
-
-const llvm::Module &NativeRuntime::getModule() { return *_rawM; }
 
 void NativeRuntime::synchronize() {};
 

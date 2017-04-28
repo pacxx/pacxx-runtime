@@ -19,7 +19,7 @@ using namespace llvm;
 namespace pacxx {
 namespace v2 {
 CUDARuntime::CUDARuntime(unsigned dev_id)
-    : _context(nullptr), _compiler(std::make_unique<CompilerT>()),
+    : IRRuntime(), _context(nullptr), _compiler(std::make_unique<CompilerT>()),
       _delayed_compilation(false), _dev_props(16) {
   SEC_CUDA_CALL(cuInit(0));
   CUcontext old;
@@ -148,19 +148,7 @@ void CUDARuntime::deleteRawMemory(RawDeviceBuffer *ptr) {
     __error("ptr to delete not found");
 }
 
-void CUDARuntime::initializeMSP(std::unique_ptr<llvm::Module> M) {
-  if (!_msp_engine.isDisabled())
-    return;
-  _msp_engine.initialize(std::move(M));
-}
 
-void CUDARuntime::evaluateStagedFunctions(Kernel &K) {
-  if (K.requireStaging()) {
-    if (_msp_engine.isDisabled())
-      return;
-    _msp_engine.evaluate(*_rawM->getFunction(K.getName()), K);
-  }
-}
 
 void CUDARuntime::requestIRTransformation(Kernel &K) {
   if (_msp_engine.isDisabled())
@@ -176,8 +164,6 @@ void CUDARuntime::requestIRTransformation(Kernel &K) {
   SEC_CUDA_CALL(cuModuleGetFunction(&ptr, _mod, K.getName().c_str()));
   static_cast<CUDAKernel &>(K).overrideFptr(ptr);
 }
-
-const llvm::Module &CUDARuntime::getModule() { return *_M; }
 
 void CUDARuntime::synchronize() { SEC_CUDA_CALL(cudaDeviceSynchronize()); }
 
@@ -202,6 +188,7 @@ bool CUDARuntime::checkSupportedHardware() {
   return count != 0;
 }
 
+const llvm::Module &CUDARuntime::getModule() { return *_M; }
 
 }
 }

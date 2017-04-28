@@ -87,10 +87,6 @@ public:
 
   virtual void deleteRawMemory(RawDeviceBuffer *ptr) override;
 
-  virtual void initializeMSP(std::unique_ptr<llvm::Module> M) override;
-
-  virtual void evaluateStagedFunctions(Kernel &K) override;
-
   virtual void requestIRTransformation(Kernel &K) override;
 
   virtual const llvm::Module &getModule() override;
@@ -98,30 +94,6 @@ public:
   virtual void synchronize() override;
 
   virtual llvm::legacy::PassManager &getPassManager() override;
-
-  //      template<typename T>
-  //      void setCallback(Callback<T> cb) {
-  //        //callbacks must survive until they are fired
-  //        callback_mem new_cb;
-  //        new_cb.size = sizeof(Callback<T>);
-  //        new_cb.ptr = std::malloc(new_cb.size);
-  //        Callback<T>* survivingCopy = new(new_cb.ptr) Callback<T>(cb);
-  //        survivingCopy->registeredWith(this);
-  //        _callbacks.push_back(new_cb);
-  //        SEC_CUDA_CALL(cudaStreamAddCallback(nullptr,
-  //        CUDARuntime::fireCallback, new_cb.ptr, NULL));
-  //
-  //      };
-  //
-  //      virtual void removeCallback(CallbackBase* ptr) override {
-  //        auto It = std::find_if(_callbacks.begin(), _callbacks.end(),
-  //        [&](const auto& v) { return v.ptr == ptr; });
-  //        if (It != _callbacks.end()) {
-  //          ptr->~CallbackBase();
-  //          std::free(It->ptr);
-  //          _callbacks.erase(It);
-  //        }
-  //      }
 
 private:
   void compileAndLink();

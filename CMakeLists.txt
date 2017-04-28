@@ -57,7 +57,7 @@ set(SOURCE_FILES include/pacxx/Executor.h
         include/pacxx/detail/native/NativeDeviceBuffer.h
         src/native/NativeDeviceBuffer.cpp
         include/pacxx/config.h
-        src/Kernel.cpp)
+        src/Kernel.cpp src/IRRuntime.cpp)
 
 
 if (USE_CUDA)

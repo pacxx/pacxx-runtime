@@ -12,6 +12,7 @@
 #include <llvm/IR/Module.h>
 #include <string>
 #include <vector>
+#include "pacxx/detail/msp/MSPEngine.h"
 
 namespace pacxx {
 namespace v2 {
@@ -29,6 +30,9 @@ enum RuntimeType
 
 class IRRuntime {
 public:
+
+  IRRuntime();
+
   virtual ~IRRuntime(){};
 
   virtual RuntimeType getRuntimeType() = 0;
@@ -47,18 +51,20 @@ public:
 
   virtual void deleteRawMemory(RawDeviceBuffer *ptr) = 0;
 
-  virtual void initializeMSP(std::unique_ptr<llvm::Module> M) = 0;
+  virtual void initializeMSP(std::unique_ptr<llvm::Module> M);
 
-  virtual void evaluateStagedFunctions(Kernel &K) = 0;
+  virtual void evaluateStagedFunctions(Kernel &K);
 
   virtual void requestIRTransformation(Kernel &K) = 0;
 
-  virtual const llvm::Module &getModule() = 0;
+  virtual const llvm::Module &getModule();
 
   virtual void synchronize() = 0;
 
   virtual llvm::legacy::PassManager &getPassManager() = 0;
-
+protected:
+  MSPEngine _msp_engine;
+  std::unique_ptr<llvm::Module> _M, _rawM;
 };
 }
 }
