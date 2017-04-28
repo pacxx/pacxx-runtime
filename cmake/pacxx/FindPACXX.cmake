@@ -1,10 +1,6 @@
 cmake_minimum_required(VERSION 3.5)
 
-find_package(CUDA REQUIRED)
-
-if (CUDA_FOUND)
-    include_directories(${CUDA_TOOLKIT_INCLUDE})
-endif ()
+include(FindPACXXConfig)
 
 if (NOT PACXX_DIR)
     message(FATAL_ERROR
@@ -15,10 +11,24 @@ endif ()
 
 set(PACXX_DIR ${PACXX_DIR} CACHE PATH "Path to PACXX")
 
-find_package(OpenMP REQUIRED)
-if (OPENMP_FOUND)
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+if (CUDA_REQUIRED)
+    find_package(CUDA REQUIRED)
+
+    if (CUDA_FOUND)
+        include_directories(${CUDA_TOOLKIT_INCLUDE})
+    endif ()
+endif ()
+
+if (OpenMP_REQUIRED)
+    find_package(OpenMP REQUIRED)
+    if (OPENMP_FOUND)
+        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+    endif ()
+endif ()
+
+if (TBB_REQUIRED)
+    find_package(TBB REQUIRED)
 endif ()
 
 # Set the path to llvm-config
@@ -259,7 +269,7 @@ function(add_pacxx_to_target targetName binDir srcFiles)
 
     set_target_properties(${targetName} PROPERTIES LINK_FLAGS ${PACXX_LD_FLAGS})
     target_link_libraries(${targetName} PUBLIC ${PACXX_RUNTIME_LIBRARY}
-            PUBLIC ${CUDA_LIBRARIES} PUBLIC cuda PUBLIC ${PACXX_LLVM_LIBS} PUBLIC ${PACXX_LLVM_SYS_LIBS})
+            PUBLIC ${CUDA_LIBRARIES} PUBLIC cuda PUBLIC ${PACXX_LLVM_LIBS} PUBLIC ${PACXX_LLVM_SYS_LIBS} PUBLIC ${TBB_LIBRARIES})
 
     target_compile_options(${targetName} PUBLIC -Wno-ignored-attributes)
 

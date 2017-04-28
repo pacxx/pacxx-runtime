@@ -6,20 +6,31 @@ set(LLVM_DIR $ENV{PACXX_PATH}/lib/cmake/llvm/)
 find_package(LLVM REQUIRED CONFIG)
 find_package(CUDA)
 
-include_directories("./include")
+include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/pacxx/FindTBB.cmake)
 
-set(TBB_INCLUDE_DIR "$ENV{PACXX_PATH}/include" CACHE FILEPATH "include directory of tbb")
+include_directories("./include")
 
 include_directories(${LLVM_INCLUDE_DIRS})
 include_directories(${TBB_INCLUDE_DIR})
 
-option(OpenMP "use OpenMP instead of TBB" OFF)
+set(ENABLE_OPENMP ON)
+if (TBB_FOUND)
+    set(ENABLE_OPENMP OFF)
+endif ()
+
+
+option(OpenMP "use OpenMP instead of TBB" ${ENABLE_OPENMP})
 option(USE_CUDA "Build the CUDA backend" ${CUDA_FOUND})
 
 if(OpenMP)
   add_definitions(-D__PACXX_OMP)
   add_definitions(-DPACXX_DISABLE_TBB)
   add_compile_options(-fopenmp)
+  set(OpenMP_REQUIRED ON)
+  set(TBB_REQUIRED OFF)
+else ()
+    set(OpenMP_REQUIRED OFF)
+    set(TBB_REQUIRED ON)
 endif(OpenMP)
 
 
@@ -57,7 +68,8 @@ set(SOURCE_FILES include/pacxx/Executor.h
         include/pacxx/detail/native/NativeDeviceBuffer.h
         src/native/NativeDeviceBuffer.cpp
         include/pacxx/config.h
-        src/Kernel.cpp src/IRRuntime.cpp)
+        src/Kernel.cpp
+        src/IRRuntime.cpp)
 
 
 if (USE_CUDA)
@@ -75,12 +87,14 @@ if (USE_CUDA)
             include/pacxx/detail/cuda/CUDADeviceBuffer.h
             include/pacxx/detail/cuda/CUDAUtility.h
             src/cuda/CUDADeviceBuffer.cpp)
+    set(CUDA_REQUIRED ON)
 else (USE_CUDA)
+    set(CUDA_REQUIRED OFF)
     set(PACXX_CUDA_BACKEND 0)
 endif (USE_CUDA)
 
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config/config.h.in ${CMAKE_CURRENT_SOURCE_DIR}/include/pacxx/config.h)
-
+configure_file(cmake/config/FindPACXXConfig.cmake.in ${CMAKE_CURRENT_SOURCE_DIR}/cmake/pacxx/FindPACXXConfig.cmake)
 
 add_compile_options(-std=c++14)
 add_compile_options(-include ${CMAKE_CURRENT_SOURCE_DIR}/include/pacxx/config.h)
@@ -160,6 +174,6 @@ file(GLOB PACXX_FILES ${CMAKE_BINARY_DIR}/*.a ${CMAKE_BINARY_DIR}/*.bc ${CMAKE_B
 
 install(FILES ${PACXX_FILES} DESTINATION lib)
 install(DIRECTORY ${CMAKE_SOURCE_DIR}/include/ DESTINATION include)
-install(DIRECTORY ${CMAKE_SOURCE_DIR}/cmake/ DESTINATION lib/cmake)
+install(DIRECTORY ${CMAKE_SOURCE_DIR}/cmake/pacxx/ DESTINATION lib/cmake/pacxx)
 
 

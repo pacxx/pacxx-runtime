@@ -1,0 +1,6 @@
+cmake_minimum_required(VERSION 3.5)
+
+set(CUDA_REQUIRED ${CUDA_REQUIRED})
+set(OpenMP_REQUIRED ${OpenMP_REQUIRED})
+set(TBB_REQUIRED ${TBB_REQUIRED})
+
