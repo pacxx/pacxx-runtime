@@ -107,7 +107,7 @@ add_custom_command(
         COMMENT "Generating NVPTX Device Binding")
 
 add_custom_command(
-        OUTPUT ${ndbFile}.o
+        OUTPUT ${nvdbFile}.o
         COMMAND ${LLVM_TOOLS_BINARY_DIR}/clang -DFILE='"${CMAKE_BINARY_DIR}/${nvdbFile}.bc"' ${CMAKE_SOURCE_DIR}/src/embed_nvptx_binding.S -c -o ${nvdbFile}.o
         WORKING_DIRECTORY ${binDir}
         DEPENDS ${ndbFile}.bc
