@@ -114,64 +114,27 @@ public:
     return instance;
   }
 
-  Executor(std::unique_ptr<IRRuntime> &&rt) :
-      _ctx(new LLVMContext()), _runtime(std::move(rt)),
-      _mem_manager(*_runtime) {
-    core::CoreInitializer::initialize();
-  }
+  Executor(std::unique_ptr<IRRuntime> &&rt);
 
-  Executor(Executor &&other) : _mem_manager(std::move(other._mem_manager)) {
-    _ctx = std::move(other._ctx);
-    _runtime = std::move(other._runtime);
-    _id = other._id;
-    _kernel_translation = std::move(other._kernel_translation);
-  }
+  Executor(Executor &&other);
 
 private:
-  std::string cleanName(const std::string &name) {
-    auto cleaned_name =
-        std::regex_replace(name, std::regex("S[0-9A-Z]{0,9}_"), "");
-    cleaned_name =
-        std::regex_replace(cleaned_name, std::regex("5pacxx"), ""); // bad hack
-    cleaned_name =
-        std::regex_replace(cleaned_name, std::regex("2v2"), ""); // bad hack
-    // cleaned_name = std::regex_replace(cleaned_name,
-    // std::regex("S[0-9A-Z]{0,9}_"), "");
-    auto It = cleaned_name.find("$_");
-    if (It == std::string::npos)
-      return cleaned_name;
-    It += 2;
-    auto value =
-        std::to_string(std::strtol(&cleaned_name[It], nullptr, 10)).size();
-    cleaned_name.erase(It + value);
-    return cleaned_name;
-  }
+  std::string cleanName(const std::string &name);
 
 public:
 
-  unsigned getID() { return _id; };
+  unsigned getID();
 
-  void setMSPModule(std::unique_ptr<llvm::Module> M) {
-    _runtime->initializeMSP(std::move(M));
-  }
+  void setMSPModule(std::unique_ptr<llvm::Module> M);
 
   template<typename T>
   auto getVectorizationWidth() {
     return _runtime->getPreferedVectorSize(sizeof(T));
   }
 
-  auto getConcurrentCores() {
-    return _runtime->getConcurrentCores();
-  }
+  size_t getConcurrentCores();
 
-  auto getExecutingDeviceType() {
-    switch (_runtime->getRuntimeType()) {
-#ifdef PACXX_ENABLE_CUDA
-    case RuntimeType::CUDARuntimeTy:return ExecutingDevice::GPUNvidia;
-#endif
-    case RuntimeType::NativeRuntimeTy:return ExecutingDevice::CPU;
-    }
-  }
+  ExecutingDevice getExecutingDeviceType();
 
   void setModule(std::unique_ptr<llvm::Module> M);
 
@@ -333,10 +296,7 @@ public:
     throw pacxx::common::generic_exception("unreachable code");
   }
 
-  RawDeviceBuffer &allocateRaw(size_t bytes) {
-    __verbose("allocating raw memory: ", bytes);
-    return *_runtime->allocateRawMemory(bytes);
-  }
+  RawDeviceBuffer &allocateRaw(size_t bytes);
 
   template<typename T> void free(DeviceBuffer<T> &buffer) {
     switch (_runtime->getRuntimeType()) {
@@ -347,15 +307,15 @@ public:
     }
   }
 
-  void freeRaw(RawDeviceBuffer &buffer) { _runtime->deleteRawMemory(&buffer); }
+  void freeRaw(RawDeviceBuffer &buffer);
 
-  auto &mm() { return _mem_manager; }
+  MemoryManager &mm();
 
-  auto &rt() { return *_runtime; }
+  IRRuntime &rt();
 
-  void synchronize() { _runtime->synchronize(); }
+  void synchronize();
 
-  auto &getPassManager() { return _runtime->getPassManager(); }
+  llvm::legacy::PassManager &getPassManager();
 
   template<typename PromisedTy, typename... Ts>
   auto &getPromise(Ts &&... args) {
