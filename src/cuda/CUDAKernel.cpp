@@ -11,8 +11,7 @@ namespace pacxx {
 namespace v2 {
 
 CUDAKernel::CUDAKernel(CUDARuntime &runtime, CUfunction fptr)
-    : _runtime(runtime), _fptr(fptr), _staged_values_changed(false),
-      _disable_staging(false), _hostArgBufferSize(0) {}
+    : Kernel(runtime), _runtime(runtime), _fptr(fptr) {}
 
 CUDAKernel::~CUDAKernel() {}
 
@@ -33,8 +32,6 @@ void CUDAKernel::configurate(KernelConfiguration config) {
   }
 }
 
-KernelConfiguration CUDAKernel::getConfiguration() const { return _config; }
-
 void CUDAKernel::setArguments(const std::vector<char> &arg_buffer) {
   _args = arg_buffer;
   _args_size = _args.size();
@@ -46,15 +43,6 @@ void CUDAKernel::setArguments(const std::vector<char> &arg_buffer) {
   _launch_args.push_back(CU_LAUNCH_PARAM_END);
 }
 
-const std::vector<char> &CUDAKernel::getArguments() const { return _args; }
-
-void CUDAKernel::setHostArguments(const std::vector<char> &arg_buffer) {
-  _host_args = arg_buffer;
-}
-
-const std::vector<char> &CUDAKernel::getHostArguments() const {
-  return _host_args;
-}
 
 void CUDAKernel::launch() {
   if (!_fptr || _staged_values_changed) { // kernel has no function ptr yet.
@@ -75,62 +63,6 @@ void CUDAKernel::launch() {
   if (_callback)
     SEC_CUDA_CALL(cudaStreamAddCallback(nullptr, CUDARuntime::fireCallback,
                                         &_callback, 0));
-}
-
-void CUDAKernel::setStagedValue(int ref, long long value, bool inScope) {
-  auto old = _staged_values[ref];
-  if (old != value) {
-    _staged_values[ref] = value;
-    if (inScope)
-      _staged_values_changed = true;
-  }
-}
-
-const std::map<int, long long> &CUDAKernel::getStagedValues() const {
-  return _staged_values;
-}
-
-void CUDAKernel::setName(std::string name) { _name = name; }
-
-const std::string &CUDAKernel::getName() const { return _name; }
-
-void CUDAKernel::disableStaging() { _disable_staging = true; }
-
-bool CUDAKernel::requireStaging() { return !_disable_staging; }
-
-size_t CUDAKernel::getHostArgumentsSize() const { return _hostArgBufferSize; }
-
-void CUDAKernel::setHostArgumentsSize(size_t size) {
-  _hostArgBufferSize = size;
-}
-
-const std::vector<size_t> &CUDAKernel::getArugmentBufferOffsets() {
-  if (_arg_offsets.size() == 0) {
-    auto &M = _runtime.getModule();
-    auto F = M.getFunction(_name);
-    size_t offset = 0;
-    _arg_offsets.resize(F->arg_size());
-    std::transform(F->arg_begin(), F->arg_end(), _arg_offsets.begin(),
-                   [&](const auto &arg) {
-                     auto arg_size =
-                         M.getDataLayout().getTypeAllocSize(arg.getType());
-                     auto arg_alignment =
-                         M.getDataLayout().getPrefTypeAlignment(arg.getType());
-
-                     auto arg_offset =
-                         (offset + arg_alignment - 1) & ~(arg_alignment - 1);
-                     offset = arg_offset + arg_size;
-                     _argBufferSize = offset;
-                     return arg_offset;
-                   });
-  }
-
-  return _arg_offsets;
-
-}
-
-size_t CUDAKernel::getArgBufferSize() {
-  return _argBufferSize;
 }
 
 

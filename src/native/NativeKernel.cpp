@@ -17,8 +17,7 @@ namespace pacxx {
 namespace v2 {
 
 NativeKernel::NativeKernel(NativeRuntime &runtime, void *fptr)
-    : _runtime(runtime), _fptr(fptr), _staged_values_changed(false),
-      _disable_staging(false), _hostArgBufferSize(0) {}
+    : Kernel(runtime), _runtime(runtime), _fptr(fptr) {}
 
 NativeKernel::~NativeKernel() {}
 
@@ -28,22 +27,6 @@ void NativeKernel::configurate(KernelConfiguration config) {
   }
 }
 
-KernelConfiguration NativeKernel::getConfiguration() const { return _config; }
-
-void NativeKernel::setArguments(const std::vector<char> &arg_buffer) {
-  __verbose("Set kernel args");
-  _args = arg_buffer;
-}
-
-const std::vector<char> &NativeKernel::getArguments() const { return _args; }
-
-void NativeKernel::setHostArguments(const std::vector<char> &arg_buffer) {
-  _host_args = arg_buffer;
-}
-
-const std::vector<char> &NativeKernel::getHostArguments() const {
-  return _host_args;
-}
 
 void NativeKernel::launch() {
 
@@ -134,63 +117,6 @@ void NativeKernel::launch() {
     _callback();
 }
 
-void NativeKernel::setStagedValue(int ref, long long value, bool inScope) {
-  auto old = _staged_values[ref];
-  if (old != value) {
-    _staged_values[ref] = value;
-    if (inScope)
-      _staged_values_changed = true;
-  }
-}
-
-const std::map<int, long long> &NativeKernel::getStagedValues() const {
-  return _staged_values;
-}
-
-void NativeKernel::setName(std::string name) { _name = name; }
-
-const std::string &NativeKernel::getName() const { return _name; }
-
-void NativeKernel::disableStaging() { _disable_staging = true; }
-
-bool NativeKernel::requireStaging() { return !_disable_staging; }
-
-size_t NativeKernel::getHostArgumentsSize() const { return _hostArgBufferSize; }
-
-void NativeKernel::setHostArgumentsSize(size_t size) {
-  _hostArgBufferSize = size;
-}
-
-const std::vector<size_t> &NativeKernel::getArugmentBufferOffsets() {
-  if (_arg_offsets.size() == 0) {
-    auto &M = _runtime.getModule();
-    auto F = M.getFunction(_name);
-    size_t offset = 0;
-    size_t old = 0;
-    _arg_offsets.resize(F->arg_size());
-    std::transform(F->arg_begin(), F->arg_end(), _arg_offsets.begin(),
-                   [&](const auto &arg) {
-                     auto arg_size =
-                         M.getDataLayout().getTypeAllocSize(arg.getType());
-                     auto arg_alignment =
-                         M.getDataLayout().getPrefTypeAlignment(arg.getType());
-
-                     auto arg_offset =
-                         (offset + arg_alignment - 1) & ~(arg_alignment - 1);
-
-                     offset = arg_offset + arg_size;
-                     _argBufferSize = offset;
-                     return arg_offset;
-                   });
-  }
-
-  return _arg_offsets;
-
-}
-
-size_t NativeKernel::getArgBufferSize() {
-  return _argBufferSize;
-}
 
 }
 }

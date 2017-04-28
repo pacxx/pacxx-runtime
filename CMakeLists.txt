@@ -56,7 +56,8 @@ set(SOURCE_FILES include/pacxx/Executor.h
         include/pacxx/detail/native/NativeKernel.h
         include/pacxx/detail/native/NativeDeviceBuffer.h
         src/native/NativeDeviceBuffer.cpp
-        include/pacxx/config.h)
+        include/pacxx/config.h
+        src/Kernel.cpp)
 
 
 if (USE_CUDA)
