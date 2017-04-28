@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.0)
-project(PACXX_V2)
+project(pacxxrt2)
 
 set(CMAKE_MODULE_PATH $ENV{PACXX_PATH}/lib/cmake/llvm/)
 set(LLVM_DIR $ENV{PACXX_PATH}/lib/cmake/llvm/)
@@ -32,6 +32,9 @@ else ()
     set(OpenMP_REQUIRED OFF)
     set(TBB_REQUIRED ON)
 endif(OpenMP)
+
+
+option(BUILD_SHARED "Build PACXX Runtime as shared object" OFF)
 
 
 set(SOURCE_FILES include/pacxx/Executor.h
@@ -88,6 +91,14 @@ if (USE_CUDA)
             include/pacxx/detail/cuda/CUDAUtility.h
             src/cuda/CUDADeviceBuffer.cpp)
     set(CUDA_REQUIRED ON)
+
+    if (BUILD_SHARED)
+        set(CUDA_USE_SHARED_RT ON)
+        set(CUDA_USE_STATIC_CUDA_RUNTIME OFF CACHE BOOL "" FORCE) # unfortunately, this gets overwritten in FindCUDA.cmake, so we have to force set it again
+    else ()
+        set(CUDA_USE_SHARED_RT OFF)
+    endif ()
+
 else (USE_CUDA)
     set(CUDA_REQUIRED OFF)
     set(PACXX_CUDA_BACKEND 0)
@@ -122,7 +133,7 @@ add_custom_command(
 
 add_custom_command(
         OUTPUT ${nvdbFile}.o
-        COMMAND ${LLVM_TOOLS_BINARY_DIR}/clang -DFILE='"${CMAKE_BINARY_DIR}/${nvdbFile}.bc"' ${CMAKE_SOURCE_DIR}/src/embed_nvptx_binding.S -c -o ${nvdbFile}.o
+        COMMAND ${LLVM_TOOLS_BINARY_DIR}/clang -DFILE='"${CMAKE_BINARY_DIR}/${nvdbFile}.bc"' ${CMAKE_SOURCE_DIR}/src/asm/embed_runtime/embed_nvptx_binding.S -c -o ${nvdbFile}.o
         WORKING_DIRECTORY ${binDir}
         DEPENDS ${nvdbFile}.bc
         COMMENT "Preparing NVPTX Device Binding for linking")
@@ -147,7 +158,7 @@ add_custom_command(
 
 add_custom_command(
         OUTPUT ${nadbFile}.o
-        COMMAND ${LLVM_TOOLS_BINARY_DIR}/clang -DFILE='"${CMAKE_BINARY_DIR}/${nadbFile}.bc"' ${CMAKE_SOURCE_DIR}/src/embed_native_binding.S -c -o ${nadbFile}.o
+        COMMAND ${LLVM_TOOLS_BINARY_DIR}/clang -DFILE='"${CMAKE_BINARY_DIR}/${nadbFile}.bc"' ${CMAKE_SOURCE_DIR}/src/asm/embed_runtime/embed_native_binding.S -c -o ${nadbFile}.o
         WORKING_DIRECTORY ${binDir}
         DEPENDS ${nadbFile}.bc
         COMMENT "Preparing Native Device Binding for linking")
@@ -158,21 +169,32 @@ add_library(${nadbFile} STATIC ${nadbFile}.o)
 set_source_files_properties(${nadbFile}.o PROPERTIES EXTERNAL_OBJECT true GENERATED true)
 set_target_properties(${nadbFile} PROPERTIES LINKER_LANGUAGE C)
 
+if (BUILD_SHARED)
+    add_library(${PROJECT_NAME} SHARED ${SOURCE_FILES} ${CUDA_SOURCE_FILES} ${nvdbFile}.o ${nadbFile}.o)
+else ()
+    add_library(${PROJECT_NAME} ${SOURCE_FILES} ${CUDA_SOURCE_FILES} ${nvdbFile}.o ${nadbFile}.o)
+endif ()
 
-add_library(pacxxrt2 ${SOURCE_FILES} ${CUDA_SOURCE_FILES} ${nvdbFile}.o ${nadbFile}.o)
-
-add_dependencies(pacxxrt2 ${nvdbFile}_target)
-add_dependencies(pacxxrt2 ${nadbFile}_target)
-
-
-add_custom_command(TARGET pacxxrt2 POST_BUILD COMMAND ${LLVM_TOOLS_BINARY_DIR}/llvm-as ${CMAKE_SOURCE_DIR}/src/bitcode/syscalls.ll -o ${CMAKE_BINARY_DIR}/syscalls.bc)
-
-add_custom_command(TARGET pacxxrt2 POST_BUILD COMMAND cp ${CMAKE_SOURCE_DIR}/src/*.S ${CMAKE_BINARY_DIR}/)
+add_dependencies(${PROJECT_NAME} ${nvdbFile}_target)
+add_dependencies(${PROJECT_NAME} ${nadbFile}_target)
 
 
-file(GLOB PACXX_FILES ${CMAKE_BINARY_DIR}/*.a ${CMAKE_BINARY_DIR}/*.bc ${CMAKE_BINARY_DIR}/*.S)
+add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD COMMAND ${LLVM_TOOLS_BINARY_DIR}/llvm-as ${CMAKE_SOURCE_DIR}/src/bitcode/syscalls.ll -o ${CMAKE_BINARY_DIR}/syscalls.bc)
 
-install(FILES ${PACXX_FILES} DESTINATION lib)
+#add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD COMMAND cp ${CMAKE_SOURCE_DIR}/src/asm/embed_/*.S ${CMAKE_BINARY_DIR}/)
+
+
+file(GLOB PACXX_FILES ${CMAKE_BINARY_DIR}/*.S)
+
+
+if (BUILD_SHARED)
+    install(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION lib)
+else ()
+    install(TARGETS ${PROJECT_NAME} ARCHIVE DESTINATION lib)
+endif ()
+
+
+install(DIRECTORY ${CMAKE_SOURCE_DIR}/src/asm/embed_executable/ DESTINATION lib)
 install(DIRECTORY ${CMAKE_SOURCE_DIR}/include/ DESTINATION include)
 install(DIRECTORY ${CMAKE_SOURCE_DIR}/cmake/pacxx/ DESTINATION lib/cmake/pacxx)
 

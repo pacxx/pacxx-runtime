@@ -11,12 +11,21 @@ endif ()
 
 set(PACXX_DIR ${PACXX_DIR} CACHE PATH "Path to PACXX")
 
+if (NOT CUDA_FOUND)
 if (CUDA_REQUIRED)
     find_package(CUDA REQUIRED)
 
     if (CUDA_FOUND)
         include_directories(${CUDA_TOOLKIT_INCLUDE})
     endif ()
+
+    if (CUDA_USE_SHARED_RT)
+        set(CUDA_LINK_LIBRARIES cuda cudart)
+        set(CUDA_USE_STATIC_CUDA_RUNTIME OFF CACHE BOOL "" FORCE) # unfortunately, this gets overwritten in FindCUDA.cmake, so we have to force set it again
+    else ()
+        set(CUDA_LINK_LIBRARIES ${CUDA_LIBRARIES})
+    endif ()
+endif ()
 endif ()
 
 if (OpenMP_REQUIRED)
@@ -105,22 +114,11 @@ find_library(PACXX_RUNTIME_LIBRARY pacxxrt2 PATHS ${PACXX_DIR}
 
 if (EXISTS ${PACXX_RUNTIME_LIBRARY})
     mark_as_advanced(PACXX_RUNTIME_LIBRARY)
-    message(STATUS "libpacxxrt2.so - Found")
+    message(STATUS "libpacxxrt2 - Found")
 else ()
-    message(FATAL_ERROR "libpacxxrt2.so - Not found!")
+    message(FATAL_ERROR "libpacxxrt2 - Not found!")
 endif ()
 
-
-find_file(PACXX_NVVM_DEVICE_BINDING nvvm_device_binding.bc PATHS ${PACXX_DIR}
-        HINTS ${PACXX_DIR}/lib PATH_SUFFIXES lib
-        DOC "PACXX Nvidia Device Binding" NO_DEFAULT_PATH)
-
-if (EXISTS ${PACXX_NVVM_DEVICE_BINDING})
-    mark_as_advanced(PACXX_NVVM_DEVICE_BINDING)
-    message(STATUS "nvvm_device_binding.bc - Found")
-else ()
-    message(FATAL_ERROR "nvvm_device_binding.bc - Not found!")
-endif ()
 
 find_file(PACXX_ASM_WRAPPER embed_llvm.S PATHS ${PACXX_DIR}
         HINTS ${PACXX_DIR}/lib PATH_SUFFIXES lib
@@ -213,7 +211,6 @@ function(pacxx_embed_ir targetName bcFiles binDir)
     add_custom_command(
             OUTPUT ${outFile}
             COMMAND ${PACXX_LINK} ${PACXX_LINK_FLAGS} ${bcFiles} -o ${outFile}
-            #  COMMAND ${PACXX_LINK} ${PACXX_LINK_FLAGS} ${PACXX_NVVM_DEVICE_BINDING} ${outFile} -o ${outFile}
             COMMAND ${PACXX_OPT} ${PACXX_OPT_FLAGS} ${outFile} -o ${outFile}
             WORKING_DIRECTORY ${binDir}
             COMMENT "Generating Kernel IR")
@@ -269,7 +266,7 @@ function(add_pacxx_to_target targetName binDir srcFiles)
 
     set_target_properties(${targetName} PROPERTIES LINK_FLAGS ${PACXX_LD_FLAGS})
     target_link_libraries(${targetName} PUBLIC ${PACXX_RUNTIME_LIBRARY}
-            PUBLIC ${CUDA_LIBRARIES} PUBLIC cuda PUBLIC ${PACXX_LLVM_LIBS} PUBLIC ${PACXX_LLVM_SYS_LIBS} PUBLIC ${TBB_LIBRARIES})
+            PUBLIC ${CUDA_LINK_LIBRARIES} PUBLIC cuda PUBLIC ${PACXX_LLVM_LIBS} PUBLIC ${PACXX_LLVM_SYS_LIBS} PUBLIC ${TBB_LIBRARIES})
 
     target_compile_options(${targetName} PUBLIC -Wno-ignored-attributes)
 
