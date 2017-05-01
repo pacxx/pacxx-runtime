@@ -34,6 +34,7 @@ public:
 private:
   bool _disabled;
   llvm::ExecutionEngine *_engine;
+  llvm::Module *_mspModule;
   std::set<std::pair<llvm::Function *, int>> _stubs;
 };
 }

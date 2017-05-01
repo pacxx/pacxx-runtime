@@ -108,7 +108,6 @@ private:
   CUcontext _context;
   CUmodule _mod;
   std::unique_ptr<CompilerT> _compiler;
-  std::unique_ptr<llvm::Module> _M, _rawM;
   std::map<std::string, std::unique_ptr<CUDAKernel>> _kernels;
   std::list<std::unique_ptr<DeviceBufferBase>> _memory;
   std::vector<cudaDeviceProp> _dev_props;
@@ -120,7 +119,6 @@ private:
 
   std::list<callback_mem> _callbacks;
   bool _delayed_compilation;
-  v2::MSPEngine _msp_engine;
 };
 }
 }

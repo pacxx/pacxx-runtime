@@ -16,9 +16,10 @@ using namespace llvm;
 namespace pacxx {
 namespace v2 {
 
-MSPEngine::MSPEngine() : _disabled(true) {}
+MSPEngine::MSPEngine() : _engine(nullptr), _disabled(true) {}
 
 void MSPEngine::initialize(std::unique_ptr<llvm::Module> M) {
+  _mspModule = M.get();
   _stubs = pacxx::getTagedFunctionsWithTag(M.get(), "pacxx.reflection", "stub");
   if (!_stubs.empty()) {
     std::string ErrStr;
@@ -63,17 +64,18 @@ size_t MSPEngine::getArgBufferSize(const llvm::Function &KF, Kernel &kernel) {
           if (MDNode *MD = CI->getMetadata("pacxx.reflect.stage")) {
             auto *ci32 = dyn_cast<ConstantInt>(
                 dyn_cast<ValueAsMetadata>(MD->getOperand(0).get())->getValue());
-            auto cstage = (unsigned int)*ci32->getValue().getRawData();
+            auto cstage = (unsigned int) *ci32->getValue().getRawData();
             auto FName =
                 std::string("__pacxx_reflection_stub") + std::to_string(cstage);
+
             if (auto F = _engine->FindFunctionNamed(FName.c_str())) {
               auto MD = F->getMetadata("pacxx.reflection.argBufferSize");
               hostArgBufferSize =
                   *(dyn_cast<ConstantInt>(
-                        dyn_cast<ValueAsMetadata>(MD->getOperand(0).get())
-                            ->getValue())
-                        ->getValue()
-                        .getRawData());
+                      dyn_cast<ValueAsMetadata>(MD->getOperand(0).get())
+                          ->getValue())
+                      ->getValue()
+                      .getRawData());
             }
           }
         }
@@ -89,6 +91,7 @@ void MSPEngine::evaluate(const llvm::Function &KF, Kernel &kernel) {
   __verbose("staging function: ", KF.getName().str());
   bool kernelHasStagedFunction = false;
   auto &M = *KF.getParent();
+
   if (auto RF = M.getFunction("__pacxx_reflect")) {
     for (auto U : RF->users()) {
       if (CallInst *CI = dyn_cast<CallInst>(U)) {
@@ -98,11 +101,10 @@ void MSPEngine::evaluate(const llvm::Function &KF, Kernel &kernel) {
           if (MDNode *MD = CI->getMetadata("pacxx.reflect.stage")) {
             auto *ci32 = dyn_cast<ConstantInt>(
                 dyn_cast<ValueAsMetadata>(MD->getOperand(0).get())->getValue());
-            auto cstage = (unsigned int)*ci32->getValue().getRawData();
+            auto cstage = (unsigned int) *ci32->getValue().getRawData();
             auto FName =
                 std::string("__pacxx_reflection_stub") + std::to_string(cstage);
             if (auto F = _engine->FindFunctionNamed(FName.c_str())) {
-
               auto args = kernel.getHostArguments();
               if (args.size() >
                   0) { // if we don't find host args its a startup dryrun
@@ -191,28 +193,22 @@ void MSPEngine::transformModule(llvm::Module &M, Kernel &K) {
     Intrinsic::ID iid;
     Function *F = nullptr;
     switch (i) {
-    case 0:
-      iid = Intrinsic::nvvm_read_ptx_sreg_ntid_x;
+    case 0:iid = Intrinsic::nvvm_read_ptx_sreg_ntid_x;
       F = M.getFunction("_Z14get_local_sizej");
       break;
-    case 1:
-      iid = Intrinsic::nvvm_read_ptx_sreg_ntid_y;
+    case 1:iid = Intrinsic::nvvm_read_ptx_sreg_ntid_y;
       F = M.getFunction("_Z14get_local_sizej");
       break;
-    case 2:
-      iid = Intrinsic::nvvm_read_ptx_sreg_ntid_z;
+    case 2:iid = Intrinsic::nvvm_read_ptx_sreg_ntid_z;
       F = M.getFunction("_Z14get_local_sizej");
       break;
-    case 3:
-      iid = Intrinsic::nvvm_read_ptx_sreg_nctaid_x;
+    case 3:iid = Intrinsic::nvvm_read_ptx_sreg_nctaid_x;
       F = M.getFunction("_Z14get_num_groupsj");
       break;
-    case 4:
-      iid = Intrinsic::nvvm_read_ptx_sreg_nctaid_y;
+    case 4:iid = Intrinsic::nvvm_read_ptx_sreg_nctaid_y;
       F = M.getFunction("_Z14get_num_groupsj");
       break;
-    case 5:
-      iid = Intrinsic::nvvm_read_ptx_sreg_nctaid_z;
+    case 5:iid = Intrinsic::nvvm_read_ptx_sreg_nctaid_z;
       F = M.getFunction("_Z14get_num_groupsj");
       break;
     }
