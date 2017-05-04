@@ -107,7 +107,9 @@ endif (USE_CUDA)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config/config.h.in ${CMAKE_CURRENT_SOURCE_DIR}/include/pacxx/config.h)
 configure_file(cmake/config/FindPACXXConfig.cmake.in ${CMAKE_CURRENT_SOURCE_DIR}/cmake/pacxx/FindPACXXConfig.cmake)
 
-add_compile_options(-std=c++14)
+
+set(CMAKE_CXX_STANDARD 14)
+
 add_compile_options(-include ${CMAKE_CURRENT_SOURCE_DIR}/include/pacxx/config.h)
 
 add_definitions(${LLVM_DEFINITIONS})
