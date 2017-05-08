@@ -197,7 +197,7 @@ template<typename L, typename CB, Target targ, size_t _C>
 class _kernel_with_cb {
 public:
   _kernel_with_cb(const L &lambda, KernelConfiguration config, CB &&callback)
-      : _function(lambda), _config(config), _callback(std::move(callback)) {}
+      : _function(lambda), _config(config), _callback(std::forward<CB>(callback)) {}
 
   template<typename... Ts> void operator()(Ts &&... args) {
     using caller = kernel_caller<targ, _C>;
