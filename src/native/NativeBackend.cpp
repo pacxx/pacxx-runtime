@@ -160,7 +160,7 @@ Module *NativeBackend::compile(std::unique_ptr<Module> &M) {
 
   builder.setErrorStr(&error);
 
-  builder.setUseOrcMCJITReplacement(true);
+  builder.setUseOrcMCJITReplacement(false);
 
   builder.setEngineKind(EngineKind::JIT);
 
@@ -175,6 +175,7 @@ Module *NativeBackend::compile(std::unique_ptr<Module> &M) {
   }
   builder.setMCJITMemoryManager(std::unique_ptr<RTDyldMemoryManager>(
       static_cast<RTDyldMemoryManager *>(new SectionMemoryManager())));
+
 
   _JITEngine = builder.create(_machine);
 
