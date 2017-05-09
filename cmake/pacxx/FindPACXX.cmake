@@ -17,11 +17,12 @@ if (CUDA_REQUIRED)
 
     if (CUDA_FOUND)
         include_directories(${CUDA_TOOLKIT_INCLUDE})
+        link_directories(${CUDA_TOOLKIT_ROOT_DIR}/lib64}) #TODO make dynamic for non 64 bit systems
     endif ()
 
     if (CUDA_USE_SHARED_RT)
-        set(CUDA_LINK_LIBRARIES cuda cudart)
         set(CUDA_USE_STATIC_CUDA_RUNTIME OFF CACHE BOOL "" FORCE) # unfortunately, this gets overwritten in FindCUDA.cmake, so we have to force set it again
+        set(CUDA_LINK_LIBRARIES cuda cudart)
     else ()
         set(CUDA_LINK_LIBRARIES ${CUDA_LIBRARIES})
     endif ()
