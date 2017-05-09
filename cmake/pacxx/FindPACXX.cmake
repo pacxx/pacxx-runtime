@@ -17,7 +17,7 @@ if (CUDA_REQUIRED)
 
     if (CUDA_FOUND)
         include_directories(${CUDA_TOOLKIT_INCLUDE})
-        link_directories(${CUDA_TOOLKIT_ROOT_DIR}/lib64}) #TODO make dynamic for non 64 bit systems
+        link_directories(${CUDA_TOOLKIT_ROOT_DIR}/lib64) #TODO make dynamic for non 64 bit systems
     endif ()
 
     if (CUDA_USE_SHARED_RT)
