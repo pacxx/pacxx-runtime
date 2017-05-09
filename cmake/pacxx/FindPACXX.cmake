@@ -41,8 +41,8 @@ if (TBB_REQUIRED)
 endif ()
 
 # Set the path to llvm-config
-find_program(PACXX_LLVM_CONFIG llvm-config PATHS
-        ${PACXX_DIR} PATH_SUFFIXES bin)
+find_program(PACXX_LLVM_CONFIG llvm-config PATHS 
+  ${PACXX_DIR} PATH_SUFFIXES bin NO_DEFAULT_PATH)
 if (EXISTS ${PACXX_LLVM_CONFIG})
     mark_as_advanced(PACXX_LLVM_CONFIG)
     message(STATUS "llvm-config (PACXX) - Found")
@@ -80,17 +80,18 @@ else ()
 endif ()
 
 
-find_program(PACXX_COMPILER clang++ PATHS
-        ${PACXX_DIR} PATH_SUFFIXES bin)
+find_program(PACXX_COMPILER clang++ PATHS 
+  ${PACXX_DIR} PATH_SUFFIXES bin NO_DEFAULT_PATH)
 if (EXISTS ${PACXX_COMPILER})
+    message(STATUS "clang location: ${PACXX_COMPILER}")
     mark_as_advanced(PACXX_COMPILER)
     message(STATUS "clang++ (PACXX) - Found")
 else ()
     message(FATAL_ERROR "clang++ (PACXX) - Not found! (${PACXX_COMPILER})")
 endif ()
 
-find_program(PACXX_LINK llvm-link PATHS
-        ${PACXX_DIR} PATH_SUFFIXES bin)
+find_program(PACXX_LINK llvm-link PATHS 
+  ${PACXX_DIR} PATH_SUFFIXES bin NO_DEFAULT_PATH)
 if (EXISTS ${PACXX_LINK})
     mark_as_advanced(PACXX_LINK)
     message(STATUS "llvm-link (PACXX) - Found")
@@ -98,9 +99,10 @@ else ()
     message(FATAL_ERROR "llvm-link (PACXX) - Not found! (${PACXX_LINK})")
 endif ()
 
-find_program(PACXX_OPT opt PATHS
-        ${PACXX_DIR} PATH_SUFFIXES bin)
+find_program(PACXX_OPT opt PATHS ${PACXX_DIR}/bin NO_DEFAULT_PATH)
 if (EXISTS ${PACXX_OPT})
+    message(STATUS "opt location: ${PACXX_OPT}")
+    message(STATUS "pacxx: ${PACXX_DIR}")
     mark_as_advanced(PACXX_OPT)
     message(STATUS "opt (PACXX) - Found")
 else ()
@@ -148,7 +150,6 @@ if (NOT EXISTS ${PACXX_INCLUDE_DIRECTORY})
 else ()
     message(STATUS "PACXX includes - Found")
 endif ()
-
 
 set(PACXX_DEVICE_FLAGS "-std=pacxx -O0 -emit-llvm -D__STDC_CONSTANT_MACROS -D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS -DNDEBUG -D__CUDA_DEVICE_CODE" CACHE "PACXX Device compilation flags" STRING)
 set(PACXX_LINK_FLAGS "-suppress-warnings" CACHE "PACXX bytecode linker flags" STRING)
@@ -213,7 +214,7 @@ function(pacxx_embed_ir targetName bcFiles binDir)
             COMMAND ${PACXX_LINK} ${PACXX_LINK_FLAGS} ${bcFiles} -o ${outFile}
             COMMAND ${PACXX_OPT} ${PACXX_OPT_FLAGS} ${outFile} -o ${outFile}
             WORKING_DIRECTORY ${binDir}
-            COMMENT "Generating Kernel IR")
+            COMMENT "Generating Kernel IR ${PACXX_OPT}")
 
     add_custom_command(
             OUTPUT ${outFile}.o

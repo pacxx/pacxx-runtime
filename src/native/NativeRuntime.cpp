@@ -34,7 +34,6 @@ RuntimeType NativeRuntime::getRuntimeType() {
 void NativeRuntime::link(std::unique_ptr<llvm::Module> M) {
 
   __verbose("linking");
-  llvm::legacy::PassManager PM;
 
   _rawM = std::move(M);
 
