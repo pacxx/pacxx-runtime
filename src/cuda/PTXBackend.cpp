@@ -24,7 +24,7 @@
 
 // nvptx device binding
 extern const char nvptx_binding_start[];
-extern int nvptx_binding_size;
+extern const char nvptx_binding_end[];
 
 using namespace llvm;
 
@@ -54,7 +54,7 @@ void PTXBackend::initialize(unsigned CC) {
 void PTXBackend::prepareModule(llvm::Module &M) {
 
   ModuleLoader loader(M.getContext());
-  auto binding = loader.loadInternal(nvptx_binding_start, nvptx_binding_size);
+  auto binding = loader.loadInternal(nvptx_binding_start, nvptx_binding_end - nvptx_binding_start);
 
   M.setDataLayout(binding->getDataLayout());
   M.setTargetTriple(binding->getTargetTriple());

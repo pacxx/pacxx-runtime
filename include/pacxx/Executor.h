@@ -36,9 +36,9 @@ const char *reflection_start = nullptr;
 int reflection_size = 0;
 #else
 extern const char llvm_start[];
-extern int llvm_size;
+extern const char llvm_end[];
 extern const char reflection_start[];
-extern int reflection_size;
+extern const char reflection_end[];
 #endif
 
 #ifndef PACXX_ENABLE_CUDA
@@ -101,10 +101,10 @@ public:
 
     ModuleLoader loader(instance.getLLVMContext());
     if (module_bytes == "") {
-      auto M = loader.loadInternal(llvm_start, llvm_size);
+      auto M = loader.loadInternal(llvm_start, llvm_end - llvm_start);
       instance.setModule(std::move(M));
       instance.setMSPModule(
-          loader.loadInternal(reflection_start, reflection_size));
+          loader.loadInternal(reflection_start, reflection_end - reflection_start));
     } else {
       ModuleLoader loader(instance.getLLVMContext());
       auto M = loader.loadInternal(module_bytes.data(), module_bytes.size());

@@ -109,7 +109,7 @@ using namespace llvm;
 
 // native device binding
 extern const char native_binding_start[];
-extern int native_binding_size;
+extern const char native_binding_end[];
 
 
 namespace pacxx {
@@ -121,7 +121,7 @@ NativeBackend::~NativeBackend() {}
 void NativeBackend::prepareModule(llvm::Module &M) {
 
   ModuleLoader loader(M.getContext());
-  auto binding = loader.loadInternal(native_binding_start, native_binding_size);
+  auto binding = loader.loadInternal(native_binding_start, native_binding_end - native_binding_start);
 
   auto linker = Linker(M);
   linker.linkInModule(std::move(binding), Linker::Flags::None);
