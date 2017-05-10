@@ -123,27 +123,17 @@ else ()
 endif ()
 
 
-find_file(PACXX_ASM_WRAPPER embed_llvm.S PATHS ${PACXX_DIR}
+find_file(PACXX_ASM_WRAPPER embed.S PATHS ${PACXX_DIR}
         HINTS ${PACXX_DIR}/lib PATH_SUFFIXES lib
         DOC "PACXX Wrapper Assembly File" NO_DEFAULT_PATH)
 
 if (EXISTS ${PACXX_ASM_WRAPPER})
     mark_as_advanced(PACXX_ASM_WRAPPER)
-    message(STATUS "embed_llvm.S - Found")
+    message(STATUS "embed.S - Found")
 else ()
-    message(FATAL_ERROR "embed_llvm.S - Not found!")
+    message(FATAL_ERROR "embed.S - Not found!")
 endif ()
 
-find_file(PACXX_ASM_WRAPPER_MSP embed_reflection.S PATHS ${PACXX_DIR}
-        HINTS ${PACXX_DIR}/lib PATH_SUFFIXES lib
-        DOC "PACXX Wrapper Assembly File (MSP)" NO_DEFAULT_PATH)
-
-if (EXISTS ${PACXX_ASM_WRAPPER_MSP})
-    mark_as_advanced(PACXX_ASM_WRAPPER_MSP)
-    message(STATUS "embed_reflect.S - Found")
-else ()
-    message(FATAL_ERROR "embed_reflect.S - Not found!")
-endif ()
 
 set(PACXX_INCLUDE_DIRECTORY ${PACXX_DIR}/include)
 if (NOT EXISTS ${PACXX_INCLUDE_DIRECTORY})
@@ -219,7 +209,7 @@ function(pacxx_embed_ir targetName bcFiles binDir)
 
     add_custom_command(
             OUTPUT ${outFile}.o
-            COMMAND ${PACXX_COMPILER} -DFILE='"${outFile}"' ${PACXX_ASM_WRAPPER} -c -o ${outFile}.o
+            COMMAND ${PACXX_COMPILER} -DFILE='"${outFile}"' -DTAG='llvm' ${PACXX_ASM_WRAPPER} -c -o ${outFile}.o
             WORKING_DIRECTORY ${binDir}
             DEPENDS ${outFile}
             COMMENT "Preparing Kernel IR for linking")
@@ -227,13 +217,12 @@ function(pacxx_embed_ir targetName bcFiles binDir)
     add_custom_command(
             OUTPUT ${mspFile}
             COMMAND ${PACXX_OPT} ${PACXX_OPT_FLAGS_MSP} ${outFile} -o ${mspFile}
-            COMMAND ${PACXX_COMPILER} -DFILE='"${mspFile}"' ${PACXX_ASM_WRAPPER_MSP} -c -o ${mspFile}.o
             WORKING_DIRECTORY ${binDir}
             COMMENT "Generating MSP IR")
 
     add_custom_command(
             OUTPUT ${mspFile}.o
-            COMMAND ${PACXX_COMPILER} -DFILE='"${mspFile}"' ${PACXX_ASM_WRAPPER_MSP} -c -o ${mspFile}.o
+            COMMAND ${PACXX_COMPILER} -DFILE='"${mspFile}"' -DTAG='reflection' ${PACXX_ASM_WRAPPER} -c -o ${mspFile}.o
             WORKING_DIRECTORY ${binDir}
             DEPENDS ${mspFile}
             COMMENT "Preparing MSP IR for linking")

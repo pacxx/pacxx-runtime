@@ -135,7 +135,7 @@ add_custom_command(
 
 add_custom_command(
         OUTPUT ${nvdbFile}.o
-        COMMAND ${LLVM_TOOLS_BINARY_DIR}/clang -DFILE='"${CMAKE_BINARY_DIR}/${nvdbFile}.bc"' ${CMAKE_SOURCE_DIR}/src/asm/embed_runtime/embed_nvptx_binding.S -c -o ${nvdbFile}.o
+        COMMAND ${LLVM_TOOLS_BINARY_DIR}/clang -DFILE='"${CMAKE_BINARY_DIR}/${nvdbFile}.bc"' -DTAG='nvptx_binding' ${CMAKE_SOURCE_DIR}/src/asm/embed.S -c -o ${nvdbFile}.o
         WORKING_DIRECTORY ${binDir}
         DEPENDS ${nvdbFile}.bc
         COMMENT "Preparing NVPTX Device Binding for linking")
@@ -160,7 +160,7 @@ add_custom_command(
 
 add_custom_command(
         OUTPUT ${nadbFile}.o
-        COMMAND ${LLVM_TOOLS_BINARY_DIR}/clang -DFILE='"${CMAKE_BINARY_DIR}/${nadbFile}.bc"' ${CMAKE_SOURCE_DIR}/src/asm/embed_runtime/embed_native_binding.S -c -o ${nadbFile}.o
+        COMMAND ${LLVM_TOOLS_BINARY_DIR}/clang -DFILE='"${CMAKE_BINARY_DIR}/${nadbFile}.bc"' -DTAG='native_binding' ${CMAKE_SOURCE_DIR}/src/asm/embed.S -c -o ${nadbFile}.o
         WORKING_DIRECTORY ${binDir}
         DEPENDS ${nadbFile}.bc
         COMMENT "Preparing Native Device Binding for linking")
@@ -196,7 +196,7 @@ else ()
 endif ()
 
 
-install(DIRECTORY ${CMAKE_SOURCE_DIR}/src/asm/embed_executable/ DESTINATION lib)
+install(DIRECTORY ${CMAKE_SOURCE_DIR}/src/asm/ DESTINATION lib)
 install(DIRECTORY ${CMAKE_SOURCE_DIR}/include/ DESTINATION include)
 install(DIRECTORY ${CMAKE_SOURCE_DIR}/cmake/pacxx/ DESTINATION lib/cmake/pacxx)
 
