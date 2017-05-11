@@ -144,7 +144,7 @@ endif ()
 
 set(PACXX_DEVICE_FLAGS "-std=pacxx -O0 -emit-llvm -D__STDC_CONSTANT_MACROS -D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS -DNDEBUG -D__CUDA_DEVICE_CODE" CACHE "PACXX Device compilation flags" STRING)
 set(PACXX_LINK_FLAGS "-suppress-warnings" CACHE "PACXX bytecode linker flags" STRING)
-set(PACXX_OPT_FLAGS "-scalarizer -mem2reg -targetlibinfo -tbaa -basicaa -loop-rotate -simplifycfg -basiccg -functionattrs -sroa -domtree -early-cse -lazy-value-info -correlated-propagation -reassociate -domtree -loops -lcssa -loop-rotate -slsr -licm -loop-unswitch -loop-idiom -loop-deletion -loop-unroll -instsimplify -domtree -loops -lcssa -memdep -gvn -break-crit-edges -constmerge -pacxx_reflection -pacxx_inline -pacxx_dce -scalarizer -mem2reg -instcombine -simplifycfg -instcombine -pacxx_inline -pacxx_dce" CACHE "PACXX bytecode optimizer flags" STRING)
+set(PACXX_OPT_FLAGS "-scalarizer -mem2reg -targetlibinfo -tbaa -basicaa -loop-rotate -simplifycfg -basiccg -functionattrs -sroa -domtree -early-cse -lazy-value-info -correlated-propagation -reassociate -domtree -loops -lcssa -loop-rotate -slsr -licm -loop-unswitch -loop-idiom -loop-deletion -loop-unroll -instsimplify -domtree -loops -lcssa -memdep -gvn -break-crit-edges -constmerge -pacxx_reflection -pacxx_inline -pacxx_dce -scalarizer -mem2reg -instcombine -simplifycfg -instcombine -pacxx_inline -pacxx_dce -pacxx_intrinsic_scheduler" CACHE "PACXX bytecode optimizer flags" STRING)
 set(PACXX_OPT_FLAGS_MSP "-pacxx_reflection_cleaner -inline -instcombine" CACHE "PACXX bytecode optimizer flags (MSP)" STRING)
 
 

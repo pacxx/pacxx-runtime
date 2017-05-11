@@ -63,3 +63,5 @@ __forceinline__ __index_t get_grid_size(unsigned int dimindx) {
   default:return 0;
   }
 }
+
+__forceinline__ void barrier(unsigned int) { __pacxx_barrier(); }
