@@ -24,13 +24,13 @@
 
 namespace {
 const std::string native_loop_ir(R"(
-define void @foo(i32 %__maxx, i32 %__maxy, i32 %__maxz) {
+define void @__pacxx_block(i32 %__maxx, i32 %__maxy, i32 %__maxz) {
     %1 = alloca i32, align 4
     %2 = alloca i32, align 4
     %3 = alloca i32, align 4
-    %__z = alloca i32, align 4
-    %__y = alloca i32, align 4
-    %__x = alloca i32, align 4
+    %__z = alloca i32, align 4, !pacxx_read_tid_z !3
+    %__y = alloca i32, align 4, !pacxx_read_tid_y !3
+    %__x = alloca i32, align 4, !pacxx_read_tid_x !3
     store i32 %__maxx, i32* %1, align 4
     store i32 %__maxy, i32* %2, align 4
     store i32 %__maxz, i32* %3, align 4
@@ -102,6 +102,7 @@ declare void @__dummy_kernel()
 !0 = !{!"PACXX"}
 !1 = distinct !{!1, !2}
 !2 = !{!"llvm.loop.vectorize.enable", i1 false}
+!3 = !{null}
 )");
 }
 

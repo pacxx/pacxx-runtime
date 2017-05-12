@@ -109,7 +109,7 @@ void NativeKernel::launch() {
 #endif
 
   __verbose("Time measured in runtime : ", median(times.begin(), times.end()), " us (", runs, " iterations)");
-  std::ofstream f("times");
+  std::ofstream f(std::string(program_invocation_name) + "-timing");
   std::ostream_iterator<unsigned> output_iterator(f, "\n");
   std::copy(times.begin(), times.end(), output_iterator);
 
