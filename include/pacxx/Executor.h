@@ -98,7 +98,7 @@ public:
     auto &instance = executors.back();
 
     instance._id = executors.size() - 1;
-
+    __verbose("Created new Executor with id: ", instance.getID());
     ModuleLoader loader(instance.getLLVMContext());
     if (module_bytes == "") {
       auto M = loader.loadInternal(llvm_start, llvm_end - llvm_start);
