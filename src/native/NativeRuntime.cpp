@@ -73,7 +73,9 @@ Kernel &NativeRuntime::getKernel(const std::string &name) {
     auto kernel = new NativeKernel(*this, fptr);
     kernel->setName(name);
     _kernels[name].reset(kernel);
-
+    auto buffer_size =
+        _msp_engine.getArgBufferSize(*_rawM->getFunction(name), *kernel);
+    kernel->setHostArgumentsSize(buffer_size);
     return *kernel;
   } else {
     return *It->second;
