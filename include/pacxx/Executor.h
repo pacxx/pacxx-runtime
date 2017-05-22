@@ -140,12 +140,11 @@ public:
 
   void setModule(std::string module_bytes);
 
-  template<typename L, typename... Args>
-  void run(const L &lambda, KernelConfiguration config, Args &&... args) {
+  template<typename L>
+  void run(const L &lambda, KernelConfiguration config) {
     // auto& dev_lambda = _mem_manager.getTemporaryLambda(lambda);
     auto &K = get_kernel_by_name(typeid(L).name(), config,
-                                 std::forward<const L>(lambda),
-                                 std::forward<Args>(args)...);
+                                 lambda);
     K.launch();
   }
 
@@ -153,15 +152,15 @@ public:
   void run_with_callback(const L &lambda, KernelConfiguration config,
                          CallbackFunc &&cb, Args &&... args) {
     auto &K = get_kernel_by_name(typeid(L).name(), config,
-                                 std::forward<const L>(lambda),
+                                 lambda,
                                  std::forward<Args>(args)...);
     K.setCallback(std::move(cb));
     K.launch();
   }
 
-  template<typename... Args>
+  template<typename L>
   auto &get_kernel_by_name(std::string name, KernelConfiguration config,
-                           Args &&... args) {
+                           const L &lambda) {
 
     std::string FName;
     const llvm::Module &M = _runtime->getModule();
@@ -186,49 +185,21 @@ public:
     K.setName(FName);
     K.configurate(config);
 
-
-    __verbose("Executor arg size ", F->arg_size());
+    // FIXME: getArgumentbufferOffsets must always be called
+    // before getArgBufferSize returns a valid result
     const std::vector<size_t> &arg_offsets = K.getArugmentBufferOffsets();
+    __verbose("Executor arg size ", F->arg_size(), " size is: ", K.getArgBufferSize());
+
+
+    // set the kernels arguments
     size_t buffer_size = K.getArgBufferSize();
-
     std::vector<char> args_buffer(buffer_size);
-    __verbose("host arg buffer size is: ", K.getHostArgumentsSize());
-    std::vector<char> host_args_buffer(K.getHostArgumentsSize());
-
-    auto ptr = args_buffer.data();
-    auto hptr = host_args_buffer.data();
-    size_t i = 0;
-    ptrdiff_t hoffset = 0;
-    void *lambdaPtr = nullptr;
-
-    common::for_first_in_arg_pack(
-        [&](auto &lambda) { lambdaPtr = (void *) &lambda; },
-        std::forward<Args>(args)...);
-
-    common::for_each_in_arg_pack(
-        [&](auto &&arg) {
-          if (i == 0) {
-            if (host_args_buffer.size() > 0)
-              std::memcpy(hptr + hoffset, &lambdaPtr,
-                          sizeof(decltype(lambdaPtr)));
-            hoffset += sizeof(decltype(lambdaPtr));
-          } else if (host_args_buffer.size() > 0) {
-            std::memcpy(hptr + hoffset, &arg, sizeof(decltype(arg)));
-            hoffset += sizeof(decltype(arg));
-          }
-
-          auto offset = arg_offsets[i++];
-          auto targ = meta::memory_translation{}(_mem_manager, arg);
-          //          __warning(sizeof(decltype(arg)), " ", hoffset, " ",
-          //          typeid(arg).name());
-          std::memcpy(ptr + offset, &targ, sizeof(decltype(targ)));
-        },
-        std::forward<Args>(args)...);
-
-    K.setHostArguments(host_args_buffer);
+    std::memcpy(args_buffer.data(), &lambda, sizeof(decltype(lambda)));
     K.setArguments(args_buffer);
 
-    _runtime->evaluateStagedFunctions(K);
+    // evaluate MSP functions with the lambda as input data
+    auto lambdaPtr = &lambda;
+    _runtime->evaluateStagedFunctions(K, reinterpret_cast<const void *>(lambdaPtr));
 
     return K;
   }

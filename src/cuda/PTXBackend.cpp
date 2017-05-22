@@ -66,7 +66,7 @@ void PTXBackend::prepareModule(llvm::Module &M) {
 
   PM.add(createPACXXTargetSelectPass({"GPU", "Generic"}));
   PM.add(createPACXXSpirPass());
-  PM.add(createPACXXClassifyPass());
+  PM.add(createPACXXReflectionRemoverPass());
   PM.add(createPACXXNvvmPass());
 
   PM.add(createPACXXNvvmRegPass(false));

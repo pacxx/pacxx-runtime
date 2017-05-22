@@ -25,7 +25,7 @@ public:
   MSPEngine();
 
   void initialize(std::unique_ptr<llvm::Module> M);
-  void evaluate(const llvm::Function &KF, Kernel &kernel);
+  void evaluate(const llvm::Function &KF, Kernel &kernel, const void *data);
 
   size_t getArgBufferSize(const llvm::Function &KF, Kernel &kernel);
   void transformModule(llvm::Module &M, Kernel &K);
@@ -36,22 +36,6 @@ private:
   llvm::ExecutionEngine *_engine;
   llvm::Module *_mspModule;
   std::set<std::pair<llvm::Function *, int>> _stubs;
-};
-}
-
-namespace meta {
-struct msp_memory_translation {
-  template <typename T, std::enable_if_t<is_vector<T>::value> * = nullptr>
-  auto operator()(const T &data) {
-    return reinterpret_cast<const char *>(&data) + 32; // TODO: Make 32 dynamic
-  }
-
-  template <typename T,
-            std::enable_if_t<!(is_vector<T>::value || is_devbuffer<T>::value)>
-                * = nullptr>
-  auto operator()(const T &data) {
-    return data;
-  }
 };
 }
 }

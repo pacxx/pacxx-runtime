@@ -85,7 +85,7 @@ size_t MSPEngine::getArgBufferSize(const llvm::Function &KF, Kernel &kernel) {
   return hostArgBufferSize;
 }
 
-void MSPEngine::evaluate(const llvm::Function &KF, Kernel &kernel) {
+void MSPEngine::evaluate(const llvm::Function &KF, Kernel &kernel, const void *data) {
   if (!kernel.requireStaging())
     return;
   __verbose("staging function: ", KF.getName().str());
@@ -105,13 +105,9 @@ void MSPEngine::evaluate(const llvm::Function &KF, Kernel &kernel) {
             auto FName =
                 std::string("__pacxx_reflection_stub") + std::to_string(cstage);
             if (auto F = _engine->FindFunctionNamed(FName.c_str())) {
-              auto args = kernel.getHostArguments();
-              if (args.size() >
-                  0) { // if we don't find host args its a startup dryrun
-                void *rFP = _engine->getPointerToFunction(F);
-                auto FP = reinterpret_cast<int64_t (*)(void *)>(rFP);
-                value = FP(&args[0]);
-              }
+              void *rFP = _engine->getPointerToFunction(F);
+              auto FP = reinterpret_cast<int64_t (*)(const void *)>(rFP);
+              value = FP(data);
 
               kernelHasStagedFunction = true;
               inScope = true;

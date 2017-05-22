@@ -12,7 +12,7 @@ namespace v2 {
 
 Kernel::Kernel(IRRuntime &runtime)
     : _runtime_ref(runtime), _staged_values_changed(false),
-      _disable_staging(false), _hostArgBufferSize(0) {}
+      _disable_staging(false) {}
 
 KernelConfiguration Kernel::getConfiguration() const { return _config; }
 
@@ -26,14 +26,6 @@ void Kernel::setArguments(const std::vector<char> &arg_buffer) {
 }
 
 const std::vector<char> &Kernel::getArguments() const { return _args; }
-
-void Kernel::setHostArguments(const std::vector<char> &arg_buffer) {
-  _host_args = arg_buffer;
-}
-
-const std::vector<char> &Kernel::getHostArguments() const {
-  return _host_args;
-}
 
 void Kernel::setStagedValue(int ref, long long value, bool inScope) {
   auto old = _staged_values[ref];
@@ -55,12 +47,6 @@ const std::string &Kernel::getName() const { return _name; }
 void Kernel::disableStaging() { _disable_staging = true; }
 
 bool Kernel::requireStaging() { return !_disable_staging; }
-
-size_t Kernel::getHostArgumentsSize() const { return _hostArgBufferSize; }
-
-void Kernel::setHostArgumentsSize(size_t size) {
-  _hostArgBufferSize = size;
-}
 
 const std::vector<size_t> &Kernel::getArugmentBufferOffsets() {
   if (_arg_offsets.size() == 0) {

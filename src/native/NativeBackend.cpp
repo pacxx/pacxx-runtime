@@ -3,7 +3,7 @@
 //
 
 #include "pacxx/detail/native/NativeBackend.h"
-#include "pacxx/Executor.h"
+#include "pacxx/ModuleLoader.h"
 #include "pacxx/detail/common/Exceptions.h"
 #include <llvm/Analysis/LoopInfo.h>
 #include <llvm/Analysis/LoopPass.h>
@@ -128,7 +128,7 @@ void NativeBackend::prepareModule(llvm::Module &M) {
   linker.linkInModule(std::move(binding), Linker::Flags::None);
 
   llvm::legacy::PassManager PM;
-
+  PM.add(createPACXXReflectionRemoverPass());
   PM.add(createPACXXTargetSelectPass({"CPU", "Generic"}));
   PM.add(createPACXXInlinerPass());
   PM.add(createPACXXDeadCodeElimPass());

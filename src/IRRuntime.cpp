@@ -16,11 +16,11 @@ void IRRuntime::initializeMSP(std::unique_ptr<llvm::Module> M) {
   _msp_engine.initialize(std::move(M));
 }
 
-void IRRuntime::evaluateStagedFunctions(Kernel &K) {
+void IRRuntime::evaluateStagedFunctions(Kernel &K, const void *data) {
   if (K.requireStaging()) {
     if (_msp_engine.isDisabled())
       return;
-    _msp_engine.evaluate(*_rawM->getFunction(K.getName()), K);
+    _msp_engine.evaluate(*_rawM->getFunction(K.getName()), K, data);
   }
 }
 

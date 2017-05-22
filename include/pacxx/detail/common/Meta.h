@@ -15,9 +15,11 @@ namespace meta {
 template <typename T> struct callable_wrapper {
   T callable;
 
+  const T &get() const { return callable; }
+
   callable_wrapper(T callable) : callable(callable) {}
 
-  template <typename... Ts> auto operator()(Ts &&... args) {
+  template<typename... Ts> auto operator()(Ts &&... args) const {
     return callable(std::forward<Ts>(args)...);
   };
 };

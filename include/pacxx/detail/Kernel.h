@@ -26,17 +26,10 @@ public:
   virtual const std::vector<size_t> &getArugmentBufferOffsets();
   virtual size_t getArgBufferSize();
 
-  virtual size_t getHostArgumentsSize() const;
-
-  virtual void setHostArgumentsSize(size_t size);
-  virtual void setHostArguments(const std::vector<char> &arg_buffer);
-  virtual const std::vector<char> &getHostArguments() const;
-
   virtual void setStagedValue(int ref, long long value, bool inScope);
   virtual const std::map<int, long long> &getStagedValues() const;
 
   virtual void disableStaging();
-
   virtual bool requireStaging();
   virtual void setName(std::string name);
   virtual const std::string &getName() const;
@@ -49,14 +42,12 @@ protected:
   KernelConfiguration _config;
   std::vector<char> _args;
   std::vector<size_t> _arg_offsets;
-  std::vector<char> _host_args;
   std::map<int, long long> _staged_values;
   bool _staged_values_changed;
   std::string _name;
   std::function<void()> _callback;
   bool _disable_staging;
   size_t _argBufferSize;
-  size_t _hostArgBufferSize;
 };
 }
 }
