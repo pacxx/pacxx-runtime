@@ -186,8 +186,6 @@ public:
     K.configurate(config);
     K.setLambdaPtr(&lambda);
 
-    // evaluate MSP functions with the lambda as input data
-    auto lambdaPtr = &lambda;
     _runtime->evaluateStagedFunctions(K);
 
     return K;
