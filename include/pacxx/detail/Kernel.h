@@ -17,14 +17,10 @@ class IRRuntime;
 
 class Kernel {
 public:
-  Kernel(IRRuntime &runtime);
+  Kernel(IRRuntime &runtime, std::string name);
   virtual ~Kernel(){};
   virtual void configurate(KernelConfiguration config) = 0;
   virtual KernelConfiguration getConfiguration() const;
-  virtual void setArguments(const std::vector<char> &arg_buffer);
-  virtual const std::vector<char> &getArguments() const;
-  virtual const std::vector<size_t> &getArugmentBufferOffsets();
-  virtual size_t getArgBufferSize();
 
   virtual void setStagedValue(int ref, long long value, bool inScope);
   virtual const std::map<int, long long> &getStagedValues() const;
@@ -37,17 +33,19 @@ public:
 
   virtual void setCallback(std::function<void()> callback);
 
+  virtual void setLambdaPtr(const void *ptr) { _lambdaPtr = ptr; };
+  virtual const void *getLambdaPtr() { return _lambdaPtr; };
+
 protected:
   IRRuntime &_runtime_ref;
   KernelConfiguration _config;
-  std::vector<char> _args;
-  std::vector<size_t> _arg_offsets;
   std::map<int, long long> _staged_values;
   bool _staged_values_changed;
   std::string _name;
   std::function<void()> _callback;
   bool _disable_staging;
   size_t _argBufferSize;
+  const void *_lambdaPtr;
 };
 }
 }

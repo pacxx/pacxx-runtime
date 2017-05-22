@@ -70,11 +70,10 @@ Kernel &NativeRuntime::getKernel(const std::string &name) {
       if (!fptr)
         throw common::generic_exception("Kernel function not found in module!");
     }
-    auto kernel = new NativeKernel(*this, fptr);
-    kernel->setName(name);
-    _kernels[name].reset(kernel);
 
-    return *kernel;
+    _kernels[name].reset(new NativeKernel(*this, fptr, name));
+
+    return *_kernels[name];
   } else {
     return *It->second;
   }

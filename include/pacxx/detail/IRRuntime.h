@@ -53,7 +53,7 @@ public:
 
   virtual void initializeMSP(std::unique_ptr<llvm::Module> M);
 
-  virtual void evaluateStagedFunctions(Kernel &K, const void *data);
+  virtual void evaluateStagedFunctions(Kernel &K);
 
   virtual void requestIRTransformation(Kernel &K) = 0;
 

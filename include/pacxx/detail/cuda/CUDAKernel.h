@@ -20,13 +20,12 @@ class CUDAKernel : public Kernel {
   friend class CUDARuntime;
 
 private:
-  CUDAKernel(CUDARuntime &runtime, CUfunction fptr);
+  CUDAKernel(CUDARuntime &runtime, CUfunction fptr, std::string name);
 
 public:
   virtual ~CUDAKernel();
 
   virtual void configurate(KernelConfiguration config) override;
-  virtual void setArguments(const std::vector<char> &arg_buffer) override;
   virtual void launch() override;
 
 
@@ -35,7 +34,6 @@ private:
 
 private:
   CUDARuntime &_runtime;
-  size_t _args_size;
   std::vector<void *> _launch_args;
   CUfunction _fptr;
 

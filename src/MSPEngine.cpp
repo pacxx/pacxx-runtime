@@ -85,7 +85,7 @@ size_t MSPEngine::getArgBufferSize(const llvm::Function &KF, Kernel &kernel) {
   return hostArgBufferSize;
 }
 
-void MSPEngine::evaluate(const llvm::Function &KF, Kernel &kernel, const void *data) {
+void MSPEngine::evaluate(const llvm::Function &KF, Kernel &kernel) {
   if (!kernel.requireStaging())
     return;
   __verbose("staging function: ", KF.getName().str());
@@ -107,7 +107,7 @@ void MSPEngine::evaluate(const llvm::Function &KF, Kernel &kernel, const void *d
             if (auto F = _engine->FindFunctionNamed(FName.c_str())) {
               void *rFP = _engine->getPointerToFunction(F);
               auto FP = reinterpret_cast<int64_t (*)(const void *)>(rFP);
-              value = FP(data);
+              value = FP(kernel.getLambdaPtr());
 
               kernelHasStagedFunction = true;
               inScope = true;

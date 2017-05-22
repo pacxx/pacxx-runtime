@@ -112,11 +112,10 @@ Kernel &CUDARuntime::getKernel(const std::string &name) {
       if (!ptr)
         throw common::generic_exception("Kernel function not found in module!");
     }
-    auto kernel = new CUDAKernel(*this, ptr);
-    kernel->setName(name);
-    _kernels[name].reset(kernel);
 
-    return *kernel;
+    _kernels[name].reset(new CUDAKernel(*this, ptr, name));
+
+    return *_kernels[name];
   } else {
     return *It->second;
   }

@@ -25,7 +25,7 @@ public:
   MSPEngine();
 
   void initialize(std::unique_ptr<llvm::Module> M);
-  void evaluate(const llvm::Function &KF, Kernel &kernel, const void *data);
+  void evaluate(const llvm::Function &KF, Kernel &kernel);
 
   size_t getArgBufferSize(const llvm::Function &KF, Kernel &kernel);
   void transformModule(llvm::Module &M, Kernel &K);

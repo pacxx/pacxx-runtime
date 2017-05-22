@@ -24,7 +24,7 @@ class NativeKernel : public Kernel {
   friend class NativeRuntime;
 
 private:
-  NativeKernel(NativeRuntime &runtime, void *fptr);
+  NativeKernel(NativeRuntime &runtime, void *fptr, std::string name);
 
 public:
   virtual ~NativeKernel();

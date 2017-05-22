@@ -10,8 +10,8 @@
 namespace pacxx {
 namespace v2 {
 
-CUDAKernel::CUDAKernel(CUDARuntime &runtime, CUfunction fptr)
-    : Kernel(runtime), _runtime(runtime), _fptr(fptr) {}
+CUDAKernel::CUDAKernel(CUDARuntime &runtime, CUfunction fptr, std::string name)
+    : Kernel(runtime, name), _runtime(runtime), _fptr(fptr) {}
 
 CUDAKernel::~CUDAKernel() {}
 
@@ -32,18 +32,6 @@ void CUDAKernel::configurate(KernelConfiguration config) {
   }
 }
 
-void CUDAKernel::setArguments(const std::vector<char> &arg_buffer) {
-  _args = arg_buffer;
-  _args_size = _args.size();
-  _launch_args.clear(); // remove old args first
-  _launch_args.push_back(CU_LAUNCH_PARAM_BUFFER_POINTER);
-  _launch_args.push_back(reinterpret_cast<void *>(_args.data()));
-  _launch_args.push_back(CU_LAUNCH_PARAM_BUFFER_SIZE);
-  _launch_args.push_back(reinterpret_cast<void *>(&_args_size));
-  _launch_args.push_back(CU_LAUNCH_PARAM_END);
-}
-
-
 void CUDAKernel::launch() {
   if (!_fptr || _staged_values_changed) { // kernel has no function ptr yet.
                                           // request kernel transformation and
@@ -51,6 +39,15 @@ void CUDAKernel::launch() {
     _runtime.requestIRTransformation(*this);
     _staged_values_changed = false;
   }
+
+  __verbose("setting kernel arguments");
+  _launch_args.clear(); // remove old args first
+  _launch_args.push_back(CU_LAUNCH_PARAM_BUFFER_POINTER);
+  _launch_args.push_back((void *) (_lambdaPtr));
+  _launch_args.push_back(CU_LAUNCH_PARAM_BUFFER_SIZE);
+  _launch_args.push_back(reinterpret_cast<void *>(&_argBufferSize));
+  _launch_args.push_back(CU_LAUNCH_PARAM_END);
+
   __verbose("Launching kernel: \nblocks(", _config.blocks.x, ",",
             _config.blocks.y, ",", _config.blocks.z, ")\nthreads(",
             _config.threads.x, ",", _config.threads.y, ",", _config.threads.z,

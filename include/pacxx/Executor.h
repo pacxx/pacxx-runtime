@@ -184,69 +184,13 @@ public:
     auto &K = _runtime->getKernel(FName);
     K.setName(FName);
     K.configurate(config);
-
-    // FIXME: getArgumentbufferOffsets must always be called
-    // before getArgBufferSize returns a valid result
-    const std::vector<size_t> &arg_offsets = K.getArugmentBufferOffsets();
-    __verbose("Executor arg size ", F->arg_size(), " size is: ", K.getArgBufferSize());
-
-
-    // set the kernels arguments
-    size_t buffer_size = K.getArgBufferSize();
-    std::vector<char> args_buffer(buffer_size);
-    std::memcpy(args_buffer.data(), &lambda, sizeof(decltype(lambda)));
-    K.setArguments(args_buffer);
+    K.setLambdaPtr(&lambda);
 
     // evaluate MSP functions with the lambda as input data
     auto lambdaPtr = &lambda;
-    _runtime->evaluateStagedFunctions(K, reinterpret_cast<const void *>(lambdaPtr));
+    _runtime->evaluateStagedFunctions(K);
 
     return K;
-  }
-
-  template<typename... Args>
-  void run_interop(std::string name, KernelConfiguration config,
-                   const std::vector<KernelArgument> &args) {
-
-    const llvm::Module &M = _runtime->getModule();
-    const llvm::Function *F = M.getFunction(name);
-
-    if (!F)
-      throw common::generic_exception("Kernel function not found in module! " +
-          name);
-
-    size_t buffer_size = 0;
-    std::vector<size_t> arg_offsets(F->arg_size());
-
-    int offset = 0;
-
-    std::transform(F->arg_begin(), F->arg_end(), arg_offsets.begin(),
-                   [&](const auto &arg) {
-                     auto arg_size =
-                         M.getDataLayout().getTypeAllocSize(arg.getType());
-                     auto arg_alignment =
-                         M.getDataLayout().getPrefTypeAlignment(arg.getType());
-
-                     auto arg_offset =
-                         (offset + arg_alignment - 1) & ~(arg_alignment - 1);
-                     offset = arg_offset + arg_size;
-                     buffer_size = offset;
-                     return arg_offset;
-                   });
-
-    std::vector<char> args_buffer(buffer_size);
-    auto ptr = args_buffer.data();
-    size_t i = 0;
-
-    for (const auto &arg : args) {
-      auto offset = arg_offsets[i++];
-      std::memcpy(ptr + offset, arg.address, arg.size);
-    }
-
-    auto &K = _runtime->getKernel(F->getName().str());
-    K.configurate(config);
-    K.setArguments(args_buffer);
-    K.launch();
   }
 
   template<typename T>

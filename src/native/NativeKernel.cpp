@@ -16,8 +16,8 @@
 namespace pacxx {
 namespace v2 {
 
-NativeKernel::NativeKernel(NativeRuntime &runtime, void *fptr)
-    : Kernel(runtime), _runtime(runtime), _fptr(fptr) {}
+NativeKernel::NativeKernel(NativeRuntime &runtime, void *fptr, std::string name)
+    : Kernel(runtime, name), _runtime(runtime), _fptr(fptr) {}
 
 NativeKernel::~NativeKernel() {}
 
@@ -45,7 +45,7 @@ void NativeKernel::launch() {
   // The kernel wrapper always has this function signature.
   // The kernel args are constructed from the char buffer
   auto functor = reinterpret_cast<void (*)(int, int, int, int, int, int, int,
-                                           int, int, int, char *)>(_fptr);
+                                           int, int, int, const void *)>(_fptr);
 
   std::chrono::high_resolution_clock::time_point start, end;
   unsigned runs = 100;
@@ -68,7 +68,7 @@ void NativeKernel::launch() {
         tbb::parallel_for(size_t(0), _config.blocks.x, [&](size_t bidx) {
           functor(bidx, bidy, bidz, _config.blocks.x, _config.blocks.y,
                   _config.blocks.z, _config.threads.x, _config.threads.y,
-                  _config.threads.z, _config.sm_size, _args.data());
+                  _config.threads.z, _config.sm_size, _lambdaPtr);
         });
       });
     });
@@ -99,7 +99,7 @@ void NativeKernel::launch() {
         tbb::parallel_for(size_t(0), _config.blocks.x, [&](size_t bidx) {
           functor(bidx, bidy, bidz, _config.blocks.x, _config.blocks.y,
                   _config.blocks.z, _config.threads.x, _config.threads.y,
-                  _config.threads.z, _config.sm_size, _args.data());
+                  _config.threads.z, _config.sm_size, _lambdaPtr);
         });
       });
     });
