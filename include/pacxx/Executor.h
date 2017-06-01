@@ -182,7 +182,7 @@ public:
     }
 
     auto &K = _runtime->getKernel(FName);
-    K.setName(FName);
+    // K.setName(FName);
     K.configurate(config);
     K.setLambdaPtr(&lambda);
 

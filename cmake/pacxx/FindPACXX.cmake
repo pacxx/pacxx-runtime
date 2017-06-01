@@ -20,12 +20,8 @@ if (CUDA_REQUIRED)
         link_directories(${CUDA_TOOLKIT_ROOT_DIR}/lib64) #TODO make dynamic for non 64 bit systems
     endif ()
 
-    if (CUDA_USE_SHARED_RT)
-        set(CUDA_USE_STATIC_CUDA_RUNTIME OFF CACHE BOOL "" FORCE) # unfortunately, this gets overwritten in FindCUDA.cmake, so we have to force set it again
-        set(CUDA_LINK_LIBRARIES cuda cudart)
-    else ()
-        set(CUDA_LINK_LIBRARIES ${CUDA_LIBRARIES})
-    endif ()
+    set(CUDA_LINK_LIBRARIES cuda cudart)
+
 endif ()
 endif ()
 
@@ -257,7 +253,7 @@ function(add_pacxx_to_target targetName binDir srcFiles)
 
     set_target_properties(${targetName} PROPERTIES LINK_FLAGS ${PACXX_LD_FLAGS})
     target_link_libraries(${targetName} PUBLIC ${PACXX_RUNTIME_LIBRARY}
-            PUBLIC ${CUDA_LINK_LIBRARIES} PUBLIC cuda PUBLIC ${PACXX_LLVM_LIBS} PUBLIC ${PACXX_LLVM_SYS_LIBS} PUBLIC ${TBB_LIBRARIES})
+            PUBLIC ${CUDA_LINK_LIBRARIES} PUBLIC ${PACXX_LLVM_LIBS} PUBLIC ${PACXX_LLVM_SYS_LIBS} PUBLIC ${TBB_LIBRARIES})
 
     target_compile_options(${targetName} PUBLIC -Wno-ignored-attributes)
 

@@ -29,19 +29,50 @@ enum class Target {
 // THIS IS THE GENERIC KERNEL EXPRESSION
 //
 
+// forward decl the kernel body
+template<typename L>
+auto kernelBody(L &&callable);
+
+struct range {
+private:
+  // a range object should never be copied or moved and only be handled as reference
+  range() = default;
+  template<typename L> friend auto kernelBody(L &&callable);
+
+public:
+  range(const range &) = delete;
+  range(range &&) = delete;
+  auto operator=(const range &) = delete;
+  auto operator=(range &&) = delete;
+
+  auto get_global(unsigned int dim) { return ::get_global_id(dim); }
+  auto get_local(unsigned int dim) { return ::get_local_id(dim); }
+  auto get_block(unsigned int dim) { return ::get_group_id(dim); }
+  auto get_block_size(unsigned int dim) { return ::get_local_size(dim); }
+  auto get_num_blocks(unsigned int dim) { return ::get_num_groups(dim); }
+  auto get_grid_size(unsigned int dim) { return ::get_grid_size(dim); }
+  auto synchronize() { barrier(0); }
+};
+
+template<typename L>
+auto kernelBody(L &&callable) {
+  pacxx::v2::range thread;
+  callable(thread);
+}
+
 template<typename L>
 [[pacxx::kernel]] [[pacxx::target("Generic")]] void genericKernel(L callable) noexcept {
-  callable();
+  kernelBody(callable);
 }
 
 template<typename L>
 [[pacxx::kernel]] [[pacxx::target("GPU")]] void genericKernelGPU(L callable) noexcept {
-  callable();
+  kernelBody(callable);
 }
 
 template<typename L>
 [[pacxx::kernel]] [[pacxx::target("CPU")]] void genericKernelCPU(L callable) noexcept {
-  callable();
+  kernelBody(callable);
 }
 
 template<Target T> struct kernel_caller {
