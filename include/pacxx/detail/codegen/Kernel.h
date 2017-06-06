@@ -60,6 +60,8 @@ auto kernelBody(L &&callable) {
   callable(thread);
 }
 
+
+
 template<typename L>
 [[pacxx::kernel]] [[pacxx::target("Generic")]] void genericKernel(L callable) noexcept {
   kernelBody(callable);

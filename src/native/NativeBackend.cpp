@@ -281,6 +281,7 @@ void NativeBackend::applyPasses(Module &M) {
 
 
   _PM.run(M);
+  M.dump();
 }
 
 legacy::PassManager &NativeBackend::getPassManager() { return _PM; }

@@ -114,7 +114,7 @@ add_compile_options(-include ${CMAKE_CURRENT_SOURCE_DIR}/include/pacxx/config.h)
 
 add_definitions(${LLVM_DEFINITIONS})
 
-set(PACXX_DEV_FLAGS -std=pacxx -O0 -c -emit-llvm -D__STDC_CONSTANT_MACROS -D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS -D__CUDA_DEVICE_CODE -isystem $ENV{PACXX_PATH}/include/c++/v1 -isystem $ENV{PACXX_PATH}include -isystem ${CUDA_TOOLKIT_INCLUDE} -I ${CMAKE_SOURCE_DIR}/include)
+set(PACXX_DEV_FLAGS -std=c++14 -pacxx -O0 -c -emit-llvm -D__STDC_CONSTANT_MACROS -D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS -D__CUDA_DEVICE_CODE -isystem $ENV{PACXX_PATH}/include/c++/v1 -isystem $ENV{PACXX_PATH}include -isystem ${CUDA_TOOLKIT_INCLUDE} -I ${CMAKE_SOURCE_DIR}/include)
 
 
 
