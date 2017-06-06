@@ -9,6 +9,13 @@
 
 namespace pacxx {
 namespace v2 {
+
+enum MemAllocMode {
+  Standard,
+  Unified
+};
+
+
 class DeviceBufferBase {
 public:
   virtual ~DeviceBufferBase() {}

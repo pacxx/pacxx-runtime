@@ -40,8 +40,10 @@ public:
 
   virtual size_t getConcurrentCores() override;
 
+  virtual bool supportsUnifiedAddressing() override;
+
   template <typename T>
-  DeviceBuffer<T> *allocateMemory(size_t count, T *host_ptr) {
+  DeviceBuffer<T> *allocateMemory(size_t count, T *host_ptr, MemAllocMode mode = Standard) {
     NativeRawDeviceBuffer rawBuffer;
     if (host_ptr)
       rawBuffer.allocate(count * sizeof(T), reinterpret_cast<char *>(host_ptr));
@@ -77,7 +79,7 @@ public:
       _memory.erase(It);
   }
 
-  virtual RawDeviceBuffer *allocateRawMemory(size_t bytes) override;
+  virtual RawDeviceBuffer *allocateRawMemory(size_t bytes, MemAllocMode mode = Standard) override;
 
   virtual void deleteRawMemory(RawDeviceBuffer *ptr) override;
 

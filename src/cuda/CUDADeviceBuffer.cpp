@@ -6,10 +6,15 @@
 
 namespace pacxx {
 namespace v2 {
-CUDARawDeviceBuffer::CUDARawDeviceBuffer() : _size(0), _mercy(1) {}
+CUDARawDeviceBuffer::CUDARawDeviceBuffer(MemAllocMode mode) : _size(0), _mercy(1), _mode(mode) {}
 
 void CUDARawDeviceBuffer::allocate(size_t bytes) {
-  SEC_CUDA_CALL(cudaMalloc((void **)&_buffer, bytes));
+  switch(_mode) {
+  case MemAllocMode::Standard:SEC_CUDA_CALL(cudaMalloc((void **) &_buffer, bytes));
+    break;
+  case MemAllocMode::Unified:SEC_CUDA_CALL(cudaMallocManaged((void **) &_buffer, bytes));
+    break;
+  }
   _size = bytes;
 }
 

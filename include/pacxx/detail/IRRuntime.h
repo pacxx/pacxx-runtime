@@ -16,6 +16,7 @@
 
 namespace pacxx {
 namespace v2 {
+
 template <typename T> class Callback;
 
 class CallbackBase;
@@ -47,7 +48,9 @@ public:
 
   virtual size_t getConcurrentCores() = 0;
 
-  virtual RawDeviceBuffer *allocateRawMemory(size_t bytes) = 0;
+  virtual bool supportsUnifiedAddressing() = 0;
+
+  virtual RawDeviceBuffer *allocateRawMemory(size_t bytes, MemAllocMode mode) = 0;
 
   virtual void deleteRawMemory(RawDeviceBuffer *ptr) = 0;
 

@@ -52,7 +52,6 @@ set(SOURCE_FILES include/pacxx/Executor.h
         src/KernelConfiguration.cpp
         include/pacxx/detail/Kernel.h
         include/pacxx/detail/DeviceBuffer.h
-        include/pacxx/detail/MemoryManager.h
         include/pacxx/detail/common/Meta.h
         src/Log.cpp
         src/Executor.cpp

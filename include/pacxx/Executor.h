@@ -14,13 +14,13 @@
 #include "pacxx/detail/IRRuntime.h"
 #include "pacxx/detail/KernelArgument.h"
 #include "pacxx/detail/KernelConfiguration.h"
-#include "pacxx/detail/MemoryManager.h"
 #include "pacxx/detail/common/Exceptions.h"
 #include "pacxx/detail/common/Log.h"
 #ifdef PACXX_ENABLE_CUDA
 #include "pacxx/detail/cuda/CUDARuntime.h"
 #endif
 #include "pacxx/detail/native/NativeRuntime.h"
+#include "pacxx/detail/codegen/Kernel.h"
 #include <algorithm>
 #include <cstdlib>
 #include <llvm/IR/Constants.h>
@@ -125,6 +125,18 @@ public:
 
   unsigned getID();
 
+  template <typename L> void launch(L callable, KernelConfiguration config)
+  {
+    pacxx::v2::codegenKernel(callable);
+    run(callable, config);
+  }
+
+  template <typename L, typename CB> void launch_with_callback(L callable, KernelConfiguration config, CB&& callback)
+  {
+    pacxx::v2::codegenKernel(callable);
+    run_with_callback(callable, config, callback);
+  }
+
   void setMSPModule(std::unique_ptr<llvm::Module> M);
 
   template<typename T>
@@ -136,6 +148,7 @@ public:
 
   ExecutingDevice getExecutingDeviceType();
 
+private:
   void setModule(std::unique_ptr<llvm::Module> M);
 
   void setModule(std::string module_bytes);
@@ -191,25 +204,29 @@ public:
     return K;
   }
 
+public:
   template<typename T>
-  DeviceBuffer<T> &allocate(size_t count, T *host_ptr = nullptr) {
+  DeviceBuffer<T> &allocate(size_t count, T *host_ptr = nullptr, MemAllocMode mode = MemAllocMode::Standard) {
     __verbose("allocating memory: ", sizeof(T) * count);
+
+    if (mode == MemAllocMode::Unified)
+      __verbose("Runtime supports unified addressing: ", _runtime->supportsUnifiedAddressing());
 
     switch (_runtime->getRuntimeType()) {
 #ifdef PACXX_ENABLE_CUDA
     case RuntimeType::CUDARuntimeTy:
       return *static_cast<CUDARuntime &>(*_runtime).template allocateMemory(count,
-                                                                  host_ptr);
+                                                                  host_ptr, mode);
 #endif
     case RuntimeType::NativeRuntimeTy:
       return *static_cast<NativeRuntime &>(*_runtime).template allocateMemory(count,
-                                                                              host_ptr);
+                                                                  host_ptr, mode);
     }
 
     throw pacxx::common::generic_exception("unreachable code");
   }
 
-  RawDeviceBuffer &allocateRaw(size_t bytes);
+  RawDeviceBuffer &allocateRaw(size_t bytes, MemAllocMode mode = MemAllocMode::Standard);
 
   template<typename T> void free(DeviceBuffer<T> &buffer) {
     switch (_runtime->getRuntimeType()) {
@@ -222,7 +239,6 @@ public:
 
   void freeRaw(RawDeviceBuffer &buffer);
 
-  MemoryManager &mm();
 
   IRRuntime &rt();
 
@@ -247,7 +263,6 @@ public:
 private:
   std::unique_ptr<LLVMContext> _ctx;
   std::unique_ptr<IRRuntime> _runtime;
-  MemoryManager _mem_manager;
   std::map<std::string, std::string> _kernel_translation;
   unsigned _id;
 };

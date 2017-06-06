@@ -16,7 +16,7 @@ class CUDARawDeviceBuffer : public RawDeviceBuffer {
   friend class CUDARuntime;
 
 private:
-  CUDARawDeviceBuffer();
+  CUDARawDeviceBuffer(MemAllocMode mode = Standard);
 
   void allocate(size_t bytes);
 
@@ -54,6 +54,7 @@ private:
   char *_buffer;
   size_t _size;
   unsigned _mercy;
+  MemAllocMode _mode;
 };
 
 template <typename T> class CUDADeviceBuffer : public DeviceBuffer<T> {

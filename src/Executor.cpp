@@ -4,12 +4,11 @@ namespace pacxx {
 namespace v2 {
 
 Executor::Executor(std::unique_ptr<IRRuntime> &&rt) :
-    _ctx(new LLVMContext()), _runtime(std::move(rt)),
-    _mem_manager(*_runtime) {
+    _ctx(new LLVMContext()), _runtime(std::move(rt)){
   core::CoreInitializer::initialize();
 }
 
-Executor::Executor(Executor &&other) : _mem_manager(std::move(other._mem_manager)) {
+Executor::Executor(Executor &&other)  {
   _ctx = std::move(other._ctx);
   _runtime = std::move(other._runtime);
   _id = other._id;
@@ -67,14 +66,12 @@ std::string Executor::cleanName(const std::string &name) {
   return cleaned_name;
 }
 
-RawDeviceBuffer &Executor::allocateRaw(size_t bytes) {
+RawDeviceBuffer &Executor::allocateRaw(size_t bytes, MemAllocMode mode) {
   __verbose("allocating raw memory: ", bytes);
-  return *_runtime->allocateRawMemory(bytes);
+  return *_runtime->allocateRawMemory(bytes, mode);
 }
 
 void Executor::freeRaw(RawDeviceBuffer &buffer) { _runtime->deleteRawMemory(&buffer); }
-
-MemoryManager &Executor::mm() { return _mem_manager; }
 
 IRRuntime &Executor::rt() { return *_runtime; }
 

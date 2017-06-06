@@ -83,7 +83,7 @@ size_t NativeRuntime::getPreferedMemoryAlignment() {
   return _CPUMod->getDataLayout().getPointerABIAlignment();
 }
 
-RawDeviceBuffer *NativeRuntime::allocateRawMemory(size_t bytes) {
+RawDeviceBuffer *NativeRuntime::allocateRawMemory(size_t bytes, MemAllocMode) {
   NativeRawDeviceBuffer rawBuffer;
   rawBuffer.allocate(bytes);
   auto wrapped = new NativeDeviceBuffer<char>(std::move(rawBuffer));
@@ -147,6 +147,11 @@ size_t NativeRuntime::getConcurrentCores() {
     return 1;
   return n;
 }
+
+bool NativeRuntime::supportsUnifiedAddressing(){
+  return true;
+}
+
 
 }
 }

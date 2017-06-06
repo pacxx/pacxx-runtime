@@ -7,3 +7,4 @@
 #include "pacxx/detail/codegen/Reflection.h"
 #include "pacxx/detail/codegen/Types.h"
 #include "pacxx/detail/codegen/Kernel.h"
+#include "pacxx/Executor.h"

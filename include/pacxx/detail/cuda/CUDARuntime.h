@@ -48,9 +48,11 @@ public:
 
   virtual size_t getConcurrentCores() override;
 
+  virtual bool supportsUnifiedAddressing() override;
+
   template <typename T>
-  DeviceBuffer<T> *allocateMemory(size_t count, T *host_ptr) {
-    CUDARawDeviceBuffer raw;
+  DeviceBuffer<T> *allocateMemory(size_t count, T *host_ptr, MemAllocMode mode = Standard) {
+    CUDARawDeviceBuffer raw(mode);
     raw.allocate(count * sizeof(T));
     auto wrapped = new CUDADeviceBuffer<T>(std::move(raw));
     _memory.push_back(std::unique_ptr<DeviceBufferBase>(
@@ -83,7 +85,7 @@ public:
       _memory.erase(It);
   }
 
-  virtual RawDeviceBuffer *allocateRawMemory(size_t bytes) override;
+  virtual RawDeviceBuffer *allocateRawMemory(size_t bytes, MemAllocMode mode = MemAllocMode::Standard) override;
 
   virtual void deleteRawMemory(RawDeviceBuffer *ptr) override;
 

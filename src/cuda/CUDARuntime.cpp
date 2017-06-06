@@ -125,8 +125,8 @@ size_t CUDARuntime::getPreferedMemoryAlignment() {
   return 256; // on CUDA devices memory is best aligned at 256 bytes
 }
 
-RawDeviceBuffer *CUDARuntime::allocateRawMemory(size_t bytes) {
-  CUDARawDeviceBuffer raw;
+RawDeviceBuffer *CUDARuntime::allocateRawMemory(size_t bytes, MemAllocMode mode) {
+  CUDARawDeviceBuffer raw(mode);
   raw.allocate(bytes);
   auto wrapped = new CUDADeviceBuffer<char>(std::move(raw));
   _memory.push_back(std::unique_ptr<DeviceBufferBase>(
@@ -176,6 +176,12 @@ size_t CUDARuntime::getConcurrentCores() {
   int dev = -1;
   SEC_CUDA_CALL(cudaGetDevice(&dev));
   return _dev_props[dev].multiProcessorCount;
+}
+
+bool CUDARuntime::supportsUnifiedAddressing(){
+  int dev = -1;
+  SEC_CUDA_CALL(cudaGetDevice(&dev));
+  return _dev_props[dev].managedMemory;
 }
 
 bool CUDARuntime::checkSupportedHardware() {
