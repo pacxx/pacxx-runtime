@@ -35,11 +35,11 @@ void Executor::setMSPModule(std::unique_ptr<llvm::Module> M) {
 }
 
 ExecutingDevice Executor::getExecutingDeviceType() {
-  switch (_runtime->getRuntimeType()) {
+  switch (_runtime->getKind()) {
 #ifdef PACXX_ENABLE_CUDA
-  case RuntimeType::CUDARuntimeTy:return ExecutingDevice::GPUNvidia;
+  case IRRuntime::RuntimeKind::RK_CUDA: return ExecutingDevice::GPUNvidia;
 #endif
-  case RuntimeType::NativeRuntimeTy:return ExecutingDevice::CPU;
+  case IRRuntime::RuntimeKind::RK_Native: return ExecutingDevice::CPU;
   }
 }
 

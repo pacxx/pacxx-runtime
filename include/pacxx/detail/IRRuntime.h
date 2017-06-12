@@ -21,22 +21,20 @@ template <typename T> class Callback;
 
 class CallbackBase;
 
-enum RuntimeType
-{
-#ifdef PACXX_ENABLE_CUDA
-  CUDARuntimeTy,
-#endif
-  NativeRuntimeTy
-};
-
 class IRRuntime {
 public:
+  enum RuntimeKind {
+    RK_CUDA,
+    RK_Native
+  };
+private:
+  const RuntimeKind _kind;
+public:
+  RuntimeKind getKind() const { return _kind; }
 
-  IRRuntime();
+  IRRuntime(RuntimeKind kind);
 
   virtual ~IRRuntime(){};
-
-  virtual RuntimeType getRuntimeType() = 0;
 
   virtual void link(std::unique_ptr<llvm::Module> M) = 0;
 

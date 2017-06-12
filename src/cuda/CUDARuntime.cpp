@@ -19,7 +19,7 @@ using namespace llvm;
 namespace pacxx {
 namespace v2 {
 CUDARuntime::CUDARuntime(unsigned dev_id)
-    : IRRuntime(), _context(nullptr), _compiler(std::make_unique<CompilerT>()),
+    : IRRuntime(RuntimeKind::RK_CUDA), _context(nullptr), _compiler(std::make_unique<CompilerT>()),
       _delayed_compilation(false), _dev_props(16) {
   SEC_CUDA_CALL(cuInit(0));
   CUcontext old;
@@ -46,10 +46,6 @@ CUDARuntime::CUDARuntime(unsigned dev_id)
 }
 
 CUDARuntime::~CUDARuntime() {}
-
-RuntimeType CUDARuntime::getRuntimeType(){
-  return RuntimeType::CUDARuntimeTy;
-};
 
 void CUDARuntime::link(std::unique_ptr<llvm::Module> M) {
 

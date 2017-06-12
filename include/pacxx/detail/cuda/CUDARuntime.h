@@ -30,13 +30,15 @@ class CUDARuntime : public IRRuntime {
 public:
   using CompilerT = PTXBackend;
 
+  static bool classof(const IRRuntime *rt) {
+    return rt->getKind() == RuntimeKind::RK_CUDA;
+  }
+
   static bool checkSupportedHardware();
 
   CUDARuntime(unsigned dev_id);
 
   virtual ~CUDARuntime();
-
-  virtual RuntimeType getRuntimeType() override;
 
   virtual void link(std::unique_ptr<llvm::Module> M) override;
 

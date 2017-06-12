@@ -109,7 +109,7 @@ configure_file(cmake/config/FindPACXXConfig.cmake.in ${CMAKE_CURRENT_SOURCE_DIR}
 
 set(CMAKE_CXX_STANDARD 14)
 
-add_compile_options(-include ${CMAKE_CURRENT_SOURCE_DIR}/include/pacxx/config.h)
+add_compile_options(-include ${CMAKE_CURRENT_SOURCE_DIR}/include/pacxx/config.h -Wno-ignored-attributes)
 
 add_definitions(${LLVM_DEFINITIONS})
 

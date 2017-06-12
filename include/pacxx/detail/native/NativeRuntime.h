@@ -25,10 +25,12 @@ class NativeRuntime : public IRRuntime {
 public:
   using CompilerT = NativeBackend;
 
+  static bool classof(const IRRuntime *rt) {
+    return rt->getKind() == RuntimeKind::RK_Native;
+  }
+
   NativeRuntime(unsigned dev_id);
   virtual ~NativeRuntime();
-
-  virtual RuntimeType getRuntimeType() override;
 
   virtual void link(std::unique_ptr<llvm::Module> M) override;
 

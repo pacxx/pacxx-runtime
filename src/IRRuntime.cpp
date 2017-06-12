@@ -8,7 +8,7 @@
 namespace pacxx {
 namespace v2 {
 
-IRRuntime::IRRuntime() : _msp_engine() {}
+IRRuntime::IRRuntime(RuntimeKind kind) : _kind(kind), _msp_engine() {}
 
 void IRRuntime::initializeMSP(std::unique_ptr<llvm::Module> M) {
   if (!_msp_engine.isDisabled())

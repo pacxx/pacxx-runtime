@@ -163,6 +163,7 @@ function(pacxx_generate_ir targetName srcFile binDir)
         endforeach ()
     endif ()
 
+    message(${srcFile})
     separate_arguments(PACXX_DEVICE_FLAGS)
     add_custom_command(
             OUTPUT ${outFile}
@@ -172,8 +173,8 @@ function(pacxx_generate_ir targetName srcFile binDir)
             ${device_includes}
             -o ${outFile}
             -c ${srcFile}
-            DEPENDS ${WORKING_DIRECTORY}/${srcFile}
-            IMPLICIT_DEPENDS CXX ${WORKING_DIRECTORY}/${srcFile}
+            DEPENDS ${srcFile}
+            IMPLICIT_DEPENDS CXX ${srcFile}
             WORKING_DIRECTORY ${binDir}
             COMMENT "Generating LLVM IR from ${srcFile}")
 
@@ -201,6 +202,7 @@ function(pacxx_embed_ir targetName bcFiles binDir)
             COMMAND ${PACXX_LINK} ${PACXX_LINK_FLAGS} ${bcFiles} -o ${outFile}
             COMMAND ${PACXX_OPT} ${PACXX_OPT_FLAGS} ${outFile} -o ${outFile}
             WORKING_DIRECTORY ${binDir}
+            DEPENDS ${bcFiles}
             COMMENT "Generating Kernel IR ${PACXX_OPT}")
 
     add_custom_command(
@@ -213,6 +215,7 @@ function(pacxx_embed_ir targetName bcFiles binDir)
     add_custom_command(
             OUTPUT ${mspFile}
             COMMAND ${PACXX_OPT} ${PACXX_OPT_FLAGS_MSP} ${outFile} -o ${mspFile}
+            DEPENDS ${outFile}
             WORKING_DIRECTORY ${binDir}
             COMMENT "Generating MSP IR")
 

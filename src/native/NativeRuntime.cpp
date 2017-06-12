@@ -21,15 +21,11 @@ namespace pacxx {
 namespace v2 {
 
 NativeRuntime::NativeRuntime(unsigned)
-    : IRRuntime(), _compiler(std::make_unique<CompilerT>()), _delayed_compilation(false) {
+    : IRRuntime(RuntimeKind::RK_Native), _compiler(std::make_unique<CompilerT>()), _delayed_compilation(false) {
   llvm::sys::getHostCPUFeatures(_host_features);
 }
 
 NativeRuntime::~NativeRuntime() {}
-
-RuntimeType NativeRuntime::getRuntimeType() {
-  return RuntimeType::NativeRuntimeTy;
-};
 
 void NativeRuntime::link(std::unique_ptr<llvm::Module> M) {
 

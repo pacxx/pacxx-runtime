@@ -125,15 +125,17 @@ public:
 
   unsigned getID();
 
-  template <typename L> void launch(L callable, KernelConfiguration config)
+  template<typename L, pacxx::v2::Target targ = pacxx::v2::Target::Generic>
+  void launch(L callable, KernelConfiguration config)
   {
-    pacxx::v2::codegenKernel(callable);
+    pacxx::v2::codegenKernel<L, targ>(callable);
     run(callable, config);
   }
 
-  template <typename L, typename CB> void launch_with_callback(L callable, KernelConfiguration config, CB&& callback)
+  template<typename L, pacxx::v2::Target targ = pacxx::v2::Target::Generic, typename CB>
+  void launch_with_callback(L callable, KernelConfiguration config, CB &&callback)
   {
-    pacxx::v2::codegenKernel(callable);
+    pacxx::v2::codegenKernel<L, targ>(callable);
     run_with_callback(callable, config, callback);
   }
 
@@ -212,14 +214,14 @@ public:
     if (mode == MemAllocMode::Unified)
       __verbose("Runtime supports unified addressing: ", _runtime->supportsUnifiedAddressing());
 
-    switch (_runtime->getRuntimeType()) {
+    switch (_runtime->getKind()) {
 #ifdef PACXX_ENABLE_CUDA
-    case RuntimeType::CUDARuntimeTy:
-      return *static_cast<CUDARuntime &>(*_runtime).template allocateMemory(count,
+    case IRRuntime::RuntimeKind::RK_CUDA:
+      return *cast<CUDARuntime>(_runtime.get())->template allocateMemory(count,
                                                                   host_ptr, mode);
 #endif
-    case RuntimeType::NativeRuntimeTy:
-      return *static_cast<NativeRuntime &>(*_runtime).template allocateMemory(count,
+    case IRRuntime::RuntimeKind::RK_Native:
+      return *cast<NativeRuntime>(_runtime.get())->template allocateMemory(count,
                                                                   host_ptr, mode);
     }
 
@@ -229,11 +231,13 @@ public:
   RawDeviceBuffer &allocateRaw(size_t bytes, MemAllocMode mode = MemAllocMode::Standard);
 
   template<typename T> void free(DeviceBuffer<T> &buffer) {
-    switch (_runtime->getRuntimeType()) {
+    switch (_runtime->getKind()) {
 #ifdef PACXX_ENABLE_CUDA
-    case RuntimeType::CUDARuntimeTy:return *static_cast<CUDARuntime &>(*_runtime).template deleteMemory(buffer);
+    case IRRuntime::RuntimeKind::RK_CUDA: cast<CUDARuntime>(_runtime.get())->template deleteMemory(&buffer);
+      break;
 #endif
-    case RuntimeType::NativeRuntimeTy:return *static_cast<NativeRuntime &>(*_runtime).template deleteMemory(buffer);
+    case IRRuntime::RuntimeKind::RK_Native: cast<NativeRuntime>(_runtime.get())->template deleteMemory(&buffer);
+      break;
     }
   }
 

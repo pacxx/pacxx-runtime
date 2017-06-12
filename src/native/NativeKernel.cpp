@@ -60,7 +60,7 @@ void NativeKernel::launch() {
         for(unsigned bidx = 0; bidx < _config.blocks.x; ++bidx)
           functor(bidx, bidy, bidz, _config.blocks.x, _config.blocks.y,
                   _config.blocks.z, _config.threads.x, _config.threads.y,
-                  _config.threads.z, _config.sm_size, _args.data());
+                  _config.threads.z, _config.sm_size, _lambdaPtr);
 #else
   __verbose("Using TBB \n");
     tbb::parallel_for(size_t(0), _config.blocks.z, [&](size_t bidz) {
@@ -85,7 +85,7 @@ void NativeKernel::launch() {
         for(unsigned bidx = 0; bidx < _config.blocks.x; ++bidx)
           functor(bidx, bidy, bidz, _config.blocks.x, _config.blocks.y,
                   _config.blocks.z, _config.threads.x, _config.threads.y,
-                  _config.threads.z, _config.sm_size, _args.data());
+                  _config.threads.z, _config.sm_size, _lambdaPtr);
 
     end = std::chrono::high_resolution_clock::now();
     times[i] = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
