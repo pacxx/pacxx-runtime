@@ -263,12 +263,20 @@ void NativeBackend::applyPasses(Module &M) {
     _PM.add(createCFGSimplificationPass());
     _PM.add(createLoopSimplifyPass());
     _PM.add(createLCSSAPass());
+    _PM.add(createLowerSwitchPass());
+    // _PM.add(createSROAPass());
+    // _PM.add(createPromoteMemoryToRegisterPass());
     _PM.add(createSPMDVectorizerPass());
+    _PM.add(createPACXXSelectEmitterPass());
+
     _PM.add(createPACXXNativeBarrierPass());
+
     _PM.add(createPACXXNativeLinkerPass());
+
     _PM.add(createPACXXNativeSMPass());
+
     _PM.add(createVerifierPass());
-    builder.populateModulePassManager(_PM);
+    // builder.populateModulePassManager(_PM);
 
     _pmInitialized = true;
   }
@@ -279,9 +287,7 @@ void NativeBackend::applyPasses(Module &M) {
   _machine->addPassesToEmitFile(_PM, OS2, TargetMachine::CGFT_AssemblyFile);
    */
 
-
   _PM.run(M);
-  M.dump();
 }
 
 legacy::PassManager &NativeBackend::getPassManager() { return _PM; }

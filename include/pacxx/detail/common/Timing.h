@@ -42,7 +42,7 @@ template <typename FunctionType> struct ScopedTiming {
         std::chrono::duration_cast<std::chrono::microseconds>(end - start)
             .count();
 #ifndef __PACXX_TIMING_STANDALONE__
-    __message(message, " timed: ", time, "us");
+    __verbose(message, " timed: ", time, "us");
 #else
     std::cout << common::to_string(message, " timed: ", time, "us")
               << std::endl;

@@ -7,7 +7,6 @@
 #include "pacxx/detail/KernelConfiguration.h"
 #include "pacxx/detail/common/Log.h"
 #include "pacxx/detail/common/Meta.h"
-#include "pacxx/detail/device/DeviceCode.h"
 #include "pacxx/detail/device/DeviceFunctionDecls.h"
 #include <cstddef>
 #include <regex>

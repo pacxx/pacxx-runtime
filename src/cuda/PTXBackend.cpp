@@ -18,6 +18,7 @@
 #include <llvm/Transforms/Scalar.h>
 #include <llvm/Transforms/Vectorize.h>
 #include <llvm/Linker/Linker.h>
+#include <llvm/Transforms/IPO/PassManagerBuilder.h>
 #include "pacxx/ModuleLoader.h"
 
 #include "pacxx/detail/common/Timing.h"

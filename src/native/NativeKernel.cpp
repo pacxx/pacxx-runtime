@@ -51,6 +51,7 @@ void NativeKernel::launch() {
   unsigned runs = 100;
   std::vector<unsigned> times(runs);
 
+#if 0
   // warmup run
 #ifdef __PACXX_OMP
   __verbose("Using OpenMP \n");
@@ -74,6 +75,7 @@ void NativeKernel::launch() {
     });
 #endif
 
+#endif
 
 #ifdef __PACXX_OMP
   __verbose("Using OpenMP \n");
@@ -108,7 +110,7 @@ void NativeKernel::launch() {
   }
 #endif
 
-  __verbose("Time measured in runtime : ", median(times.begin(), times.end()), " us (", runs, " iterations)");
+  __message("Time measured in runtime : ", median(times.begin(), times.end()), " us (", runs, " iterations)");
   std::ofstream f(std::string(program_invocation_name) + "-timing");
   std::ostream_iterator<unsigned> output_iterator(f, "\n");
   std::copy(times.begin(), times.end(), output_iterator);
