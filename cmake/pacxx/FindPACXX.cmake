@@ -163,7 +163,6 @@ function(pacxx_generate_ir targetName srcFile binDir)
         endforeach ()
     endif ()
 
-    message(${srcFile})
     separate_arguments(PACXX_DEVICE_FLAGS)
     add_custom_command(
             OUTPUT ${outFile}

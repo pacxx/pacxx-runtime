@@ -48,7 +48,8 @@ void CUDAKernel::launch() {
   _launch_args.push_back(reinterpret_cast<void *>(&_argBufferSize));
   _launch_args.push_back(CU_LAUNCH_PARAM_END);
 
-  __verbose("Launching kernel: \nblocks(", _config.blocks.x, ",",
+  __debug("Launching kernel: ", _name);
+  __verbose("Kernel configuration: \nblocks(", _config.blocks.x, ",",
             _config.blocks.y, ",", _config.blocks.z, ")\nthreads(",
             _config.threads.x, ",", _config.threads.y, ",", _config.threads.z,
             ")\nshared_mem=", _config.sm_size);

@@ -8,7 +8,7 @@ find_package(CUDA)
 
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/pacxx/FindTBB.cmake)
 
-include_directories("./include")
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 include_directories(${LLVM_INCLUDE_DIRS})
 include_directories(${TBB_INCLUDE_DIR})
@@ -71,7 +71,8 @@ set(SOURCE_FILES include/pacxx/Executor.h
         src/native/NativeDeviceBuffer.cpp
         include/pacxx/config.h
         src/Kernel.cpp
-        src/IRRuntime.cpp)
+        src/IRRuntime.cpp
+        src/native/NativeEvent.cpp)
 
 
 if (USE_CUDA)
@@ -88,7 +89,8 @@ if (USE_CUDA)
             src/cuda/CUDAKernel.cpp
             include/pacxx/detail/cuda/CUDADeviceBuffer.h
             include/pacxx/detail/cuda/CUDAUtility.h
-            src/cuda/CUDADeviceBuffer.cpp)
+            src/cuda/CUDADeviceBuffer.cpp
+            src/cuda/CUDAEvent.cpp)
     set(CUDA_REQUIRED ON)
 
     if (BUILD_SHARED)
@@ -109,11 +111,11 @@ configure_file(cmake/config/FindPACXXConfig.cmake.in ${CMAKE_CURRENT_SOURCE_DIR}
 
 set(CMAKE_CXX_STANDARD 14)
 
-add_compile_options(-include ${CMAKE_CURRENT_SOURCE_DIR}/include/pacxx/config.h -Wno-ignored-attributes)
+add_compile_options(-include ${CMAKE_CURRENT_SOURCE_DIR}/include/pacxx/config.h -Wno-attributes)
 
 add_definitions(${LLVM_DEFINITIONS})
 
-set(PACXX_DEV_FLAGS -std=c++14 -pacxx -O0 -c -emit-llvm -D__STDC_CONSTANT_MACROS -D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS -D__CUDA_DEVICE_CODE -isystem $ENV{PACXX_PATH}/include/c++/v1 -isystem $ENV{PACXX_PATH}include -isystem ${CUDA_TOOLKIT_INCLUDE} -I ${CMAKE_SOURCE_DIR}/include)
+set(PACXX_DEV_FLAGS -std=c++14 -pacxx -O0 -c -emit-llvm -D__STDC_CONSTANT_MACROS -D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS -D__CUDA_DEVICE_CODE -isystem $ENV{PACXX_PATH}/include/c++/v1 -isystem $ENV{PACXX_PATH}/include -isystem ${CUDA_TOOLKIT_INCLUDE} -I ${CMAKE_SOURCE_DIR}/include)
 
 
 

@@ -17,6 +17,7 @@ public:
   virtual ~generic_exception() noexcept {}
 
   virtual const char *what() noexcept { return _msg.c_str(); }
+  virtual const char *what() const noexcept { return _msg.c_str(); }
 
 private:
   std::string _msg;

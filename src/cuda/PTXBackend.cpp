@@ -98,6 +98,7 @@ std::string PTXBackend::compile(llvm::Module &M) {
     throw common::generic_exception(Error);
   }
 
+
   _ptxString.clear();
   if (!_pmInitialized) {
     TargetLibraryInfoImpl TLII(Triple(M.getTargetTriple()));
@@ -127,6 +128,12 @@ std::string PTXBackend::compile(llvm::Module &M) {
     _PM.add(createInstructionCombiningPass());
     _PM.add(createPACXXStaticEvalPass());
     _PM.add(createPACXXNvvmRegPass(true));
+
+    if (common::GetEnv("PACXX_PTX_BACKEND_O3") != ""){
+      PassManagerBuilder builder;
+      builder.OptLevel = 3;
+      builder.populateModulePassManager(_PM);
+    }
 
     _machine.reset(_target->createTargetMachine(
         TheTriple.getTriple(), _cpu, _features, _options, Reloc::Model::Static,

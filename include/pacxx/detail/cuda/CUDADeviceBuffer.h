@@ -51,7 +51,7 @@ public:
   virtual void mercy() override;
 
 private:
-  char *_buffer;
+  [[pacxx::device_memory]] char *_buffer;
   size_t _size;
   unsigned _mercy;
   MemAllocMode _mode;
@@ -79,7 +79,7 @@ public:
     return *this;
   }
 
-  virtual T *get(size_t offset = 0) const final {
+  virtual T* [[pacxx::device_memory]] get(size_t offset = 0) const final {
     return reinterpret_cast<T *>(_buffer.get(sizeof(T) * offset));
   }
 

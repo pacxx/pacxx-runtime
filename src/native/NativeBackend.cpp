@@ -5,6 +5,7 @@
 #include "pacxx/detail/native/NativeBackend.h"
 #include "pacxx/ModuleLoader.h"
 #include "pacxx/detail/common/Exceptions.h"
+#include "pacxx/detail/common/Common.h"
 #include <llvm/Analysis/LoopInfo.h>
 #include <llvm/Analysis/LoopPass.h>
 #include <llvm/Analysis/TargetLibraryInfo.h>
@@ -112,10 +113,17 @@ using namespace llvm;
 extern const char native_binding_start[];
 extern const char native_binding_end[];
 
-
 namespace pacxx {
 namespace v2 {
-NativeBackend::NativeBackend() : _pmInitialized(false) {}
+NativeBackend::NativeBackend() : _pmInitialized(false),
+                                 _disableVectorizer(false),
+                                 _disableSelectEmitter(false) {
+  if (common::GetEnv("PACXX_DISABLE_RV") != "")
+    _disableVectorizer = true;
+  if (common::GetEnv("PACXX_DISABLE_SE") != "")
+    _disableSelectEmitter = true;
+
+}
 
 NativeBackend::~NativeBackend() {}
 
@@ -159,34 +167,18 @@ Module *NativeBackend::compile(std::unique_ptr<Module> &M) {
   Module *TheModule = _composite.get();
   EngineBuilder builder{std::move(_composite)};
 
-  builder.setErrorStr(&error);
+  auto triple = Triple(sys::getProcessTriple());
 
-  builder.setUseOrcMCJITReplacement(false);
-
-  builder.setEngineKind(EngineKind::JIT);
-
-  builder.setOptLevel(CodeGenOpt::Aggressive);
 
   _machine = builder.selectTarget(Triple(sys::getProcessTriple()), "",
                                   sys::getHostCPUName(), getTargetFeatures());
 
+  TheModule->setTargetTriple(_machine->getTargetTriple().str());
+  TheModule->setDataLayout(_machine->createDataLayout());
   for (auto &F : TheModule->getFunctionList()) {
     F.addFnAttr("target-cpu", _machine->getTargetCPU().str());
     F.addFnAttr("target-features", _machine->getTargetFeatureString().str());
   }
-  builder.setMCJITMemoryManager(std::unique_ptr<RTDyldMemoryManager>(
-      static_cast<RTDyldMemoryManager *>(new SectionMemoryManager())));
-
-
-  _JITEngine = builder.create(_machine);
-
-  if (!_JITEngine) {
-    throw new common::generic_exception(error);
-  }
-
-  TheModule->setTargetTriple(_JITEngine->getTargetMachine()->getTargetTriple().str());
-  TheModule->setDataLayout(_JITEngine->getDataLayout());
-
   raw_fd_ostream OS("moduleBeforePass.ll", EC, sys::fs::F_None);
   TheModule->print(OS, nullptr);
 
@@ -196,6 +188,23 @@ Module *NativeBackend::compile(std::unique_ptr<Module> &M) {
   TheModule->print(OS1, nullptr);
 
   __verbose("applied pass");
+
+  builder.setErrorStr(&error);
+
+  builder.setUseOrcMCJITReplacement(false);
+
+  builder.setEngineKind(EngineKind::JIT);
+
+  builder.setOptLevel(CodeGenOpt::Aggressive);
+
+  builder.setMCJITMemoryManager(std::unique_ptr<RTDyldMemoryManager>(
+      static_cast<RTDyldMemoryManager *>(new SectionMemoryManager())));
+
+  _JITEngine = builder.create(_machine);
+
+  if (!_JITEngine) {
+    throw new common::generic_exception(error);
+  }
 
   _JITEngine->finalizeObject();
 
@@ -258,7 +267,7 @@ void NativeBackend::applyPasses(Module &M) {
     TargetLibraryInfoImpl TLII(Triple(M.getTargetTriple()));
     _PM.add(new TargetLibraryInfoWrapperPass(TLII));
     _PM.add(createTargetTransformInfoWrapperPass(_machine->getTargetIRAnalysis()));
-    //_PM.add(createPACXXAddrSpaceTransformPass());
+
     //_PM.add(createPACXXIdRemoverPass());
     _PM.add(createCFGSimplificationPass());
     _PM.add(createLoopSimplifyPass());
@@ -266,8 +275,10 @@ void NativeBackend::applyPasses(Module &M) {
     _PM.add(createLowerSwitchPass());
     // _PM.add(createSROAPass());
     // _PM.add(createPromoteMemoryToRegisterPass());
-    _PM.add(createSPMDVectorizerPass());
-    _PM.add(createPACXXSelectEmitterPass());
+    if (!_disableVectorizer)
+      _PM.add(createSPMDVectorizerPass());
+    if (!_disableSelectEmitter)
+      _PM.add(createPACXXSelectEmitterPass());
 
     _PM.add(createPACXXNativeBarrierPass());
 
@@ -276,8 +287,8 @@ void NativeBackend::applyPasses(Module &M) {
     _PM.add(createPACXXNativeSMPass());
 
     _PM.add(createVerifierPass());
-    // builder.populateModulePassManager(_PM);
-
+    builder.populateModulePassManager(_PM);
+    //_PM.add(createPACXXDeadCodeElimPass());
     _pmInitialized = true;
   }
 

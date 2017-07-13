@@ -17,7 +17,11 @@ namespace pacxx {
 namespace v2 {
 
 NativeKernel::NativeKernel(NativeRuntime &runtime, void *fptr, std::string name)
-    : Kernel(runtime, name), _runtime(runtime), _fptr(fptr) {}
+    : Kernel(runtime, name), _runtime(runtime), _fptr(fptr), _runs(1) {
+  auto runs = common::GetEnv("PACXX_NATIVE_KERNEL_RUNS");
+  if (runs != "")
+    _runs = std::stoul(runs);
+}
 
 NativeKernel::~NativeKernel() {}
 
@@ -48,38 +52,12 @@ void NativeKernel::launch() {
                                            int, int, int, const void *)>(_fptr);
 
   std::chrono::high_resolution_clock::time_point start, end;
-  unsigned runs = 100;
-  std::vector<unsigned> times(runs);
 
-#if 0
-  // warmup run
-#ifdef __PACXX_OMP
-  __verbose("Using OpenMP \n");
-    #pragma omp parallel for collapse(3)
-    for(unsigned bidz = 0; bidz < _config.blocks.z; ++bidz)
-      for(unsigned bidy = 0; bidy < _config.blocks.y; ++bidy)
-        for(unsigned bidx = 0; bidx < _config.blocks.x; ++bidx)
-          functor(bidx, bidy, bidz, _config.blocks.x, _config.blocks.y,
-                  _config.blocks.z, _config.threads.x, _config.threads.y,
-                  _config.threads.z, _config.sm_size, _lambdaPtr);
-#else
-  __verbose("Using TBB \n");
-    tbb::parallel_for(size_t(0), _config.blocks.z, [&](size_t bidz) {
-      tbb::parallel_for(size_t(0), _config.blocks.y, [&](size_t bidy) {
-        tbb::parallel_for(size_t(0), _config.blocks.x, [&](size_t bidx) {
-          functor(bidx, bidy, bidz, _config.blocks.x, _config.blocks.y,
-                  _config.blocks.z, _config.threads.x, _config.threads.y,
-                  _config.threads.z, _config.sm_size, _lambdaPtr);
-        });
-      });
-    });
-#endif
-
-#endif
+  std::vector<unsigned> times(_runs);
 
 #ifdef __PACXX_OMP
   __verbose("Using OpenMP \n");
-  for(unsigned i = 0; i < runs; ++i) {
+  for(unsigned i = 0; i < _runs; ++i) {
     start = std::chrono::high_resolution_clock::now();
     #pragma omp parallel for collapse(3)
     for(unsigned bidz = 0; bidz < _config.blocks.z; ++bidz)
@@ -94,7 +72,7 @@ void NativeKernel::launch() {
   }
 #else
   __verbose("Using TBB \n");
-  for (unsigned i = 0; i < runs; ++i) {
+  for (unsigned i = 0; i < _runs; ++i) {
     start = std::chrono::high_resolution_clock::now();
     tbb::parallel_for(size_t(0), _config.blocks.z, [&](size_t bidz) {
       tbb::parallel_for(size_t(0), _config.blocks.y, [&](size_t bidy) {
@@ -110,7 +88,7 @@ void NativeKernel::launch() {
   }
 #endif
 
-  __message("Time measured in runtime : ", median(times.begin(), times.end()), " us (", runs, " iterations)");
+  __message("Time measured in runtime : ", median(times.begin(), times.end()), " us (", _runs, " iterations)");
   std::ofstream f(std::string(program_invocation_name) + "-timing");
   std::ostream_iterator<unsigned> output_iterator(f, "\n");
   std::copy(times.begin(), times.end(), output_iterator);

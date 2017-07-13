@@ -41,6 +41,8 @@ private:
   std::unique_ptr<llvm::Module> _composite;
   llvm::ExecutionEngine *_JITEngine;
   bool _pmInitialized;
+  bool _disableVectorizer;
+  bool _disableSelectEmitter;
 };
 }
 }

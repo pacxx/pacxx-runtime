@@ -21,6 +21,9 @@
 #endif
 #include "pacxx/detail/native/NativeRuntime.h"
 #include "pacxx/detail/codegen/Kernel.h"
+#include "pacxx/detail/Event.h"
+#include "pacxx/detail/cuda/CUDAEvent.h"  // TODO: move event create to the runtimes
+#include "pacxx/detail/native/NativeEvent.h"
 #include <algorithm>
 #include <cstdlib>
 #include <llvm/IR/Constants.h>
@@ -243,6 +246,7 @@ public:
 
   void freeRaw(RawDeviceBuffer &buffer);
 
+  bool supportsDoublePrecission(){ return _runtime->isSupportingDoublePrecission(); }
 
   IRRuntime &rt();
 
@@ -264,10 +268,28 @@ public:
 
   LLVMContext &getLLVMContext() { return *_ctx; }
 
+  Event& createEvent(){
+    _events.emplace_back();
+    auto& event = _events.back();
+    switch (_runtime->getKind()) {
+#ifdef PACXX_ENABLE_CUDA
+    case IRRuntime::RuntimeKind::RK_CUDA:
+      event.reset(new CUDAEvent());
+      break;
+#endif
+    case IRRuntime::RuntimeKind::RK_Native:
+      event.reset(new NativeEvent());
+      break;
+    }
+    return *event;
+  }
+
+
 private:
   std::unique_ptr<LLVMContext> _ctx;
   std::unique_ptr<IRRuntime> _runtime;
   std::map<std::string, std::string> _kernel_translation;
+  std::vector<std::unique_ptr<Event>> _events;
   unsigned _id;
 };
 }

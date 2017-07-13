@@ -38,7 +38,7 @@ private:
 private:
   NativeRuntime &_runtime;
   void *_fptr;
-
+  unsigned _runs;
 };
 
 // Get the median of an unordered set of numbers of arbitrary

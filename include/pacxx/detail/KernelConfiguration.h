@@ -29,7 +29,7 @@ struct Dimension3 {
 
 struct KernelConfiguration {
 
-  KernelConfiguration(Dimension3 b, Dimension3 t, unsigned executorID, size_t sm = 0);
+  KernelConfiguration(Dimension3 b, Dimension3 t, size_t sm = 0);
   KernelConfiguration(size_t total_threads);
   KernelConfiguration();
 

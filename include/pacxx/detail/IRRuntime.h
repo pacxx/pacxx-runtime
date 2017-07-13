@@ -64,6 +64,8 @@ public:
 
   virtual llvm::legacy::PassManager &getPassManager() = 0;
 
+  virtual bool isSupportingDoublePrecission(){ return true; }
+
 protected:
   MSPEngine _msp_engine;
   std::unique_ptr<llvm::Module> _M, _rawM;
