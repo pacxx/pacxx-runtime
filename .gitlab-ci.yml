@@ -1,0 +1,19 @@
+---
+
+before_script: 
+- curl https://zivgitlab.uni-muenster.de/HPC2SE-Project/pacxx-llvm/builds/artifacts/rollback/download?job=build -L -o /tmp/llvm.zip
+- unzip /tmp/llvm.zip
+- rm /tmp/llvm.zip
+
+build: 
+  image: pacxx/ubuntu
+  script:
+    - mkdir -p build
+    - export PACXX_PATH=$PWD/local
+    - cd build
+    - cmake .. -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED=ON -DCMAKE_INSTALL_PREFIX=$PWD/../local
+    - make -j${NUM_CORES:-1} install
+  artifacts:
+    paths:
+    - local/
+    expire_in: 30 days
