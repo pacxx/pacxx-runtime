@@ -241,6 +241,7 @@ public:
 #endif
     case IRRuntime::RuntimeKind::RK_Native: cast<NativeRuntime>(_runtime.get())->template deleteMemory(&buffer);
       break;
+    default:llvm_unreachable("this runtime type is not defined!");
     }
   }
 

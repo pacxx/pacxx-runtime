@@ -88,7 +88,7 @@ void NativeKernel::launch() {
   }
 #endif
 
-  auto first = times.begin() + 1;
+  auto first = times.begin() + (_runs == 1 ? 0 : 1); // ignore the first run as warmup
   auto last = times.end();
 
   auto med_v = median(first, last);

@@ -25,7 +25,7 @@ template <typename T> class DeviceBuffer : public DeviceBufferBase {
 public:
   virtual ~DeviceBuffer() {}
 
-  virtual T *get(size_t offset = 0) const = 0;
+  virtual T *[[pacxx::device_memory]] get(size_t offset = 0) const = 0;
 
   virtual void upload(const T *src, size_t count, size_t offset = 0) = 0;
   virtual void download(T *dest, size_t count, size_t offset = 0) = 0;
