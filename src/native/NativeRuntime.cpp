@@ -81,7 +81,8 @@ size_t NativeRuntime::getPreferedMemoryAlignment() {
 
 RawDeviceBuffer *NativeRuntime::allocateRawMemory(size_t bytes, MemAllocMode) {
   NativeRawDeviceBuffer rawBuffer;
-  rawBuffer.allocate(bytes);
+
+  rawBuffer.allocate(bytes, 8 * getPreferedVectorSize(1));
   auto wrapped = new NativeDeviceBuffer<char>(std::move(rawBuffer));
   _memory.push_back(std::unique_ptr<DeviceBufferBase>(
       static_cast<DeviceBufferBase *>(wrapped)));
@@ -127,6 +128,8 @@ size_t NativeRuntime::getPreferedVectorSize(size_t dtype_size) {
       __verbose(p.first().str());
   }
 
+  if (_host_features["avx-512"])
+    return 64 / dtype_size;
   if (_host_features["avx"] || _host_features["avx2"])
     return 32 / dtype_size;
   if (_host_features["sse2"] || _host_features["altivec"])

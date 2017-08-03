@@ -47,10 +47,13 @@ public:
   template <typename T>
   DeviceBuffer<T> *allocateMemory(size_t count, T *host_ptr, MemAllocMode mode = Standard) {
     NativeRawDeviceBuffer rawBuffer;
+
+    auto bytes = count * sizeof(T);
+
     if (host_ptr)
-      rawBuffer.allocate(count * sizeof(T), reinterpret_cast<char *>(host_ptr));
+      rawBuffer.allocate(bytes, reinterpret_cast<char *>(host_ptr));
     else
-      rawBuffer.allocate(count * sizeof(T));
+      rawBuffer.allocate(bytes, sizeof(T) * getPreferedVectorSize(sizeof(T)));
 
     auto wrapped = new NativeDeviceBuffer<T>(std::move(rawBuffer));
     _memory.push_back(std::unique_ptr<DeviceBufferBase>(

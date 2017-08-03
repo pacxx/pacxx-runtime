@@ -19,7 +19,7 @@ class NativeRawDeviceBuffer : public RawDeviceBuffer {
 private:
   NativeRawDeviceBuffer();
 
-  void allocate(size_t bytes);
+  void allocate(size_t bytes, unsigned padding = 0);
 
   void allocate(size_t bytes, char *host_ptr);
 

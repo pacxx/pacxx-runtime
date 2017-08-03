@@ -10,10 +10,24 @@ namespace v2 {
 NativeRawDeviceBuffer::NativeRawDeviceBuffer()
     : _size(0), _mercy(1), _isHost(false) {}
 
-void NativeRawDeviceBuffer::allocate(size_t bytes) {
-  _buffer = (char *)malloc(bytes);
+void NativeRawDeviceBuffer::allocate(size_t bytes, unsigned padding) {
+
+  auto padSize = [=](size_t bytes, unsigned vf) {
+    if (vf == 0)
+      return bytes;
+
+    int remainder = bytes % vf;
+    return bytes + vf - remainder + vf; // pad after and before memory
+  };
+
+  auto total = padSize(bytes, padding);
+
+  __message("allocating padded: ", bytes, " ", padSize(bytes, padding), " ", padding);
+
+  _buffer = (char *) malloc(total);
   if (!_buffer)
     throw new common::generic_exception("buffer allocation failed");
+  _buffer += padding;
   _size = bytes;
 }
 

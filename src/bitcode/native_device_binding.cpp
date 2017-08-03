@@ -1,5 +1,6 @@
 #include "pacxx/detail/device/DeviceCode.h"
 #include "pacxx/detail/device/DeviceFunctionDecls.h"
+#include <cmath>
 
 __forceinline__ __index_t get_global_id(unsigned int dimindx) {
   switch (dimindx) {
@@ -65,3 +66,11 @@ __forceinline__ __index_t get_grid_size(unsigned int dimindx) {
 }
 
 __forceinline__ void barrier(unsigned int) { __pacxx_barrier(); }
+
+extern "C" __forceinline__ double rsqrt(double val) {
+  return 1.0 / std::sqrt(val);
+}
+
+extern "C" __forceinline__ float rsqrtf(float val) {
+  return 1.0f / std::sqrt(val);
+}
