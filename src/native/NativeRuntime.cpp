@@ -128,7 +128,7 @@ size_t NativeRuntime::getPreferedVectorSize(size_t dtype_size) {
       __verbose(p.first().str());
   }
 
-  if (_host_features["avx-512"])
+  if (_host_features["avx512f"])
     return 64 / dtype_size;
   if (_host_features["avx"] || _host_features["avx2"])
     return 32 / dtype_size;
