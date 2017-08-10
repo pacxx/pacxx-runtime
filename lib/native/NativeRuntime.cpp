@@ -80,7 +80,7 @@ size_t NativeRuntime::getPreferedMemoryAlignment() {
 }
 
 RawDeviceBuffer *NativeRuntime::allocateRawMemory(size_t bytes, MemAllocMode) {
-  NativeRawDeviceBuffer rawBuffer;
+  NativeRawDeviceBuffer rawBuffer([this](NativeRawDeviceBuffer& buffer){ deleteRawMemory(&buffer); });
 
   rawBuffer.allocate(bytes, 8 * getPreferedVectorSize(1));
   auto wrapped = new NativeDeviceBuffer<char>(std::move(rawBuffer));
@@ -115,11 +115,11 @@ void NativeRuntime::requestIRTransformation(Kernel &K) {
   static_cast<NativeKernel &>(K).overrideFptr(fptr);
 }
 
-void NativeRuntime::synchronize() {};
+void NativeRuntime::synchronize() {}
 
 llvm::legacy::PassManager &NativeRuntime::getPassManager() {
   return _compiler->getPassManager();
-};
+}
 
 size_t NativeRuntime::getPreferedVectorSize(size_t dtype_size) {
 

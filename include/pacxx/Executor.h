@@ -32,11 +32,11 @@
 #include <regex>
 #include <string>
 
-#ifdef __PACXX_V2_INTEROP
+#ifdef __PACXX_RUNTIME_LINKING
 const char *llvm_start = nullptr;
-int llvm_size = 0;
+const char *llvm_end = nullptr;
 const char *reflection_start = nullptr;
-int reflection_size = 0;
+const char *reflection_end = nullptr;
 #else
 extern const char llvm_start[];
 extern const char llvm_end[];
@@ -259,13 +259,13 @@ public:
   auto &getPromise(Ts &&... args) {
     auto promise = new BindingPromise<PromisedTy>(std::forward<Ts>(args)...);
     return *promise;
-  };
+  }
 
   template<typename PromisedTy>
   void forgetPromise(BindingPromise<PromisedTy> &instance) {
 
     delete &instance;
-  };
+  }
 
   LLVMContext &getLLVMContext() { return *_ctx; }
 

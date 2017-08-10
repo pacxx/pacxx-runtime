@@ -2,13 +2,13 @@
 // Created by lars on 07/10/16.
 //
 #include "pacxx/detail/native/NativeDeviceBuffer.h"
-#include "pacxx/Executor.h"
+#include "pacxx/detail/common/Exceptions.h"
 #include <malloc.h>
 
 namespace pacxx {
 namespace v2 {
-NativeRawDeviceBuffer::NativeRawDeviceBuffer()
-    : _size(0), _mercy(1), _isHost(false) {}
+NativeRawDeviceBuffer::NativeRawDeviceBuffer(std::function<void(NativeRawDeviceBuffer&)> deleter)
+    : _size(0), _mercy(1), _isHost(false), _deleter(deleter){}
 
 void NativeRawDeviceBuffer::allocate(size_t bytes, unsigned padding) {
 
@@ -90,7 +90,8 @@ void NativeRawDeviceBuffer::downloadAsync(void *dest, size_t bytes,
 void NativeRawDeviceBuffer::abandon() {
   --_mercy;
   if (_mercy == 0) {
-    Executor::get().freeRaw(*this); // FIXME: support valid executor id
+    _deleter(*this);
+
     _buffer = nullptr;
   }
 }

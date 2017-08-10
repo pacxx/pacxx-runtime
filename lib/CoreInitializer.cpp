@@ -23,7 +23,7 @@ CoreInitializer::CoreInitializer() : _initialized(false) {}
 
 void CoreInitializer::initializeCore() {
   if (!_initialized) {
-    auto &log = common::Log::get();
+    common::Log::get();
     InitializeAllTargets();
     InitializeAllTargetMCs();
     InitializeAllAsmPrinters();

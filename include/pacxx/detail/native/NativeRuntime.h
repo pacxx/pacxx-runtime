@@ -46,7 +46,7 @@ public:
 
   template <typename T>
   DeviceBuffer<T> *allocateMemory(size_t count, T *host_ptr, MemAllocMode mode = Standard) {
-    NativeRawDeviceBuffer rawBuffer;
+    NativeRawDeviceBuffer rawBuffer([this](NativeRawDeviceBuffer& buffer){ deleteRawMemory(&buffer); });
 
     auto bytes = count * sizeof(T);
 

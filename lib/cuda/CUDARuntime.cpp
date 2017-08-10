@@ -122,7 +122,7 @@ size_t CUDARuntime::getPreferedMemoryAlignment() {
 }
 
 RawDeviceBuffer *CUDARuntime::allocateRawMemory(size_t bytes, MemAllocMode mode) {
-  CUDARawDeviceBuffer raw(mode);
+  CUDARawDeviceBuffer raw([this](CUDARawDeviceBuffer& buffer){ deleteRawMemory(&buffer); }, mode);
   raw.allocate(bytes);
   auto wrapped = new CUDADeviceBuffer<char>(std::move(raw));
   _memory.push_back(std::unique_ptr<DeviceBufferBase>(

@@ -39,7 +39,6 @@ private:
   std::string _cpu, _features;
   llvm::legacy::PassManager _PM;
   llvm::SmallString<128> _ptxString;
-  llvm::raw_svector_ostream _ptxOS;
   bool _pmInitialized;
 };
 }

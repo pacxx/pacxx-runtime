@@ -2,11 +2,10 @@
 // Created by mhaidl on 10/08/16.
 //
 #include "pacxx/detail/cuda/CUDADeviceBuffer.h"
-#include "pacxx/Executor.h"
 
 namespace pacxx {
 namespace v2 {
-CUDARawDeviceBuffer::CUDARawDeviceBuffer(MemAllocMode mode) : _size(0), _mercy(1), _mode(mode) {}
+CUDARawDeviceBuffer::CUDARawDeviceBuffer(std::function<void(CUDARawDeviceBuffer&)> deleter, MemAllocMode mode) : _size(0), _mercy(1), _mode(mode), _deleter(deleter) {}
 
 void CUDARawDeviceBuffer::allocate(size_t bytes) {
   switch(_mode) {
@@ -66,7 +65,7 @@ void CUDARawDeviceBuffer::downloadAsync(void *dest, size_t bytes,
 void CUDARawDeviceBuffer::abandon() {
   --_mercy;
   if (_mercy == 0) {
-    Executor::get().freeRaw(*this); // FIXME: support valid executor id
+    _deleter(*this);
     _buffer = nullptr;
   }
 }

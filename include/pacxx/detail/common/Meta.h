@@ -21,7 +21,7 @@ template <typename T> struct callable_wrapper {
 
   template<typename... Ts> auto operator()(Ts &&... args) const {
     return callable(std::forward<Ts>(args)...);
-  };
+  }
 };
 
 template <class T> struct is_vector : std::false_type {};

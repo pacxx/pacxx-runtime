@@ -28,7 +28,7 @@ Executor &get_executor(unsigned id) {
   return Executor::get(id);
 }
 
-unsigned Executor::getID() { return _id; };
+unsigned Executor::getID() { return _id; }
 
 void Executor::setMSPModule(std::unique_ptr<llvm::Module> M) {
   _runtime->initializeMSP(std::move(M));
@@ -41,6 +41,7 @@ ExecutingDevice Executor::getExecutingDeviceType() {
 #endif
   case IRRuntime::RuntimeKind::RK_Native: return ExecutingDevice::CPU;
   }
+  llvm_unreachable("unknown runtime kind");
 }
 
 size_t Executor::getConcurrentCores() {

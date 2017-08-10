@@ -8,6 +8,7 @@
 #include "pacxx/detail/DeviceBuffer.h"
 #include "pacxx/detail/common/Log.h"
 #include <memory>
+#include <functional>
 
 namespace pacxx {
 namespace v2 {
@@ -17,7 +18,7 @@ class NativeRawDeviceBuffer : public RawDeviceBuffer {
   friend class NativeRuntime;
 
 private:
-  NativeRawDeviceBuffer();
+  NativeRawDeviceBuffer(std::function<void(NativeRawDeviceBuffer&)> deleter);
 
   void allocate(size_t bytes, unsigned padding = 0);
 
@@ -58,6 +59,7 @@ private:
   size_t _size;
   unsigned _mercy;
   bool _isHost;
+  std::function<void(NativeRawDeviceBuffer&)> _deleter;
 };
 
 template <typename T> class NativeDeviceBuffer : public DeviceBuffer<T> {

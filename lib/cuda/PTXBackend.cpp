@@ -33,7 +33,7 @@ namespace pacxx {
 namespace v2 {
 PTXBackend::PTXBackend()
     : _target(nullptr), _cpu("sm_20"), _features("+ptx40"),
-      _pmInitialized(false), _ptxOS(_ptxString) {}
+      _pmInitialized(false) {}
 
 void PTXBackend::initialize(unsigned CC) {
   _cpu = "sm_" + std::to_string(CC);
@@ -91,7 +91,7 @@ void PTXBackend::prepareModule(llvm::Module &M) {
 std::string PTXBackend::compile(llvm::Module &M) {
   Triple TheTriple = Triple(M.getTargetTriple());
   std::string Error;
-
+  llvm::raw_svector_ostream _ptxOS(_ptxString);
   if (!_target)
     _target = TargetRegistry::lookupTarget("nvptx64", TheTriple, Error);
   if (!_target) {
