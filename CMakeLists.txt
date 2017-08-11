@@ -159,7 +159,7 @@ set(nadbFile native_device_binding)
 
 add_custom_command(
         OUTPUT ${nadbFile}.bc
-        COMMAND ${CMAKE_BINARY_DIR}/bin/clang ${PACXX_DEV_FLAGS} ${CMAKE_CURRENT_SOURCE_DIR}/lib/bitcode/${nadbFile}.cpp -o ${nadbFile}.bc
+        COMMAND ${CMAKE_BINARY_DIR}/bin/clang ${PACXX_DEV_FLAGS} -I/usr/include ${CMAKE_CURRENT_SOURCE_DIR}/lib/bitcode/${nadbFile}.cpp -o ${nadbFile}.bc
         WORKING_DIRECTORY ${binDir}
         DEPENDS clang
         COMMENT "Generating Native Device Binding")

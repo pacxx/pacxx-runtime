@@ -137,7 +137,7 @@ std::string PTXBackend::compile(llvm::Module &M) {
 
     _machine.reset(_target->createTargetMachine(
         TheTriple.getTriple(), _cpu, _features, _options, Reloc::Model::Static,
-        CodeModel::Default, CodeGenOpt::None));
+        CodeModel::Model::Medium, CodeGenOpt::None));
 
     if (_machine->addPassesToEmitFile(
             _PM, _ptxOS, TargetMachine::CGFT_AssemblyFile, false)) {
