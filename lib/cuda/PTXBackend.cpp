@@ -126,7 +126,7 @@ std::string PTXBackend::compile(llvm::Module &M) {
     _PM.add(createInstructionCombiningPass());
     _PM.add(createCFGSimplificationPass());
     _PM.add(createInstructionCombiningPass());
-    _PM.add(createPACXXStaticEvalPass());
+    //_PM.add(createPACXXStaticEvalPass());
     _PM.add(createPACXXNvvmRegPass(true));
 
     if (common::GetEnv("PACXX_PTX_BACKEND_O3") != ""){

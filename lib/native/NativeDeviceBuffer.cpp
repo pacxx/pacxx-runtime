@@ -17,17 +17,17 @@ void NativeRawDeviceBuffer::allocate(size_t bytes, unsigned padding) {
       return bytes;
 
     int remainder = bytes % vf;
-    return bytes + vf - remainder + vf; // pad after and before memory
+    return bytes + vf - remainder; // pad after and before memory
   };
 
   auto total = padSize(bytes, padding);
 
-  __message("allocating padded: ", bytes, " ", padSize(bytes, padding), " ", padding);
+  __verbose("allocating padded: ", bytes, " ", padSize(bytes, padding), " ", padding);
 
   _buffer = (char *) malloc(total);
   if (!_buffer)
     throw new common::generic_exception("buffer allocation failed");
-  _buffer += padding;
+
   _size = bytes;
 }
 

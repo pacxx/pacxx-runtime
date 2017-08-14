@@ -9,7 +9,7 @@
 namespace pacxx {
 namespace v2 {
 template<typename F, typename... Args>
-[[pacxx::staging]] __attribute__((fastcall)) auto _stage(F func, Args &&... args) {
+[[pacxx::staging]] auto _stage(F func, Args &&... args) {
   return static_cast<long>(func(std::forward<Args>(args)...));
 }
 

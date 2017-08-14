@@ -23,7 +23,7 @@ void MSPEngine::initialize(std::unique_ptr<llvm::Module> M) {
   _stubs = pacxx::getTagedFunctionsWithTag(M.get(), "pacxx.reflection", "stub");
   if (!_stubs.empty()) {
     std::string ErrStr;
-    Module &MSPModule = *M;
+
     EngineBuilder builder{std::move(M)};
 
     builder.setErrorStr(&ErrStr);
@@ -104,7 +104,8 @@ void MSPEngine::evaluate(const llvm::Function &KF, Kernel &kernel) {
             auto cstage = (unsigned int) *ci32->getValue().getRawData();
             auto FName =
                 std::string("__pacxx_reflection_stub") + std::to_string(cstage);
-            if (auto F = _engine->FindFunctionNamed(FName.c_str())) {
+
+            if (auto F = _mspModule->getFunction(FName)) {
               void *rFP = _engine->getPointerToFunction(F);
               auto FP = reinterpret_cast<int64_t (*)(const void *)>(rFP);
               value = FP(kernel.getLambdaPtr());
@@ -112,7 +113,7 @@ void MSPEngine::evaluate(const llvm::Function &KF, Kernel &kernel) {
               kernelHasStagedFunction = true;
               inScope = true;
             }
-            __verbose("staging: ", FName, "  - result is ", value);
+            __verbose("staging: ", FName, "  - result is ", value, " ", (inScope ? "" : "evaluation not in scope"));
 
             if (auto *ci2 = dyn_cast<ConstantInt>(CI->getOperand(0))) {
               kernel.setStagedValue(*(ci2->getValue().getRawData()), value,
