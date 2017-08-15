@@ -11,7 +11,7 @@ include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/pacxx/FindTBB.cmake)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 include_directories(${LLVM_INCLUDE_DIRS})
-include_directories(${TBB_INCLUDE_DIR})
+include_directories(${TBB_INCLUDE_DIRS})
 
 set(ENABLE_OPENMP ON)
 if (TBB_FOUND)
