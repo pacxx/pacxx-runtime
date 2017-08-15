@@ -139,13 +139,13 @@ add_custom_command(
         COMMENT "Generating NVPTX Device Binding")
 
 add_custom_command(
-        OUTPUT ${nvdbFile}.o
+        OUTPUT ${CMAKE_BINARY_DIR}/lib/${nvdbFile}.o
         COMMAND ${CMAKE_BINARY_DIR}/bin/clang -DFILE='"${nvdbFile}.bc"' -DTAG='nvptx_binding' ${CMAKE_CURRENT_SOURCE_DIR}/lib/asm/embed.S -c -o ${nvdbFile}.o
         WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/lib
         DEPENDS ${nvdbFile}.bc
         COMMENT "Preparing NVPTX Device Binding for linking")
 
-add_custom_target(${nvdbFile}_target DEPENDS ${nvdbFile}.bc ${nvdbFile}.o)
+add_custom_target(${nvdbFile}_target DEPENDS ${nvdbFile}.bc ${CMAKE_BINARY_DIR}/lib/${nvdbFile}.o)
 
 add_library(${nvdbFile} STATIC ${CMAKE_BINARY_DIR}/lib/${nvdbFile}.o)
 
@@ -165,13 +165,13 @@ add_custom_command(
         COMMENT "Generating Native Device Binding")
 
 add_custom_command(
-        OUTPUT ${nadbFile}.o
+        OUTPUT ${CMAKE_BINARY_DIR}/lib/${nadbFile}.o
         COMMAND ${CMAKE_BINARY_DIR}/bin/clang -DFILE='"${nadbFile}.bc"' -DTAG='native_binding' ${CMAKE_CURRENT_SOURCE_DIR}/lib/asm/embed.S -c -o ${nadbFile}.o
         WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/lib
         DEPENDS ${nadbFile}.bc
         COMMENT "Preparing Native Device Binding for linking")
 
-add_custom_target(${nadbFile}_target DEPENDS ${nadbFile}.bc ${nadbFile}.o)
+add_custom_target(${nadbFile}_target DEPENDS ${nadbFile}.bc ${CMAKE_BINARY_DIR}/lib/${nadbFile}.o)
 add_library(${nadbFile} STATIC ${CMAKE_BINARY_DIR}/lib/${nadbFile}.o)
 
 set_source_files_properties(${CMAKE_BINARY_DIR}/lib/${nadbFile}.o PROPERTIES EXTERNAL_OBJECT true GENERATED true)
