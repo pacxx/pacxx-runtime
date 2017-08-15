@@ -134,20 +134,20 @@ set(nvdbFile nvptx_device_binding)
 add_custom_command(
         OUTPUT ${nvdbFile}.bc
         COMMAND ${CMAKE_BINARY_DIR}/bin/clang ${PACXX_CUDA_DEV_FLAGS} ${CMAKE_CURRENT_SOURCE_DIR}/lib/bitcode/${nvdbFile}.cpp -o ${nvdbFile}.bc
-        WORKING_DIRECTORY ${binDir}
+        WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/lib
         DEPENDS clang
         COMMENT "Generating NVPTX Device Binding")
 
 add_custom_command(
         OUTPUT ${nvdbFile}.o
         COMMAND ${CMAKE_BINARY_DIR}/bin/clang -DFILE='"${nvdbFile}.bc"' -DTAG='nvptx_binding' ${CMAKE_CURRENT_SOURCE_DIR}/lib/asm/embed.S -c -o ${nvdbFile}.o
-        WORKING_DIRECTORY ${binDir}
+        WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/lib
         DEPENDS ${nvdbFile}.bc
         COMMENT "Preparing NVPTX Device Binding for linking")
 
 add_custom_target(${nvdbFile}_target DEPENDS ${nvdbFile}.bc ${nvdbFile}.o)
 
-add_library(${nvdbFile} STATIC ${nvdbFile}.o)
+add_library(${nvdbFile} STATIC ${CMAKE_BINARY_DIR}/lib/${nvdbFile}.o)
 
 
 set_source_files_properties(${CMAKE_BINARY_DIR}/lib/${nvdbFile}.o PROPERTIES EXTERNAL_OBJECT true GENERATED true)
@@ -160,19 +160,19 @@ set(nadbFile native_device_binding)
 add_custom_command(
         OUTPUT ${nadbFile}.bc
         COMMAND ${CMAKE_BINARY_DIR}/bin/clang ${PACXX_DEV_FLAGS} -I/usr/include ${CMAKE_CURRENT_SOURCE_DIR}/lib/bitcode/${nadbFile}.cpp -o ${nadbFile}.bc
-        WORKING_DIRECTORY ${binDir}
+        WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/lib
         DEPENDS clang
         COMMENT "Generating Native Device Binding")
 
 add_custom_command(
         OUTPUT ${nadbFile}.o
         COMMAND ${CMAKE_BINARY_DIR}/bin/clang -DFILE='"${nadbFile}.bc"' -DTAG='native_binding' ${CMAKE_CURRENT_SOURCE_DIR}/lib/asm/embed.S -c -o ${nadbFile}.o
-        WORKING_DIRECTORY ${binDir}
+        WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/lib
         DEPENDS ${nadbFile}.bc
         COMMENT "Preparing Native Device Binding for linking")
 
 add_custom_target(${nadbFile}_target DEPENDS ${nadbFile}.bc ${nadbFile}.o)
-add_library(${nadbFile} STATIC ${nadbFile}.o)
+add_library(${nadbFile} STATIC ${CMAKE_BINARY_DIR}/lib/${nadbFile}.o)
 
 set_source_files_properties(${CMAKE_BINARY_DIR}/lib/${nadbFile}.o PROPERTIES EXTERNAL_OBJECT true GENERATED true)
 set_target_properties(${nadbFile} PROPERTIES LINKER_LANGUAGE C)
