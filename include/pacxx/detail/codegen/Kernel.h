@@ -51,7 +51,11 @@ public:
   auto get_block_size(unsigned int dim) { return ::get_local_size(dim); }
   auto get_num_blocks(unsigned int dim) { return ::get_num_groups(dim); }
   auto get_grid_size(unsigned int dim) { return ::get_grid_size(dim); }
-  auto synchronize() { barrier(0); }
+  auto synchronize() {
+#ifdef __device_code__
+    __pacxx_barrier();/* barrier(0); */
+#endif
+  }
 };
 
 template<typename L>
