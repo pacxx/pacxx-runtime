@@ -20,102 +20,6 @@ __forceinline__ void __vprintf_conv(_format_t ptr) {
   asm("cvta.const.u64  %0, %1;" : "=r"(out) : "r"(ptr) :);
 }
 
-__forceinline__ __index_t
-__ptx_mad(unsigned int a, unsigned int b, unsigned int c) {
-  unsigned int out;
-
-  // asm("mad.lo.u32 %0, %1, %2, %3;" : "=r"(out) : "r"(a), "r"(b), "r"(c) : );
-
-  out = a * b + c;
-
-  return out;
-}
-
-__forceinline__ __index_t get_global_id(unsigned int dimindx) {
-  switch (dimindx) {
-  case 0:
-    return __ptx_mad(__nvvm_read_ptx_sreg_ntid_x(),
-                     __nvvm_read_ptx_sreg_ctaid_x(),
-                     __nvvm_read_ptx_sreg_tid_x());
-  case 1:
-    return __ptx_mad(__nvvm_read_ptx_sreg_ntid_y(),
-                     __nvvm_read_ptx_sreg_ctaid_y(),
-                     __nvvm_read_ptx_sreg_tid_y());
-  case 2:
-    return __ptx_mad(__nvvm_read_ptx_sreg_ntid_z(),
-                     __nvvm_read_ptx_sreg_ctaid_z(),
-                     __nvvm_read_ptx_sreg_tid_z());
-  default:
-    return 0;
-  }
-}
-
-__forceinline__ __index_t get_local_id(unsigned int dimindx) {
-  switch (dimindx) {
-  case 0:
-    return __nvvm_read_ptx_sreg_tid_x();
-  case 1:
-    return __nvvm_read_ptx_sreg_tid_y();
-  case 2:
-    return __nvvm_read_ptx_sreg_tid_z();
-  default:
-    return 0;
-  }
-}
-
-__forceinline__ __index_t get_group_id(unsigned int dimindx) {
-  switch (dimindx) {
-  case 0:
-    return __nvvm_read_ptx_sreg_ctaid_x();
-  case 1:
-    return __nvvm_read_ptx_sreg_ctaid_y();
-  case 2:
-    return __nvvm_read_ptx_sreg_ctaid_z();
-  default:
-    return 0;
-  }
-}
-
-__forceinline__ __index_t get_local_size(unsigned int dimindx) {
-  switch (dimindx) {
-  case 0:
-    return __nvvm_read_ptx_sreg_ntid_x();
-  case 1:
-    return __nvvm_read_ptx_sreg_ntid_y();
-  case 2:
-    return __nvvm_read_ptx_sreg_ntid_z();
-  default:
-    return 0;
-  }
-}
-
-__forceinline__ __index_t get_num_groups(unsigned int dimindx) {
-  switch (dimindx) {
-  case 0:
-    return __nvvm_read_ptx_sreg_nctaid_x();
-  case 1:
-    return __nvvm_read_ptx_sreg_nctaid_y();
-  case 2:
-    return __nvvm_read_ptx_sreg_nctaid_z();
-  default:
-    return 0;
-  }
-}
-
-__forceinline__ __index_t get_grid_size(unsigned int dimindx) {
-  switch (dimindx) {
-  case 0:
-    return __nvvm_read_ptx_sreg_ntid_x() * __nvvm_read_ptx_sreg_nctaid_x();
-  case 1:
-    return __nvvm_read_ptx_sreg_ntid_y() * __nvvm_read_ptx_sreg_nctaid_y();
-  case 2:
-    return __nvvm_read_ptx_sreg_ntid_z() * __nvvm_read_ptx_sreg_nctaid_z();
-  default:
-    return 0;
-  }
-}
-__forceinline__ void barrier(unsigned int) { __syncthreads(); }
-
 ///////////////////////////// ATOMICS ////////////////////////////
 /*
 #define __to_string(v) #v
@@ -335,7 +239,7 @@ extern "C" __forceinline__ double log(double val) {
   return __nv_log(val);
 }
 extern "C" __forceinline__ double exp(double val) {
-  return __nv_exp(val);
+  return __nvvm_ex2_approx_d(val);
 }
 extern "C" __forceinline__ double sin(double val) {
   return __nv_sin(val);
@@ -347,7 +251,7 @@ extern "C" __forceinline__ float logf(float val) {
   return __nv_logf(val);
 }
 extern "C" __forceinline__ float expf(float val) {
-  return __nv_expf(val);
+  return __nvvm_ex2_approx_f(val);
 }
 extern "C" __forceinline__ float sinf(float val) {
   return __nvvm_sin_approx_f(val);

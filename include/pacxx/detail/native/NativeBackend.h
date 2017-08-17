@@ -43,6 +43,7 @@ private:
   bool _pmInitialized;
   bool _disableVectorizer;
   bool _disableSelectEmitter;
+  bool _disableExpPasses;
 };
 }
 }

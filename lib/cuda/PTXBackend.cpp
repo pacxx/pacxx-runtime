@@ -19,6 +19,7 @@
 #include <llvm/Transforms/Vectorize.h>
 #include <llvm/Linker/Linker.h>
 #include <llvm/Transforms/IPO/PassManagerBuilder.h>
+#include <llvm/Analysis/TargetTransformInfo.h>
 #include "pacxx/ModuleLoader.h"
 
 #include "pacxx/detail/common/Timing.h"
@@ -64,8 +65,11 @@ void PTXBackend::prepareModule(llvm::Module &M) {
   linker.linkInModule(std::move(binding), Linker::Flags::None);
 
   llvm::legacy::PassManager PM;
-
+  TargetLibraryInfoImpl TLII(Triple(M.getTargetTriple()));
+  PM.add(new TargetLibraryInfoWrapperPass(TLII));
+ // PM.add(createTargetTransformInfoWrapperPass(_machine->getTargetIRAnalysis()));
   PM.add(createPACXXTargetSelectPass({"GPU", "Generic"}));
+  PM.add(createPACXXIntrinsicMapperPass());
   PM.add(createPACXXSpirPass());
   PM.add(createPACXXReflectionRemoverPass());
   PM.add(createPACXXNvvmPass());

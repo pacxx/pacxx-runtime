@@ -39,21 +39,97 @@ private:
   range() = default;
   template<typename L> friend auto kernelBody(L &&callable);
 
+  inline auto get_global_id(unsigned int dimindx) {
+    switch (dimindx) {
+#ifdef __device_code__
+    case 0:
+      return __pacxx_read_ntid_x() *
+          __pacxx_read_ctaid_x() +
+          __pacxx_read_tid_x();
+    case 1:
+      return __pacxx_read_ntid_y() *
+          __pacxx_read_ctaid_y() +
+          __pacxx_read_tid_y();
+    case 2:
+      return __pacxx_read_ntid_z() *
+          __pacxx_read_ctaid_z() +
+          __pacxx_read_tid_z();
+#endif
+    default:return 0;
+    }
+  }
+
+  inline auto get_local_id(unsigned int dimindx) {
+    switch (dimindx) {
+#ifdef __device_code__
+    case 0:return __pacxx_read_tid_x();
+    case 1:return __pacxx_read_tid_y();
+    case 2:return __pacxx_read_tid_z();
+#endif
+    default:return 0;
+    }
+  }
+
+  inline auto get_group_id(unsigned int dimindx) {
+    switch (dimindx) {
+    #ifdef __device_code__
+    case 0:return __pacxx_read_ctaid_x();
+    case 1:return __pacxx_read_ctaid_y();
+    case 2:return __pacxx_read_ctaid_z();
+    #endif
+    default:return 0;
+    }
+  }
+
+  inline auto get_local_size(unsigned int dimindx) {
+    switch (dimindx) {
+    #ifdef __device_code__
+    case 0:return __pacxx_read_ntid_x();
+    case 1:return __pacxx_read_ntid_y();
+    case 2:return __pacxx_read_ntid_z();
+    #endif
+    default:return 1;
+    }
+  }
+
+  inline auto get_num_groups(unsigned int dimindx) {
+    switch (dimindx) {
+    #ifdef __device_code__
+    case 0:return __pacxx_read_nctaid_x();
+    case 1:return __pacxx_read_nctaid_y();
+    case 2:return __pacxx_read_nctaid_z();
+    #endif
+    default:return 1;
+    }
+  }
+
+  inline auto _get_grid_size(unsigned int dimindx) {
+    switch (dimindx) {
+    #ifdef __device_code__
+    case 0:return __pacxx_read_ntid_x() * __pacxx_read_nctaid_x();
+    case 1:return __pacxx_read_ntid_y() * __pacxx_read_nctaid_y();
+    case 2:return __pacxx_read_ntid_z() * __pacxx_read_nctaid_z();
+    #endif
+    default:return 1;
+    }
+  }
+
+
 public:
   range(const range &) = delete;
   range(range &&) = delete;
   auto operator=(const range &) = delete;
   auto operator=(range &&) = delete;
 
-  auto get_global(unsigned int dim) { return ::get_global_id(dim); }
-  auto get_local(unsigned int dim) { return ::get_local_id(dim); }
-  auto get_block(unsigned int dim) { return ::get_group_id(dim); }
-  auto get_block_size(unsigned int dim) { return ::get_local_size(dim); }
-  auto get_num_blocks(unsigned int dim) { return ::get_num_groups(dim); }
-  auto get_grid_size(unsigned int dim) { return ::get_grid_size(dim); }
+  auto get_global(unsigned int dim)     { return get_global_id(dim); }
+  auto get_local(unsigned int dim)      { return get_local_id(dim); }
+  auto get_block(unsigned int dim)      { return get_group_id(dim); }
+  auto get_block_size(unsigned int dim) { return get_local_size(dim); }
+  auto get_num_blocks(unsigned int dim) { return get_num_groups(dim); }
+  auto get_grid_size(unsigned int dim)  { return _get_grid_size(dim); }
   auto synchronize() {
 #ifdef __device_code__
-    __pacxx_barrier();/* barrier(0); */
+    __pacxx_barrier();
 #endif
   }
 };

@@ -117,11 +117,14 @@ namespace pacxx {
 namespace v2 {
 NativeBackend::NativeBackend() : _pmInitialized(false),
                                  _disableVectorizer(false),
-                                 _disableSelectEmitter(false) {
+                                 _disableSelectEmitter(false),
+                                 _disableExpPasses(false){
   if (common::GetEnv("PACXX_DISABLE_RV") != "")
     _disableVectorizer = true;
   if (common::GetEnv("PACXX_DISABLE_SE") != "")
     _disableSelectEmitter = true;
+  if (common::GetEnv("PACXX_DISABLE_EXP_PASS") != "")
+    _disableExpPasses = true;
 
 }
 
@@ -267,14 +270,14 @@ void NativeBackend::applyPasses(Module &M) {
     TargetLibraryInfoImpl TLII(Triple(M.getTargetTriple()));
     _PM.add(new TargetLibraryInfoWrapperPass(TLII));
     _PM.add(createTargetTransformInfoWrapperPass(_machine->getTargetIRAnalysis()));
-
-    //_PM.add(createPACXXIdRemoverPass());
     _PM.add(createCFGSimplificationPass());
     _PM.add(createLoopSimplifyPass());
     _PM.add(createLCSSAPass());
+    if(!_disableExpPasses) {
+      _PM.add(createPACXXNvvmRegPass(false));
+      _PM.add(createDeadInstEliminationPass());
+    }
     _PM.add(createLowerSwitchPass());
-    // _PM.add(createSROAPass());
-    // _PM.add(createPromoteMemoryToRegisterPass());
     if (!_disableVectorizer)
       _PM.add(createSPMDVectorizerPass());
     if (!_disableSelectEmitter)
