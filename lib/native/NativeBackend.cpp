@@ -284,6 +284,7 @@ void NativeBackend::applyPasses(Module &M) {
       _PM.add(createPACXXSelectEmitterPass());
 
     _PM.add(createPACXXNativeBarrierPass());
+    _PM.add(createVerifierPass());
 
     _PM.add(createPACXXNativeLinkerPass());
 
