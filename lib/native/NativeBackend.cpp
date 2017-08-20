@@ -257,7 +257,7 @@ std::unique_ptr<Module> NativeBackend::createModule(LLVMContext &Context,
 }
 
 void NativeBackend::applyPasses(Module &M) {
-
+  M.dump();
   if (!_machine)
     throw common::generic_exception("Can not get target machine");
   if (!_pmInitialized) {
@@ -282,16 +282,16 @@ void NativeBackend::applyPasses(Module &M) {
       _PM.add(createSPMDVectorizerPass());
     if (!_disableSelectEmitter)
       _PM.add(createPACXXSelectEmitterPass());
-
+    _PM.add(createPACXXIntrinsicSchedulerPass());
     _PM.add(createPACXXNativeBarrierPass());
-    _PM.add(createVerifierPass());
+   // _PM.add(createVerifierPass());
 
     _PM.add(createPACXXNativeLinkerPass());
 
     _PM.add(createPACXXNativeSMPass());
 
     _PM.add(createVerifierPass());
-    builder.populateModulePassManager(_PM);
+    //builder.populateModulePassManager(_PM);
     //_PM.add(createPACXXDeadCodeElimPass());
     _pmInitialized = true;
   }
