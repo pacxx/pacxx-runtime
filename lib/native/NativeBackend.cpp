@@ -257,7 +257,6 @@ std::unique_ptr<Module> NativeBackend::createModule(LLVMContext &Context,
 }
 
 void NativeBackend::applyPasses(Module &M) {
-  M.dump();
   if (!_machine)
     throw common::generic_exception("Can not get target machine");
   if (!_pmInitialized) {
@@ -293,7 +292,6 @@ void NativeBackend::applyPasses(Module &M) {
 
     _PM.add(createVerifierPass());
     builder.populateModulePassManager(_PM);
-    //_PM.add(createPACXXDeadCodeElimPass());
     _pmInitialized = true;
   }
 
