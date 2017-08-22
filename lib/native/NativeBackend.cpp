@@ -278,6 +278,7 @@ void NativeBackend::applyPasses(Module &M) {
       _PM.add(createDeadInstEliminationPass());
     }
     _PM.add(createLowerSwitchPass());
+    //builder.populateModulePassManager(_PM);
     if (!_disableVectorizer)
       _PM.add(createSPMDVectorizerPass());
     if (!_disableSelectEmitter)
@@ -291,7 +292,7 @@ void NativeBackend::applyPasses(Module &M) {
     _PM.add(createPACXXNativeSMPass());
 
     _PM.add(createVerifierPass());
-    //builder.populateModulePassManager(_PM);
+    builder.populateModulePassManager(_PM);
     //_PM.add(createPACXXDeadCodeElimPass());
     _pmInitialized = true;
   }
