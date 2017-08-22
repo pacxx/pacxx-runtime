@@ -79,7 +79,7 @@ void NativeKernel::launch() {
     start = std::chrono::high_resolution_clock::now();
     tbb::parallel_for(size_t(0), _config.blocks.z, [=](size_t bidz) {
       tbb::parallel_for(size_t(0), _config.blocks.y, [=](size_t bidy) {
-        tbb::parallel_for(size_t(0), _config.blocks.x, [)](size_t bidx) {
+        tbb::parallel_for(size_t(0), _config.blocks.x, [=](size_t bidx) {
           functor(bidx, bidy, bidz, _config.blocks.x, _config.blocks.y,
                   _config.blocks.z, _config.threads.x, _config.threads.y,
                   _config.threads.z, _config.sm_size, _lambdaPtr);
