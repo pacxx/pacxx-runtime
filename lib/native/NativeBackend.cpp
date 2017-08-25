@@ -257,7 +257,7 @@ std::unique_ptr<Module> NativeBackend::createModule(LLVMContext &Context,
 }
 
 void NativeBackend::applyPasses(Module &M) {
-  M.dump();
+
   if (!_machine)
     throw common::generic_exception("Can not get target machine");
   if (!_pmInitialized) {
