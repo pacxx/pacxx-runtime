@@ -272,7 +272,10 @@ void NativeBackend::applyPasses(Module &M) {
     _PM.add(createCFGSimplificationPass());
     _PM.add(createLoopSimplifyPass());
     _PM.add(createLCSSAPass());
+
+    _PM.add(createEarlyCSEPass(true));
     if(!_disableExpPasses) {
+
       _PM.add(createPACXXNvvmRegPass(false));
       _PM.add(createDeadInstEliminationPass());
     }
