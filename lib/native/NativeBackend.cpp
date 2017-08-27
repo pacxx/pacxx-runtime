@@ -22,6 +22,7 @@
 #include <llvm/Transforms/Scalar.h>
 #include <llvm/Transforms/Vectorize.h>
 #include "llvm/CodeGen/MachineModuleInfo.h"
+#include <llvm/Transforms/PACXXTransforms.h>
 
 namespace {
 const std::string native_loop_ir(R"(
@@ -130,7 +131,7 @@ NativeBackend::NativeBackend() : _pmInitialized(false),
 
 NativeBackend::~NativeBackend() {}
 
-void NativeBackend::prepareModule(llvm::Module &M) {
+std::unique_ptr<llvm::Module> NativeBackend::prepareModule(llvm::Module &M) {
 
   ModuleLoader loader(M.getContext());
   auto binding = loader.loadInternal(native_binding_start, native_binding_end - native_binding_start);
@@ -168,7 +169,9 @@ void NativeBackend::prepareModule(llvm::Module &M) {
   PM.add(createGVNPass());
   PM.add(createBreakCriticalEdgesPass());
   PM.add(createConstantMergePass());
-  PM.add(createPACXXReflectionPass());
+
+  auto PRP = createPACXXReflectionPass();
+  PM.add(PRP);
   PM.add(createAlwaysInlinerLegacyPass());
   PM.add(createPACXXDeadCodeElimPass());
   PM.add(createScalarizerPass());
@@ -194,6 +197,17 @@ void NativeBackend::prepareModule(llvm::Module &M) {
   PM.add(createInstructionCombiningPass());
 
   PM.run(M);
+
+  auto RM = reinterpret_cast<PACXXReflection*>(PRP)->getReflectionModule();
+
+  legacy::PassManager RPM;
+  RPM.add(createPACXXReflectionCleanerPass());
+  RPM.add(createFunctionInliningPass());
+  RPM.add(createInstructionCombiningPass());
+
+  RPM.run(*RM);
+
+  return RM;
 }
 
 Module *NativeBackend::compile(std::unique_ptr<Module> &M) {

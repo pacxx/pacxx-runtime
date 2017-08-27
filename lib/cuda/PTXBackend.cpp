@@ -60,7 +60,7 @@ void PTXBackend::initialize(unsigned CC) {
   _options.AllowFPOpFusion = FPOpFusion::Fast;
 }
 
-void PTXBackend::prepareModule(llvm::Module &M) {
+std::unique_ptr<llvm::Module> PTXBackend::prepareModule(llvm::Module &M) {
 
   ModuleLoader loader(M.getContext());
   auto binding = loader.loadInternal(nvptx_binding_start, nvptx_binding_end - nvptx_binding_start);
@@ -102,8 +102,10 @@ void PTXBackend::prepareModule(llvm::Module &M) {
   PM.add(createGVNPass());
   PM.add(createBreakCriticalEdgesPass());
   PM.add(createConstantMergePass());
-  PM.add(createPACXXReflectionPass());
-  PM.add(createAlwaysInlinerLegacyPass());
+
+  auto PRP =createPACXXReflectionPass();
+  PM.add(PRP);  PM.add(createAlwaysInlinerLegacyPass());
+
   PM.add(createPACXXDeadCodeElimPass());
   PM.add(createScalarizerPass());
   PM.add(createPromoteMemoryToRegisterPass());
@@ -135,6 +137,17 @@ void PTXBackend::prepareModule(llvm::Module &M) {
   PM.add(createInferAddressSpacesPass());
 
   PM.run(M);
+
+  auto RM = reinterpret_cast<PACXXReflection*>(PRP)->getReflectionModule();
+
+  legacy::PassManager RPM;
+  RPM.add(createPACXXReflectionCleanerPass());
+  RPM.add(createFunctionInliningPass());
+  RPM.add(createInstructionCombiningPass());
+
+  RPM.run(*RM);
+
+  return RM;
 }
 
 std::string PTXBackend::compile(llvm::Module &M) {

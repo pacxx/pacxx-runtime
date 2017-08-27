@@ -51,7 +51,8 @@ void CUDARuntime::link(std::unique_ptr<llvm::Module> M) {
 
   _rawM = std::move(M);
 
-  _compiler->prepareModule(*_rawM);
+  auto RM = _compiler->prepareModule(*_rawM);
+  initializeMSP(std::move(RM));
 
   _M = CloneModule(_rawM.get());
   _M->setDataLayout(_rawM->getDataLayoutStr());

@@ -26,7 +26,7 @@ public:
 
   void initialize(unsigned CC);
 
-  void prepareModule(llvm::Module &M);
+  std::unique_ptr<llvm::Module> prepareModule(llvm::Module &M);
 
   llvm::legacy::PassManager &getPassManager();
 

@@ -57,7 +57,7 @@ void NativeKernel::launch() {
   std::chrono::high_resolution_clock::time_point start, end;
 
   std::vector<unsigned> times(_runs);
-
+  return;
 #ifdef __PACXX_OMP
   __verbose("Using OpenMP \n");
   for(unsigned i = 0; i < _runs; ++i) {
