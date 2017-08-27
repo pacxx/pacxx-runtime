@@ -20,6 +20,13 @@
 #include <llvm/Linker/Linker.h>
 #include <llvm/Transforms/IPO/PassManagerBuilder.h>
 #include <llvm/Analysis/TargetTransformInfo.h>
+#include <llvm/Analysis/BasicAliasAnalysis.h>
+#include <llvm/Analysis/TypeBasedAliasAnalysis.h>
+#include <llvm/Transforms/IPO/FunctionAttrs.h>
+#include <llvm/Analysis/Passes.h>
+#include <llvm/Transforms/Scalar/GVN.h>
+#include <llvm/Transforms/IPO/AlwaysInliner.h>
+#include <llvm/Transforms/IPO.h>
 #include "pacxx/ModuleLoader.h"
 
 #include "pacxx/detail/common/Timing.h"
@@ -67,7 +74,45 @@ void PTXBackend::prepareModule(llvm::Module &M) {
   llvm::legacy::PassManager PM;
   TargetLibraryInfoImpl TLII(Triple(M.getTargetTriple()));
   PM.add(new TargetLibraryInfoWrapperPass(TLII));
- // PM.add(createTargetTransformInfoWrapperPass(_machine->getTargetIRAnalysis()));
+  PM.add(createTypeBasedAAWrapperPass());
+  PM.add(createBasicAAWrapperPass());
+  PM.add(createAlwaysInlinerLegacyPass());
+  PM.add(createPACXXDeadCodeElimPass());
+  PM.add(createSROAPass());
+  PM.add(createPromoteMemoryToRegisterPass());
+  PM.add(createLoopRotatePass());
+  PM.add(createCFGSimplificationPass());
+  PM.add(createCodeGenPreparePass());
+  PM.add(createPostOrderFunctionAttrsLegacyPass());
+  PM.add(createSROAPass());
+  PM.add(createEarlyCSEPass());
+  PM.add(createLazyValueInfoPass());
+  PM.add(createCorrelatedValuePropagationPass());
+  PM.add(createReassociatePass());
+  PM.add(createLCSSAPass());
+  PM.add(createLoopRotatePass());
+  PM.add(createStraightLineStrengthReducePass());
+  PM.add(createLICMPass());
+  PM.add(createLoopUnswitchPass());
+  PM.add(createLoopIdiomPass());
+  PM.add(createLoopDeletionPass());
+  PM.add(createLoopUnrollPass());
+  PM.add(createInstructionSimplifierPass());
+  PM.add(createLCSSAPass());
+  PM.add(createGVNPass());
+  PM.add(createBreakCriticalEdgesPass());
+  PM.add(createConstantMergePass());
+  PM.add(createPACXXReflectionPass());
+  PM.add(createAlwaysInlinerLegacyPass());
+  PM.add(createPACXXDeadCodeElimPass());
+  PM.add(createScalarizerPass());
+  PM.add(createPromoteMemoryToRegisterPass());
+  PM.add(createInstructionCombiningPass());
+  PM.add(createCFGSimplificationPass());
+  PM.add(createAlwaysInlinerLegacyPass());
+  PM.add(createPACXXDeadCodeElimPass());
+  PM.add(createPACXXIntrinsicSchedulerPass());
+
   PM.add(createPACXXTargetSelectPass({"GPU", "Generic"}));
   PM.add(createPACXXIntrinsicMapperPass());
   PM.add(createPACXXSpirPass());
