@@ -6,6 +6,7 @@
 #include "pacxx/ModuleLoader.h"
 #include "pacxx/detail/common/Exceptions.h"
 #include "pacxx/detail/common/Common.h"
+#include "pacxx/detail/common/transfroms/PACXXTransforms.h"
 #include <llvm/Analysis/LoopInfo.h>
 #include <llvm/Analysis/LoopPass.h>
 #include <llvm/Analysis/TargetLibraryInfo.h>
@@ -21,7 +22,7 @@
 #include <llvm/Transforms/PACXXTransforms.h>
 #include <llvm/Transforms/Scalar.h>
 #include <llvm/Transforms/Vectorize.h>
-#include "llvm/CodeGen/MachineModuleInfo.h"
+#include <llvm/CodeGen/MachineModuleInfo.h>
 
 namespace {
 const std::string native_loop_ir(R"(

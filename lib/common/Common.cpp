@@ -6,7 +6,7 @@
 #include <fstream>
 #include <iostream>
 
-#include "pacxx/detail/common/Common.h"
+#include "include/pacxx/detail/common/Common.h"
 
 namespace pacxx {
 namespace common {

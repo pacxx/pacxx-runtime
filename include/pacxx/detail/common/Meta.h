@@ -5,7 +5,7 @@
 #ifndef PACXX_V2_META_H
 #define PACXX_V2_META_H
 
-#include "../DeviceBuffer.h"
+#include "include/pacxx/detail/DeviceBuffer.h"
 #include <type_traits>
 #include <vector>
 
