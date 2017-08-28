@@ -108,7 +108,8 @@ void MSPEngine::evaluate(const llvm::Function &KF, Kernel &kernel) {
             if (auto F = _mspModule->getFunction(FName)) {
               void *rFP = _engine->getPointerToFunction(F);
               auto FP = reinterpret_cast<int64_t (*)(const void *)>(rFP);
-              value = FP(kernel.getLambdaPtr());
+              auto ptr = kernel.getLambdaPtr();
+              value = FP(&ptr);
 
               kernelHasStagedFunction = true;
               inScope = true;

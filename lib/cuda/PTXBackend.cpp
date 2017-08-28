@@ -140,11 +140,12 @@ std::unique_ptr<llvm::Module> PTXBackend::prepareModule(llvm::Module &M) {
 
   auto RM = reinterpret_cast<PACXXReflection*>(PRP)->getReflectionModule();
 
+  PassManagerBuilder builder;
+  builder.OptLevel = 3;
   legacy::PassManager RPM;
+  RPM.add(createAlwaysInlinerLegacyPass());
   RPM.add(createPACXXReflectionCleanerPass());
-  RPM.add(createFunctionInliningPass());
-  RPM.add(createInstructionCombiningPass());
-
+  builder.populateModulePassManager(RPM);
   RPM.run(*RM);
 
   return RM;

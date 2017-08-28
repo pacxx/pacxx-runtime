@@ -199,12 +199,12 @@ std::unique_ptr<llvm::Module> NativeBackend::prepareModule(llvm::Module &M) {
   PM.run(M);
 
   auto RM = reinterpret_cast<PACXXReflection*>(PRP)->getReflectionModule();
-
+  PassManagerBuilder builder;
+  builder.OptLevel = 3;
   legacy::PassManager RPM;
+  RPM.add(createAlwaysInlinerLegacyPass());
   RPM.add(createPACXXReflectionCleanerPass());
-  RPM.add(createFunctionInliningPass());
-  RPM.add(createInstructionCombiningPass());
-
+  builder.populateModulePassManager(RPM);
   RPM.run(*RM);
 
   return RM;
