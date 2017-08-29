@@ -36,7 +36,7 @@ endif(PACXX_USE_OpenMP)
 
 
 #option(BUILD_SHARED "Build PACXX Runtime as shared object" OFF)
-set(PACXX_RV_LIB LLVMRV)
+set(PACXX_RV_LIB RV)
 
 
 set(SOURCE_FILES include/pacxx/Executor.h
@@ -65,7 +65,9 @@ set(SOURCE_FILES include/pacxx/Executor.h
         lib/common/Log.cpp
         lib/Executor.cpp
         include/pacxx/detail/common/Timing.h
-        lib/native/transforms/pacxx_intrinsic_scheduler.cpp
+        lib/common/transforms/pacxx_reflection.cpp
+        lib/common/transforms/pacxx_reflection_cleaner.cpp
+        lib/common/transforms/pacxx_intrinsic_scheduler.cpp
         lib/native/transforms/pacxx_liveness_analysis.h
         lib/native/transforms/pacxx_liveness_analysis.cpp
         lib/native/transforms/pacxx_native_barrier.cpp

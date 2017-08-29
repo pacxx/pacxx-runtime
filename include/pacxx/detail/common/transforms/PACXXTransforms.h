@@ -1,10 +1,10 @@
 #pragma once
 
-#include "../Pass.h"
-#include "../IR/InstVisitor.h"
-#include "../IR/Function.h"
-#include "../IR/Module.h"
-#include "../IR/Constants.h"
+#include "llvm/Pass.h"
+#include "llvm/IR/InstVisitor.h"
+#include "llvm/IR/Function.h"
+#include "llvm/IR/Module.h"
+#include "llvm/IR/Constants.h"
 #include <vector>
 #include <set>
 #include <map>

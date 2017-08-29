@@ -31,7 +31,7 @@
 #include "llvm/IR/Dominators.h"
 #include "llvm/Analysis/CFG.h"
 
-#include "ModuleHelper.h"
+#include "pacxx/detail/common/transforms/ModuleHelper.h"
 
 #define GLOBAL_ID_PATTERN "mad.lo.u32 $0, $1, $2, $3;"
 
@@ -322,6 +322,6 @@ static RegisterPass<NVVMRegPass>
     X("nvvm_reg", "PACXX: path to reduce register preasure", false, false);
 }
 
-namespace llvm {
+namespace pacxx {
 Pass *createPACXXNvvmRegPass(bool runtime) { return new NVVMRegPass(runtime); }
 }

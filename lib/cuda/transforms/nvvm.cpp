@@ -27,8 +27,8 @@
 #include "llvm/Transforms/PACXXTransforms.h"
 #include "llvm/Transforms/Utils/BasicBlockUtils.h"
 
-#include "CallVisitor.h"
-#include "ModuleHelper.h"
+#include "pacxx/detail/common/transforms/CallVisitor.h"
+#include "pacxx/detail/common/transforms/ModuleHelper.h"
 
 using namespace llvm;
 using namespace std;
@@ -114,6 +114,6 @@ char NVVMPass::ID = 0;
 static RegisterPass<NVVMPass> X("nvvm", "LLVM to NVVM IR pass", false, false);
 }
 
-namespace llvm {
+namespace pacxx {
 Pass *createPACXXNvvmPass() { return new NVVMPass(); }
 }

@@ -3,14 +3,14 @@
 #define PACXX_PASS_NAME "PACXXNativeLinker"
 
 #include <llvm/IR/CFG.h>
-#include "Log.h"
-#include "ModuleHelper.h"
+#include "pacxx/detail/common/Log.h"
+#include "pacxx/detail/common/transforms/ModuleHelper.h"
 
 using namespace llvm;
 using namespace std;
 using namespace pacxx;
 
-namespace llvm {
+namespace {
 
 struct PACXXNativeLinker : public ModulePass {
   static char ID;
@@ -47,10 +47,10 @@ private:
                                       bool vectorized, bool barrier);
   void removeDeadCalls(Function *wrapper, Value3 &blockId, Value3 &maxBlock, Value3 &maxId);
 
-  AllocaInst* getCorrectAlloca(Instruction *intrinsic, IdType id);
+  AllocaInst *getCorrectAlloca(Instruction *intrinsic, IdType id);
 
-  void recursiveFindAlloca(BasicBlock *BB, SmallSet<BasicBlock*, 8>& visited,
-                                   AllocaInst*& alloca, IdType id);
+  void recursiveFindAlloca(BasicBlock *BB, SmallSet<BasicBlock *, 8> &visited,
+                           AllocaInst *&alloca, IdType id);
 
   bool isCorrectId(Instruction *inst, IdType id);
 
@@ -97,13 +97,13 @@ bool PACXXNativeLinker::runOnModule(Module &M) {
     __verbose("Cleaning up");
     if (vectorized) {
       Function *vec_F = M.getFunction("__vectorized__" + F->getName().str());
-      _vectorWidth= stoi(vec_F->getFnAttribute("simd-size").getValueAsString().str());
+      _vectorWidth = stoi(vec_F->getFnAttribute("simd-size").getValueAsString().str());
       vec_F->eraseFromParent();
       // if the kernel has been vectorized and has a barrier, we neeed to remove the vectorized wrapper because we
       // will use the barrier version of the wrapper
       if (barrier) {
         Function *vecFoo = M.getFunction("__vectorized__pacxx_block__" + F->getName().str());
-        _vectorWidth= stoi(vec_F->getFnAttribute("simd-size").getValueAsString().str());
+        _vectorWidth = stoi(vec_F->getFnAttribute("simd-size").getValueAsString().str());
         vecFoo->eraseFromParent();
       }
     }
@@ -345,7 +345,7 @@ void PACXXNativeLinker::replaceDummyWithKernelIfNeeded(Function *wrapper, Functi
 void PACXXNativeLinker::removeDeadCalls(Function *wrapper, Value3 &blockId, Value3 &maxBlock, Value3 &maxId) {
 
   __verbose("replacing dead calls \n");
-  vector < CallInst * > dead_calls;
+  vector<CallInst *> dead_calls;
   for (auto &B : *wrapper) {
     for (auto &I : B) {
       if (auto CI = dyn_cast<CallInst>(&I)) {
@@ -430,55 +430,51 @@ void PACXXNativeLinker::removeDeadCalls(Function *wrapper, Value3 &blockId, Valu
     I->eraseFromParent();
 }
 
-AllocaInst* PACXXNativeLinker::getCorrectAlloca(Instruction *intrinsic, IdType id) {
+AllocaInst *PACXXNativeLinker::getCorrectAlloca(Instruction *intrinsic, IdType id) {
 
-   AllocaInst *alloca = nullptr;
-   SmallSet<BasicBlock*, 8> visited;
+  AllocaInst *alloca = nullptr;
+  SmallSet < BasicBlock * , 8 > visited;
 
-   // first check if we find the alloca in the same basic block
-   auto BB = intrinsic->getParent();
-   for(auto I = intrinsic->getIterator(), IE = BB->begin(); I != IE; --I) {
-       if(AllocaInst* current = dyn_cast<AllocaInst>(&*I))
-       if(isCorrectId(current, id))
-         return current;
-   }
+  // first check if we find the alloca in the same basic block
+  auto BB = intrinsic->getParent();
+  for (auto I = intrinsic->getIterator(), IE = BB->begin(); I != IE; --I) {
+    if (AllocaInst * current = dyn_cast<AllocaInst>(&*I))
+      if (isCorrectId(current, id))
+        return current;
+  }
 
-   // if we have not found it in the same block move upwards
-   recursiveFindAlloca(BB, visited, alloca, id);
-   return alloca;
+  // if we have not found it in the same block move upwards
+  recursiveFindAlloca(BB, visited, alloca, id);
+  return alloca;
 }
 
-void PACXXNativeLinker::recursiveFindAlloca(BasicBlock *BB, SmallSet<BasicBlock*, 8>& visited,
-                                            AllocaInst*& alloca, IdType id) {
+void PACXXNativeLinker::recursiveFindAlloca(BasicBlock *BB, SmallSet<BasicBlock *, 8> &visited,
+                                            AllocaInst *&alloca, IdType id) {
 
-  if(visited.count(BB) != 0)
+  if (visited.count(BB) != 0)
     return;
 
   visited.insert(BB);
 
-  for(auto I = pred_begin(BB), IE = pred_end(BB); I != IE; ++I) {
-      BasicBlock *pred = *I;
-      for(auto &inst : *pred) {
-        if(AllocaInst* current = dyn_cast<AllocaInst>(&inst))
-          if (isCorrectId(current, id)) {
-            alloca = current;
-            return;
-          }
-      }
-      recursiveFindAlloca(pred, visited, alloca, id);
+  for (auto I = pred_begin(BB), IE = pred_end(BB); I != IE; ++I) {
+    BasicBlock *pred = *I;
+    for (auto &inst : *pred) {
+      if (AllocaInst * current = dyn_cast<AllocaInst>(&inst))
+        if (isCorrectId(current, id)) {
+          alloca = current;
+          return;
+        }
+    }
+    recursiveFindAlloca(pred, visited, alloca, id);
   }
 }
 
 bool PACXXNativeLinker::isCorrectId(Instruction *inst, IdType id) {
   switch (id) {
-    case X:
-      return inst->getMetadata("pacxx_read_tid_x") != nullptr;
-    case Y:
-      return inst->getMetadata("pacxx_read_tid_y") != nullptr;
-    case Z:
-      return inst->getMetadata("pacxx_read_tid_z") != nullptr;
-    default:
-      __verbose("unsupported id specified. doing nothing");
+  case X:return inst->getMetadata("pacxx_read_tid_x") != nullptr;
+  case Y:return inst->getMetadata("pacxx_read_tid_y") != nullptr;
+  case Z:return inst->getMetadata("pacxx_read_tid_z") != nullptr;
+  default:__verbose("unsupported id specified. doing nothing");
     return false;
   }
 }
@@ -491,7 +487,7 @@ void PACXXNativeLinker::markWrapperAsKernel(Module &M, Function *wrapper, bool v
   MDVals.push_back(MDString::get(ctx, "kernel"));
   MDVals.push_back(ConstantAsMetadata::get(ConstantInt::get(Type::getInt32Ty(ctx), 1)));
 
-  if(vectorized)
+  if (vectorized)
     wrapper->addFnAttr("simd-size", to_string(_vectorWidth));
 
   MD->addOperand(MDNode::get(ctx, MDVals));
@@ -501,5 +497,8 @@ char PACXXNativeLinker::ID = 0;
 static RegisterPass <PACXXNativeLinker>
     X("pacxx_native", "Inlines functions into kernels", false, false);
 
-Pass *createPACXXNativeLinkerPass() { return new PACXXNativeLinker(); }
+}
+
+namespace pacxx {
+llvm::Pass *createPACXXNativeLinkerPass() { return new PACXXNativeLinker(); }
 }

@@ -2,8 +2,8 @@
 
 #include <stdlib.h>
 
-#include "Log.h"
-#include "ModuleHelper.h"
+#include "pacxx/detail/common/Log.h"
+#include "pacxx/detail/common/transforms/ModuleHelper.h"
 
 #include "llvm/Analysis/LoopPass.h"
 #include "llvm/Analysis/MemoryDependenceAnalysis.h"
@@ -27,6 +27,7 @@
 #include "llvm/Support/FileSystem.h"
 
 #include "rv/rv.h"
+#include "rv/sleefLibrary.h"
 #include "rv/passes.h"
 #include "rv/transform/loopExitCanonicalizer.h"
 
@@ -153,11 +154,18 @@ bool SPMDVectorizer::runOnModule(Module& M) {
         rv::Config config;
         config.useAVX = featureString.find("+avx") != std::string::npos;
         config.useAVX2 = featureString.find("+avx2") != std::string::npos;
+        config.useAVX2 = featureString.find("+avx512f") != std::string::npos;
         config.useNEON = featureString.find("+neon") != std::string::npos;
-        config.useSLEEF = false;
+
+        config.useSLEEF = true;
         config.enableIRPolish = false;
 
         config.print(outs());
+
+        const bool useImpreciseFunctions = true;
+
+        // link in SIMD library
+        rv::addSleefMappings(config, platformInfo, useImpreciseFunctions);
 
         rv::VectorizerInterface vectorizer(platformInfo, config);
 
@@ -670,7 +678,7 @@ INITIALIZE_PASS_DEPENDENCY(LoopInfoWrapperPass)
 INITIALIZE_PASS_END(SPMDVectorizer, "spmd",
                 "SPMD vectorizer", true, true)
 
-namespace llvm {
+namespace pacxx {
     llvm::Pass *createSPMDVectorizerPass() {
         return new SPMDVectorizer();
     }

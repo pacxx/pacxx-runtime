@@ -3,7 +3,7 @@
 // and the implementation available at:
 // https://github.com/karrenberg/wfvopencl/blob/master/src/passes/continuationGenerator.cpp
 
-#include "Log.h"
+#include "pacxx/detail/common/Log.h"
 #include "pacxx_liveness_analysis.h"
 
 using namespace llvm;
@@ -1136,7 +1136,7 @@ INITIALIZE_PASS_DEPENDENCY(PACXXNativeLivenessAnalyzer)
 INITIALIZE_PASS_END(PACXXNativeBarrier, "native-barrier",
                 "Native barrier", true, true)
 
-namespace llvm {
+namespace pacxx {
     llvm::Pass *createPACXXNativeBarrierPass() {
         return new PACXXNativeBarrier();
     }

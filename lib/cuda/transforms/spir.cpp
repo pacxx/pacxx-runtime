@@ -4,7 +4,7 @@
 * Written by Michael Haidl <michael.haidl@uni-muenster.de>, 2013-2014
 */
 
-#include "../lib/IR/LLVMContextImpl.h"
+#include "llvm/IR/LLVMContext.h"
 #include "llvm/IR/Argument.h"
 #include "llvm/IR/BasicBlock.h"
 #include "llvm/IR/Constants.h"
@@ -31,8 +31,8 @@
 #include "llvm/IR/Dominators.h"
 #include <string>
 
-#include "CallVisitor.h"
-#include "ModuleHelper.h"
+#include "pacxx/detail/common/transforms/CallVisitor.h"
+#include "pacxx/detail/common/transforms/ModuleHelper.h"
 
 using namespace llvm;
 using namespace std;
@@ -238,6 +238,6 @@ char SPIRPass::ID = 0;
 static RegisterPass<SPIRPass> X("spir", "LLVM to SPIR IR pass", false, false);
 }
 
-namespace llvm {
+namespace pacxx {
 Pass *createPACXXSpirPass() { return new SPIRPass(); }
 }

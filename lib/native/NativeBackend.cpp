@@ -6,7 +6,8 @@
 #include "pacxx/ModuleLoader.h"
 #include "pacxx/detail/common/Exceptions.h"
 #include "pacxx/detail/common/Common.h"
-#include "pacxx/detail/common/transfroms/PACXXTransforms.h"
+#include "pacxx/detail/common/transforms/Passes.h"
+#include "pacxx/detail/native/transforms/Passes.h"
 #include <llvm/Analysis/LoopInfo.h>
 #include <llvm/Analysis/LoopPass.h>
 #include <llvm/Analysis/TargetLibraryInfo.h>
@@ -337,6 +338,7 @@ void NativeBackend::applyPasses(Module &M) {
     //builder.populateModulePassManager(_PM);
     if (!_disableVectorizer)
       _PM.add(createSPMDVectorizerPass());
+    _PM.add(createAlwaysInlinerLegacyPass());
     if (!_disableSelectEmitter)
       _PM.add(createPACXXSelectEmitterPass());
     _PM.add(createPACXXIntrinsicSchedulerPass());

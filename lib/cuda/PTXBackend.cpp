@@ -11,7 +11,9 @@
 #include <llvm/Support/TargetRegistry.h>
 #include <llvm/Target/TargetLowering.h>
 
-#include "pacxx/detail/common/transforms/PACXXTransforms.h"
+#include "pacxx/detail/common/transforms/Passes.h"
+#include "pacxx/detail/cuda/transforms/Passes.h"
+
 #include "pacxx/detail/common/Exceptions.h"
 #include "pacxx/detail/cuda/PTXBackend.h"
 #include <llvm/Transforms/PACXXTransforms.h>

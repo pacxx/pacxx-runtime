@@ -23,7 +23,7 @@
 #include "llvm/Transforms/Utils/Cloning.h"
 #include "llvm/Analysis/TargetTransformInfo.h"
 
-#include "ModuleHelper.h"
+#include "pacxx/detail/common/transforms/ModuleHelper.h"
 
 using namespace llvm;
 using namespace std;
@@ -157,7 +157,7 @@ INITIALIZE_PASS_BEGIN(PACXXIntrinsicMapper, "pacxx-intrin-mapper",
 INITIALIZE_PASS_END(PACXXIntrinsicMapper, "pacxx-emit-select",
                     "PACXXIntrinsicMapper: transform pacxx intrinsics to target dependend intrinsics", true, true)
 
-namespace llvm {
+namespace pacxx {
 Pass *createPACXXIntrinsicMapperPass() {
   return new PACXXIntrinsicMapper();
 }

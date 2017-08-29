@@ -22,7 +22,7 @@
 #include "llvm/Transforms/Utils/Cloning.h"
 #include "llvm/Analysis/TargetTransformInfo.h"
 
-#include "ModuleHelper.h"
+#include "pacxx/detail/common/transforms/ModuleHelper.h"
 
 using namespace llvm;
 using namespace std;
@@ -164,7 +164,7 @@ INITIALIZE_PASS_BEGIN(PACXXSelectEmitter, "pacxx_emit_select",
 INITIALIZE_PASS_END(PACXXSelectEmitter, "pacxx_emit_select",
                     "PACXXSelectEmitter: transform masked intrinsics to selects", true, true)
 
-namespace llvm {
+namespace pacxx {
 Pass *createPACXXSelectEmitterPass() {
   return new PACXXSelectEmitter();
 }

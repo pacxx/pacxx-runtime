@@ -1,7 +1,7 @@
-#include "ModuleHelper.h"
+#include "pacxx/detail/common/transforms/ModuleHelper.h"
 
 #include "llvm/Transforms/Utils/BasicBlockUtils.h"
-#include "Log.h"
+#include "pacxx/detail/common/Log.h"
 
 using namespace llvm;
 using namespace pacxx;
@@ -49,7 +49,7 @@ namespace {
 
 char PACXXTargetSelect::ID = 0;
 
-namespace llvm {
+namespace pacxx {
 Pass *createPACXXTargetSelectPass(const SmallVector<std::string, 2>& targets) {
     return new PACXXTargetSelect(targets); }
 }

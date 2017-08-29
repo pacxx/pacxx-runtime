@@ -28,7 +28,7 @@
 #include "llvm/IR/InlineAsm.h"
 #include "llvm/Transforms/PACXXTransforms.h"
 
-#include "ModuleHelper.h"
+#include "pacxx/detail/common/transforms/ModuleHelper.h"
 
 
 using namespace llvm;
@@ -109,6 +109,6 @@ static RegisterPass<PACXXReflectionRemover> X("pacxx_classify",
                                             false, false);
 }
 
-namespace llvm {
+namespace pacxx {
 Pass *createPACXXReflectionRemoverPass() { return new PACXXReflectionRemover(); }
 }

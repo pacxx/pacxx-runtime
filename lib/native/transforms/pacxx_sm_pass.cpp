@@ -6,13 +6,8 @@
 using namespace llvm;
 using namespace pacxx;
 
-namespace llvm {
-    void initializePACXXNativeSMTransformerPass(PassRegistry&);
-}
-
 PACXXNativeSMTransformer::PACXXNativeSMTransformer() : ModulePass(ID) {
     __verbose("created sm pass\n");
-    initializePACXXNativeSMTransformerPass(*PassRegistry::getPassRegistry());
 }
 
 PACXXNativeSMTransformer::~PACXXNativeSMTransformer() {}
@@ -225,13 +220,8 @@ void PACXXNativeSMTransformer::replaceAllUsesInKernel(Function *kernel, Value *f
 
 char PACXXNativeSMTransformer::ID = 0;
 
-INITIALIZE_PASS_BEGIN(PACXXNativeSMTransformer, "sm-transformer",
-                "Shared memory pass", true, true)
-INITIALIZE_PASS_END(PACXXNativeSMTransformer, "sm-transformer",
-                "Shared memory pass", true, true)
-
-namespace llvm {
-    Pass* createPACXXNativeSMPass() { return new PACXXNativeSMTransformer(); }
+namespace pacxx {
+    llvm::Pass* createPACXXNativeSMPass() { return new PACXXNativeSMTransformer(); }
 }
 
 
