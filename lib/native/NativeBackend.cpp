@@ -6,6 +6,7 @@
 #include "pacxx/ModuleLoader.h"
 #include "pacxx/detail/common/Exceptions.h"
 #include "pacxx/detail/common/Common.h"
+#include "pacxx/detail/common/transfroms/PACXXTransforms.h"
 #include <llvm/Analysis/LoopInfo.h>
 #include <llvm/Analysis/LoopPass.h>
 #include <llvm/Analysis/TargetLibraryInfo.h>
@@ -21,8 +22,7 @@
 #include <llvm/Transforms/PACXXTransforms.h>
 #include <llvm/Transforms/Scalar.h>
 #include <llvm/Transforms/Vectorize.h>
-#include "llvm/CodeGen/MachineModuleInfo.h"
-#include <llvm/Transforms/PACXXTransforms.h>
+#include <llvm/CodeGen/MachineModuleInfo.h>
 
 namespace {
 const std::string native_loop_ir(R"(
@@ -311,7 +311,6 @@ std::unique_ptr<Module> NativeBackend::createModule(LLVMContext &Context,
 }
 
 void NativeBackend::applyPasses(Module &M) {
-
   if (!_machine)
     throw common::generic_exception("Can not get target machine");
   if (!_pmInitialized) {
@@ -350,7 +349,6 @@ void NativeBackend::applyPasses(Module &M) {
 
     _PM.add(createVerifierPass());
     builder.populateModulePassManager(_PM);
-    //_PM.add(createPACXXDeadCodeElimPass());
     _pmInitialized = true;
   }
 

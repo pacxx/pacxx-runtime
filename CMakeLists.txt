@@ -12,6 +12,7 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 include_directories(${LLVM_INCLUDE_DIRS})
 include_directories(${TBB_INCLUDE_DIRS})
+include_directories(${RV_INCLUDE_DIR})
 
 set(ENABLE_OPENMP ON)
 if (TBB_FOUND)
@@ -35,13 +36,21 @@ endif(PACXX_USE_OpenMP)
 
 
 #option(BUILD_SHARED "Build PACXX Runtime as shared object" OFF)
+set(PACXX_RV_LIB LLVMRV)
 
 
 set(SOURCE_FILES include/pacxx/Executor.h
         include/pacxx/detail/common/Exceptions.h
         include/pacxx/detail/common/Log.h
+        include/pacxx/detail/common/transforms/PACXXTransforms.h
+        include/pacxx/detail/common/transforms/ModuleHelper.h
+        include/pacxx/detail/common/transforms/CallVisitor.h
+        lib/common/transforms/nvvm_reg.cpp
+        lib/common/transforms/pacxx_intrinsic_mapper.cpp
+        lib/common/transforms/pacxx_reflection_remover.cpp
+        lib/common/transforms/pacxx_target_select.cpp
         include/pacxx/detail/common/Common.h
-        lib/Common.cpp
+        lib/common/Common.cpp
         include/pacxx/detail/CoreInitializer.h
         lib/CoreInitializer.cpp
         include/pacxx/ModuleLoader.h
@@ -53,9 +62,18 @@ set(SOURCE_FILES include/pacxx/Executor.h
         include/pacxx/detail/Kernel.h
         include/pacxx/detail/DeviceBuffer.h
         include/pacxx/detail/common/Meta.h
-        lib/Log.cpp
+        lib/common/Log.cpp
         lib/Executor.cpp
         include/pacxx/detail/common/Timing.h
+        lib/native/transforms/pacxx_intrinsic_scheduler.cpp
+        lib/native/transforms/pacxx_liveness_analysis.h
+        lib/native/transforms/pacxx_liveness_analysis.cpp
+        lib/native/transforms/pacxx_native_barrier.cpp
+        lib/native/transforms/pacxx_native_linker.cpp
+        lib/native/transforms/pacxx_select_emitter.cpp
+        lib/native/transforms/pacxx_sm_pass.h
+        lib/native/transforms/pacxx_sm_pass.cpp
+        lib/native/transforms/SPMDVectorizer.cpp
         include/pacxx/detail/native/NativeBackend.h
         lib/native/NativeBackend.cpp
         include/pacxx/detail/native/NativeRuntime.h
@@ -79,7 +97,10 @@ if (PACXX_USE_CUDA)
     find_package(CUDA REQUIRED)
     set(PACXX_CUDA_BACKEND 1)
     include_directories(${CUDA_TOOLKIT_INCLUDE})
-    set(CUDA_SOURCE_FILES lib/cuda/PTXBackend.cpp
+    set(CUDA_SOURCE_FILES
+            lib/cuda/transforms/nvvm.cpp
+            lib/cuda/transforms/spir.cpp
+            lib/cuda/PTXBackend.cpp
             include/pacxx/detail/cuda/PTXBackend.h
             include/pacxx/detail/cuda/CUDARuntime.h
             lib/cuda/CUDARuntime.cpp
@@ -217,4 +238,4 @@ install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/lib/asm/ DESTINATION lib)
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/ DESTINATION include)
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/cmake/pacxx/ DESTINATION lib/cmake/pacxx)
 
-target_link_libraries(${PROJECT_NAME} PUBLIC ${CUDA_LINK_LIBRARIES} PUBLIC ${PACXX_LLVM_LIBS} PUBLIC ${PACXX_LLVM_SYS_LIBS} PUBLIC ${TBB_LIBRARIES} PUBLIC ${nvdbFile} PUBLIC ${nadbFile} )
+target_link_libraries(${PROJECT_NAME} PUBLIC ${CUDA_LINK_LIBRARIES} PUBLIC ${PACXX_LLVM_LIBS} PUBLIC ${PACXX_LLVM_SYS_LIBS} PUBLIC ${TBB_LIBRARIES} PUBLIC ${nvdbFile} PUBLIC ${nadbFile} PUBLIC ${PACXX_RV_LIB})
