@@ -1,7 +1,7 @@
-#include "pacxx/detail/common/transforms/ModuleHelper.h"
+#include "ModuleHelper.h"
 
 #include "llvm/Transforms/Utils/BasicBlockUtils.h"
-#include "pacxx/detail/common/Log.h"
+#include "Log.h"
 
 using namespace llvm;
 using namespace pacxx;

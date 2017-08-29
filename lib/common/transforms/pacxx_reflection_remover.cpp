@@ -28,7 +28,7 @@
 #include "llvm/IR/InlineAsm.h"
 #include "llvm/Transforms/PACXXTransforms.h"
 
-#include "pacxx/detail/common/transforms/ModuleHelper.h"
+#include "ModuleHelper.h"
 
 
 using namespace llvm;

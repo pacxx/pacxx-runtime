@@ -3,8 +3,8 @@
 #define PACXX_PASS_NAME "PACXXNativeLinker"
 
 #include <llvm/IR/CFG.h>
-#include "pacxx/detail/common/Log.h"
-#include "pacxx/detail/common/transforms/ModuleHelper.h"
+#include "Log.h"
+#include "ModuleHelper.h"
 
 using namespace llvm;
 using namespace std;

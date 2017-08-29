@@ -27,8 +27,8 @@
 #include "llvm/Transforms/PACXXTransforms.h"
 #include "llvm/Transforms/Utils/BasicBlockUtils.h"
 
-#include "pacxx/detail/common/transforms/CallVisitor.h"
-#include "pacxx/detail/common/transforms/ModuleHelper.h"
+#include "CallVisitor.h"
+#include "ModuleHelper.h"
 
 using namespace llvm;
 using namespace std;

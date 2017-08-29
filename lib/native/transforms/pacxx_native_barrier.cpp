@@ -3,7 +3,7 @@
 // and the implementation available at:
 // https://github.com/karrenberg/wfvopencl/blob/master/src/passes/continuationGenerator.cpp
 
-#include "pacxx/detail/common/Log.h"
+#include "Log.h"
 #include "pacxx_liveness_analysis.h"
 
 using namespace llvm;

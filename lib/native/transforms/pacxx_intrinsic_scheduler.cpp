@@ -4,7 +4,7 @@
 * Written by Michael Haidl <michael.haidl@uni-muenster.de>, 2013-2014
 */
 
-#include "llvm/IR/LLVMContext.h"
+#include "../lib/IR/LLVMContextImpl.h"
 #include "llvm/IR/Argument.h"
 #include "llvm/IR/BasicBlock.h"
 #include "llvm/IR/Constants.h"
@@ -31,8 +31,8 @@
 #include "llvm/IR/Dominators.h"
 #include <string>
 
-#include "include/pacxx/detail/common/transforms/CallVisitor.h"
-#include "include/pacxx/detail/common/transforms/ModuleHelper.h"
+#include "CallVisitor.h"
+#include "ModuleHelper.h"
 
 using namespace llvm;
 using namespace std;

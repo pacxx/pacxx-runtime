@@ -6,8 +6,7 @@
 #ifndef LLVM_PACXX_LIVENESS_ANALYSIS_H
 #define LLVM_PACXX_LIVENESS_ANALYSIS_H
 
-#include "pacxx/detail/common/Log.h"
-#include "pacxx/detail/common/transforms/ModuleHelper.h"
+#include "Log.h"
 
 #include "llvm/Pass.h"
 #include "llvm/IR/MDBuilder.h"
@@ -26,7 +25,8 @@
 #include "llvm/Analysis/ValueTracking.h"
 #include "llvm/ADT/SCCIterator.h"
 #include "llvm/IR/Dominators.h"
-#include "llvm/IR/LLVMContext.h"
+#include "../../IR/LLVMContextImpl.h"
+#include "ModuleHelper.h"
 
 using namespace llvm;
 using namespace pacxx;
