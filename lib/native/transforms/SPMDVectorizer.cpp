@@ -154,8 +154,9 @@ bool SPMDVectorizer::runOnModule(Module& M) {
         rv::Config config;
         config.useAVX = featureString.find("+avx") != std::string::npos;
         config.useAVX2 = featureString.find("+avx2") != std::string::npos;
-        config.useAVX2 = featureString.find("+avx512f") != std::string::npos;
+        config.useAVX512 = featureString.find("+avx512f") != std::string::npos;
         config.useNEON = featureString.find("+neon") != std::string::npos;
+        config.useADVSIMD = featureString.find("+neon") != std::string::npos; // FIXME: ?
 
         config.useSLEEF = true;
         config.enableIRPolish = false;
