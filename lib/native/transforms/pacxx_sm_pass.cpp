@@ -187,22 +187,27 @@ void PACXXNativeSMTransformer::createExternalSharedMemoryBuffer(Module &M,
     for (auto GV : globals) {
         Type *GVType = GV->getType()->getElementType();
         Type *sm_type = nullptr;
+        if (GVType->getArrayElementType()->isSingleValueType()) {
+            unsigned vectorWidth = kernel->hasFnAttribute("simd-size") ?
+                                   stoi(kernel->getFnAttribute("simd-size").getValueAsString().str()) : 1;
 
-        unsigned  vectorWidth = kernel->hasFnAttribute("simd-size") ?
-                                stoi(kernel->getFnAttribute("simd-size").getValueAsString().str()) : 1;
+            sm_type = VectorType::get(GVType->getArrayElementType(), vectorWidth);
+        }
+        else
+            sm_type = GVType->getArrayElementType();
 
-        sm_type = VectorType::get(GVType->getArrayElementType(), vectorWidth);
-
-        Value *typeSize = ConstantInt::get(Type::getInt32Ty(M.getContext()), M.getDataLayout().getTypeAllocSize(sm_type));
+        Value *typeSize =
+            ConstantInt::get(Type::getInt32Ty(M.getContext()), M.getDataLayout().getTypeAllocSize(sm_type));
 
         //calc number of elements
         BinaryOperator *div = BinaryOperator::CreateUDiv(sm_size, typeSize, "numElem", sharedMemBB);
-        AllocaInst *sm_alloc = new AllocaInst(sm_type, 0, div,
+        Value *sm_alloc = new AllocaInst(sm_type, 0, div,
                                               "external_sm", sharedMemBB);
-        sm_alloc->setAlignment(M.getDataLayout().getPrefTypeAlignment(sm_type));
-        BitCastInst *cast = new BitCastInst(sm_alloc, GV->getType(), "cast", sharedMemBB);
+        cast<AllocaInst>(sm_alloc)->setAlignment(M.getDataLayout().getPrefTypeAlignment(sm_type));
+        if (sm_alloc->getType() != GV->getType())
+            sm_alloc = new BitCastInst(sm_alloc, GV->getType(), "cast", sharedMemBB);
 
-        replaceAllUsesInKernel(kernel, GV, cast);
+        replaceAllUsesInKernel(kernel, GV, sm_alloc);
     }
 }
 
