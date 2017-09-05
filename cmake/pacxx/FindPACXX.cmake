@@ -140,9 +140,6 @@ endif ()
 
 set(PACXX_DEVICE_FLAGS "-std=c++1z -pacxx -O0 -emit-llvm -D__STDC_CONSTANT_MACROS -D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS -DNDEBUG -D__CUDA_DEVICE_CODE" CACHE "PACXX Device compilation flags" STRING)
 set(PACXX_LINK_FLAGS "-suppress-warnings" CACHE "PACXX bytecode linker flags" STRING)
-set(PACXX_OPT_FLAGS "" CACHE "PACXX bytecode optimizer flags" STRING)
-set(PACXX_OPT_FLAGS_MSP "-pacxx_reflection_cleaner -inline -instcombine" CACHE "PACXX bytecode optimizer flags (MSP)" STRING)
-
 
 function(pacxx_generate_ir targetName srcFile binDir)
 
@@ -163,11 +160,15 @@ function(pacxx_generate_ir targetName srcFile binDir)
         endforeach ()
     endif ()
 
+    #get_target_property(targetDefs ${targetName} COMPILE_DEFINITIONS)
+    get_property(targetDefs TARGET ${targetName} PROPERTY COMPILE_DEFINITIONS)
+    separate_arguments(targetDefs)
     separate_arguments(PACXX_DEVICE_FLAGS)
     add_custom_command(
             OUTPUT ${outFile}
             COMMAND ${PACXX_COMPILER}
             ${PACXX_DEVICE_FLAGS}
+            ${targetDefs}
             -isystem ${PACXX_INCLUDE_DIRECTORY}
             ${device_includes}
             -o ${outFile}
@@ -192,17 +193,15 @@ function(pacxx_embed_ir targetName bcFiles binDir)
     set(mspFile ${binDir}/reflect.bc)
 
     separate_arguments(PACXX_LINK_FLAGS)
-    separate_arguments(PACXX_OPT_FLAGS)
-    separate_arguments(PACXX_OPT_FLAGS_MSP)
+
     separate_arguments(bcFiles)
 
     add_custom_command(
             OUTPUT ${outFile}
             COMMAND ${PACXX_LINK} ${PACXX_LINK_FLAGS} ${bcFiles} -o ${outFile}
-            COMMAND ${PACXX_OPT} ${PACXX_OPT_FLAGS} ${outFile} -o ${outFile}
             WORKING_DIRECTORY ${binDir}
             DEPENDS ${bcFiles}
-            COMMENT "Generating Kernel IR ${PACXX_OPT}")
+            COMMENT "Generating Kernel IR")
 
     add_custom_command(
             OUTPUT ${outFile}.o
@@ -211,37 +210,23 @@ function(pacxx_embed_ir targetName bcFiles binDir)
             DEPENDS ${outFile}
             COMMENT "Preparing Kernel IR for linking")
 
-    add_custom_command(
-            OUTPUT ${mspFile}
-            COMMAND ${PACXX_OPT} ${PACXX_OPT_FLAGS_MSP} ${outFile} -o ${mspFile}
-            DEPENDS ${outFile}
-            WORKING_DIRECTORY ${binDir}
-            COMMENT "Generating MSP IR")
-
-    add_custom_command(
-            OUTPUT ${mspFile}.o
-            COMMAND ${PACXX_COMPILER} -DFILE='"${mspFile}"' -DTAG='reflection' ${PACXX_ASM_WRAPPER} -c -o ${mspFile}.o
-            WORKING_DIRECTORY ${binDir}
-            DEPENDS ${mspFile}
-            COMMENT "Preparing MSP IR for linking")
 
     add_custom_target(${kernelName} DEPENDS ${outFile} ${outFile}.o)
-    add_custom_target(${mspName} DEPENDS ${mspFile} ${mspFile}.o)
-    add_dependencies(${mspName} ${kernelName})
 
     foreach (bcFile ${bcFiles})
         get_filename_component(srcName ${bcFile} NAME)
         add_dependencies(${kernelName} ${srcName}_ir)
     endforeach ()
 
-    add_dependencies(${targetName} ${mspName})
     add_dependencies(${targetName} ${kernelName})
 
-    target_link_libraries(${targetName} PUBLIC ${outFile}.o PUBLIC ${mspFile}.o)
+    target_link_libraries(${targetName} PUBLIC ${outFile}.o)
 endfunction()
 
 function(add_pacxx_to_target targetName binDir srcFiles)
-
+    get_target_property(ALREADY_A_PACXX_TARGET ${targetName} IS_PACXX_TARGET)
+    if (NOT ALREADY_A_PACXX_TARGET EQUAL "1")
+    set_target_properties(${targetName} PROPERTIES IS_PACXX_TARGET 1)
     set(bcFiles "")
     set(srcFiles ${srcFiles} ${ARGN})
 
@@ -258,6 +243,6 @@ function(add_pacxx_to_target targetName binDir srcFiles)
             PUBLIC ${CUDA_LINK_LIBRARIES} PUBLIC ${PACXX_LLVM_LIBS} PUBLIC ${PACXX_LLVM_SYS_LIBS} PUBLIC ${TBB_LIBRARIES})
 
     target_compile_options(${targetName} PUBLIC -Wno-ignored-attributes)
-
+    endif()
 endfunction(add_pacxx_to_target)
 

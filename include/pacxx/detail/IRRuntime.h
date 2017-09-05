@@ -5,7 +5,7 @@
 #ifndef PACXX_V2_IRRUNTIME_H
 #define PACXX_V2_IRRUNTIME_H
 
-#include "../config.h"
+#include "pacxx/pacxx_config.h"
 #include "DeviceBuffer.h"
 #include "Kernel.h"
 #include <llvm/IR/LegacyPassManager.h>

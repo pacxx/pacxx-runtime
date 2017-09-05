@@ -30,10 +30,6 @@ Executor &get_executor(unsigned id) {
 
 unsigned Executor::getID() { return _id; }
 
-void Executor::setMSPModule(std::unique_ptr<llvm::Module> M) {
-  //_runtime->initializeMSP(std::move(M));
-}
-
 ExecutingDevice Executor::getExecutingDeviceType() {
   switch (_runtime->getKind()) {
 #ifdef PACXX_ENABLE_CUDA

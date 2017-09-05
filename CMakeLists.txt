@@ -24,8 +24,6 @@ option(PACXX_USE_OpenMP "use OpenMP instead of TBB" ${ENABLE_OPENMP})
 option(PACXX_USE_CUDA "Build the CUDA backend" ${CUDA_FOUND})
 
 if(PACXX_USE_OpenMP)
-    add_definitions(-D__PACXX_OMP)
-    add_definitions(-DPACXX_DISABLE_TBB)
     add_compile_options(-fopenmp)
     set(OpenMP_REQUIRED ON)
     set(TBB_REQUIRED OFF)
@@ -89,7 +87,7 @@ set(SOURCE_FILES include/pacxx/Executor.h
         include/pacxx/detail/native/NativeKernel.h
         include/pacxx/detail/native/NativeDeviceBuffer.h
         lib/native/NativeDeviceBuffer.cpp
-        include/pacxx/config.h
+        include/pacxx/pacxx_config.h
         lib/Kernel.cpp
         lib/IRRuntime.cpp
         lib/native/NativeEvent.cpp)
@@ -130,13 +128,13 @@ else (PACXX_USE_CUDA)
     set(PACXX_CUDA_BACKEND 0)
 endif (PACXX_USE_CUDA)
 
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config/config.h.in ${CMAKE_CURRENT_SOURCE_DIR}/include/pacxx/config.h)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config/config.h.in ${CMAKE_CURRENT_SOURCE_DIR}/include/pacxx/pacxx_config.h)
 configure_file(cmake/config/FindPACXXConfig.cmake.in ${CMAKE_CURRENT_SOURCE_DIR}/cmake/pacxx/FindPACXXConfig.cmake)
 
 
 set(CMAKE_CXX_STANDARD 14)
 
-add_compile_options(-include ${CMAKE_CURRENT_SOURCE_DIR}/include/pacxx/config.h -Wno-attributes)
+add_compile_options(-include ${CMAKE_CURRENT_SOURCE_DIR}/include/pacxx/pacxx_config.h -Wno-attributes)
 
 #add_definitions(${LLVM_DEFINITIONS} -D__PACXX_RUNTIME_LINKING)
 add_definitions(${LLVM_DEFINITIONS})
@@ -228,6 +226,10 @@ add_dependencies(${PROJECT_NAME} ${nadbFile}_target)
 add_custom_command(TARGET ${PROJECT_NAME}
         POST_BUILD
         COMMAND ${CMAKE_BINARY_DIR}/bin/llvm-as ${CMAKE_CURRENT_SOURCE_DIR}/lib/bitcode/syscalls.ll -o ${CMAKE_BINARY_DIR}/syscalls.bc)
+
+if(PACXX_USE_OpenMP)
+    target_compile_definitions(${PROJECT_NAME} PUBLIC -D__PACXX_OMP PUBLIC -DPACXX_DISABLE_TBB)
+endif()
 
 #add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD COMMAND cp ${CMAKE_CURRENT_SOURCE_DIR}/lib/asm/embed_/*.S ${CMAKE_BINARY_DIR}/)
 

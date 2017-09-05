@@ -26,7 +26,7 @@ public:
 
   auto getFuture() { return _promise.get_future(); }
 
-  void fulfill() { return _promise.set_value(std::move(_bound)); }
+  void fulfill() { return _promise.set_value(std::move(5)); }
 
 private:
   std::promise<PromisedTy> _promise;

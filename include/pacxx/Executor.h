@@ -5,7 +5,7 @@
 #ifndef PACXX_V2_EXECUTOR_H
 #define PACXX_V2_EXECUTOR_H
 
-#include "pacxx/config.h"
+#include "pacxx/pacxx_config.h"
 #include "CodePolicy.h"
 #include "ModuleLoader.h"
 #include "Promise.h"
@@ -35,13 +35,9 @@
 #ifdef __PACXX_RUNTIME_LINKING
 const char *llvm_start = nullptr;
 const char *llvm_end = nullptr;
-const char *reflection_start = nullptr;
-const char *reflection_end = nullptr;
 #else
 extern const char llvm_start[];
 extern const char llvm_end[];
-extern const char reflection_start[];
-extern const char reflection_end[];
 #endif
 
 #ifndef PACXX_ENABLE_CUDA
@@ -106,8 +102,6 @@ public:
     if (module_bytes == "") {
       auto M = loader.loadInternal(llvm_start, llvm_end - llvm_start);
       instance.setModule(std::move(M));
-      instance.setMSPModule(
-          loader.loadInternal(reflection_start, reflection_end - reflection_start));
     } else {
       ModuleLoader loader(instance.getLLVMContext());
       auto M = loader.loadInternal(module_bytes.data(), module_bytes.size());
@@ -141,8 +135,6 @@ public:
     pacxx::v2::codegenKernel<L, targ>(callable);
     run_with_callback(callable, config, callback);
   }
-
-  void setMSPModule(std::unique_ptr<llvm::Module> M);
 
   template<typename T>
   auto getVectorizationWidth() {
