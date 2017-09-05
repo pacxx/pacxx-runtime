@@ -216,6 +216,8 @@ set(CMAKE_SHARED_LINKER_FLAGS "-Wl,--allow-shlib-undefined")
 
 add_library(${PROJECT_NAME} ${SOURCE_FILES} ${CUDA_SOURCE_FILES})
 
+add_dependencies(${PROJECT_NAME} RV)
+
 add_dependencies(${nvdbFile}_target clang)
 add_dependencies(${nadbFile}_target clang)
 
