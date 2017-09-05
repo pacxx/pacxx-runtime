@@ -59,7 +59,6 @@ void NativeKernel::launch() {
   std::vector<unsigned> times(_runs);
 
 #ifdef __PACXX_OMP
-  __verbose("Using OpenMP \n");
   for(unsigned i = 0; i < _runs; ++i) {
     start = std::chrono::high_resolution_clock::now();
     #pragma omp parallel for collapse(3)
@@ -74,7 +73,6 @@ void NativeKernel::launch() {
     times[i] = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
   }
 #else
-  __verbose("Using TBB \n");
   for (unsigned i = 0; i < _runs; ++i) {
     start = std::chrono::high_resolution_clock::now();
     tbb::parallel_for(size_t(0), _config.blocks.z, [&](size_t bidz) {
@@ -100,7 +98,7 @@ void NativeKernel::launch() {
   auto avg_v = average(first, last);
   auto dev_v = deviation(first, last);
 
-  __message("Time measured in runtime : ",
+  __verbose("Time measured in runtime : ",
             med_v,
             " (",
             min_v,
