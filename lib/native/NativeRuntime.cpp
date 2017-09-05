@@ -124,11 +124,6 @@ llvm::legacy::PassManager &NativeRuntime::getPassManager() {
 
 size_t NativeRuntime::getPreferedVectorSize(size_t dtype_size) {
 
-  for (auto &p : _host_features) {
-    if (p.second)
-      __verbose(p.first().str());
-  }
-
   if (_host_features["avx512f"])
     return 64 / dtype_size;
   if (_host_features["avx"] || _host_features["avx2"])
