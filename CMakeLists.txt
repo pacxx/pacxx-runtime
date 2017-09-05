@@ -12,6 +12,19 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 include_directories(${LLVM_INCLUDE_DIRS})
 include_directories(${TBB_INCLUDE_DIRS})
+
+if (NOT DEFINED RV_INCLUDE_DIR)
+    find_file(RV_HEADER rv.h PATHS ${CMAKE_CURRENT_SOURCE_DIR}/../../tools/rv/include
+              DOC "RV header file" NO_DEFAULT_PATH)
+
+    if (EXISTS ${RV_HEADER})
+        mark_as_advanced(RV_HEADER)
+        set(RV_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../../tools/rv/include)
+    else ()
+        message(FATAL_ERROR "RV Header could not be found!")
+    endif ()
+endif()
+
 include_directories(${RV_INCLUDE_DIR})
 
 set(ENABLE_OPENMP ON)
