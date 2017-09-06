@@ -14,7 +14,7 @@ include_directories(${LLVM_INCLUDE_DIRS})
 include_directories(${TBB_INCLUDE_DIRS})
 
 if (NOT DEFINED RV_INCLUDE_DIR)
-    find_file(RV_HEADER rv.h PATHS ${CMAKE_CURRENT_SOURCE_DIR}/../../tools/rv/include
+    find_file(RV_HEADER rv.h PATHS ${CMAKE_CURRENT_SOURCE_DIR}/../../tools/rv/include/rv
               DOC "RV header file" NO_DEFAULT_PATH)
 
     if (EXISTS ${RV_HEADER})
