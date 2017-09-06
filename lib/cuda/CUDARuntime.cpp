@@ -161,10 +161,6 @@ void CUDARuntime::requestIRTransformation(Kernel &K) {
 
 void CUDARuntime::synchronize() { SEC_CUDA_CALL(cudaDeviceSynchronize()); }
 
-llvm::legacy::PassManager &CUDARuntime::getPassManager() {
-  return _compiler->getPassManager();
-}
-
 size_t CUDARuntime::getPreferedVectorSize(size_t dtype_size) {
   return 1;
 }

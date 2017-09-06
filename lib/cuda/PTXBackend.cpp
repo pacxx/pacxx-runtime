@@ -42,8 +42,7 @@ using namespace llvm;
 namespace pacxx {
 namespace v2 {
 PTXBackend::PTXBackend()
-    : _target(nullptr), _cpu("sm_20"), _features("+ptx40"),
-      _pmInitialized(false) {}
+    : _target(nullptr), _cpu("sm_20"), _features("+ptx40"){}
 
 void PTXBackend::initialize(unsigned CC) {
   _cpu = "sm_" + std::to_string(CC);
@@ -105,8 +104,9 @@ std::unique_ptr<llvm::Module> PTXBackend::prepareModule(llvm::Module &M) {
   PM.add(createBreakCriticalEdgesPass());
   PM.add(createConstantMergePass());
 
-  auto PRP =createPACXXReflectionPass();
-  PM.add(PRP);  PM.add(createAlwaysInlinerLegacyPass());
+  auto PRP = createPACXXReflectionPass();
+  PM.add(PRP);
+  PM.add(createAlwaysInlinerLegacyPass());
 
   PM.add(createPACXXDeadCodeElimPass());
   PM.add(createScalarizerPass());
@@ -140,7 +140,7 @@ std::unique_ptr<llvm::Module> PTXBackend::prepareModule(llvm::Module &M) {
 
   PM.run(M);
 
-  auto RM = reinterpret_cast<PACXXReflection*>(PRP)->getReflectionModule();
+  auto RM = reinterpret_cast<PACXXReflection *>(PRP)->getReflectionModule();
 
   PassManagerBuilder builder;
   builder.OptLevel = 3;
@@ -156,67 +156,62 @@ std::unique_ptr<llvm::Module> PTXBackend::prepareModule(llvm::Module &M) {
 std::string PTXBackend::compile(llvm::Module &M) {
   Triple TheTriple = Triple(M.getTargetTriple());
   std::string Error;
-  llvm::raw_svector_ostream _ptxOS(_ptxString);
+  SmallString<128> ptxString;
+  llvm::raw_svector_ostream _ptxOS(ptxString);
   if (!_target)
     _target = TargetRegistry::lookupTarget("nvptx64", TheTriple, Error);
   if (!_target) {
     throw common::generic_exception(Error);
   }
 
+  llvm::legacy::PassManager PM;
+  TargetLibraryInfoImpl TLII(Triple(M.getTargetTriple()));
+  PM.add(new TargetLibraryInfoWrapperPass(TLII));
+  PM.add(createReassociatePass());
+  PM.add(createInferAddressSpacesPass());
+  PM.add(createConstantPropagationPass());
+  PM.add(createSCCPPass());
+  PM.add(createConstantHoistingPass());
+  PM.add(createCorrelatedValuePropagationPass());
+  PM.add(createInstructionCombiningPass());
+  PM.add(createLICMPass());
+  PM.add(createInferAddressSpacesPass());
+  PM.add(createIndVarSimplifyPass());
+  PM.add(createLoopRotatePass());
+  PM.add(createLoopSimplifyPass());
+  PM.add(createLoopInstSimplifyPass());
+  PM.add(createLCSSAPass());
+  PM.add(createLoopStrengthReducePass());
+  PM.add(createLICMPass());
+  PM.add(createLoopUnrollPass(2000, 32));
+  PM.add(createStraightLineStrengthReducePass());
+  PM.add(createCorrelatedValuePropagationPass());
+  PM.add(createConstantPropagationPass());
+  PM.add(createInstructionCombiningPass());
+  PM.add(createCFGSimplificationPass());
+  PM.add(createInstructionCombiningPass());
+  // PM.add(createPACXXStaticEvalPass());
+  PM.add(createPACXXNvvmRegPass(true));
 
-  _ptxString.clear();
-  if (!_pmInitialized) {
-    TargetLibraryInfoImpl TLII(Triple(M.getTargetTriple()));
-    _PM.add(new TargetLibraryInfoWrapperPass(TLII));
-    _PM.add(createReassociatePass());
-    _PM.add(createInferAddressSpacesPass());
-    _PM.add(createConstantPropagationPass());
-    _PM.add(createSCCPPass());
-    _PM.add(createConstantHoistingPass());
-    _PM.add(createCorrelatedValuePropagationPass());
-    _PM.add(createInstructionCombiningPass());
-    _PM.add(createLICMPass());
-    _PM.add(createInferAddressSpacesPass());
-    _PM.add(createIndVarSimplifyPass());
-    _PM.add(createLoopRotatePass());
-    _PM.add(createLoopSimplifyPass());
-    _PM.add(createLoopInstSimplifyPass());
-    _PM.add(createLCSSAPass());
-    _PM.add(createLoopStrengthReducePass());
-    _PM.add(createLICMPass());
-    _PM.add(createLoopUnrollPass(2000, 32));
-    _PM.add(createStraightLineStrengthReducePass());
-    _PM.add(createCorrelatedValuePropagationPass());
-    _PM.add(createConstantPropagationPass());
-    _PM.add(createInstructionCombiningPass());
-    _PM.add(createCFGSimplificationPass());
-    _PM.add(createInstructionCombiningPass());
-    //_PM.add(createPACXXStaticEvalPass());
-    _PM.add(createPACXXNvvmRegPass(true));
-
-    if (common::GetEnv("PACXX_PTX_BACKEND_O3") != ""){
-      PassManagerBuilder builder;
-      builder.OptLevel = 3;
-      builder.populateModulePassManager(_PM);
-    }
-
-    _machine.reset(_target->createTargetMachine(
-        TheTriple.getTriple(), _cpu, _features, _options, Reloc::Model::Static,
-        CodeModel::Model::Medium, CodeGenOpt::None));
-
-    if (_machine->addPassesToEmitFile(
-            _PM, _ptxOS, TargetMachine::CGFT_AssemblyFile, false)) {
-      throw common::generic_exception(
-          "target does not support generation of this file type!\n");
-    }
-
-    _pmInitialized = true;
+  if (common::GetEnv("PACXX_PTX_BACKEND_O3") != "") {
+    PassManagerBuilder builder;
+    builder.OptLevel = 3;
+    builder.populateModulePassManager(PM);
   }
 
-  _PM.run(M);
-  return _ptxString.str().str();
+  _machine.reset(_target->createTargetMachine(
+      TheTriple.getTriple(), _cpu, _features, _options, Reloc::Model::Static,
+      CodeModel::Model::Medium, CodeGenOpt::None));
+
+  if (_machine->addPassesToEmitFile(
+      PM, _ptxOS, TargetMachine::CGFT_AssemblyFile, false)) {
+    throw common::generic_exception(
+        "target does not support generation of this file type!\n");
+  }
+
+  PM.run(M);
+  return ptxString.str().str();
 }
 
-llvm::legacy::PassManager &PTXBackend::getPassManager() { return _PM; }
 }
 }

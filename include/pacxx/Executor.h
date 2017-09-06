@@ -117,7 +117,9 @@ public:
 
   Executor(Executor &&other);
 
-  ~Executor(){}
+  ~Executor(){
+    __message("removing executor ", _id);
+  }
 
 private:
   std::string cleanName(const std::string &name);
@@ -248,8 +250,6 @@ public:
   IRRuntime &rt();
 
   void synchronize();
-
-  llvm::legacy::PassManager &getPassManager();
 
   template<typename PromisedTy, typename... Ts>
   auto &getPromise(Ts &&... args) {

@@ -8,3 +8,8 @@
 #include "pacxx/detail/codegen/Types.h"
 #include "pacxx/detail/codegen/Kernel.h"
 #include "pacxx/Executor.h"
+
+
+extern "C" int __real_main(int argc, char* argv[]);
+
+extern "C" int __wrap_main(int argc, char* argv[]);

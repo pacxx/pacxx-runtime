@@ -230,6 +230,8 @@ set(CMAKE_SHARED_LINKER_FLAGS "-Wl,--allow-shlib-undefined")
 
 add_library(${PROJECT_NAME} ${SOURCE_FILES} ${CUDA_SOURCE_FILES})
 
+add_library(pacxx_main STATIC lib/common/WrappedMain.cpp)
+
 add_dependencies(${PROJECT_NAME} RV)
 
 add_dependencies(${nvdbFile}_target clang)
@@ -253,6 +255,7 @@ endif()
 file(GLOB PACXX_FILES ${CMAKE_BINARY_DIR}/*.S)
 
 install(TARGETS ${PROJECT_NAME} DESTINATION lib)
+install(TARGETS pacxx_main DESTINATION lib)
 
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/lib/asm/ DESTINATION lib)
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/ DESTINATION include)

@@ -118,10 +118,6 @@ void NativeRuntime::requestIRTransformation(Kernel &K) {
 
 void NativeRuntime::synchronize() {}
 
-llvm::legacy::PassManager &NativeRuntime::getPassManager() {
-  return _compiler->getPassManager();
-}
-
 size_t NativeRuntime::getPreferedVectorSize(size_t dtype_size) {
 
   if (_host_features["avx512f"])

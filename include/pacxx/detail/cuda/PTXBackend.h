@@ -28,8 +28,6 @@ public:
 
   std::unique_ptr<llvm::Module> prepareModule(llvm::Module &M);
 
-  llvm::legacy::PassManager &getPassManager();
-
   std::string compile(llvm::Module &M);
 
 private:
@@ -37,9 +35,6 @@ private:
   llvm::TargetOptions _options;
   std::unique_ptr<llvm::TargetMachine> _machine;
   std::string _cpu, _features;
-  llvm::legacy::PassManager _PM;
-  llvm::SmallString<128> _ptxString;
-  bool _pmInitialized;
 };
 }
 }

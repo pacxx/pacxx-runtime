@@ -100,10 +100,6 @@ using namespace llvm;
 
 namespace pacxx {
 
-namespace v2{
-  extern bool __isTearingDown;
-}
-
 namespace common {
 template <typename T>
 void dumpToLog(const T &V, std::string prefix = "", const char *file = "",
@@ -128,8 +124,6 @@ private:
   Log();
   virtual ~Log();
 
-  friend void v2::pacxxTearDown();
-
 public:
   void setStream(std::ostream &stream) { output.rdbuf(stream.rdbuf()); }
 
@@ -137,8 +131,6 @@ public:
 
   template <LOG_LEVEL::LEVEL debug_level = LOG_LEVEL::info, typename... Params>
   void print(const char *file, int line, Params &&... args) {
-
-    if (v2::__isTearingDown) return;
 
     if (_silent)
       return;

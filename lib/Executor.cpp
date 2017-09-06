@@ -74,8 +74,6 @@ IRRuntime &Executor::rt() { return *_runtime; }
 
 void Executor::synchronize() { _runtime->synchronize(); }
 
-llvm::legacy::PassManager &Executor::getPassManager() { return _runtime->getPassManager(); }
-
 }
 }
 

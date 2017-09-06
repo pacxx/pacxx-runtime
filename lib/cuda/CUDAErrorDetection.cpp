@@ -19,12 +19,8 @@ namespace pacxx {
 
 namespace v2 {
 
-extern bool __isTearingDown;
-
 bool checkCUDACall(CUresult result, char const *const func,
                    const char *const file, int const line) {
-  if (__isTearingDown) return true;
-
   if (result != cudaError_enum::CUDA_SUCCESS) {
     throw common::generic_exception(
         common::to_string("CUDA (driver api) error: ", func, " failed! ",
@@ -37,8 +33,6 @@ bool checkCUDACall(CUresult result, char const *const func,
 
 bool checkCUDACall(cudaError_t result, char const *const func,
                    const char *const file, int const line) {
-  if (__isTearingDown) return true;
-
   if (result != cudaError::cudaSuccess) {
     throw common::generic_exception(
         common::to_string("CUDA (runtime api) error: ", func, " failed! ",

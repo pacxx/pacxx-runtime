@@ -62,8 +62,6 @@ public:
 
   virtual void synchronize() = 0;
 
-  virtual llvm::legacy::PassManager &getPassManager() = 0;
-
   virtual bool isSupportingDoublePrecission(){ return true; }
 
 protected:
