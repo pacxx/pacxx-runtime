@@ -15,8 +15,8 @@ namespace common {
 //  }
 
 Log &Log::get() {
-  static Log the_log;
-  return the_log;
+  static Log* the_log = new Log();
+  return *the_log;
 }
 
 Log::Log() : _silent(false), _no_warnings(false), output(std::cout) {

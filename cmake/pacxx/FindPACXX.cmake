@@ -138,6 +138,8 @@ else ()
     message(STATUS "PACXX includes - Found")
 endif ()
 
+set(PACXX_FOUND 1)
+
 set(PACXX_DEVICE_FLAGS "-std=c++1z -pacxx -O0 -emit-llvm -D__STDC_CONSTANT_MACROS -D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS -DNDEBUG -D__CUDA_DEVICE_CODE" CACHE "PACXX Device compilation flags" STRING)
 set(PACXX_LINK_FLAGS "-suppress-warnings" CACHE "PACXX bytecode linker flags" STRING)
 

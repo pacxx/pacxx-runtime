@@ -51,6 +51,8 @@ namespace v2 {
 
 class Executor;
 
+static void pacxxTearDown();
+
 enum ExecutingDevice {
   GPUNvidia,
   CPU
@@ -93,6 +95,10 @@ public:
 
   static Executor &Create(std::unique_ptr<IRRuntime> rt, std::string module_bytes = "") {
     auto &executors = getExecutors();
+
+    if (executors.size() == 0)
+      std::atexit(&pacxxTearDown);
+
     executors.emplace_back(std::move(rt));
     auto &instance = executors.back();
 
@@ -114,6 +120,10 @@ public:
   Executor(std::unique_ptr<IRRuntime> &&rt);
 
   Executor(Executor &&other);
+
+  ~Executor(){
+    __message("removing executor ", _id);
+  }
 
 private:
   std::string cleanName(const std::string &name);
@@ -285,6 +295,14 @@ private:
   std::vector<std::unique_ptr<Event>> _events;
   unsigned _id;
 };
+
+static void pacxxTearDown(){
+  auto& executors = Executor::getExecutors();
+  auto& log = common::Log::get();
+  executors.clear();
+  delete &executors;
+  delete &log;
+}
 }
 }
 
