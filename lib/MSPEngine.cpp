@@ -16,7 +16,7 @@ using namespace llvm;
 namespace pacxx {
 namespace v2 {
 
-MSPEngine::MSPEngine() : _engine(nullptr), _disabled(true) {}
+MSPEngine::MSPEngine() :  _disabled(true), _engine(nullptr) {}
 
 void MSPEngine::initialize(std::unique_ptr<llvm::Module> M) {
   _mspModule = M.get();
@@ -54,12 +54,10 @@ size_t MSPEngine::getArgBufferSize(const llvm::Function &KF, Kernel &kernel) {
   if (!kernel.requireStaging())
     return hostArgBufferSize;
   __verbose("reading ArgBufferSize for function: ", KF.getName().str());
-  bool kernelHasStagedFunction = false;
   auto &M = *KF.getParent();
   if (auto RF = M.getFunction("__pacxx_reflect")) {
     for (auto U : RF->users()) {
       if (CallInst *CI = dyn_cast<CallInst>(U)) {
-        int64_t value = 0;
         if (CI->getParent()->getParent() == &KF) {
           if (MDNode *MD = CI->getMetadata("pacxx.reflect.stage")) {
             auto *ci32 = dyn_cast<ConstantInt>(

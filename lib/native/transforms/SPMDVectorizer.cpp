@@ -93,8 +93,6 @@ void SPMDVectorizer::getAnalysisUsage(AnalysisUsage &AU) const {
 
 bool SPMDVectorizer::runOnModule(Module& M) {
 
-    auto &DL = M.getDataLayout();
-
     bool kernelsVectorized = true;
 
     auto kernels = getTagedFunctions(&M, "nvvm.annotations", "kernel");
@@ -384,7 +382,6 @@ void SPMDVectorizer::prepareForVectorization(Function *kernel, rv::Vectorization
 
     Module *M = kernel->getParent();
 
-    auto &DL = M->getDataLayout();
   // test code for alloca in AS 3
   struct AllocaRewriter : public InstVisitor<AllocaRewriter>{
     void visitAllocaInst(AllocaInst& I){

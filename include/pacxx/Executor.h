@@ -15,6 +15,7 @@
 #include "pacxx/detail/KernelArgument.h"
 #include "pacxx/detail/KernelConfiguration.h"
 #include "pacxx/detail/common/Exceptions.h"
+#include "pacxx/detail/common/TearDown.h"
 #include "pacxx/detail/common/Log.h"
 #ifdef PACXX_ENABLE_CUDA
 #include "pacxx/detail/cuda/CUDARuntime.h"
@@ -50,8 +51,6 @@ namespace pacxx {
 namespace v2 {
 
 class Executor;
-
-static void pacxxTearDown();
 
 enum ExecutingDevice {
   GPUNvidia,
@@ -96,9 +95,6 @@ public:
   static Executor &Create(std::unique_ptr<IRRuntime> rt, std::string module_bytes = "") {
     auto &executors = getExecutors();
 
-    if (executors.size() == 0)
-      std::atexit(&pacxxTearDown);
-
     executors.emplace_back(std::move(rt));
     auto &instance = executors.back();
 
@@ -121,9 +117,7 @@ public:
 
   Executor(Executor &&other);
 
-  ~Executor(){
-    __message("removing executor ", _id);
-  }
+  ~Executor(){}
 
 private:
   std::string cleanName(const std::string &name);
@@ -296,13 +290,6 @@ private:
   unsigned _id;
 };
 
-static void pacxxTearDown(){
-  auto& executors = Executor::getExecutors();
-  auto& log = common::Log::get();
-  executors.clear();
-  delete &executors;
-  delete &log;
-}
 }
 }
 

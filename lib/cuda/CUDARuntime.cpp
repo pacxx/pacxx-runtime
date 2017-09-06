@@ -20,7 +20,7 @@ namespace pacxx {
 namespace v2 {
 CUDARuntime::CUDARuntime(unsigned dev_id)
     : IRRuntime(RuntimeKind::RK_CUDA), _context(nullptr), _compiler(std::make_unique<CompilerT>()),
-      _delayed_compilation(false), _dev_props(16) {
+      _dev_props(16), _delayed_compilation(false) {
   SEC_CUDA_CALL(cuInit(0));
   CUcontext old;
   SEC_CUDA_CALL(cuCtxGetCurrent(&old)); // check if there is already a context

@@ -12,7 +12,7 @@ namespace v2 {
 
 Kernel::Kernel(IRRuntime &runtime, std::string name)
     : _runtime_ref(runtime), _staged_values_changed(false),
-      _disable_staging(false), _name(name) {
+      _name(name),_disable_staging(false) {
   auto &M = _runtime_ref.getModule();
   auto F = M.getFunction(_name);
   size_t offset = 0;
@@ -37,7 +37,7 @@ KernelConfiguration Kernel::getConfiguration() const { return _config; }
 
 void Kernel::setCallback(std::function<void()> callback) {
   _callback = callback;
-};
+}
 
 void Kernel::setStagedValue(int ref, long long value, bool inScope) {
   auto old = _staged_values[ref];

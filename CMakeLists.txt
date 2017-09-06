@@ -103,7 +103,8 @@ set(SOURCE_FILES include/pacxx/Executor.h
         include/pacxx/pacxx_config.h
         lib/Kernel.cpp
         lib/IRRuntime.cpp
-        lib/native/NativeEvent.cpp)
+        lib/native/NativeEvent.cpp
+        lib/common/TearDown.cpp)
 
 
 if (PACXX_USE_CUDA)

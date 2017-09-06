@@ -95,10 +95,15 @@ static void pacxx_log_print(const char *file, int line, Params &&... args);
 #include "llvm/Support/raw_ostream.h"
 
 #include "Common.h"
-
+#include "TearDown.h"
 using namespace llvm;
 
 namespace pacxx {
+
+namespace v2{
+  extern bool __isTearingDown;
+}
+
 namespace common {
 template <typename T>
 void dumpToLog(const T &V, std::string prefix = "", const char *file = "",
@@ -123,6 +128,8 @@ private:
   Log();
   virtual ~Log();
 
+  friend void v2::pacxxTearDown();
+
 public:
   void setStream(std::ostream &stream) { output.rdbuf(stream.rdbuf()); }
 
@@ -130,6 +137,8 @@ public:
 
   template <LOG_LEVEL::LEVEL debug_level = LOG_LEVEL::info, typename... Params>
   void print(const char *file, int line, Params &&... args) {
+
+    if (v2::__isTearingDown) return;
 
     if (_silent)
       return;
@@ -193,6 +202,8 @@ public:
         common::replace_substring(ss.str(), "\n", "\n" + replacement);
 
     SMDiagnostic msg(file_line.str(), kind, msg_str);
+
+
     if (kind == SourceMgr::DiagKind::DK_Error)
       msg.print(program.c_str(), errs());
     else

@@ -43,7 +43,7 @@ void CUDAKernel::launch() {
   __verbose("setting kernel arguments");
   _launch_args.clear(); // remove old args first
   _launch_args.push_back(CU_LAUNCH_PARAM_BUFFER_POINTER);
-  _launch_args.push_back((void *) (_lambdaPtr));
+  _launch_args.push_back(const_cast<void*>(_lambdaPtr));
   _launch_args.push_back(CU_LAUNCH_PARAM_BUFFER_SIZE);
   _launch_args.push_back(reinterpret_cast<void *>(&_argBufferSize));
   _launch_args.push_back(CU_LAUNCH_PARAM_END);
