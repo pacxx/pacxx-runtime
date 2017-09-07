@@ -28,6 +28,10 @@ using namespace llvm;
 using namespace std;
 using namespace pacxx;
 
+namespace llvm{
+void initializePACXXSelectEmitterPass(PassRegistry&);
+}
+
 namespace {
 
 struct PACXXSelectEmitter : public ModulePass {

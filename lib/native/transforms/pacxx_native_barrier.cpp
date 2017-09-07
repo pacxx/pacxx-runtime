@@ -9,6 +9,10 @@
 using namespace llvm;
 using namespace pacxx;
 
+namespace llvm{
+ void initializePACXXNativeBarrierPass(PassRegistry&);
+}
+
 
 class PACXXNativeBarrier : public ModulePass {
 

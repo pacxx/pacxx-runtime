@@ -29,6 +29,10 @@ using namespace llvm;
 using namespace std;
 using namespace pacxx;
 
+namespace llvm {
+  void initializePACXXIntrinsicMapperPass(PassRegistry&);
+}
+
 namespace {
 
 static bool isPACXXIntrinsic(Intrinsic::ID id){

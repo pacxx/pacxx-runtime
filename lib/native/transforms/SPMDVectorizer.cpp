@@ -35,6 +35,9 @@ using namespace llvm;
 using namespace std;
 using namespace pacxx;
 
+namespace llvm {
+void initializeSPMDVectorizerPass(PassRegistry&);
+}
 
 namespace {
 
@@ -120,28 +123,21 @@ bool SPMDVectorizer::runOnModule(Module& M) {
         rv::PlatformInfo platformInfo(M, TTI, TLI);
 
         for (Function &func : platformInfo.getModule()) {
-            if (func.getName() == "llvm.pacxx.barrier0") {
-                rv::VectorMapping mapping(
-                        &func,
-                        &func,
-                        0,
-                        -1,
-                        rv::VectorShape::uni(),
-                        {rv::VectorShape::uni()}
-                );
-                platformInfo.addSIMDMapping(mapping);
+          if (func.isIntrinsic()) {
+            auto IntrinID = func.getIntrinsicID();
+            if (IntrinID == Intrinsic::pacxx_barrier0) {
+              rv::VectorMapping mapping(&func, &func, 0, -1, rv::VectorShape::uni(), {rv::VectorShape::uni()});
+              platformInfo.addSIMDMapping(mapping);
+            } else if (IntrinID == Intrinsic::lifetime_start || IntrinID == Intrinsic::lifetime_end) {
+              rv::VectorMapping mapping(&func, &func, 0, -1, rv::VectorShape::uni(),
+                                        {rv::VectorShape::uni(), rv::VectorShape::uni()});
+              platformInfo.addSIMDMapping(mapping);
+
+              for (auto U : func.users())
+                cast<CallInst>(U)->eraseFromParent();
+
             }
-            else if (func.getName() == "llvm.lifetime.start" || func.getName() == "llvm.lifetime.end") {
-               rv::VectorMapping mapping(
-                       &func,
-                       &func,
-                       0,
-                       -1,
-                       rv::VectorShape::uni(),
-                       {rv::VectorShape::uni(), rv::VectorShape::uni()}
-               );
-               platformInfo.addSIMDMapping(mapping);
-            }
+          }
         }
 
         Function *vectorizedKernel = createVectorizedKernelHeader(&M, scalarCopy);

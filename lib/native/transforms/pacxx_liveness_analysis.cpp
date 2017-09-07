@@ -8,10 +8,6 @@
 using namespace llvm;
 using namespace pacxx;
 
-namespace llvm {
-void initializePACXXNativeLivenessAnalyzerPass(PassRegistry&);
-}
-
 PACXXNativeLivenessAnalyzer::PACXXNativeLivenessAnalyzer() : FunctionPass(ID) {
   initializePACXXNativeLivenessAnalyzerPass(*PassRegistry::getPassRegistry());
 }

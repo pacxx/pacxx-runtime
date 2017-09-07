@@ -224,6 +224,7 @@ public:
     case IRRuntime::RuntimeKind::RK_Native:
       return *cast<NativeRuntime>(_runtime.get())->template allocateMemory(count,
                                                                   host_ptr, mode);
+    default: llvm_unreachable("this runtime type is not defined!");
     }
 
     throw pacxx::common::generic_exception("unreachable code");
@@ -277,6 +278,7 @@ public:
     case IRRuntime::RuntimeKind::RK_Native:
       event.reset(new NativeEvent());
       break;
+    default:llvm_unreachable("this runtime type is not defined!");
     }
     return *event;
   }

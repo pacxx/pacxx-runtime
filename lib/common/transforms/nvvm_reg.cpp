@@ -254,6 +254,7 @@ private:
     }
 
     void visitStoreInst(StoreInst &SI) {
+      return;
       auto addr = SI.getPointerOperand();
       if (auto GEP = dyn_cast<GetElementPtrInst>(addr)) {
         if (GEP->getPointerOperandType()->getPointerElementType()->isAggregateType()) {
@@ -263,6 +264,7 @@ private:
     }
 
     void visitLoadInst(LoadInst &LI) {
+      return;
       auto addr = LI.getPointerOperand();
       if (auto GEP = dyn_cast<GetElementPtrInst>(addr)) {
         if (GEP->getPointerOperandType()->getPointerElementType()->isAggregateType()) {
