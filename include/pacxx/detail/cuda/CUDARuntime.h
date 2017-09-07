@@ -48,6 +48,8 @@ public:
 
   virtual size_t getPreferedVectorSize(size_t dtype_size) override;
 
+  virtual size_t getPreferedVectorSizeInBytes() override;
+
   virtual size_t getConcurrentCores() override;
 
   virtual bool supportsUnifiedAddressing() override;

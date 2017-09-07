@@ -44,6 +44,8 @@ public:
 
   virtual size_t getPreferedVectorSize(size_t dtype_size) = 0;
 
+  virtual size_t getPreferedVectorSizeInBytes() = 0;
+
   virtual size_t getConcurrentCores() = 0;
 
   virtual bool supportsUnifiedAddressing() = 0;

@@ -132,6 +132,20 @@ size_t NativeRuntime::getPreferedVectorSize(size_t dtype_size) {
   return 1;
 }
 
+size_t NativeRuntime::getPreferedVectorSizeInBytes() {
+
+  if (_host_features["avx512f"])
+    return 64;
+  if (_host_features["avx"] || _host_features["avx2"])
+    return 32;
+  if (_host_features["sse2"] || _host_features["altivec"])
+    return 16;
+  if (_host_features["mmx"])
+    return 8;
+
+  return 1;
+}
+
 size_t NativeRuntime::getConcurrentCores() {
   auto n = std::thread::hardware_concurrency();
   if (n == 0)

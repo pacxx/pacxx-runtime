@@ -13,7 +13,6 @@
 #include <type_traits>
 #include <utility>
 #include <type_traits>
-#include <experimental/type_traits>
 
 namespace pacxx {
 namespace v2 {
@@ -31,13 +30,13 @@ class Executor;
 
 // forward decl the kernel body
 template<typename L>
-auto kernelBody(L &&callable);
+void kernelBody(L &&callable);
 
 struct range {
 private:
   // a range object should never be copied or moved and only be handled as reference
   range() = default;
-  template<typename L> friend auto kernelBody(L &&callable);
+  template<typename L> friend void kernelBody(L &&callable);
 
   inline auto get_global_id(unsigned int dimindx) {
     switch (dimindx) {
@@ -135,7 +134,7 @@ public:
 };
 
 template<typename L>
-auto kernelBody(L &&callable) {
+void kernelBody(L &&callable) {
 #ifdef __device_code__
   pacxx::v2::range thread;
   callable(thread);

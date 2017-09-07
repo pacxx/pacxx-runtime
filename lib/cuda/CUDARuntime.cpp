@@ -165,6 +165,10 @@ size_t CUDARuntime::getPreferedVectorSize(size_t dtype_size) {
   return 1;
 }
 
+size_t CUDARuntime::getPreferedVectorSizeInBytes(){
+  return 8;
+}
+
 size_t CUDARuntime::getConcurrentCores() {
   int dev = -1;
   SEC_CUDA_CALL(cudaGetDevice(&dev));

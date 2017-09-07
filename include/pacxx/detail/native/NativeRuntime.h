@@ -40,6 +40,8 @@ public:
 
   virtual size_t getPreferedVectorSize(size_t dtype_size) override;
 
+  virtual size_t getPreferedVectorSizeInBytes() override;
+
   virtual size_t getConcurrentCores() override;
 
   virtual bool supportsUnifiedAddressing() override;
@@ -53,7 +55,7 @@ public:
     if (host_ptr)
       rawBuffer.allocate(bytes, reinterpret_cast<char *>(host_ptr));
     else
-      rawBuffer.allocate(bytes, sizeof(T) * getPreferedVectorSize(sizeof(T)));
+      rawBuffer.allocate(bytes, getPreferedVectorSizeInBytes());
 
     auto wrapped = new NativeDeviceBuffer<T>(std::move(rawBuffer));
     _memory.push_back(std::unique_ptr<DeviceBufferBase>(

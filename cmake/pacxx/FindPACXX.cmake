@@ -118,6 +118,17 @@ else ()
     message(FATAL_ERROR "libpacxxrt2 - Not found!")
 endif ()
 
+find_library(PACXX_RV_LIBRARY RV PATHS ${PACXX_DIR}
+        HINTS ${PACXX_DIR}/lib PATH_SUFFIXES lib
+        DOC "Region Vectorizer Library" NO_DEFAULT_PATH)
+
+if (EXISTS ${PACXX_RV_LIBRARY})
+    mark_as_advanced(PACXX_RV_LIBRARY)
+    message(STATUS "libRV - Found")
+else ()
+    message(FATAL_ERROR "libRV - Not found!")
+endif ()
+
 
 find_file(PACXX_ASM_WRAPPER embed.S PATHS ${PACXX_DIR}
         HINTS ${PACXX_DIR}/lib PATH_SUFFIXES lib
@@ -241,7 +252,7 @@ function(add_pacxx_to_target targetName binDir srcFiles)
     pacxx_embed_ir(${targetName} ${bcFiles} ${binDir})
 
     set_target_properties(${targetName} PROPERTIES LINK_FLAGS ${PACXX_LD_FLAGS})
-    target_link_libraries(${targetName} PUBLIC ${PACXX_RUNTIME_LIBRARY}
+    target_link_libraries(${targetName} PUBLIC ${PACXX_RUNTIME_LIBRARY} PUBLIC ${PACXX_RV_LIBRARY}
             PUBLIC ${CUDA_LINK_LIBRARIES} PUBLIC ${PACXX_LLVM_LIBS} PUBLIC ${PACXX_LLVM_SYS_LIBS} PUBLIC ${TBB_LIBRARIES} PUBLIC libpacxx_main.a)
 
 
