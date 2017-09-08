@@ -226,7 +226,8 @@ bool SPMDVectorizer::runOnModule(Module& M) {
         unsigned vectorWidth = determineVectorWidth(scalarCopy, tmpInfo, TTI);
 
         __verbose("width: ", vectorWidth);
-
+        if (vectorWidth == 1)
+            continue;
         rv::VectorMapping targetMapping(scalarCopy, vectorizedKernel, vectorWidth, -1, resShape, argShapes);
 
         rv::VectorizationInfo vecInfo(targetMapping);
@@ -363,8 +364,12 @@ unsigned SPMDVectorizer::determineVectorWidth(Function *F, rv::VectorizationInfo
                     if (T->isPointerTy())
                         T = T->getPointerElementType();
 
-                    if (T->isSized() && !T->isStructTy())
-                        MaxWidth = std::max(MaxWidth, (unsigned) DL.getTypeSizeInBits(T->getScalarType()));
+                    if (T->isSized() && !T->isAggregateType()) {
+                      int LastWidth = MaxWidth;
+                      MaxWidth = std::max(MaxWidth, (unsigned) DL.getTypeSizeInBits(T->getScalarType()));
+                      if (LastWidth != MaxWidth)
+                        T->dump();
+                    }
                 }
             }
         }
