@@ -1,3 +1,6 @@
 benchmarks/
 spmdTest/
 .idea/
+cmake/pacxx/FindPACXXConfig.cmake
+include/pacxx/pacxx_config.h
+
