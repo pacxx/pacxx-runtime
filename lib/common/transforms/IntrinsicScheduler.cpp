@@ -19,7 +19,7 @@
 #include "llvm/IR/Value.h"
 #include "llvm/Pass.h"
 #include "llvm/Support/raw_ostream.h"
-#include "llvm/Transforms/PACXXTransforms.h"
+
 #include "llvm/Transforms/Utils/BasicBlockUtils.h"
 #include "llvm/Transforms/Utils/Cloning.h"
 #include <cassert>
@@ -31,6 +31,7 @@
 #include "llvm/IR/Dominators.h"
 #include <string>
 
+#include "pacxx/detail/common/transforms/PACXXTransforms.h"
 #include "pacxx/detail/common/transforms/CallVisitor.h"
 #include "pacxx/detail/common/transforms/ModuleHelper.h"
 

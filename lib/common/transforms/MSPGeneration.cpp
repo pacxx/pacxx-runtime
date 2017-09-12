@@ -10,7 +10,6 @@
 
 #define DEBUG_TYPE "pacxx_reflection"
 
-#include "llvm/Transforms/PACXXTransforms.h"
 #include "llvm/Pass.h"
 #include "llvm/IR/Module.h"
 #include "llvm/IR/Function.h"
@@ -37,6 +36,7 @@
 #include "llvm/IR/LegacyPassManager.h"
 
 #include "pacxx/detail/common/transforms/ModuleHelper.h"
+#include "pacxx/detail/common/transforms/PACXXTransforms.h"
 
 using namespace llvm;
 using namespace std;

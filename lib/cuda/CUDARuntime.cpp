@@ -10,7 +10,6 @@
 #include <llvm/IR/Intrinsics.h>
 #include <llvm/Transforms/Utils/Cloning.h>
 
-#include <llvm/Transforms/PACXXTransforms.h>
 #include <llvm/Transforms/Scalar.h>
 #include <llvm/Transforms/Vectorize.h>
 

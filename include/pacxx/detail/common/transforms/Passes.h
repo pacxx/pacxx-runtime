@@ -18,4 +18,5 @@ llvm::Pass *createPACXXReflectionPass();
 llvm::Pass *createPACXXReflectionCleanerPass();
 llvm::Pass *createPACXXReflectionRemoverPass();
 llvm::Pass *createPACXXTargetSelectPass(const llvm::SmallVector<std::string, 2>& targets);
+llvm::Pass *createPACXXCodeGenPrepare();
 }

@@ -9,7 +9,8 @@
 #include <llvm/ExecutionEngine/MCJIT.h>
 #include <llvm/ExecutionEngine/SectionMemoryManager.h>
 #include <llvm/IR/Constants.h>
-#include <llvm/Transforms/PACXXTransforms.h>
+
+#include "pacxx/detail/common/transforms/ModuleHelper.h"
 
 using namespace llvm;
 

@@ -56,10 +56,10 @@ set(SOURCE_FILES include/pacxx/Executor.h
         include/pacxx/detail/common/transforms/PACXXTransforms.h
         include/pacxx/detail/common/transforms/ModuleHelper.h
         include/pacxx/detail/common/transforms/CallVisitor.h
-        lib/common/transforms/nvvm_reg.cpp
-        lib/common/transforms/pacxx_intrinsic_mapper.cpp
-        lib/common/transforms/pacxx_reflection_remover.cpp
-        lib/common/transforms/pacxx_target_select.cpp
+        lib/common/transforms/MemoryCoalescing.cpp
+        lib/common/transforms/IntrinsicMapper.cpp
+        lib/common/transforms/MSPRemover.cpp
+        lib/common/transforms/TargetSelection.cpp
         include/pacxx/detail/common/Common.h
         lib/common/Common.cpp
         include/pacxx/detail/CoreInitializer.h
@@ -76,16 +76,17 @@ set(SOURCE_FILES include/pacxx/Executor.h
         lib/common/Log.cpp
         lib/Executor.cpp
         include/pacxx/detail/common/Timing.h
-        lib/common/transforms/pacxx_reflection.cpp
-        lib/common/transforms/pacxx_reflection_cleaner.cpp
-        lib/common/transforms/pacxx_intrinsic_scheduler.cpp
-        lib/native/transforms/pacxx_liveness_analysis.h
-        lib/native/transforms/pacxx_liveness_analysis.cpp
-        lib/native/transforms/pacxx_native_barrier.cpp
-        lib/native/transforms/pacxx_native_linker.cpp
-        lib/native/transforms/pacxx_select_emitter.cpp
-        lib/native/transforms/pacxx_sm_pass.h
-        lib/native/transforms/pacxx_sm_pass.cpp
+        lib/common/transforms/MSPGeneration.cpp
+        lib/common/transforms/MSPCleanup.cpp
+        lib/common/transforms/IntrinsicScheduler.cpp
+        lib/common/transforms/CodeGenPrepare.cpp
+        lib/native/transforms/LivenessAnalysis.h
+        lib/native/transforms/LivenessAnalysis.cpp
+        lib/native/transforms/BarrierGeneration.cpp
+        lib/native/transforms/KernelLinker.cpp
+        lib/native/transforms/MaskedMemTransform.cpp
+        lib/native/transforms/SMGeneration.h
+        lib/native/transforms/SMGeneration.cpp
         lib/native/transforms/SPMDVectorizer.cpp
         include/pacxx/detail/native/NativeBackend.h
         lib/native/NativeBackend.cpp
@@ -112,8 +113,8 @@ if (PACXX_USE_CUDA)
     set(PACXX_CUDA_BACKEND 1)
     include_directories(${CUDA_TOOLKIT_INCLUDE})
     set(CUDA_SOURCE_FILES
-            lib/cuda/transforms/nvvm.cpp
-            lib/cuda/transforms/spir.cpp
+            lib/cuda/transforms/NVPTXPrepair.cpp
+            lib/cuda/transforms/AddressSpaceTransform.cpp
             lib/cuda/PTXBackend.cpp
             include/pacxx/detail/cuda/PTXBackend.h
             include/pacxx/detail/cuda/CUDARuntime.h

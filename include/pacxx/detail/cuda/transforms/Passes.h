@@ -9,6 +9,6 @@ class Pass;
 }
 
 namespace pacxx {
-llvm::Pass *createPACXXNvvmPass();
-llvm::Pass *createPACXXSpirPass();
+llvm::Pass *createNVPTXPrepairPass();
+llvm::Pass *createAddressSpaceTransformPass();
 }

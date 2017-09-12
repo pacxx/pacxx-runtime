@@ -153,6 +153,7 @@ bool SPMDVectorizer::runOnModule(Module &M) {
     config.useADVSIMD = featureString.find("+neon") != std::string::npos; // FIXME: ?
 
     config.useSLEEF = true;
+    config.enableStructOpt = false;
     config.enableIRPolish = false;
 
     config.print(outs());

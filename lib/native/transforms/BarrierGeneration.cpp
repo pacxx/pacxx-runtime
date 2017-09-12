@@ -4,7 +4,7 @@
 // https://github.com/karrenberg/wfvopencl/blob/master/src/passes/continuationGenerator.cpp
 
 #include "pacxx/detail/common/Log.h"
-#include "pacxx_liveness_analysis.h"
+#include "LivenessAnalysis.h"
 
 using namespace llvm;
 using namespace pacxx;

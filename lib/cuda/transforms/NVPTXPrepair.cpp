@@ -24,7 +24,7 @@
 #include "llvm/IR/Value.h"
 #include "llvm/Pass.h"
 #include "llvm/Support/raw_ostream.h"
-#include "llvm/Transforms/PACXXTransforms.h"
+
 #include "llvm/Transforms/Utils/BasicBlockUtils.h"
 
 #include "pacxx/detail/common/transforms/CallVisitor.h"
@@ -36,15 +36,13 @@ using namespace pacxx;
 
 namespace {
 
-struct NVVMPass : public ModulePass {
+struct NVPTXPrepair : public ModulePass {
   static char ID;
-  NVVMPass() : ModulePass(ID) {}
-  virtual ~NVVMPass() {}
+  NVPTXPrepair() : ModulePass(ID) {}
+  virtual ~NVPTXPrepair() {}
 
   virtual bool runOnModule(Module &M) {
-    _M = &M;
     bool modified = true;
-    vector<Function *> deleted_functions;
 
     unsigned ptrSize = M.getDataLayout().getPointerSizeInBits();
 
@@ -77,25 +75,7 @@ struct NVVMPass : public ModulePass {
       }
     }
 
-    auto kernels = pacxx::getTagedFunctions(&M, "nvvm.annotations", "kernel");
-
-    auto visitor = make_CallVisitor([](CallInst *I) {
-      if (I->isInlineAsm()) {
-        if (auto ASM = dyn_cast<InlineAsm>(I->getCalledValue())) {
-          if (ASM->getConstraintString().find("memory") != string::npos) {
-            I->eraseFromParent();
-            return;
-          }
-        }
-      }
-    });
-
-    for (auto &F : kernels)
-      visitor.visit(F);
-
-    auto called_functions = visitor.get();
-
-    cleanupDeadCode(&M);
+    auto kernels = pacxx::getKernels(&M);
 
     for (auto &F : kernels) {
       F->setCallingConv(CallingConv::PTX_Kernel);
@@ -105,15 +85,12 @@ struct NVVMPass : public ModulePass {
 
     return modified;
   }
-
-private:
-  Module *_M;
 };
 
-char NVVMPass::ID = 0;
-static RegisterPass<NVVMPass> X("nvvm", "LLVM to NVVM IR pass", false, false);
+char NVPTXPrepair::ID = 0;
+static RegisterPass<NVPTXPrepair> X("pacxx-nvptx-prepair", "Prepairs module for PTX generation", false, false);
 }
 
 namespace pacxx {
-Pass *createPACXXNvvmPass() { return new NVVMPass(); }
+Pass *createNVPTXPrepairPass() { return new NVPTXPrepair(); }
 }

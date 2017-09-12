@@ -118,7 +118,7 @@ public:
   Executor(Executor &&other);
 
   ~Executor(){
-    __message("removing executor ", _id);
+    __verbose("destroying executor ", _id);
   }
 
 private:

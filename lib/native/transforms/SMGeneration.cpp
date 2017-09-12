@@ -1,7 +1,7 @@
 //
 // Created by lars
 
-#include "pacxx_sm_pass.h"
+#include "SMGeneration.h"
 
 using namespace llvm;
 using namespace pacxx;

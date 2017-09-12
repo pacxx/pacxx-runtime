@@ -19,10 +19,10 @@
 #include "llvm/Support/FileSystem.h"
 #include "llvm/Support/TargetRegistry.h"
 #include "llvm/Target/TargetLowering.h"
-#include "llvm/Transforms/PACXXTransforms.h"
 #include "llvm/Transforms/Utils/Cloning.h"
 #include "llvm/Analysis/TargetTransformInfo.h"
 
+#include "pacxx/detail/common/transforms/PACXXTransforms.h"
 #include "pacxx/detail/common/transforms/ModuleHelper.h"
 
 using namespace llvm;

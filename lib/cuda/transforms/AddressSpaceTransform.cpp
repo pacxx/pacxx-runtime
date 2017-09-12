@@ -19,7 +19,6 @@
 #include "llvm/IR/Value.h"
 #include "llvm/Pass.h"
 #include "llvm/Support/raw_ostream.h"
-#include "llvm/Transforms/PACXXTransforms.h"
 #include "llvm/Transforms/Utils/BasicBlockUtils.h"
 #include "llvm/Transforms/Utils/Cloning.h"
 #include <cassert>
@@ -76,19 +75,15 @@ Function *getParentKernel(T &kernels, GlobalVariable &GV) {
   return F;
 }
 
-struct SPIRPass : public ModulePass {
+struct AddressSpaceTransform : public ModulePass {
   static char ID;
-  SPIRPass() : ModulePass(ID) {}
-  virtual ~SPIRPass() {}
+  AddressSpaceTransform() : ModulePass(ID) {}
+  virtual ~AddressSpaceTransform() {}
 
   virtual bool runOnModule(Module &M) {
-    _M = &M;
-
     bool modified = true;
-
-    unsigned ptrSize = M.getDataLayout().getPointerSizeInBits();
-
-    kernels = pacxx::getTagedFunctions(&M, "nvvm.annotations", "kernel");
+    
+    auto kernels = pacxx::getKernels(&M);
 
     auto visitor = make_CallVisitor([&](CallInst *I) {
       if (!I)
@@ -171,7 +166,7 @@ struct SPIRPass : public ModulePass {
       }
     }
 
-    kernels = pacxx::getTagedFunctions(&M, "nvvm.annotations", "kernel");
+    kernels = pacxx::getKernels(&M);
     // handle shared memory declarations
     map<Function *, unsigned> SMMapping;
     map<GlobalVariable *, Constant *> repGV;
@@ -225,19 +220,15 @@ struct SPIRPass : public ModulePass {
     }
 
     // delete old kernel functions
-    cleanupDeadCode(_M);
+    cleanupDeadCode(&M);
     return modified;
   }
-
-private:
-  set<Function *> kernels;
-  Module *_M;
 };
 
-char SPIRPass::ID = 0;
-static RegisterPass<SPIRPass> X("spir", "LLVM to SPIR IR pass", false, false);
+char AddressSpaceTransform::ID = 0;
+static RegisterPass<AddressSpaceTransform> X("pacxx-addr-space-transform", "Transforms generic AS to NVPTX AS", false, false);
 }
 
 namespace pacxx {
-Pass *createPACXXSpirPass() { return new SPIRPass(); }
+Pass *createAddressSpaceTransformPass() { return new AddressSpaceTransform(); }
 }

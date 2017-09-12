@@ -96,6 +96,7 @@ public:
   }
 
   virtual void download(T *dest, size_t count, size_t offset = 0) override {
+    __message("downloading ", count * sizeof(T));
     _buffer.download(dest, count * sizeof(T), offset);
   }
 

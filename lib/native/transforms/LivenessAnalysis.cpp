@@ -3,7 +3,7 @@
 // Based on the paper Computing Liveness Sets for SSA-Form Programs by Florian Brandner,
 // Benoit Boissinot, Alain Darte, Benoit Dupont de Dinechin, Fabrice Rastelloss
 
-#include "pacxx_liveness_analysis.h"
+#include "LivenessAnalysis.h"
 
 using namespace llvm;
 using namespace pacxx;

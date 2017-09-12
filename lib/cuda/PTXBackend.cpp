@@ -16,7 +16,7 @@
 
 #include "pacxx/detail/common/Exceptions.h"
 #include "pacxx/detail/cuda/PTXBackend.h"
-#include <llvm/Transforms/PACXXTransforms.h>
+
 #include <llvm/Transforms/Scalar.h>
 #include <llvm/Transforms/Vectorize.h>
 #include <llvm/Linker/Linker.h>
@@ -31,6 +31,8 @@
 #include <llvm/Transforms/IPO.h>
 #include "pacxx/ModuleLoader.h"
 
+#include "pacxx/detail/common/transforms/PACXXTransforms.h"
+#include "pacxx/detail/common/transforms/Passes.h"
 #include "pacxx/detail/common/Timing.h"
 
 // nvptx device binding
@@ -75,10 +77,11 @@ std::unique_ptr<llvm::Module> PTXBackend::prepareModule(llvm::Module &M) {
   llvm::legacy::PassManager PM;
   TargetLibraryInfoImpl TLII(Triple(M.getTargetTriple()));
   PM.add(new TargetLibraryInfoWrapperPass(TLII));
+  PM.add(createPACXXCodeGenPrepare());
   PM.add(createTypeBasedAAWrapperPass());
   PM.add(createBasicAAWrapperPass());
   PM.add(createAlwaysInlinerLegacyPass());
-  PM.add(createPACXXDeadCodeElimPass());
+  PM.add(createPACXXCodeGenPrepare());
   PM.add(createSROAPass());
   PM.add(createPromoteMemoryToRegisterPass());
   PM.add(createLoopRotatePass());
@@ -108,24 +111,24 @@ std::unique_ptr<llvm::Module> PTXBackend::prepareModule(llvm::Module &M) {
   PM.add(PRP);
   PM.add(createAlwaysInlinerLegacyPass());
 
-  PM.add(createPACXXDeadCodeElimPass());
+  PM.add(createPACXXCodeGenPrepare());
   PM.add(createScalarizerPass());
   PM.add(createPromoteMemoryToRegisterPass());
   PM.add(createInstructionCombiningPass());
   PM.add(createCFGSimplificationPass());
   PM.add(createAlwaysInlinerLegacyPass());
-  PM.add(createPACXXDeadCodeElimPass());
+  PM.add(createPACXXCodeGenPrepare());
   PM.add(createPACXXIntrinsicSchedulerPass());
 
   PM.add(createPACXXTargetSelectPass({"GPU", "Generic"}));
   PM.add(createPACXXIntrinsicMapperPass());
-  PM.add(createPACXXSpirPass());
+  PM.add(createAddressSpaceTransformPass());
   PM.add(createPACXXReflectionRemoverPass());
-  PM.add(createPACXXNvvmPass());
+  PM.add(createNVPTXPrepairPass());
 
   PM.add(createPACXXNvvmRegPass(false));
-  PM.add(createPACXXInlinerPass());
-  PM.add(createPACXXDeadCodeElimPass());
+  PM.add(createAlwaysInlinerLegacyPass());
+  PM.add(createPACXXCodeGenPrepare());
   PM.add(createCFGSimplificationPass());
   PM.add(createInferAddressSpacesPass());
   PM.add(createSROAPass());

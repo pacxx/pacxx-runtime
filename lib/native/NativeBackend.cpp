@@ -20,11 +20,13 @@
 #include <llvm/LinkAllPasses.h>
 #include <llvm/Support/SourceMgr.h>
 #include <llvm/Transforms/IPO/PassManagerBuilder.h>
-#include <llvm/Transforms/PACXXTransforms.h>
+
 #include <llvm/Transforms/Scalar.h>
 #include <llvm/Transforms/Vectorize.h>
 #include <llvm/CodeGen/MachineModuleInfo.h>
 
+#include "pacxx/detail/common/transforms/PACXXTransforms.h"
+#include "pacxx/detail/common/transforms/Passes.h"
 namespace {
 const std::string native_loop_ir(R"(
 define void @__pacxx_block(i32 %__maxx, i32 %__maxy, i32 %__maxz) {
@@ -143,9 +145,9 @@ std::unique_ptr<llvm::Module> NativeBackend::prepareModule(llvm::Module &M) {
   llvm::legacy::PassManager PM;
   TargetLibraryInfoImpl TLII(Triple(M.getTargetTriple()));
   PM.add(new TargetLibraryInfoWrapperPass(TLII));
+  PM.add(createPACXXCodeGenPrepare());
   PM.add(createTypeBasedAAWrapperPass());
   PM.add(createBasicAAWrapperPass());
-  PM.add(createPACXXDeadCodeElimPass());
   PM.add(createSROAPass());
   PM.add(createPromoteMemoryToRegisterPass());
   PM.add(createLoopRotatePass());
@@ -174,19 +176,19 @@ std::unique_ptr<llvm::Module> NativeBackend::prepareModule(llvm::Module &M) {
   auto PRP = createPACXXReflectionPass();
   PM.add(PRP);
   PM.add(createAlwaysInlinerLegacyPass());
-  PM.add(createPACXXDeadCodeElimPass());
+  PM.add(createPACXXCodeGenPrepare());
   PM.add(createScalarizerPass());
   PM.add(createPromoteMemoryToRegisterPass());
   PM.add(createInstructionCombiningPass());
   PM.add(createCFGSimplificationPass());
   PM.add(createAlwaysInlinerLegacyPass());
-  PM.add(createPACXXDeadCodeElimPass());
+  PM.add(createPACXXCodeGenPrepare());
   PM.add(createPACXXIntrinsicSchedulerPass());
 
   PM.add(createPACXXReflectionRemoverPass());
   PM.add(createPACXXTargetSelectPass({"CPU", "Generic"}));
-  PM.add(createPACXXInlinerPass());
-  PM.add(createPACXXDeadCodeElimPass());
+  PM.add(createAlwaysInlinerLegacyPass());
+  PM.add(createPACXXCodeGenPrepare());
   PM.add(createCFGSimplificationPass());
   PM.add(createSROAPass());
   PM.add(createPromoteMemoryToRegisterPass());
