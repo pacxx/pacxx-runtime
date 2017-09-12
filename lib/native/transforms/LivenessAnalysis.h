@@ -32,17 +32,17 @@ using namespace llvm;
 using namespace pacxx;
 
 namespace llvm {
-void initializePACXXNativeLivenessAnalyzerPass(PassRegistry&);
+void initializeLivenessAnalyzerPass(PassRegistry&);
 }
 
-class PACXXNativeLivenessAnalyzer : public FunctionPass {
+class LivenessAnalyzer : public FunctionPass {
 
 public:
     static char ID;
 
-    PACXXNativeLivenessAnalyzer();
+    LivenessAnalyzer();
 
-    ~PACXXNativeLivenessAnalyzer();
+    ~LivenessAnalyzer();
 
     void releaseMemory() override;
 
@@ -72,6 +72,6 @@ private:
 };
 
 namespace llvm {
-    Pass* createPACXXLivenessAnalyzerPass();
+    Pass* createLivenessAnalyzerPass();
 }
 #endif //LLVM_PACXX_LIVENESS_ANALYSIS_H

@@ -107,7 +107,7 @@ std::unique_ptr<llvm::Module> PTXBackend::prepareModule(llvm::Module &M) {
   PM.add(createBreakCriticalEdgesPass());
   PM.add(createConstantMergePass());
 
-  auto PRP = createPACXXReflectionPass();
+  auto PRP = createMSPGenerationPass();
   PM.add(PRP);
   PM.add(createAlwaysInlinerLegacyPass());
 
@@ -118,15 +118,15 @@ std::unique_ptr<llvm::Module> PTXBackend::prepareModule(llvm::Module &M) {
   PM.add(createCFGSimplificationPass());
   PM.add(createAlwaysInlinerLegacyPass());
   PM.add(createPACXXCodeGenPrepare());
-  PM.add(createPACXXIntrinsicSchedulerPass());
+  PM.add(createIntrinsicSchedulerPass());
 
-  PM.add(createPACXXTargetSelectPass({"GPU", "Generic"}));
-  PM.add(createPACXXIntrinsicMapperPass());
+  PM.add(createTargetSelectionPass({"GPU", "Generic"}));
+  PM.add(createIntrinsicMapperPass());
   PM.add(createAddressSpaceTransformPass());
-  PM.add(createPACXXReflectionRemoverPass());
+  PM.add(createMSPRemoverPass());
   PM.add(createNVPTXPrepairPass());
 
-  PM.add(createPACXXNvvmRegPass(false));
+  PM.add(createMemoryCoalecingPass(false));
   PM.add(createAlwaysInlinerLegacyPass());
   PM.add(createPACXXCodeGenPrepare());
   PM.add(createCFGSimplificationPass());
@@ -143,13 +143,13 @@ std::unique_ptr<llvm::Module> PTXBackend::prepareModule(llvm::Module &M) {
 
   PM.run(M);
 
-  auto RM = reinterpret_cast<PACXXReflection *>(PRP)->getReflectionModule();
+  auto RM = reinterpret_cast<MSPGeneration *>(PRP)->getReflectionModule();
 
   PassManagerBuilder builder;
   builder.OptLevel = 3;
   legacy::PassManager RPM;
   RPM.add(createAlwaysInlinerLegacyPass());
-  RPM.add(createPACXXReflectionCleanerPass());
+  RPM.add(createMSPCleanupPass());
   builder.populateModulePassManager(RPM);
   RPM.run(*RM);
 
@@ -194,7 +194,7 @@ std::string PTXBackend::compile(llvm::Module &M) {
   PM.add(createCFGSimplificationPass());
   PM.add(createInstructionCombiningPass());
   // PM.add(createPACXXStaticEvalPass());
-  PM.add(createPACXXNvvmRegPass(true));
+  PM.add(createMemoryCoalecingPass(true));
 
   if (common::GetEnv("PACXX_PTX_BACKEND_O3") != "") {
     PassManagerBuilder builder;

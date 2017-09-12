@@ -1,6 +1,6 @@
 // Created by Michael Haidl and lars
 
-#define PACXX_PASS_NAME "PACXXNativeLinker"
+#define PACXX_PASS_NAME "KernelLinker"
 
 #include <llvm/IR/CFG.h>
 #include <llvm/ADT/SmallSet.h>
@@ -13,12 +13,12 @@ using namespace pacxx;
 
 namespace {
 
-struct PACXXNativeLinker : public ModulePass {
+struct KernelLinker : public ModulePass {
   static char ID;
 
-  PACXXNativeLinker() : ModulePass(ID) {}
+  KernelLinker() : ModulePass(ID) {}
 
-  virtual ~PACXXNativeLinker() {}
+  virtual ~KernelLinker() {}
 
   virtual bool runOnModule(Module &M);
 
@@ -61,7 +61,7 @@ private:
 
 };
 
-bool PACXXNativeLinker::runOnModule(Module &M) {
+bool KernelLinker::runOnModule(Module &M) {
 
   auto kernels = pacxx::getTagedFunctions(&M, "nvvm.annotations", "kernel");
 
@@ -122,7 +122,7 @@ bool PACXXNativeLinker::runOnModule(Module &M) {
   return true;
 }
 
-Function *PACXXNativeLinker::getFooFunction(Function *kernel, bool vectorized, bool barrier) {
+Function *KernelLinker::getFooFunction(Function *kernel, bool vectorized, bool barrier) {
 
   __verbose("Getting correct pacxx block function");
 
@@ -164,7 +164,7 @@ Function *PACXXNativeLinker::getFooFunction(Function *kernel, bool vectorized, b
   return pacxx_block;
 }
 
-Function *PACXXNativeLinker::createWrapper(Function *kernel,
+Function *KernelLinker::createWrapper(Function *kernel,
                                            TerminatorInst **term,
                                            SmallVector<Value *, 8> &wrapperArgs) {
   Module *M = kernel->getParent();
@@ -225,7 +225,7 @@ Function *PACXXNativeLinker::createWrapper(Function *kernel,
   return wrappedF;
 }
 
-SmallVector<Value *, 8> PACXXNativeLinker::createKernelArgs(Function *wrapper, Function *kernel,
+SmallVector<Value *, 8> KernelLinker::createKernelArgs(Function *wrapper, Function *kernel,
                                                             Value3 &blockId, Value3 &maxBlock, Value3 &maxId) {
 
   SmallVector < Value * , 8 > kernelArgs;
@@ -312,7 +312,7 @@ SmallVector<Value *, 8> PACXXNativeLinker::createKernelArgs(Function *wrapper, F
   return kernelArgs;
 }
 
-void PACXXNativeLinker::replaceDummyWithKernelIfNeeded(Function *wrapper, Function *kernel,
+void KernelLinker::replaceDummyWithKernelIfNeeded(Function *wrapper, Function *kernel,
                                                        SmallVector<Value *, 8> &kernelArgs,
                                                        bool vectorized, bool barrier) {
 
@@ -343,7 +343,7 @@ void PACXXNativeLinker::replaceDummyWithKernelIfNeeded(Function *wrapper, Functi
   }
 }
 
-void PACXXNativeLinker::removeDeadCalls(Function *wrapper, Value3 &blockId, Value3 &maxBlock, Value3 &maxId) {
+void KernelLinker::removeDeadCalls(Function *wrapper, Value3 &blockId, Value3 &maxBlock, Value3 &maxId) {
 
   __verbose("replacing dead calls \n");
   vector<CallInst *> dead_calls;
@@ -431,7 +431,7 @@ void PACXXNativeLinker::removeDeadCalls(Function *wrapper, Value3 &blockId, Valu
     I->eraseFromParent();
 }
 
-AllocaInst *PACXXNativeLinker::getCorrectAlloca(Instruction *intrinsic, IdType id) {
+AllocaInst *KernelLinker::getCorrectAlloca(Instruction *intrinsic, IdType id) {
 
   AllocaInst *alloca = nullptr;
   SmallSet < BasicBlock * , 8 > visited;
@@ -449,7 +449,7 @@ AllocaInst *PACXXNativeLinker::getCorrectAlloca(Instruction *intrinsic, IdType i
   return alloca;
 }
 
-void PACXXNativeLinker::recursiveFindAlloca(BasicBlock *BB, SmallSet<BasicBlock *, 8> &visited,
+void KernelLinker::recursiveFindAlloca(BasicBlock *BB, SmallSet<BasicBlock *, 8> &visited,
                                             AllocaInst *&alloca, IdType id) {
 
   if (visited.count(BB) != 0)
@@ -470,7 +470,7 @@ void PACXXNativeLinker::recursiveFindAlloca(BasicBlock *BB, SmallSet<BasicBlock 
   }
 }
 
-bool PACXXNativeLinker::isCorrectId(Instruction *inst, IdType id) {
+bool KernelLinker::isCorrectId(Instruction *inst, IdType id) {
   switch (id) {
   case X:return inst->getMetadata("pacxx_read_tid_x") != nullptr;
   case Y:return inst->getMetadata("pacxx_read_tid_y") != nullptr;
@@ -480,7 +480,7 @@ bool PACXXNativeLinker::isCorrectId(Instruction *inst, IdType id) {
   }
 }
 
-void PACXXNativeLinker::markWrapperAsKernel(Module &M, Function *wrapper, bool vectorized) {
+void KernelLinker::markWrapperAsKernel(Module &M, Function *wrapper, bool vectorized) {
   LLVMContext &ctx = M.getContext();
   NamedMDNode *MD = M.getOrInsertNamedMetadata("nvvm.annotations");
   SmallVector < Metadata * , 3 > MDVals;
@@ -494,12 +494,12 @@ void PACXXNativeLinker::markWrapperAsKernel(Module &M, Function *wrapper, bool v
   MD->addOperand(MDNode::get(ctx, MDVals));
 }
 
-char PACXXNativeLinker::ID = 0;
-static RegisterPass <PACXXNativeLinker>
+char KernelLinker::ID = 0;
+static RegisterPass <KernelLinker>
     X("pacxx_native", "Inlines functions into kernels", false, false);
 
 }
 
 namespace pacxx {
-llvm::Pass *createPACXXNativeLinkerPass() { return new PACXXNativeLinker(); }
+llvm::Pass *createKernelLinkerPass() { return new KernelLinker(); }
 }

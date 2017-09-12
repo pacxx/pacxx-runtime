@@ -30,7 +30,7 @@ using namespace std;
 using namespace pacxx;
 
 namespace llvm {
-  void initializePACXXIntrinsicMapperPass(PassRegistry&);
+  void initializeIntrinsicMapperPass(PassRegistry&);
 }
 
 namespace {
@@ -106,15 +106,15 @@ static Function* mapPACXXIntrinsic(Module* M, Intrinsic::ID id)
   return nullptr;
 }
 
-struct PACXXIntrinsicMapper : public ModulePass {
+struct IntrinsicMapper : public ModulePass {
   static char ID;
-  PACXXIntrinsicMapper() : ModulePass(ID) { initializePACXXIntrinsicMapperPass(*PassRegistry::getPassRegistry()); }
-  virtual ~PACXXIntrinsicMapper() {}
+  IntrinsicMapper() : ModulePass(ID) { initializeIntrinsicMapperPass(*PassRegistry::getPassRegistry()); }
+  virtual ~IntrinsicMapper() {}
   virtual bool runOnModule(Module &M) override;
   virtual void getAnalysisUsage(AnalysisUsage &AU) const override;
 };
 
-bool PACXXIntrinsicMapper::runOnModule(Module &M) {
+bool IntrinsicMapper::runOnModule(Module &M) {
   bool modified = true;
 
   struct IntrinsicVisitor : public InstVisitor<IntrinsicVisitor> {
@@ -145,24 +145,24 @@ bool PACXXIntrinsicMapper::runOnModule(Module &M) {
   return modified;
 }
 
-void PACXXIntrinsicMapper::getAnalysisUsage(AnalysisUsage &AU) const {
+void IntrinsicMapper::getAnalysisUsage(AnalysisUsage &AU) const {
   AU.addRequired<TargetLibraryInfoWrapperPass>();
   AU.addRequired<TargetTransformInfoWrapperPass>();
 }
 
 }
 
-char PACXXIntrinsicMapper::ID = 0;
+char IntrinsicMapper::ID = 0;
 
-INITIALIZE_PASS_BEGIN(PACXXIntrinsicMapper, "pacxx-intrin-mapper",
+INITIALIZE_PASS_BEGIN(IntrinsicMapper, "pacxx-intrin-mapper",
                       "PACXXSelectEmitter: transform masked intrinsics to selects", true, true)
   INITIALIZE_PASS_DEPENDENCY(TargetLibraryInfoWrapperPass)
   INITIALIZE_PASS_DEPENDENCY(TargetTransformInfoWrapperPass)
-INITIALIZE_PASS_END(PACXXIntrinsicMapper, "pacxx-emit-select",
-                    "PACXXIntrinsicMapper: transform pacxx intrinsics to target dependend intrinsics", true, true)
+INITIALIZE_PASS_END(IntrinsicMapper, "pacxx-emit-select",
+                    "IntrinsicMapper: transform pacxx intrinsics to target dependend intrinsics", true, true)
 
 namespace pacxx {
-Pass *createPACXXIntrinsicMapperPass() {
-  return new PACXXIntrinsicMapper();
+Pass *createIntrinsicMapperPass() {
+  return new IntrinsicMapper();
 }
 }

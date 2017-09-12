@@ -57,17 +57,17 @@ static bool isPACXXIntrinsic(Intrinsic::ID id){
   return false;
 }
 
-struct PACXXReflectionCleaner : public ModulePass {
+struct MSPCleanup : public ModulePass {
   static char ID;
-  PACXXReflectionCleaner() : ModulePass(ID) {}
-  virtual ~PACXXReflectionCleaner() {}
+  MSPCleanup() : ModulePass(ID) {}
+  virtual ~MSPCleanup() {}
   virtual bool runOnModule(Module &M);
 
 private:
   void cleanFromKerneles(Module &M);
 };
 
-bool PACXXReflectionCleaner::runOnModule(Module &M) {
+bool MSPCleanup::runOnModule(Module &M) {
   bool modified = true;
 
   M.setTargetTriple(sys::getProcessTriple());
@@ -128,7 +128,7 @@ bool PACXXReflectionCleaner::runOnModule(Module &M) {
   return modified;
 }
 
-void PACXXReflectionCleaner::cleanFromKerneles(Module &M) {
+void MSPCleanup::cleanFromKerneles(Module &M) {
   auto kernels = pacxx::getKernels(&M);
 
   for (auto F : kernels) {
@@ -137,16 +137,16 @@ void PACXXReflectionCleaner::cleanFromKerneles(Module &M) {
   }
 }
 
-char PACXXReflectionCleaner::ID = 0;
-static RegisterPass<PACXXReflectionCleaner>
+char MSPCleanup::ID = 0;
+static RegisterPass<MSPCleanup>
     X("pacxx_reflection_cleaner",
-      "PACXXReflectionCleaner: "
+      "MSPCleanup: "
       "finalizes the reflection module by cleaning up",
       false, false);
 }
 
 namespace pacxx {
-Pass *createPACXXReflectionCleanerPass() {
-  return new PACXXReflectionCleaner();
+Pass *createMSPCleanupPass() {
+  return new MSPCleanup();
 }
 }

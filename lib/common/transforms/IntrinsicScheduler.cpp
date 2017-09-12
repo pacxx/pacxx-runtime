@@ -108,10 +108,10 @@ private:
 };
 
 
-struct PACXXIntrinsicSchedulerPass : public ModulePass {
+struct IntrinsicSchedulerWrapperPass : public ModulePass {
   static char ID;
-  PACXXIntrinsicSchedulerPass() : ModulePass(ID) {}
-  virtual ~PACXXIntrinsicSchedulerPass() {}
+  IntrinsicSchedulerWrapperPass() : ModulePass(ID) {}
+  virtual ~IntrinsicSchedulerWrapperPass() {}
 
   virtual bool runOnModule(Module &M) {
     IntrinsicScheduler scheduler;
@@ -126,10 +126,10 @@ struct PACXXIntrinsicSchedulerPass : public ModulePass {
   }
 };
 
-char PACXXIntrinsicSchedulerPass::ID = 0;
-static RegisterPass<PACXXIntrinsicSchedulerPass> X("pacxx_intrinsic_scheduler", "PACXX intrinsic scheduling pass", false, false);
+char IntrinsicSchedulerWrapperPass::ID = 0;
+static RegisterPass<IntrinsicSchedulerWrapperPass> X("pacxx-intrinsic-scheduler", "Pass to clone PACXX intrinsics to their direct users", false, false);
 }
 
 namespace pacxx {
-Pass *createPACXXIntrinsicSchedulerPass() { return new PACXXIntrinsicSchedulerPass(); }
+Pass *createIntrinsicSchedulerPass() { return new IntrinsicSchedulerWrapperPass(); }
 }

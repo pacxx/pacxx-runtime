@@ -29,14 +29,14 @@
 using namespace llvm;
 using namespace pacxx;
 
-class PACXXNativeSMTransformer : public ModulePass {
+class SMGeneration : public ModulePass {
 
 public:
     static char ID;
 
-    PACXXNativeSMTransformer();
+    SMGeneration();
 
-    ~PACXXNativeSMTransformer();
+    ~SMGeneration();
 
     void releaseMemory() override;
 

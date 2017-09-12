@@ -30,20 +30,20 @@ using namespace std;
 using namespace pacxx;
 
 namespace llvm{
-void initializePACXXSelectEmitterPass(PassRegistry&);
+void initializeMaskedMemTransformPass(PassRegistry&);
 }
 
 namespace {
 
-struct PACXXSelectEmitter : public ModulePass {
+struct MaskedMemTransform : public ModulePass {
   static char ID;
-  PACXXSelectEmitter() : ModulePass(ID) { initializePACXXSelectEmitterPass(*PassRegistry::getPassRegistry()); }
-  virtual ~PACXXSelectEmitter() {}
+  MaskedMemTransform() : ModulePass(ID) { initializeMaskedMemTransformPass(*PassRegistry::getPassRegistry()); }
+  virtual ~MaskedMemTransform() {}
   virtual bool runOnModule(Module &M) override;
   virtual void getAnalysisUsage(AnalysisUsage &AU) const override;
 };
 
-bool PACXXSelectEmitter::runOnModule(Module &M) {
+bool MaskedMemTransform::runOnModule(Module &M) {
   bool modified = true;
 
   struct IntrinsicVisitor : public InstVisitor<IntrinsicVisitor> {
@@ -153,24 +153,24 @@ bool PACXXSelectEmitter::runOnModule(Module &M) {
   return modified;
 }
 
-void PACXXSelectEmitter::getAnalysisUsage(AnalysisUsage &AU) const {
+void MaskedMemTransform::getAnalysisUsage(AnalysisUsage &AU) const {
   AU.addRequired<TargetLibraryInfoWrapperPass>();
   AU.addRequired<TargetTransformInfoWrapperPass>();
 }
 
 }
 
-char PACXXSelectEmitter::ID = 0;
+char MaskedMemTransform::ID = 0;
 
-INITIALIZE_PASS_BEGIN(PACXXSelectEmitter, "pacxx_emit_select",
-                      "PACXXSelectEmitter: transform masked intrinsics to selects", true, true)
+INITIALIZE_PASS_BEGIN(MaskedMemTransform, "pacxx_emit_select",
+                      "MaskedMemTransform: transform masked intrinsics to selects", true, true)
   INITIALIZE_PASS_DEPENDENCY(TargetLibraryInfoWrapperPass)
   INITIALIZE_PASS_DEPENDENCY(TargetTransformInfoWrapperPass)
-INITIALIZE_PASS_END(PACXXSelectEmitter, "pacxx_emit_select",
-                    "PACXXSelectEmitter: transform masked intrinsics to selects", true, true)
+INITIALIZE_PASS_END(MaskedMemTransform, "pacxx_emit_select",
+                    "MaskedMemTransform: transform masked intrinsics to selects", true, true)
 
 namespace pacxx {
-Pass *createPACXXSelectEmitterPass() {
-  return new PACXXSelectEmitter();
+Pass *createMaskedMemTransformPass() {
+  return new MaskedMemTransform();
 }
 }

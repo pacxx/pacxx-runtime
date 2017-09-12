@@ -11,12 +11,12 @@ class Pass;
 }
 
 namespace pacxx {
-llvm::Pass *createPACXXIntrinsicSchedulerPass();
-llvm::Pass *createPACXXNvvmRegPass(bool);
-llvm::Pass *createPACXXIntrinsicMapperPass();
-llvm::Pass *createPACXXReflectionPass();
-llvm::Pass *createPACXXReflectionCleanerPass();
-llvm::Pass *createPACXXReflectionRemoverPass();
-llvm::Pass *createPACXXTargetSelectPass(const llvm::SmallVector<std::string, 2>& targets);
+llvm::Pass *createIntrinsicSchedulerPass();
+llvm::Pass *createMemoryCoalecingPass(bool);
+llvm::Pass *createIntrinsicMapperPass();
+llvm::Pass *createMSPGenerationPass();
+llvm::Pass *createMSPCleanupPass();
+llvm::Pass *createMSPRemoverPass();
+llvm::Pass *createTargetSelectionPass(const llvm::SmallVector<std::string, 2>& targets);
 llvm::Pass *createPACXXCodeGenPrepare();
 }

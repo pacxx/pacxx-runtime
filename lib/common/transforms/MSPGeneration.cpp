@@ -44,11 +44,11 @@ using namespace pacxx;
 
 namespace pacxx {
 
-PACXXReflection::PACXXReflection()
+MSPGeneration::MSPGeneration()
     : ModulePass(ID) {}
-PACXXReflection::~PACXXReflection() {}
+MSPGeneration::~MSPGeneration() {}
 
-bool PACXXReflection::runOnModule(Module &M) {
+bool MSPGeneration::runOnModule(Module &M) {
   auto modified =  runOnModuleAtCompileTime(M);
 
   RM = CloneModule(&M);
@@ -56,11 +56,11 @@ bool PACXXReflection::runOnModule(Module &M) {
   return modified;
 }
 
-std::unique_ptr<Module> PACXXReflection::getReflectionModule() {
+std::unique_ptr<Module> MSPGeneration::getReflectionModule() {
   return std::move(RM);
 }
 
-bool PACXXReflection::runOnModuleAtCompileTime(Module &M) {
+bool MSPGeneration::runOnModuleAtCompileTime(Module &M) {
 
   bool modified = true;
 
@@ -75,7 +75,7 @@ bool PACXXReflection::runOnModuleAtCompileTime(Module &M) {
   return modified;
 }
 
-void PACXXReflection::cleanFromKerneles(Module &M) {
+void MSPGeneration::cleanFromKerneles(Module &M) {
   auto kernels = pacxx::getTagedFunctions(&M, "nvvm.annotations", "kernel");
 
   for (auto F : kernels) {
@@ -108,7 +108,7 @@ void PACXXReflection::cleanFromKerneles(Module &M) {
     MD->eraseFromParent();
 }
 
-void PACXXReflection::cleanFromReflections(Module &M) {
+void MSPGeneration::cleanFromReflections(Module &M) {
   auto reflections = pacxx::getTagedFunctions(&M, "pacxx.reflection", "");
 
   for (auto F : reflections) {
@@ -129,11 +129,11 @@ void PACXXReflection::cleanFromReflections(Module &M) {
     MD->eraseFromParent();
 }
 
-PACXXReflection::ReflectionHandler::ReflectionHandler(Module *module)
+MSPGeneration::ReflectionHandler::ReflectionHandler(Module *module)
     : M(module), reflects(pacxx::getTagedFunctions(M, "pacxx.reflection", "")),
       replacements(), count(0) {}
 
-void PACXXReflection::ReflectionHandler::visitCallInst(CallInst &CI) {
+void MSPGeneration::ReflectionHandler::visitCallInst(CallInst &CI) {
 
   Function *F = CI.getCalledFunction();
 
@@ -162,7 +162,7 @@ void PACXXReflection::ReflectionHandler::visitCallInst(CallInst &CI) {
   }
 }
 
-Function *PACXXReflection::ReflectionHandler::createCallStub(CallInst &CI,
+Function *MSPGeneration::ReflectionHandler::createCallStub(CallInst &CI,
                                                              int c) {
   auto &Ctx = CI.getContext();
 
@@ -289,7 +289,7 @@ Function *PACXXReflection::ReflectionHandler::createCallStub(CallInst &CI,
   return createCallWrapper(F, c);
 }
 
-Function *PACXXReflection::ReflectionHandler::createCallWrapper(Function *F,
+Function *MSPGeneration::ReflectionHandler::createCallWrapper(Function *F,
                                                                 int c) {
   const auto &M = F->getParent();
   auto &Ctx = M->getContext();
@@ -340,7 +340,7 @@ Function *PACXXReflection::ReflectionHandler::createCallWrapper(Function *F,
   return wrapper;
 }
 
-void PACXXReflection::ReflectionHandler::finalize() {
+void MSPGeneration::ReflectionHandler::finalize() {
   for (auto &c : stubs) {
     createCallStub(*c.first, c.second);
   }
@@ -358,9 +358,9 @@ void PACXXReflection::ReflectionHandler::finalize() {
   }
 }
 
-char PACXXReflection::ID = 0;
-static RegisterPass<PACXXReflection> X("pacxx_reflection",
-                                       "PACXXReflection: "
+char MSPGeneration::ID = 0;
+static RegisterPass<MSPGeneration> X("pacxx_reflection",
+                                       "MSPGeneration: "
                                            "removes reflection calls from kernel "
                                            "code and replaces them with "
                                            "placeholder",
@@ -368,7 +368,7 @@ static RegisterPass<PACXXReflection> X("pacxx_reflection",
 }
 
 namespace pacxx {
-Pass *createPACXXReflectionPass() {
-  return new PACXXReflection();
+Pass *createMSPGenerationPass() {
+  return new MSPGeneration();
 }
 }

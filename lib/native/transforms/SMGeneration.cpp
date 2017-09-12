@@ -6,17 +6,17 @@
 using namespace llvm;
 using namespace pacxx;
 
-PACXXNativeSMTransformer::PACXXNativeSMTransformer() : ModulePass(ID) {
+SMGeneration::SMGeneration() : ModulePass(ID) {
     __verbose("created sm pass\n");
 }
 
-PACXXNativeSMTransformer::~PACXXNativeSMTransformer() {}
+SMGeneration::~SMGeneration() {}
 
-void PACXXNativeSMTransformer::releaseMemory() {}
+void SMGeneration::releaseMemory() {}
 
-void PACXXNativeSMTransformer::getAnalysisUsage(AnalysisUsage &AU) const {}
+void SMGeneration::getAnalysisUsage(AnalysisUsage &AU) const {}
 
-bool PACXXNativeSMTransformer::runOnModule(Module &M) {
+bool SMGeneration::runOnModule(Module &M) {
 
     __verbose("Generating shared memory \n");
 
@@ -29,7 +29,7 @@ bool PACXXNativeSMTransformer::runOnModule(Module &M) {
     return true;
 }
 
-void PACXXNativeSMTransformer::runOnKernel(Function *kernel) {
+void SMGeneration::runOnKernel(Function *kernel) {
     auto argIt = kernel->arg_end();
 
     // the sm_size is always the second last arg
@@ -38,7 +38,7 @@ void PACXXNativeSMTransformer::runOnKernel(Function *kernel) {
     createSharedMemoryBuffer(kernel, sm_size);
 }
 
-void PACXXNativeSMTransformer::createSharedMemoryBuffer(Function *func, Value *sm_size) {
+void SMGeneration::createSharedMemoryBuffer(Function *func, Value *sm_size) {
 
     Module *M = func->getParent();
 
@@ -65,7 +65,7 @@ void PACXXNativeSMTransformer::createSharedMemoryBuffer(Function *func, Value *s
     }
 }
 
-set<GlobalVariable *> PACXXNativeSMTransformer::getSMGlobalsUsedByKernel(Module *M, Function *func, bool internal) {
+set<GlobalVariable *> SMGeneration::getSMGlobalsUsedByKernel(Module *M, Function *func, bool internal) {
     set<GlobalVariable *> sm;
     for (auto &GV : M->globals()) {
         bool consider = false;
@@ -107,7 +107,7 @@ set<GlobalVariable *> PACXXNativeSMTransformer::getSMGlobalsUsedByKernel(Module 
     return sm;
 }
 
-vector<PACXXNativeSMTransformer::ConstantUser> PACXXNativeSMTransformer::findInstruction(Function *func, ConstantExpr * constExpr) {
+vector<SMGeneration::ConstantUser> SMGeneration::findInstruction(Function *func, ConstantExpr * constExpr) {
     vector<ConstantUser> smUsers;
     for (auto &B : *func) {
         for (auto &I : B) {
@@ -135,7 +135,7 @@ vector<PACXXNativeSMTransformer::ConstantUser> PACXXNativeSMTransformer::findIns
     return smUsers;
 }
 
-void PACXXNativeSMTransformer::lookAtConstantOps(ConstantExpr *constExp, ConstantExpr *smUser,
+void SMGeneration::lookAtConstantOps(ConstantExpr *constExp, ConstantExpr *smUser,
                                                  vector<ConstantExpr *> &tmp,
                                                  vector<ConstantExpr *> &constants,
                                                  bool *usesSM) {
@@ -156,7 +156,7 @@ void PACXXNativeSMTransformer::lookAtConstantOps(ConstantExpr *constExp, Constan
    }
 }
 
-void PACXXNativeSMTransformer::createInternalSharedMemoryBuffer(Module &M,
+void SMGeneration::createInternalSharedMemoryBuffer(Module &M,
                                                                 Function *kernel,
                                                                 set<GlobalVariable *> &globals,
                                                                 BasicBlock *sharedMemBB) {
@@ -179,7 +179,7 @@ void PACXXNativeSMTransformer::createInternalSharedMemoryBuffer(Module &M,
     }
 }
 
-void PACXXNativeSMTransformer::createExternalSharedMemoryBuffer(Module &M,
+void SMGeneration::createExternalSharedMemoryBuffer(Module &M,
                                                                 Function *kernel,
                                                                 set<GlobalVariable *> &globals,
                                                                 Value *sm_size,
@@ -211,7 +211,7 @@ void PACXXNativeSMTransformer::createExternalSharedMemoryBuffer(Module &M,
     }
 }
 
-void PACXXNativeSMTransformer::replaceAllUsesInKernel(Function *kernel, Value *from, Value *with) {
+void SMGeneration::replaceAllUsesInKernel(Function *kernel, Value *from, Value *with) {
     auto UI = from->use_begin(), E = from->use_end();
     for (; UI != E;) {
         Use &U = *UI;
@@ -223,10 +223,10 @@ void PACXXNativeSMTransformer::replaceAllUsesInKernel(Function *kernel, Value *f
     return;
 }
 
-char PACXXNativeSMTransformer::ID = 0;
+char SMGeneration::ID = 0;
 
 namespace pacxx {
-    llvm::Pass* createPACXXNativeSMPass() { return new PACXXNativeSMTransformer(); }
+    llvm::Pass* createSMGenerationPass() { return new SMGeneration(); }
 }
 
 

@@ -37,10 +37,10 @@ using namespace pacxx;
 
 namespace {
 
-struct PACXXReflectionRemover : public ModulePass {
+struct MSPRemover : public ModulePass {
   static char ID;
-  PACXXReflectionRemover() : ModulePass(ID) {}
-  virtual ~PACXXReflectionRemover() {}
+  MSPRemover() : ModulePass(ID) {}
+  virtual ~MSPRemover() {}
 
   virtual bool runOnModule(Module &M) {
     bool modified = true;
@@ -101,8 +101,8 @@ private:
 
 };
 
-char PACXXReflectionRemover::ID = 0;
-static RegisterPass<PACXXReflectionRemover> X("pacxx_classify",
+char MSPRemover::ID = 0;
+static RegisterPass<MSPRemover> X("pacxx_classify",
                                             "PACXXAccessClassifer: path "
                                             "classify memory access patterns "
                                             "on kernel parameters",
@@ -110,5 +110,5 @@ static RegisterPass<PACXXReflectionRemover> X("pacxx_classify",
 }
 
 namespace pacxx {
-Pass *createPACXXReflectionRemoverPass() { return new PACXXReflectionRemover(); }
+Pass *createMSPRemoverPass() { return new MSPRemover(); }
 }

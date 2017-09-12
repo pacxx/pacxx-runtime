@@ -8,25 +8,25 @@
 using namespace llvm;
 using namespace pacxx;
 
-PACXXNativeLivenessAnalyzer::PACXXNativeLivenessAnalyzer() : FunctionPass(ID) {
-  initializePACXXNativeLivenessAnalyzerPass(*PassRegistry::getPassRegistry());
+LivenessAnalyzer::LivenessAnalyzer() : FunctionPass(ID) {
+  initializeLivenessAnalyzerPass(*PassRegistry::getPassRegistry());
 }
 
-PACXXNativeLivenessAnalyzer::~PACXXNativeLivenessAnalyzer() {}
+LivenessAnalyzer::~LivenessAnalyzer() {}
 
-void PACXXNativeLivenessAnalyzer::releaseMemory() {}
+void LivenessAnalyzer::releaseMemory() {}
 
-void PACXXNativeLivenessAnalyzer::getAnalysisUsage(AnalysisUsage &AU) const {}
+void LivenessAnalyzer::getAnalysisUsage(AnalysisUsage &AU) const {}
 
 
-bool PACXXNativeLivenessAnalyzer::runOnFunction(Function &F) {
+bool LivenessAnalyzer::runOnFunction(Function &F) {
 
   computeLiveSets(F);
 
   return false;
 }
 
-void PACXXNativeLivenessAnalyzer::computeLiveSets(Function &F) {
+void LivenessAnalyzer::computeLiveSets(Function &F) {
 
   for (auto BI = F.begin(), BE = F.end(); BI != BE; ++BI) {
 
@@ -50,7 +50,7 @@ void PACXXNativeLivenessAnalyzer::computeLiveSets(Function &F) {
   }
 }
 
-void PACXXNativeLivenessAnalyzer::upAndMark(BasicBlock *BB, Use *use) {
+void LivenessAnalyzer::upAndMark(BasicBlock *BB, Use *use) {
 
   Value *useValue = use->get();
   if(Instruction *inst = dyn_cast<Instruction>(useValue)) {
@@ -73,7 +73,7 @@ void PACXXNativeLivenessAnalyzer::upAndMark(BasicBlock *BB, Use *use) {
   }
 }
 
-void PACXXNativeLivenessAnalyzer::getPhiUses(BasicBlock *current,
+void LivenessAnalyzer::getPhiUses(BasicBlock *current,
                                              set<BasicBlock *> &visited,
                                              set<Use *> &uses,
                                              BasicBlock *orig) {
@@ -98,7 +98,7 @@ void PACXXNativeLivenessAnalyzer::getPhiUses(BasicBlock *current,
 }
 
 
-set<Value *> PACXXNativeLivenessAnalyzer::getPhiDefs(BasicBlock *BB) {
+set<Value *> LivenessAnalyzer::getPhiDefs(BasicBlock *BB) {
   set<Value *> uses;
   for(auto I = BB->begin(), IE = BB->end(); I != IE; ++I) {
     if(PHINode *phi = dyn_cast<PHINode>(&*I)) {
@@ -108,15 +108,15 @@ set<Value *> PACXXNativeLivenessAnalyzer::getPhiDefs(BasicBlock *BB) {
   return uses;
 }
 
-set<Value *> PACXXNativeLivenessAnalyzer::getLivingInValuesForBlock(const BasicBlock* block) {
+set<Value *> LivenessAnalyzer::getLivingInValuesForBlock(const BasicBlock* block) {
   return _in[block];
 }
 
 namespace llvm {
-Pass* createPACXXLivenessAnalyzerPass() { return new PACXXNativeLivenessAnalyzer(); }
+Pass* createPACXXLivenessAnalyzerPass() { return new LivenessAnalyzer(); }
 }
 
-string PACXXNativeLivenessAnalyzer::toString(map<const BasicBlock *, set<Value *>> &map) {
+string LivenessAnalyzer::toString(map<const BasicBlock *, set<Value *>> &map) {
   string text;
   raw_string_ostream ss(text);
 
@@ -129,7 +129,7 @@ string PACXXNativeLivenessAnalyzer::toString(map<const BasicBlock *, set<Value *
   return ss.str();
 }
 
-string PACXXNativeLivenessAnalyzer::toString(set<Value *> &set) {
+string LivenessAnalyzer::toString(set<Value *> &set) {
   string text;
   raw_string_ostream ss(text);
 
@@ -141,8 +141,8 @@ string PACXXNativeLivenessAnalyzer::toString(set<Value *> &set) {
   return ss.str();
 }
 
-char PACXXNativeLivenessAnalyzer::ID = 0;
+char LivenessAnalyzer::ID = 0;
 
-INITIALIZE_PASS_BEGIN(PACXXNativeLivenessAnalyzer, "native-liveness", "Liveness Analysis", true, true)
-INITIALIZE_PASS_END(PACXXNativeLivenessAnalyzer, "native-liveness", "Liveness Analysis", true, true)
+INITIALIZE_PASS_BEGIN(LivenessAnalyzer, "native-liveness", "Liveness Analysis", true, true)
+INITIALIZE_PASS_END(LivenessAnalyzer, "native-liveness", "Liveness Analysis", true, true)
 

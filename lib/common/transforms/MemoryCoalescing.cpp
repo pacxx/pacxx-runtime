@@ -187,10 +187,10 @@ bool checkForMergeableMemOp(T &vec) {
 }
 
 
-struct NVVMRegPass : public ModulePass {
+struct MemoryCoalecing : public ModulePass {
   static char ID;
-  NVVMRegPass(bool runtime = false) : ModulePass(ID), runtime(runtime) {}
-  virtual ~NVVMRegPass() {}
+  MemoryCoalecing(bool runtime = false) : ModulePass(ID), runtime(runtime) {}
+  virtual ~MemoryCoalecing() {}
 
   virtual bool runOnModule(Module &M) {
     bool modified = true;
@@ -319,11 +319,11 @@ private:
   bool runtime;
 };
 
-char NVVMRegPass::ID = 0;
-static RegisterPass<NVVMRegPass>
+char MemoryCoalecing::ID = 0;
+static RegisterPass<MemoryCoalecing>
     X("nvvm_reg", "PACXX: path to reduce register preasure", false, false);
 }
 
 namespace pacxx {
-Pass *createPACXXNvvmRegPass(bool runtime) { return new NVVMRegPass(runtime); }
+Pass *createPACXXMemoryCoalecing(bool runtime) { return new MemoryCoalecing(runtime); }
 }

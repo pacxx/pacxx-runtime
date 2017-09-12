@@ -7,14 +7,14 @@ using namespace llvm;
 using namespace pacxx;
 
 namespace {
-    class PACXXTargetSelect : public ModulePass {
+    class TargetSelection : public ModulePass {
 
     public:
         static char ID;
 
-        PACXXTargetSelect(const SmallVector<std::string, 2>& targets) : ModulePass(ID), _targets(targets) {}
+        TargetSelection(const SmallVector<std::string, 2>& targets) : ModulePass(ID), _targets(targets) {}
 
-        virtual ~PACXXTargetSelect() {}
+        virtual ~TargetSelection() {}
 
         virtual bool runOnModule(Module &M) {
 
@@ -47,9 +47,9 @@ namespace {
     };
 }
 
-char PACXXTargetSelect::ID = 0;
+char TargetSelection::ID = 0;
 
 namespace pacxx {
-Pass *createPACXXTargetSelectPass(const SmallVector<std::string, 2>& targets) {
-    return new PACXXTargetSelect(targets); }
+Pass *createTargetSelectionPass(const SmallVector<std::string, 2>& targets) {
+    return new TargetSelection(targets); }
 }

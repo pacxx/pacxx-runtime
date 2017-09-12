@@ -17,10 +17,10 @@ using namespace std;
 
 namespace pacxx {
 
-struct PACXXReflection : public ModulePass {
+struct MSPGeneration : public ModulePass {
   static char ID;
-  PACXXReflection();
-  virtual ~PACXXReflection();
+  MSPGeneration();
+  virtual ~MSPGeneration();
   virtual bool runOnModule(Module &M);
   std::unique_ptr <Module> getReflectionModule();
 

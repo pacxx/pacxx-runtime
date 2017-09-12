@@ -10,18 +10,18 @@ using namespace llvm;
 using namespace pacxx;
 
 namespace llvm{
- void initializePACXXNativeBarrierPass(PassRegistry&);
+ void initializeBarrierGenerationPass(PassRegistry&);
 }
 
 
-class PACXXNativeBarrier : public ModulePass {
+class BarrierGeneration : public ModulePass {
 
 public:
     static char ID;
 
-    PACXXNativeBarrier() : llvm::ModulePass(ID) { initializePACXXNativeBarrierPass(*PassRegistry::getPassRegistry()); }
+    BarrierGeneration() : llvm::ModulePass(ID) { initializeBarrierGenerationPass(*PassRegistry::getPassRegistry()); }
 
-    virtual ~PACXXNativeBarrier() {};
+    virtual ~BarrierGeneration() {};
 
     void releaseMemory() override;
 
@@ -90,7 +90,7 @@ private:
         }
     };
 
-    typedef std::set<std::unique_ptr<PACXXNativeBarrier::BarrierInfo>, PACXXNativeBarrier::BarrierInfoLess> BarrierInfoSet;
+    typedef std::set<std::unique_ptr<BarrierGeneration::BarrierInfo>, BarrierGeneration::BarrierInfoLess> BarrierInfoSet;
 
     struct Alloca3 {
 
@@ -207,19 +207,19 @@ private:
                      unsigned incVal);
 
 private:
-    PACXXNativeLivenessAnalyzer *_livenessAnalyzer;
+    LivenessAnalyzer *_livenessAnalyzer;
     DenseMap<const Instruction *, unsigned> _indexMap;
     vector<CallInst *> _inlineCalls;
     unsigned _vectorWidth;
 };
 
-void PACXXNativeBarrier::releaseMemory() {}
+void BarrierGeneration::releaseMemory() {}
 
-void PACXXNativeBarrier::getAnalysisUsage(AnalysisUsage &AU) const {
-    AU.addRequired<PACXXNativeLivenessAnalyzer>();
+void BarrierGeneration::getAnalysisUsage(AnalysisUsage &AU) const {
+    AU.addRequired<LivenessAnalyzer>();
 }
 
-bool PACXXNativeBarrier::runOnModule(llvm::Module &M) {
+bool BarrierGeneration::runOnModule(llvm::Module &M) {
 
     auto kernels = getTagedFunctions(&M, "nvvm.annotations", "kernel");
 
@@ -261,12 +261,12 @@ bool PACXXNativeBarrier::runOnModule(llvm::Module &M) {
     return modified;
 }
 
-unsigned PACXXNativeBarrier::getVectorWidth(Function *kernel) {
+unsigned BarrierGeneration::getVectorWidth(Function *kernel) {
     unsigned numThreads = stoi(kernel->getFnAttribute("simd-size").getValueAsString().str());
     return numThreads;
 }
 
-bool PACXXNativeBarrier::runOnFunction(Module &M, Function *kernel, BarrierInfoSet &infoVec,
+bool BarrierGeneration::runOnFunction(Module &M, Function *kernel, BarrierInfoSet &infoVec,
                                        bool vecVersion) {
 
     LLVMContext &ctx = M.getContext();
@@ -292,7 +292,7 @@ bool PACXXNativeBarrier::runOnFunction(Module &M, Function *kernel, BarrierInfoS
     M.print(OS, nullptr);
 
     __verbose("Getting living value analysis \n");
-    _livenessAnalyzer = &getAnalysis<PACXXNativeLivenessAnalyzer>(*kernel);
+    _livenessAnalyzer = &getAnalysis<LivenessAnalyzer>(*kernel);
 
     infoVec.insert(createFirstInfo(ctx, kernel));
 
@@ -317,7 +317,7 @@ bool PACXXNativeBarrier::runOnFunction(Module &M, Function *kernel, BarrierInfoS
     return true;
 }
 
-vector<Instruction *> PACXXNativeBarrier::findBarriers(Function *kernel) {
+vector<Instruction *> BarrierGeneration::findBarriers(Function *kernel) {
     vector<Instruction *> barriers;
     for (scc_iterator<Function *> I = scc_begin(kernel), IE = scc_end(kernel); I != IE; ++I) {
         const vector<BasicBlock *> &SCCBBs = *I;
@@ -335,7 +335,7 @@ vector<Instruction *> PACXXNativeBarrier::findBarriers(Function *kernel) {
     return barriers;
 }
 
-bool PACXXNativeBarrier::isaBarrier(const Instruction *inst) {
+bool BarrierGeneration::isaBarrier(const Instruction *inst) {
     if (auto CI = dyn_cast<CallInst>(inst)) {
         auto called = CI->getCalledFunction();
         if (called && called->isIntrinsic()) {
@@ -347,7 +347,7 @@ bool PACXXNativeBarrier::isaBarrier(const Instruction *inst) {
     return false;
 }
 
-void PACXXNativeBarrier::splitAtBarriers(Module &M, vector<Instruction *> barriers) {
+void BarrierGeneration::splitAtBarriers(Module &M, vector<Instruction *> barriers) {
 
     __verbose("Splitting blocks at barriers \n");
 
@@ -362,7 +362,7 @@ void PACXXNativeBarrier::splitAtBarriers(Module &M, vector<Instruction *> barrie
     }
 }
 
-std::unique_ptr<PACXXNativeBarrier::BarrierInfo> PACXXNativeBarrier::createFirstInfo(LLVMContext &ctx, Function *kernel) {
+std::unique_ptr<BarrierGeneration::BarrierInfo> BarrierGeneration::createFirstInfo(LLVMContext &ctx, Function *kernel) {
     __verbose("Creating info for first barrier \n");
     vector<const Value *> livingValues;
     SmallVector<Type*, 8> params;
@@ -382,7 +382,7 @@ std::unique_ptr<PACXXNativeBarrier::BarrierInfo> PACXXNativeBarrier::createFirst
     return info;
 }
 
-std::unique_ptr<PACXXNativeBarrier::BarrierInfo> PACXXNativeBarrier::createBarrierInfo(Module &M, Instruction *barrier, unsigned id) {
+std::unique_ptr<BarrierGeneration::BarrierInfo> BarrierGeneration::createBarrierInfo(Module &M, Instruction *barrier, unsigned id) {
 
 
     LLVMContext &ctx = M.getContext();
@@ -411,14 +411,14 @@ std::unique_ptr<PACXXNativeBarrier::BarrierInfo> PACXXNativeBarrier::createBarri
     return info;
 }
 
-SetVector<const BasicBlock *> PACXXNativeBarrier::getPartsOfBarrier(Instruction *barrier) {
+SetVector<const BasicBlock *> BarrierGeneration::getPartsOfBarrier(Instruction *barrier) {
     SetVector<const BasicBlock *> parts;
     BasicBlock *barrierParent = barrier->getParent();
     recursivePartFinding(barrierParent, parts);
     return parts;
 }
 
-void PACXXNativeBarrier::recursivePartFinding(BasicBlock *block, SetVector<const BasicBlock *> &parts) {
+void BarrierGeneration::recursivePartFinding(BasicBlock *block, SetVector<const BasicBlock *> &parts) {
     for (auto I = succ_begin(block), IE = succ_end(block); I != IE; ++I) {
         BasicBlock *B = *I;
         //if we already inserted this block ignore it
@@ -430,7 +430,7 @@ void PACXXNativeBarrier::recursivePartFinding(BasicBlock *block, SetVector<const
     }
 }
 
-bool PACXXNativeBarrier::hasBarrier(const BasicBlock *block) {
+bool BarrierGeneration::hasBarrier(const BasicBlock *block) {
     for(auto &I : *block) {
         if(isaBarrier(&I))
             return true;
@@ -438,7 +438,7 @@ bool PACXXNativeBarrier::hasBarrier(const BasicBlock *block) {
     return false;
 }
 
-vector<const Value *> PACXXNativeBarrier::getLivingValuesForBarrier(Module &M, SetVector<const BasicBlock *> &parts) {
+vector<const Value *> BarrierGeneration::getLivingValuesForBarrier(Module &M, SetVector<const BasicBlock *> &parts) {
     __verbose("get living values for barrier \n");
     const DataLayout &dl = M.getDataLayout();
     auto livingValues = _livenessAnalyzer->getLivingInValuesForBlock(parts[0]);
@@ -471,7 +471,7 @@ vector<const Value *> PACXXNativeBarrier::getLivingValuesForBarrier(Module &M, S
     return sortedLivingValues;
 }
 
-StructType *PACXXNativeBarrier::getLivingValuesType(LLVMContext &ctx, vector<const Value *> &livingValues) {
+StructType *BarrierGeneration::getLivingValuesType(LLVMContext &ctx, vector<const Value *> &livingValues) {
 
     SmallVector<Type*, 8> params;
     for(auto value : livingValues) {
@@ -481,7 +481,7 @@ StructType *PACXXNativeBarrier::getLivingValuesType(LLVMContext &ctx, vector<con
     return StructType::get(ctx, params, false);
 }
 
-Function *PACXXNativeBarrier::createFunction(Module &M, Function *kernel, const std::unique_ptr<BarrierInfo> &info) {
+Function *BarrierGeneration::createFunction(Module &M, Function *kernel, const std::unique_ptr<BarrierInfo> &info) {
 
     __verbose("Creating function for barrier \n");
 
@@ -639,7 +639,7 @@ Function *PACXXNativeBarrier::createFunction(Module &M, Function *kernel, const 
     return newFunc;
 }
 
-void PACXXNativeBarrier::storeLiveValues(Module &M, const std::unique_ptr<BarrierInfo> &info, ValueToValueMapTy &origFnMap) {
+void BarrierGeneration::storeLiveValues(Module &M, const std::unique_ptr<BarrierInfo> &info, ValueToValueMapTy &origFnMap) {
 
     __verbose("create store for live values \n");
 
@@ -687,7 +687,7 @@ void PACXXNativeBarrier::storeLiveValues(Module &M, const std::unique_ptr<Barrie
     __verbose("Finished creating store \n");
 }
 
-void PACXXNativeBarrier::createSpecialFooWrapper(Module &M, Function *pacxx_block, Function *kernel,
+void BarrierGeneration::createSpecialFooWrapper(Module &M, Function *pacxx_block, Function *kernel,
                                                  BarrierInfoSet &barrierInfo,
                                                  BarrierInfoSet &vecBarrierInfo) {
 
@@ -829,7 +829,7 @@ void PACXXNativeBarrier::createSpecialFooWrapper(Module &M, Function *pacxx_bloc
 
 }
 
-StructType * PACXXNativeBarrier::getMaxStructType(const DataLayout &dl, BarrierInfoSet &infos) {
+StructType * BarrierGeneration::getMaxStructType(const DataLayout &dl, BarrierInfoSet &infos) {
     uint64_t  maxStructSize = 0;
     StructType *maxStructType = nullptr;
     for(auto &info : infos) {
@@ -844,7 +844,7 @@ StructType * PACXXNativeBarrier::getMaxStructType(const DataLayout &dl, BarrierI
     return maxStructType;
 }
 
-AllocaInst *PACXXNativeBarrier::createMemForLivingValues(const DataLayout &dl, StructType *maxStructType,
+AllocaInst *BarrierGeneration::createMemForLivingValues(const DataLayout &dl, StructType *maxStructType,
                                                          Value *numThreads, BasicBlock *BB) {
 
     LLVMContext &ctx = BB->getContext();
@@ -859,7 +859,7 @@ AllocaInst *PACXXNativeBarrier::createMemForLivingValues(const DataLayout &dl, S
     return alloca;
 }
 
-BasicBlock *PACXXNativeBarrier::createCase(Module &M,
+BasicBlock *BarrierGeneration::createCase(Module &M,
                                            const CaseInfo &info,
                                            bool vectorized) {
 
@@ -931,7 +931,7 @@ BasicBlock *PACXXNativeBarrier::createCase(Module &M,
     return caseEntry;
 }
 
-pair<BasicBlock *, BasicBlock*> PACXXNativeBarrier::createXLoop(Module &M,
+pair<BasicBlock *, BasicBlock*> BarrierGeneration::createXLoop(Module &M,
                                                                 const CaseInfo &info,
                                                                 Alloca3 id,
                                                                 BasicBlock *afterBB,
@@ -1015,7 +1015,7 @@ pair<BasicBlock *, BasicBlock*> PACXXNativeBarrier::createXLoop(Module &M,
     __verbose("Done creating the x-loop \n");
 }
 
-void PACXXNativeBarrier::fillLoopXBody(Module &M,
+void BarrierGeneration::fillLoopXBody(Module &M,
                                        const CaseInfo &info,
                                        BasicBlock *loopBody,
                                        BasicBlock *nextBB,
@@ -1107,7 +1107,7 @@ void PACXXNativeBarrier::fillLoopXBody(Module &M,
     __verbose("Done filling x-loop body \n");
 }
 
-void PACXXNativeBarrier::fillLoopHeader(BasicBlock *loopHeader, AllocaInst *loopVar, AllocaInst *loopMax,
+void BarrierGeneration::fillLoopHeader(BasicBlock *loopHeader, AllocaInst *loopVar, AllocaInst *loopMax,
                                          BasicBlock *trueBB, BasicBlock *falseBB) {
     __verbose("Filling loop header");
 
@@ -1120,7 +1120,7 @@ void PACXXNativeBarrier::fillLoopHeader(BasicBlock *loopHeader, AllocaInst *loop
     __verbose("Finished filling loop header");
 }
 
-void PACXXNativeBarrier::fillLoopEnd(BasicBlock *loopEnd, BasicBlock *branchBB,
+void BarrierGeneration::fillLoopEnd(BasicBlock *loopEnd, BasicBlock *branchBB,
                                       AllocaInst *loopValue, Type *int32_type, unsigned incVal) {
     __verbose("filling loop End");
 
@@ -1132,17 +1132,17 @@ void PACXXNativeBarrier::fillLoopEnd(BasicBlock *loopEnd, BasicBlock *branchBB,
     __verbose("Finished filling loop end");
 }
 
-char PACXXNativeBarrier::ID = 0;
+char BarrierGeneration::ID = 0;
 
-INITIALIZE_PASS_BEGIN(PACXXNativeBarrier, "native-barrier",
+INITIALIZE_PASS_BEGIN(BarrierGeneration, "native-barrier",
                 "Native barrier", true, true)
-INITIALIZE_PASS_DEPENDENCY(PACXXNativeLivenessAnalyzer)
-INITIALIZE_PASS_END(PACXXNativeBarrier, "native-barrier",
+INITIALIZE_PASS_DEPENDENCY(LivenessAnalyzer)
+INITIALIZE_PASS_END(BarrierGeneration, "native-barrier",
                 "Native barrier", true, true)
 
 namespace pacxx {
-    llvm::Pass *createPACXXNativeBarrierPass() {
-        return new PACXXNativeBarrier();
+    llvm::Pass *createBarrierGenerationPass() {
+        return new BarrierGeneration();
     }
 }
 

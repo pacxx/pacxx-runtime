@@ -173,7 +173,7 @@ std::unique_ptr<llvm::Module> NativeBackend::prepareModule(llvm::Module &M) {
   PM.add(createBreakCriticalEdgesPass());
   PM.add(createConstantMergePass());
 
-  auto PRP = createPACXXReflectionPass();
+  auto PRP = createMSPGenerationPass();
   PM.add(PRP);
   PM.add(createAlwaysInlinerLegacyPass());
   PM.add(createPACXXCodeGenPrepare());
@@ -183,10 +183,10 @@ std::unique_ptr<llvm::Module> NativeBackend::prepareModule(llvm::Module &M) {
   PM.add(createCFGSimplificationPass());
   PM.add(createAlwaysInlinerLegacyPass());
   PM.add(createPACXXCodeGenPrepare());
-  PM.add(createPACXXIntrinsicSchedulerPass());
+  PM.add(createIntrinsicSchedulerPass());
 
-  PM.add(createPACXXReflectionRemoverPass());
-  PM.add(createPACXXTargetSelectPass({"CPU", "Generic"}));
+  PM.add(createMSPRemoverPass());
+  PM.add(createTargetSelectionPass({"CPU", "Generic"}));
   PM.add(createAlwaysInlinerLegacyPass());
   PM.add(createPACXXCodeGenPrepare());
   PM.add(createCFGSimplificationPass());
@@ -201,12 +201,12 @@ std::unique_ptr<llvm::Module> NativeBackend::prepareModule(llvm::Module &M) {
 
   PM.run(M);
 
-  auto RM = reinterpret_cast<PACXXReflection*>(PRP)->getReflectionModule();
+  auto RM = reinterpret_cast<MSPGeneration*>(PRP)->getReflectionModule();
   PassManagerBuilder builder;
   builder.OptLevel = 3;
   legacy::PassManager RPM;
   RPM.add(createAlwaysInlinerLegacyPass());
-  RPM.add(createPACXXReflectionCleanerPass());
+  RPM.add(createMSPCleanupPass());
   builder.populateModulePassManager(RPM);
   RPM.run(*RM);
 
@@ -333,7 +333,7 @@ void NativeBackend::applyPasses(Module &M) {
     _PM.add(createEarlyCSEPass(true));
     if(!_disableExpPasses) {
 
-      _PM.add(createPACXXNvvmRegPass(false));
+      _PM.add(createMemoryCoalecingPass(false));
       _PM.add(createDeadInstEliminationPass());
     }
     _PM.add(createLowerSwitchPass());
@@ -342,14 +342,14 @@ void NativeBackend::applyPasses(Module &M) {
       _PM.add(createSPMDVectorizerPass());
     _PM.add(createAlwaysInlinerLegacyPass());
     if (!_disableSelectEmitter)
-      _PM.add(createPACXXSelectEmitterPass());
-    _PM.add(createPACXXIntrinsicSchedulerPass());
-    _PM.add(createPACXXNativeBarrierPass());
+      _PM.add(createMaskedMemTransformPass());
+    _PM.add(createIntrinsicSchedulerPass());
+    _PM.add(createBarrierGenerationPass());
    // _PM.add(createVerifierPass());
 
-    _PM.add(createPACXXNativeLinkerPass());
+    _PM.add(createKernelLinkerPass());
 
-    _PM.add(createPACXXNativeSMPass());
+    _PM.add(createSMGenerationPass());
 
     _PM.add(createVerifierPass());
     builder.populateModulePassManager(_PM);
