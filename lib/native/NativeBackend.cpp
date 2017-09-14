@@ -332,8 +332,7 @@ void NativeBackend::applyPasses(Module &M) {
 
     _PM.add(createEarlyCSEPass(true));
     if(!_disableExpPasses) {
-
-      _PM.add(createMemoryCoalecingPass(false));
+      _PM.add(createMemoryCoalescingPass(false));
       _PM.add(createDeadInstEliminationPass());
     }
     _PM.add(createLowerSwitchPass());

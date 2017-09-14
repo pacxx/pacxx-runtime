@@ -126,7 +126,7 @@ std::unique_ptr<llvm::Module> PTXBackend::prepareModule(llvm::Module &M) {
   PM.add(createMSPRemoverPass());
   PM.add(createNVPTXPrepairPass());
 
-  PM.add(createMemoryCoalecingPass(false));
+  PM.add(createMemoryCoalescingPass(false));
   PM.add(createAlwaysInlinerLegacyPass());
   PM.add(createPACXXCodeGenPrepare());
   PM.add(createCFGSimplificationPass());
@@ -194,7 +194,7 @@ std::string PTXBackend::compile(llvm::Module &M) {
   PM.add(createCFGSimplificationPass());
   PM.add(createInstructionCombiningPass());
   // PM.add(createPACXXStaticEvalPass());
-  PM.add(createMemoryCoalecingPass(true));
+  PM.add(createMemoryCoalescingPass(true));
 
   if (common::GetEnv("PACXX_PTX_BACKEND_O3") != "") {
     PassManagerBuilder builder;

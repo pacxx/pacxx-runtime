@@ -12,7 +12,7 @@ class Pass;
 
 namespace pacxx {
 llvm::Pass *createIntrinsicSchedulerPass();
-llvm::Pass *createMemoryCoalecingPass(bool);
+llvm::Pass *createMemoryCoalescingPass(bool);
 llvm::Pass *createIntrinsicMapperPass();
 llvm::Pass *createMSPGenerationPass();
 llvm::Pass *createMSPCleanupPass();

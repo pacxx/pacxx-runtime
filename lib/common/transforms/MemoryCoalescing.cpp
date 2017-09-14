@@ -325,5 +325,5 @@ static RegisterPass<MemoryCoalecing>
 }
 
 namespace pacxx {
-Pass *createPACXXMemoryCoalecing(bool runtime) { return new MemoryCoalecing(runtime); }
+Pass *createMemoryCoalescingPass(bool runtime) { return new MemoryCoalecing(runtime); }
 }
