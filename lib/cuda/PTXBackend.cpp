@@ -29,6 +29,7 @@
 #include <llvm/Transforms/Scalar/GVN.h>
 #include <llvm/Transforms/IPO/AlwaysInliner.h>
 #include <llvm/Transforms/IPO.h>
+#include <fstream>
 #include "pacxx/ModuleLoader.h"
 
 #include "pacxx/detail/common/transforms/PACXXTransforms.h"
@@ -213,7 +214,13 @@ std::string PTXBackend::compile(llvm::Module &M) {
   }
 
   PM.run(M);
-  return ptxString.str().str();
+
+  auto ptx = ptxString.str().str();
+  if (common::GetEnv("PACXX_DUMP_ASM") != ""){
+    std::ofstream out("dump.ptx");
+    out << ptx;
+  }
+  return ptx;
 }
 
 }

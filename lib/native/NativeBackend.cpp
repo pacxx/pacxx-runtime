@@ -355,11 +355,11 @@ void NativeBackend::applyPasses(Module &M) {
     _pmInitialized = true;
   }
 
-  /*
-  std::error_code EC;
-  raw_fd_ostream OS2("assembly.asm", EC, sys::fs::F_None);
-  _machine->addPassesToEmitFile(_PM, OS2, TargetMachine::CGFT_AssemblyFile);
-   */
+  if (common::GetEnv("PACXX_DUMP_ASM") != "") {
+    std::error_code EC;
+    raw_fd_ostream OS2("dump.asm", EC, sys::fs::F_None);
+    _machine->addPassesToEmitFile(_PM, OS2, TargetMachine::CGFT_AssemblyFile);
+  }
 
   _PM.run(M);
 }
