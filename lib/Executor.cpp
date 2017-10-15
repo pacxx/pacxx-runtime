@@ -74,6 +74,34 @@ IRRuntime &Executor::rt() { return *_runtime; }
 
 void Executor::synchronize() { _runtime->synchronize(); }
 
+#define __PACXX_RUNTIME_LINKING
+#ifdef __PACXX_RUNTIME_LINKING
+const char *llvm_start = nullptr;
+const char *llvm_end = nullptr;
+#endif
+
+Executor &Executor::Create(std::unique_ptr<IRRuntime> rt, std::string module_bytes) {
+  auto &executors = getExecutors();
+
+  executors.emplace_back(std::move(rt));
+  auto &instance = executors.back();
+
+  instance._id = executors.size() - 1;
+  __verbose("Created new Executor with id: ", instance.getID());
+  ModuleLoader loader(instance.getLLVMContext());
+  if (module_bytes == "") {
+    auto M = loader.loadInternal(llvm_start, llvm_end - llvm_start);
+    instance.setModule(std::move(M));
+  } else {
+    ModuleLoader loader(instance.getLLVMContext());
+    auto M = loader.loadInternal(module_bytes.data(), module_bytes.size());
+    instance.setModule(std::move(M));
+  }
+
+  return instance;
+}
+
+
 }
 }
 

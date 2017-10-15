@@ -4,3 +4,4 @@ spmdTest/
 cmake/pacxx/FindPACXXConfig.cmake
 include/pacxx/pacxx_config.h
 
+.vscode/

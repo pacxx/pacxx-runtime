@@ -32,11 +32,8 @@
 #include <memory>
 #include <regex>
 #include <string>
-
-#ifdef __PACXX_RUNTIME_LINKING
-const char *llvm_start = nullptr;
-const char *llvm_end = nullptr;
-#else
+#define __PACXX_RUNTIME_LINKING
+#ifndef __PACXX_RUNTIME_LINKING
 extern const char llvm_start[];
 extern const char llvm_end[];
 #endif
@@ -92,26 +89,7 @@ public:
     return Executor::Create(std::move(rt));
   }
 
-  static Executor &Create(std::unique_ptr<IRRuntime> rt, std::string module_bytes = "") {
-    auto &executors = getExecutors();
-
-    executors.emplace_back(std::move(rt));
-    auto &instance = executors.back();
-
-    instance._id = executors.size() - 1;
-    __verbose("Created new Executor with id: ", instance.getID());
-    ModuleLoader loader(instance.getLLVMContext());
-    if (module_bytes == "") {
-      auto M = loader.loadInternal(llvm_start, llvm_end - llvm_start);
-      instance.setModule(std::move(M));
-    } else {
-      ModuleLoader loader(instance.getLLVMContext());
-      auto M = loader.loadInternal(module_bytes.data(), module_bytes.size());
-      instance.setModule(std::move(M));
-    }
-
-    return instance;
-  }
+  static Executor &Create(std::unique_ptr<IRRuntime> rt, std::string module_bytes = "");
 
   Executor(std::unique_ptr<IRRuntime> &&rt);
 

@@ -7,19 +7,18 @@
 #include "pacxx/detail/device/DeviceCode.h"
 #include "pacxx/detail/device/DeviceFunctionDecls.h"
 
-#ifdef __CUDA_DEVICE_CODE
 #ifdef __device_code__
 
 ///////////////////////////// INDEXING ////////////////////////////
 
 using intptr_t = long;
 
-typedef const __attribute__((address_space(4))) char *_format_t;
+/*typedef const __attribute__((address_space(4))) char *_format_t;
 __forceinline__ void __vprintf_conv(_format_t ptr) {
   const char *out;
   asm("cvta.const.u64  %0, %1;" : "=r"(out) : "r"(ptr) :);
 }
-
+*/
 ///////////////////////////// ATOMICS ////////////////////////////
 /*
 #define __to_string(v) #v
@@ -204,11 +203,16 @@ extern "C" {
 
 ///////////////////////////// MATH ////////////////////////////
 
+extern "C" __forceinline__ int __mul24(int x, int y)
+{
+  return __nv_mul24(x, y);
+}
+
 extern "C" __forceinline__ float fmax(float v1, float v2) {
-  return __nvvm_fmax_f(v1, v2);
+  return __nv_fmaxf(v1, v2);
 }
 extern "C" __forceinline__ float fmin(float v1, float v2) {
-  return __nvvm_fmin_f(v1, v2);
+  return __nv_fminf(v1, v2);
 }
 
 extern "C" __forceinline__ float fmaxf(float v1, float v2) {
@@ -224,22 +228,22 @@ extern "C" __forceinline__ float fabsf(float val) {
   return __nv_fabsf(val);
 }
 extern "C" __forceinline__ double sqrt(double val) {
-  return __nvvm_sqrt_rn_d(val);
+  return __nv_sqrt(val);
 }
 extern "C" __forceinline__ float sqrtf(float val) {
-  return __nvvm_sqrt_rn_f(val);
+  return __nv_sqrtf(val);
 }
 extern "C" __forceinline__ double rsqrt(double val) {
-  return __nvvm_rsqrt_approx_d(val);
+  return __nv_rsqrt(val);
 }
 extern "C" __forceinline__ float rsqrtf(float val) {
-  return __nvvm_rsqrt_approx_f(val);
+  return __nv_rsqrtf(val);
 }
 extern "C" __forceinline__ double log(double val) {
   return __nv_log(val);
 }
 extern "C" __forceinline__ double exp(double val) {
-  return __nvvm_ex2_approx_d(val);
+  return __nv_exp(val);
 }
 extern "C" __forceinline__ double sin(double val) {
   return __nv_sin(val);
@@ -251,13 +255,13 @@ extern "C" __forceinline__ float logf(float val) {
   return __nv_logf(val);
 }
 extern "C" __forceinline__ float expf(float val) {
-  return __nvvm_ex2_approx_f(val);
+  return __nv_expf(val);
 }
 extern "C" __forceinline__ float sinf(float val) {
-  return __nvvm_sin_approx_f(val);
+  return __nv_sinf(val);
 }
 extern "C" __forceinline__ float cosf(float val) {
-  return __nvvm_cos_approx_f(val);
+  return __nv_cosf(val);
 }
 extern "C" __forceinline__ float ceilf(float val) {
   return __nv_ceilf(val);
@@ -276,4 +280,4 @@ extern "C" __forceinline__ double exp10(double a) { return __nv_exp10(a); }
 
 
 #endif
-#endif
+

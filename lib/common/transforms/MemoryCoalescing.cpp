@@ -203,7 +203,6 @@ struct MemoryCoalecing : public ModulePass {
       opt.visit(F);
       opt.finalize();
     }
-
     return modified;
   }
 
@@ -215,7 +214,7 @@ private:
 
 
     void visitMemCpyInst(MemCpyInst &MCI) {
-
+      return;
       const DataLayout &dl = M->getDataLayout();
 
       Value *dest = MCI.getRawDest();
