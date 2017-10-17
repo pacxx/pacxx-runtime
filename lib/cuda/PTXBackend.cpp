@@ -124,6 +124,7 @@ std::unique_ptr<llvm::Module> PTXBackend::prepareModule(llvm::Module &M) {
   PM.add(createTargetSelectionPass({"GPU", "Generic"}));
   PM.add(createIntrinsicMapperPass());
   PM.add(createAddressSpaceTransformPass());
+  PM.add(createLoadMotionPass());
   PM.add(createMSPRemoverPass());
   PM.add(createNVPTXPrepairPass());
 
@@ -140,7 +141,6 @@ std::unique_ptr<llvm::Module> PTXBackend::prepareModule(llvm::Module &M) {
   PM.add(createSROAPass());
   PM.add(createPromoteMemoryToRegisterPass());
   PM.add(createInstructionCombiningPass());
-  PM.add(createInferAddressSpacesPass());
 
   PM.run(M);
 
@@ -172,14 +172,12 @@ std::string PTXBackend::compile(llvm::Module &M) {
   TargetLibraryInfoImpl TLII(Triple(M.getTargetTriple()));
   PM.add(new TargetLibraryInfoWrapperPass(TLII));
   PM.add(createReassociatePass());
-  PM.add(createInferAddressSpacesPass());
   PM.add(createConstantPropagationPass());
   PM.add(createSCCPPass());
   PM.add(createConstantHoistingPass());
   PM.add(createCorrelatedValuePropagationPass());
   PM.add(createInstructionCombiningPass());
   PM.add(createLICMPass());
-  PM.add(createInferAddressSpacesPass());
   PM.add(createIndVarSimplifyPass());
   PM.add(createLoopRotatePass());
   PM.add(createLoopSimplifyPass());
@@ -196,6 +194,10 @@ std::string PTXBackend::compile(llvm::Module &M) {
   PM.add(createInstructionCombiningPass());
   // PM.add(createPACXXStaticEvalPass());
   PM.add(createMemoryCoalescingPass(true));
+  PM.add(createLoopLoadEliminationPass());
+  PM.add(createLoopIdiomPass());
+  PM.add(createLICMPass());
+  PM.add(createEarlyCSEPass());
 
   if (common::GetEnv("PACXX_PTX_BACKEND_O3") != "") {
     PassManagerBuilder builder;

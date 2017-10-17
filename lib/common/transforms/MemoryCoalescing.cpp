@@ -197,20 +197,94 @@ struct MemoryCoalecing : public ModulePass {
 
     auto kernels = getTagedFunctions(&M, "nvvm.annotations", "kernel");
 
-    BaseOpts opt(&M);
+    MemoryOpts opt(&M);
     for (auto &F : M.getFunctionList()) {
       opt.initialize(F);
       opt.visit(F);
       opt.finalize();
     }
+
+    CEExtractor extr; 
+
+    for (auto& F : M.getFunctionList()){
+      extr.visit(F);
+    }
+
+    struct BitCastStripper : public InstVisitor<BitCastStripper> {
+      SmallVector<Instruction*, 8> dead;
+      void visitBitCastInst(BitCastInst &CI) {
+        if (CI.hasNUses(1)) { // we got a bitcast with one user
+          Value *user = *CI.user_begin();
+          if (auto SI = dyn_cast<StoreInst>(user)) { // if this user is a store
+            auto V = SI->getValueOperand();
+            if (auto LI =
+                    dyn_cast<LoadInst>(V)) { // we look if the value is a load
+              if (LI->hasNUses(1)) {         // with one use
+                if (auto BC = dyn_cast<BitCastInst>(LI->getPointerOperand())){ // if the pointer is also a bitcast
+                  if (CI.getSrcTy()->getPointerElementType() ==
+                      BC->getSrcTy()->getPointerElementType()) { // and both source types match
+                    // we strip the entire casting and load and store the original type
+                    auto newLoad = new LoadInst(BC->getOperand(0), "", LI);
+                    new StoreInst(newLoad, CI.getOperand(0), SI->isVolatile(), SI);
+                    dead.push_back(SI);
+                    dead.push_back(LI);
+                    dead.push_back(BC);
+                    dead.push_back(&CI);
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    } bcstrip;
+
+    for (auto F : kernels){
+      bcstrip.visit(F);
+    }
+
+    struct UglyGEPFixer : public InstVisitor<UglyGEPFixer>{
+      void visitGetElementPtrInst(GetElementPtrInst& I){
+        if (auto idx = dyn_cast<IntToPtrInst>(I.getPointerOperand())){
+          idx->dump();
+          if (auto ptr = dyn_cast<PtrToIntInst>(I.getOperand(1))){
+            ptr->dump();
+            I.dump();
+            if (auto CE = dyn_cast<ConstantInt>(idx->getOperand(0))){
+              auto newCE = ConstantInt::get(CE->getType(), *CE->getValue().getRawData() / (ptr->getSrcTy()->getPointerElementType()->getScalarSizeInBits()/8));
+              SmallVector<Value*, 1> indices;
+              indices.push_back(newCE);
+              auto newGEP = GetElementPtrInst::Create(ptr->getSrcTy()->getPointerElementType(), ptr->getOperand(0), indices, "", &I);
+              newGEP->dump();
+              for (auto U : I.users()){
+                if (auto BC = dyn_cast<BitCastInst>(U)){
+                  if (BC->getType() == newGEP->getType()){
+                    BC->replaceAllUsesWith(newGEP);
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }gepFixer;
+
+    for (auto F : kernels)
+      gepFixer.visit(F);
+
+    for (auto V : bcstrip.dead) {
+      V->replaceAllUsesWith(UndefValue::get(V->getType()));
+      cast<Instruction>(V)->eraseFromParent();
+    }
+
     return modified;
   }
 
 private:
 
-  class BaseOpts : public InstVisitor<BaseOpts> {
+  class MemoryOpts : public InstVisitor<MemoryOpts> {
   public:
-    BaseOpts(Module *module) : M(module) {}
+    MemoryOpts(Module *module) : M(module) {}
 
 
     void visitMemCpyInst(MemCpyInst &MCI) {
@@ -253,7 +327,6 @@ private:
     }
 
     void visitStoreInst(StoreInst &SI) {
-      return;
       auto addr = SI.getPointerOperand();
       if (auto GEP = dyn_cast<GetElementPtrInst>(addr)) {
         if (GEP->getPointerOperandType()->getPointerElementType()->isAggregateType()) {
@@ -263,7 +336,6 @@ private:
     }
 
     void visitLoadInst(LoadInst &LI) {
-      return;
       auto addr = LI.getPointerOperand();
       if (auto GEP = dyn_cast<GetElementPtrInst>(addr)) {
         if (GEP->getPointerOperandType()->getPointerElementType()->isAggregateType()) {

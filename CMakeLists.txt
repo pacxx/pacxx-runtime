@@ -80,6 +80,7 @@ set(SOURCE_FILES include/pacxx/Executor.h
         lib/common/transforms/MSPCleanup.cpp
         lib/common/transforms/IntrinsicScheduler.cpp
         lib/common/transforms/CodeGenPrepare.cpp
+        lib/common/transforms/LoadMotion.cpp
         lib/native/transforms/LivenessAnalysis.h
         lib/native/transforms/LivenessAnalysis.cpp
         lib/native/transforms/BarrierGeneration.cpp

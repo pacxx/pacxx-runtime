@@ -19,4 +19,5 @@ llvm::Pass *createMSPCleanupPass();
 llvm::Pass *createMSPRemoverPass();
 llvm::Pass *createTargetSelectionPass(const llvm::SmallVector<std::string, 2>& targets);
 llvm::Pass *createPACXXCodeGenPrepare();
+llvm::Pass *createLoadMotionPass();
 }
