@@ -42,7 +42,7 @@ using namespace pacxx;
 namespace {
 template<typename T>
 void mergeStores(T &vec) {
-
+  llvm::errs() << "merging store\n";
   // sort on last index of gep
   std::sort(vec.begin(), vec.end(), [](auto a, auto b) {
     GetElementPtrInst *first = a.first;
@@ -80,7 +80,7 @@ void mergeStores(T &vec) {
       value->dump();
     });
   }
-  auto addrCast = builder.CreateBitCast(vec[0].first, value->getType()->getPointerTo(0));
+  auto addrCast = builder.CreateBitCast(vec[0].first, value->getType()->getPointerTo(vec[0].first->getType()->getPointerAddressSpace()));
   addrCast->dump();
   auto mergedStore = builder.CreateStore(value, addrCast);
   mergedStore->dump();
@@ -92,7 +92,7 @@ void mergeStores(T &vec) {
 
 template<typename T>
 void mergeLoads(T &vec) {
-
+  llvm::errs() << "merging loads\n";
   // sort on last index of gep
   std::sort(vec.begin(), vec.end(), [](auto a, auto b) {
     GetElementPtrInst *first = a.first;
@@ -106,7 +106,7 @@ void mergeLoads(T &vec) {
   Type *elementTy = vec[0].second->getType();
   Type *vecTy = VectorType::get(elementTy, vec.size());
 
-  auto cast = builder.CreateBitCast(vec[0].first, vecTy->getPointerTo());
+  auto cast = builder.CreateBitCast(vec[0].first, vecTy->getPointerTo(vec[0].first->getType()->getPointerAddressSpace()));
   Value *vector = builder.CreateLoad(cast, "mergedLoad");
 
   std::for_each(vec.begin(), vec.end(), [&, i = 0](auto &p) mutable {
@@ -162,7 +162,7 @@ bool checkForMergeableMemOp(T &vec) {
   if (!indexMatch)
     return false;
 
-  llvm::errs() << "index match";
+  llvm::errs() << "index match\n";
 
   // collect last indices
   vector<int64_t> idx(vec.size()), diff(vec.size());
@@ -180,10 +180,12 @@ bool checkForMergeableMemOp(T &vec) {
 
   auto consecutive = std::all_of(diff.begin() + 1, diff.end(), [](auto v) { return v == 1; });
 
-  if (indexMatch && consecutive)
+  if (indexMatch && consecutive){
     llvm::errs() << "matched\n";
+    return true;
+  }
 
-  return true;
+  return false;
 }
 
 
@@ -268,10 +270,10 @@ struct MemoryCoalecing : public ModulePass {
         }
       }
     }gepFixer;
-
+#if 1
     for (auto F : kernels)
-      gepFixer.visit(F);
-
+        gepFixer.visit(F);
+#endif 
     for (auto V : bcstrip.dead) {
       V->replaceAllUsesWith(UndefValue::get(V->getType()));
       cast<Instruction>(V)->eraseFromParent();
@@ -327,6 +329,7 @@ private:
     }
 
     void visitStoreInst(StoreInst &SI) {
+      return;
       auto addr = SI.getPointerOperand();
       if (auto GEP = dyn_cast<GetElementPtrInst>(addr)) {
         if (GEP->getPointerOperandType()->getPointerElementType()->isAggregateType()) {
@@ -336,6 +339,7 @@ private:
     }
 
     void visitLoadInst(LoadInst &LI) {
+      return;
       auto addr = LI.getPointerOperand();
       if (auto GEP = dyn_cast<GetElementPtrInst>(addr)) {
         if (GEP->getPointerOperandType()->getPointerElementType()->isAggregateType()) {

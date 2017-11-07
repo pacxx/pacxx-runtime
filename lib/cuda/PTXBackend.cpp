@@ -124,7 +124,7 @@ std::unique_ptr<llvm::Module> PTXBackend::prepareModule(llvm::Module &M) {
   PM.add(createTargetSelectionPass({"GPU", "Generic"}));
   PM.add(createIntrinsicMapperPass());
   PM.add(createAddressSpaceTransformPass());
-  PM.add(createLoadMotionPass());
+ // PM.add(createLoadMotionPass());
   PM.add(createMSPRemoverPass());
   PM.add(createNVPTXPrepairPass());
 
@@ -194,10 +194,11 @@ std::string PTXBackend::compile(llvm::Module &M) {
   PM.add(createInstructionCombiningPass());
   // PM.add(createPACXXStaticEvalPass());
   PM.add(createMemoryCoalescingPass(true));
+  PM.add(createDeadInstEliminationPass());
   PM.add(createLoopLoadEliminationPass());
-  PM.add(createLoopIdiomPass());
+  //PM.add(createLoopIdiomPass());
   PM.add(createLICMPass());
-  PM.add(createEarlyCSEPass());
+  //PM.add(createEarlyCSEPass());
 
   if (common::GetEnv("PACXX_PTX_BACKEND_O3") != "") {
     PassManagerBuilder builder;

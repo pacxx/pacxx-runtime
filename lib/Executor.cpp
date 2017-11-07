@@ -16,7 +16,6 @@ Executor::Executor(Executor &&other)  {
 }
 
 void Executor::setModule(std::unique_ptr <llvm::Module> M) {
-
   _runtime->link(std::move(M));
 
   auto &nM = _runtime->getModule();
@@ -74,7 +73,6 @@ IRRuntime &Executor::rt() { return *_runtime; }
 
 void Executor::synchronize() { _runtime->synchronize(); }
 
-#define __PACXX_RUNTIME_LINKING
 #ifdef __PACXX_RUNTIME_LINKING
 const char *llvm_start = nullptr;
 const char *llvm_end = nullptr;

@@ -32,7 +32,7 @@
 #include <memory>
 #include <regex>
 #include <string>
-#define __PACXX_RUNTIME_LINKING
+
 #ifndef __PACXX_RUNTIME_LINKING
 extern const char llvm_start[];
 extern const char llvm_end[];

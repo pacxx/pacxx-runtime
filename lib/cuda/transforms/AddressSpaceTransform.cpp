@@ -20,7 +20,6 @@
 #include "pacxx/detail/common/transforms/CallVisitor.h"
 #include "pacxx/detail/common/transforms/ModuleHelper.h"
 
-
 using namespace llvm;
 using namespace std;
 using namespace pacxx;
@@ -69,9 +68,10 @@ struct AddressSpaceTransform : public ModulePass {
   virtual ~AddressSpaceTransform() {}
 
   ValueToValueMapTy mapping;
-  std::vector<Value *> dead;
+  std::set<Value *> dead;
 
-  void followUses(std::vector<Value *> &worklist, unsigned AS = 0) {
+  void followUses(std::vector<Value *> &worklist, std::vector<Value *> &delayed,
+                  unsigned AS = 0) {
     for (auto V : worklist) {
       if (auto ASC = dyn_cast<AddrSpaceCastInst>(V)) {
         Value *ptr = ASC->getOperand(0);
@@ -86,14 +86,15 @@ struct AddressSpaceTransform : public ModulePass {
             auto newGEP = GetElementPtrInst::Create(
                 ptr->getType()->getPointerElementType(), ptr, idx, "", GEP);
             mapping[GEP] = newGEP;
-            dead.push_back(GEP);
+            dead.insert(GEP);
             for (auto GU : GEP->users())
               new_worklist.push_back(GU);
-            followUses(new_worklist, ptr->getType()->getPointerAddressSpace());
+            followUses(new_worklist, delayed,
+                       ptr->getType()->getPointerAddressSpace());
           } else
             directWorklist.push_back(U);
         }
-        followUses(directWorklist);
+        followUses(directWorklist, delayed);
       } else if (auto CI = dyn_cast<BitCastInst>(V)) {
         auto op0 = mapping[CI->getOperand(0)];
         auto newCI = new BitCastInst(
@@ -102,18 +103,22 @@ struct AddressSpaceTransform : public ModulePass {
                 op0->getType()->getPointerAddressSpace()),
             "", CI);
         mapping[CI] = newCI;
-        dead.push_back(CI);
+        dead.insert(CI);
         std::vector<Value *> new_worklist;
         for (auto U : CI->users())
           new_worklist.push_back(U);
-        followUses(new_worklist, AS);
+        followUses(new_worklist, delayed, AS);
       } else if (auto LI = dyn_cast<LoadInst>(V)) {
         auto newLI = new LoadInst(mapping[LI->getOperand(0)], "", LI);
+        newLI->setAlignment(4);
+        newLI->setVolatile(LI->isVolatile());
         LI->replaceAllUsesWith(newLI);
         LI->eraseFromParent();
       } else if (auto SI = dyn_cast<StoreInst>(V)) {
-        (void)new StoreInst(SI->getOperand(0), mapping[SI->getOperand(1)],
-                            SI->isVolatile(), SI);
+        auto newSI =
+            new StoreInst(SI->getOperand(0), mapping[SI->getOperand(1)],
+                          SI->isVolatile(), SI);
+        newSI->setAlignment(4);
         SI->eraseFromParent();
       } else if (auto GEP = dyn_cast<GetElementPtrInst>(V)) {
         auto ptr = mapping[GEP->getOperand(0)];
@@ -124,34 +129,42 @@ struct AddressSpaceTransform : public ModulePass {
         auto newGEP = GetElementPtrInst::Create(
             ptr->getType()->getPointerElementType(), ptr, idx, "", GEP);
         mapping[GEP] = newGEP;
-        dead.push_back(GEP);
+        dead.insert(GEP);
         for (auto GU : GEP->users())
           new_worklist.push_back(GU);
-        followUses(new_worklist, AS);
+        followUses(new_worklist, delayed, AS);
       } else if (auto PHI = dyn_cast<PHINode>(V)) {
-        if (mapping.find(PHI) == mapping.end()) { // phi node does not exist now
+        SmallVector<Value *, 8> mappedOps;
+        bool delay = false;
+        for (unsigned i = 0; i < PHI->getNumIncomingValues(); ++i) {
+          if (mapping.find(PHI->getIncomingValue(i)) == mapping.end()) {
+            delay = true;
+            break;
+          }
+        }
+        if (!delay) {
+          AS = mapping[PHI->getIncomingValue(0)]
+                   ->getType()
+                   ->getPointerAddressSpace();
           auto newPhi = PHINode::Create(
               PHI->getType()->getPointerElementType()->getPointerTo(AS),
-              PHI->getNumIncomingValues(), "", PHI);
+              PHI->getNumIncomingValues(), "",
+              PHI->getParent()->getFirstNonPHI());
           mapping[PHI] = newPhi;
-        }
-        auto newPhi = cast<PHINode>(mapping[PHI]);
-        for (unsigned i = 0; i < PHI->getNumIncomingValues(); ++i) {
-          if (mapping.find(PHI->getIncomingValue(i)) != mapping.end())
-            if (newPhi->getBasicBlockIndex(PHI->getIncomingBlock(i)) == -1)
-              newPhi->addIncoming(
-                  mapping[PHI->getIncomingValue(i)],
-                  PHI->getIncomingBlock(
-                      i)); // update incomming values to set the new value
-        }
-        if (find(dead.begin(), dead.end(), PHI) ==
-            dead.end()) { // follow uses only for first occurence of phi
+          for (unsigned i = 0; i < PHI->getNumIncomingValues(); ++i) {
+             // adding incomming values to set the new value
+            newPhi->addIncoming(
+                mapping[PHI->getIncomingValue(i)],
+                      PHI->getIncomingBlock(i));
+               
+          }
           std::vector<Value *> new_worklist;
-          dead.push_back(PHI);
+          dead.insert(PHI);
           for (auto U : PHI->users())
             new_worklist.push_back(U);
-          followUses(new_worklist, AS);
-        }
+          followUses(new_worklist, delayed, AS);
+        } else
+          delayed.push_back(V);
       } else if (auto II = dyn_cast<IntrinsicInst>(V)) {
         SmallVector<Type *, 4> types;
         SmallVector<Value *, 4> args;
@@ -172,12 +185,30 @@ struct AddressSpaceTransform : public ModulePass {
         Decl = Intrinsic::remangleIntrinsicFunction(Decl).getValue();
         auto newII = CallInst::Create(Decl, args, "", II);
         mapping[II] = newII;
-        dead.push_back(II);
+        dead.insert(II);
         std::vector<Value *> new_worklist;
         for (auto U : II->users())
           new_worklist.push_back(U);
-        followUses(new_worklist, AS);
+        followUses(new_worklist, delayed, AS);
+      } else if (auto SI = dyn_cast<SelectInst>(V)) {
+        bool delay = mapping.find(SI->getTrueValue()) == mapping.end() ||
+                     mapping.find(SI->getFalseValue()) == mapping.end();
+
+        if (!delay) {
+          auto newSelect = SelectInst::Create(
+              SI->getCondition(), mapping[SI->getTrueValue()],
+              mapping[SI->getFalseValue()], "", SI);
+          mapping[SI] = newSelect;
+          dead.insert(SI);
+          std::vector<Value *> new_worklist;
+          for (auto U : SI->users())
+            new_worklist.push_back(U);
+          followUses(new_worklist, delayed, AS);
+        } else {
+          delayed.push_back(V);
+        }
       } else {
+        llvm::errs() << "unhandled AS user\n";
         V->dump();
       }
     }
@@ -269,7 +300,7 @@ struct AddressSpaceTransform : public ModulePass {
       }
     }
 
-   CEExtractor ceExtractor;
+    CEExtractor ceExtractor;
 
     kernels = pacxx::getKernels(&M);
 
@@ -292,6 +323,7 @@ struct AddressSpaceTransform : public ModulePass {
                                llvm::GlobalValue::LinkageTypes::ExternalLinkage,
                                nullptr, // ConstantAggregateZero::get(elemType),
                                newName, &GV, GV.getThreadLocalMode(), 3, false);
+        newGV->setAlignment(4);
 
         std::map<Instruction *, std::pair<Value *, Instruction *>> GVtoASC;
         for (auto U : GV.users()) {
@@ -305,7 +337,7 @@ struct AddressSpaceTransform : public ModulePass {
                                           cast<Instruction>(CU));
                 GVtoASC[cast<Instruction>(CU)] = make_pair(CE, BC);
               }
-            } else if (CE->isGEPWithNoNotionalOverIndexing()) {
+            } else if (CE->getOpcode() == Instruction::GetElementPtr) {
               for (auto CU : CE->users()) {
                 if (isa<Instruction>(CU)) {
                   auto ASC =
@@ -319,11 +351,15 @@ struct AddressSpaceTransform : public ModulePass {
                       ASC->getType()->getPointerElementType(), ASC, idx, "",
                       cast<Instruction>(CU));
                   GVtoASC[cast<Instruction>(CU)] = make_pair(CE, GEP);
-                } else
+                } else {
+                  llvm::errs() << "CU\n";
                   CU->dump();
+                }
               }
-            } else
+            } else {
+              llvm::errs() << "CE\n";
               CE->dump();
+            }
 
           } else {
             auto ASC = new AddrSpaceCastInst(cast<Value>(newGV), GV.getType(),
@@ -364,7 +400,13 @@ struct AddressSpaceTransform : public ModulePass {
     // delete old kernel functions
     cleanupDeadCode(&M);
 
-    followUses(allocaRewriter.worklist);
+    std::vector<Value *> delayed;
+    followUses(allocaRewriter.worklist, delayed);
+    do {
+      std::vector<Value *> worklist(delayed);
+      delayed.clear();
+      followUses(worklist, delayed);
+    } while (delayed.size());
 
     for (auto V : dead) {
       V->replaceAllUsesWith(UndefValue::get(V->getType()));
@@ -374,7 +416,7 @@ struct AddressSpaceTransform : public ModulePass {
     for (auto GV : deadGV) {
       GV->removeDeadConstantUsers();
       GV->replaceAllUsesWith(UndefValue::get(GV->getType()));
-      //     GV->dropAllReferences();
+      GV->eraseFromParent();
     }
 
     return modified;

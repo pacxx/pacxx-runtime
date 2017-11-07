@@ -200,13 +200,15 @@ inline void fixVectorOffset(Function *F, unsigned offset) {
 
 struct CEExtractor : public InstVisitor<CEExtractor> {
   void visitInstruction(Instruction &I) {
-    for (unsigned i = 0; i < I.getNumOperands(); ++i) {
-      auto op = I.getOperand(i);
-      if (auto CE = dyn_cast<ConstantExpr>(op)) {
-        auto opi = CE->getAsInstruction();
-        opi->insertBefore(&I);
-        I.setOperand(i, opi);
-        visitInstruction(*opi);
+    if(!isa<PHINode>(I)){
+      for (unsigned i = 0; i < I.getNumOperands(); ++i) {
+        auto op = I.getOperand(i);
+        if (auto CE = dyn_cast<ConstantExpr>(op)) {
+          auto opi = CE->getAsInstruction();
+          opi->insertBefore(&I);
+          I.setOperand(i, opi);
+          visitInstruction(*opi);
+        }
       }
     }
   }
