@@ -2,6 +2,7 @@
 // Created by mhaidl on 30/05/16.
 //
 
+#include "pacxx/detail/cuda/CUDAErrorDetection.h"
 #include "pacxx/detail/cuda/CUDARuntime.h"
 #include "pacxx/detail/common/Exceptions.h"
 #include "pacxx/detail/common/LLVMHelper.h"
@@ -12,6 +13,9 @@
 
 #include <llvm/Transforms/Scalar.h>
 #include <llvm/Transforms/Vectorize.h>
+
+#include <cuda.h>
+#include <cuda_runtime.h>
 
 using namespace llvm;
 

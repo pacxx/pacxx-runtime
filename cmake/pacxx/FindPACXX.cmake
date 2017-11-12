@@ -25,6 +25,21 @@ if (CUDA_REQUIRED)
 endif ()
 endif ()
 
+if (HIP_REQUIRED)
+find_package(HIP REQUIRED)
+
+    if (HIP_FOUND)
+        include_directories(${HSA_HEADER})
+        message("hello: " ${HIP_DIR})
+        link_directories(${HIP_DIR}/../../../../lib)
+    endif ()
+
+    add_compile_options(-D__HIP_PLATFORM_HCC__)
+
+    set(HIP_LINK_LIBRARIES ${HSA_LIBRARY} hip_hcc hc_am)
+
+endif()
+
 if (OpenMP_REQUIRED)
     find_package(OpenMP REQUIRED)
     if (OPENMP_FOUND)
@@ -253,7 +268,7 @@ function(add_pacxx_to_target targetName binDir srcFiles)
 
     set_target_properties(${targetName} PROPERTIES LINK_FLAGS ${PACXX_LD_FLAGS})
     target_link_libraries(${targetName} PUBLIC ${PACXX_RUNTIME_LIBRARY} PUBLIC ${PACXX_RV_LIBRARY}
-            PUBLIC ${CUDA_LINK_LIBRARIES} PUBLIC ${PACXX_LLVM_LIBS} PUBLIC ${PACXX_LLVM_SYS_LIBS} PUBLIC ${TBB_LIBRARIES} PUBLIC libpacxx_main.a)
+            PUBLIC ${CUDA_LINK_LIBRARIES} PUBLIC ${HIP_LINK_LIBRARIES} PUBLIC ${PACXX_LLVM_LIBS} PUBLIC ${PACXX_LLVM_SYS_LIBS} PUBLIC ${TBB_LIBRARIES} PUBLIC libpacxx_main.a)
 
 
     set(PACXX_ADDITIONAL_LINKER_FLAGS "-Wl,-wrap=main")

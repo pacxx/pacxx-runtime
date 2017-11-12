@@ -148,6 +148,8 @@ public:
     switch (debug_level) {
     case LOG_LEVEL::exception:
       ss << "EXCEPTION: ";
+      kind = SourceMgr::DiagKind::DK_Error;
+      break;
     case LOG_LEVEL::fatal:
     case LOG_LEVEL::error:
       kind = SourceMgr::DiagKind::DK_Error;
@@ -180,6 +182,8 @@ public:
       break;
     case SourceMgr::DiagKind::DK_Error:
       label_length = 6;
+      break;
+    default: 
       break;
     }
 

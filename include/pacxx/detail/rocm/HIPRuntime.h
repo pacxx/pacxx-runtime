@@ -2,14 +2,14 @@
 // Created by mhaidl on 30/05/16.
 //
 
-#ifndef PACXX_V2_CUDARUNTIME_H
-#define PACXX_V2_CUDARUNTIME_H
+#ifndef PACXX_V2_HIPRUNTIME_H
+#define PACXX_V2_HIPRUNTIME_H
 
 #include "../IRRuntime.h"
 #include "../msp/MSPEngine.h"
-#include "CUDADeviceBuffer.h"
-#include "CUDAKernel.h"
-#include "PTXBackend.h"
+#include "HIPDeviceBuffer.h"
+#include "HIPKernel.h"
+#include "../cuda/PTXBackend.h"
 #include "pacxx/detail/common/Exceptions.h"
 #include <cstdlib>
 #include <list>
@@ -18,32 +18,28 @@
 #include <string>
 
 // forward declarations of cuda driver structs
-// struct CUctx_st;
-// typedef struct CUctx_st *CUcontext;
-// struct CUmod_st;
-// typedef struct CUmod_st *CUmodule;
-// struct CUstream_st;
-// typedef struct CUstream_st *cudaStream_t;
-// enum cudaError; 
-// typedef enum cudaError cudaError_t;
+struct ihipCtx_t;
+typedef struct ihipCtx_t *hipCtx_t;
+struct ihipModule_t;
+typedef struct ihipModule_t *hipModule_t;
 
-#include <driver_types.h>
+
 namespace pacxx {
 namespace v2 {
 
-class CUDARuntime : public IRRuntime {
+class HIPRuntime : public IRRuntime {
 public:
   using CompilerT = PTXBackend;
 
   static bool classof(const IRRuntime *rt) {
-    return rt->getKind() == RuntimeKind::RK_CUDA;
+    return rt->getKind() == RuntimeKind::RK_HIP;
   }
 
   static bool checkSupportedHardware();
 
-  CUDARuntime(unsigned dev_id);
+  HIPRuntime(unsigned dev_id);
 
-  virtual ~CUDARuntime();
+  virtual ~HIPRuntime();
 
   virtual void link(std::unique_ptr<llvm::Module> M) override;
 
@@ -61,9 +57,9 @@ public:
 
   template <typename T>
   DeviceBuffer<T> *allocateMemory(size_t count, T *host_ptr, MemAllocMode mode = Standard) {
-    CUDARawDeviceBuffer raw([this](CUDARawDeviceBuffer& buffer){ deleteRawMemory(&buffer); }, mode);
+    HIPRawDeviceBuffer raw([this](HIPRawDeviceBuffer& buffer){ deleteRawMemory(&buffer); }, mode);
     raw.allocate(count * sizeof(T));
-    auto wrapped = new CUDADeviceBuffer<T>(std::move(raw));
+    auto wrapped = new HIPDeviceBuffer<T>(std::move(raw));
     _memory.push_back(std::unique_ptr<DeviceBufferBase>(
         static_cast<DeviceBufferBase *>(wrapped)));
     if (host_ptr)
@@ -74,7 +70,7 @@ public:
   template <typename T> DeviceBuffer<T> *translateMemory(T *ptr) {
     auto It =
         std::find_if(_memory.begin(), _memory.end(), [&](const auto &element) {
-          return reinterpret_cast<CUDADeviceBuffer<T> *>(element.get())
+          return reinterpret_cast<HIPDeviceBuffer<T> *>(element.get())
                      ->get() == ptr;
         });
 
@@ -109,18 +105,18 @@ private:
   void compileAndLink();
 
 public:
-  static void fireCallback(cudaStream_t stream, cudaError_t status,
+  static void fireCallback(hipStream_t stream, hipError_t status,
                            void *userData) {
     (*reinterpret_cast<std::function<void()> *>(userData))();
   }
 
 private:
-  CUcontext _context;
-  CUmodule _mod;
+  hipCtx_t _context;
+  hipModule_t _mod;
   std::unique_ptr<CompilerT> _compiler;
-  std::map<std::string, std::unique_ptr<CUDAKernel>> _kernels;
+  std::map<std::string, std::unique_ptr<HIPKernel>> _kernels;
   std::list<std::unique_ptr<DeviceBufferBase>> _memory;
-  std::vector<cudaDeviceProp> _dev_props;
+  std::vector<hipDeviceProp_t> _dev_props;
 
   struct callback_mem {
     size_t size;
@@ -133,4 +129,4 @@ private:
 }
 }
 
-#endif // PACXX_V2_CUDARUNTIME_H
+#endif // PACXX_V2_HIPRUNTIME_H

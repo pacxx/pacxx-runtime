@@ -20,6 +20,9 @@
 #ifdef PACXX_ENABLE_CUDA
 #include "pacxx/detail/cuda/CUDARuntime.h"
 #endif
+
+#include "pacxx/detail/rocm/HIPRuntime.h"
+
 #include "pacxx/detail/native/NativeRuntime.h"
 #include "pacxx/detail/codegen/Kernel.h"
 #include "pacxx/detail/Event.h"
@@ -51,7 +54,8 @@ class Executor;
 
 enum ExecutingDevice {
   GPUNvidia,
-  CPU
+  CPU,
+  GPUAMD
 };
 
 Executor &get_executor(unsigned id = 0);

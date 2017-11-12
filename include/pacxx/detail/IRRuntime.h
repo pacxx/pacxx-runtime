@@ -25,7 +25,8 @@ class IRRuntime {
 public:
   enum RuntimeKind {
     RK_CUDA,
-    RK_Native
+    RK_Native, 
+    RK_HIP
   };
 private:
   const RuntimeKind _kind;

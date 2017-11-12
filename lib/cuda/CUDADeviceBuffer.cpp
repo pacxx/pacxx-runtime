@@ -2,6 +2,8 @@
 // Created by mhaidl on 10/08/16.
 //
 #include "pacxx/detail/cuda/CUDADeviceBuffer.h"
+#include "pacxx/detail/cuda/CUDAErrorDetection.h"
+#include <cuda_runtime.h>
 
 namespace pacxx {
 namespace v2 {

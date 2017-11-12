@@ -6,28 +6,28 @@
 #include "pacxx/detail/common/Log.h"
 #include <memory>
 
-#ifndef PACXX_V2_CUDADEVICEBUFFER_H
-#define PACXX_V2_CUDADEVICEBUFFER_H
+#ifndef PACXX_V2_HIPDEVICEBUFFER_H
+#define PACXX_V2_HIPDEVICEBUFFER_H
 namespace pacxx {
 namespace v2 {
-class CUDARawDeviceBuffer : public RawDeviceBuffer {
-  friend class CUDARuntime;
+class HIPRawDeviceBuffer : public RawDeviceBuffer {
+  friend class HIPRuntime;
 
 private:
-  CUDARawDeviceBuffer(std::function<void(CUDARawDeviceBuffer&)> deleter, MemAllocMode mode = Standard);
+  HIPRawDeviceBuffer(std::function<void(HIPRawDeviceBuffer&)> deleter, MemAllocMode mode = Standard);
 
   void allocate(size_t bytes);
 
 public:
-  virtual ~CUDARawDeviceBuffer();
+  virtual ~HIPRawDeviceBuffer();
 
-  CUDARawDeviceBuffer(const CUDARawDeviceBuffer &) = delete;
+  HIPRawDeviceBuffer(const HIPRawDeviceBuffer &) = delete;
 
-  CUDARawDeviceBuffer &operator=(const CUDARawDeviceBuffer &) = delete;
+  HIPRawDeviceBuffer &operator=(const HIPRawDeviceBuffer &) = delete;
 
-  CUDARawDeviceBuffer(CUDARawDeviceBuffer &&rhs);
+  HIPRawDeviceBuffer(HIPRawDeviceBuffer &&rhs);
 
-  CUDARawDeviceBuffer &operator=(CUDARawDeviceBuffer &&rhs);
+  HIPRawDeviceBuffer &operator=(HIPRawDeviceBuffer &&rhs);
 
   virtual void *get(size_t offset = 0) const final;
 
@@ -53,27 +53,27 @@ private:
   size_t _size;
   unsigned _mercy;
   MemAllocMode _mode;
-  std::function<void(CUDARawDeviceBuffer&)> _deleter;
+  std::function<void(HIPRawDeviceBuffer&)> _deleter;
 };
 
-template <typename T> class CUDADeviceBuffer : public DeviceBuffer<T> {
-  friend class CUDARuntime;
+template <typename T> class HIPDeviceBuffer : public DeviceBuffer<T> {
+  friend class HIPRuntime;
 
 private:
-  CUDADeviceBuffer(CUDARawDeviceBuffer buffer) : _buffer(std::move(buffer)) {}
+  HIPDeviceBuffer(HIPRawDeviceBuffer buffer) : _buffer(std::move(buffer)) {}
 
-  CUDARawDeviceBuffer *getRawBuffer() { return &_buffer; }
+  HIPRawDeviceBuffer *getRawBuffer() { return &_buffer; }
 
 public:
-  virtual ~CUDADeviceBuffer() {}
+  virtual ~HIPDeviceBuffer() {}
 
-  CUDADeviceBuffer(const CUDADeviceBuffer &) = delete;
+  HIPDeviceBuffer(const HIPDeviceBuffer &) = delete;
 
-  CUDADeviceBuffer &operator=(const CUDADeviceBuffer &) = delete;
+  HIPDeviceBuffer &operator=(const HIPDeviceBuffer &) = delete;
 
-  CUDADeviceBuffer(CUDADeviceBuffer &&rhs) { _buffer = std::move(rhs._buffer); }
+  HIPDeviceBuffer(HIPDeviceBuffer &&rhs) { _buffer = std::move(rhs._buffer); }
 
-  CUDADeviceBuffer &operator=(CUDADeviceBuffer &&rhs) {
+  HIPDeviceBuffer &operator=(HIPDeviceBuffer &&rhs) {
     _buffer = std::move(rhs._buffer);
     return *this;
   }
@@ -107,8 +107,8 @@ public:
   virtual void copyTo(T *dest) override { _buffer.copyTo(dest); }
 
 private:
-  CUDARawDeviceBuffer _buffer;
+  HIPRawDeviceBuffer _buffer;
 };
 }
 }
-#endif // PACXX_V2_CUDADEVICEBUFFER_H
+#endif // PACXX_V2_HIPDEVICEBUFFER_H

@@ -35,6 +35,7 @@ ExecutingDevice Executor::getExecutingDeviceType() {
   case IRRuntime::RuntimeKind::RK_CUDA: return ExecutingDevice::GPUNvidia;
 #endif
   case IRRuntime::RuntimeKind::RK_Native: return ExecutingDevice::CPU;
+  case IRRuntime::RuntimeKind::RK_HIP: return ExecutingDevice::GPUAMD;
   }
   llvm_unreachable("unknown runtime kind");
 }

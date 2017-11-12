@@ -1,10 +1,11 @@
 cmake_minimum_required(VERSION 3.0)
 project(pacxxrt2)
 
-#set(CMAKE_MODULE_PATH $ENV{PACXX_PATH}/lib/cmake/llvm/)
+set(CMAKE_MODULE_PATH ${HIP_ROOT})
 #set(LLVM_DIR $ENV{PACXX_PATH}/lib/cmake/llvm/)
 #find_package(LLVM REQUIRED CONFIG)
 find_package(CUDA)
+find_package(HIP)
 
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/pacxx/FindTBB.cmake)
 
@@ -35,6 +36,7 @@ endif ()
 
 option(PACXX_USE_OpenMP "use OpenMP instead of TBB" ${ENABLE_OPENMP})
 option(PACXX_USE_CUDA "Build the CUDA backend" ${CUDA_FOUND})
+option(PACXX_USE_HIP "Build the ROCM/HIP backend" ${HIP_FOUND})
 
 if(PACXX_USE_OpenMP)
     add_compile_options(-fopenmp)
@@ -144,6 +146,37 @@ else (PACXX_USE_CUDA)
     set(PACXX_CUDA_BACKEND 0)
 endif (PACXX_USE_CUDA)
 
+
+if (PACXX_USE_HIP)
+find_package(HIP REQUIRED)
+set(PACXX_HIP_BACKEND 1)
+include_directories(${HSA_HEADER})
+set(HIP_SOURCE_FILES
+        include/pacxx/detail/rocm/HIPRuntime.h
+        lib/rocm/HIPRuntime.cpp
+        include/pacxx/detail/rocm/HIPErrorDetection.h
+        lib/rocm/HIPErrorDetection.cpp
+        include/pacxx/detail/rocm/HIPKernel.h
+        lib/rocm/HIPKernel.cpp
+        include/pacxx/detail/rocm/HIPDeviceBuffer.h
+        lib/rocm/HIPDeviceBuffer.cpp
+        lib/rocm/HIPEvent.cpp)
+set(HIP_REQUIRED ON)
+
+set(HIP_LINK_LIBRARIES "-lhsa-runtime64 -lhip_hcc -lhc_am")
+
+if (BUILD_SHARED)
+    set(HIP_USE_SHARED_RT ON)
+    set(HIP_USE_STATIC_HIP_RUNTIME OFF CACHE BOOL "" FORCE) # unfortunately, this gets overwritten in FindHIP.cmake, so we have to force set it again
+else ()
+    set(HIP_USE_SHARED_RT OFF)
+endif ()
+
+else (PACXX_USE_HIP)
+set(HIP_REQUIRED OFF)
+set(PACXX_HIP_BACKEND 0)
+endif (PACXX_USE_HIP)
+
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config/config.h.in ${CMAKE_CURRENT_SOURCE_DIR}/include/pacxx/pacxx_config.h)
 configure_file(cmake/config/FindPACXXConfig.cmake.in ${CMAKE_CURRENT_SOURCE_DIR}/cmake/pacxx/FindPACXXConfig.cmake)
 
@@ -230,7 +263,7 @@ execute_process(COMMAND ${CMAKE_BINARY_DIR}/bin/llvm-config --ldflags
 
 set(CMAKE_SHARED_LINKER_FLAGS "-Wl,--allow-shlib-undefined")
 
-add_library(${PROJECT_NAME} ${SOURCE_FILES} ${CUDA_SOURCE_FILES})
+add_library(${PROJECT_NAME} ${SOURCE_FILES} ${CUDA_SOURCE_FILES} ${HIP_SOURCE_FILES})
 
 add_library(pacxx_main STATIC lib/common/WrappedMain.cpp)
 
@@ -247,9 +280,15 @@ add_custom_command(TARGET ${PROJECT_NAME}
         POST_BUILD
         COMMAND ${CMAKE_BINARY_DIR}/bin/llvm-as ${CMAKE_CURRENT_SOURCE_DIR}/lib/bitcode/syscalls.ll -o ${CMAKE_BINARY_DIR}/syscalls.bc)
 
+if (PACXX_USE_HIP)
+    target_compile_definitions(${PROJECT_NAME} PUBLIC -D__HIP_PLATFORM_HCC__)
+endif()
+
 if(PACXX_USE_OpenMP)
     target_compile_definitions(${PROJECT_NAME} PUBLIC -D__PACXX_OMP PUBLIC -DPACXX_DISABLE_TBB)
 endif()
+
+#target_compile_definitions(${PROJECT_NAME} PUBLIC -D__PACXX_RUNTIME_LINKING)
 
 #add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD COMMAND cp ${CMAKE_CURRENT_SOURCE_DIR}/lib/asm/embed_/*.S ${CMAKE_BINARY_DIR}/)
 
