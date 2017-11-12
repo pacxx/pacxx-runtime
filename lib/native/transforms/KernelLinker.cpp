@@ -1,4 +1,11 @@
-// Created by Michael Haidl and lars
+//===-----------------------------------------------------------*- C++ -*-===//
+//
+//                     The LLVM Compiler Infrastructure
+//
+// This file is distributed under the University of Illinois Open Source
+// License. See LICENSE.TXT for details.
+//
+//===----------------------------------------------------------------------===//
 
 #define PACXX_PASS_NAME "KernelLinker"
 

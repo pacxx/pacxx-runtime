@@ -1,5 +1,12 @@
+//===-----------------------------------------------------------*- C++ -*-===//
 //
-// Created by lars
+//                     The LLVM Compiler Infrastructure
+//
+// This file is distributed under the University of Illinois Open Source
+// License. See LICENSE.TXT for details.
+//
+//===----------------------------------------------------------------------===//
+
 // Based on the paper Computing Liveness Sets for SSA-Form Programs by Florian Brandner,
 // Benoit Boissinot, Alain Darte, Benoit Dupont de Dinechin, Fabrice Rastelloss
 

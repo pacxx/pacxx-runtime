@@ -1,4 +1,12 @@
-// Created by lars
+//===-----------------------------------------------------------*- C++ -*-===//
+//
+//                     The LLVM Compiler Infrastructure
+//
+// This file is distributed under the University of Illinois Open Source
+// License. See LICENSE.TXT for details.
+//
+//===----------------------------------------------------------------------===//
+
 // Based on the concept described in Improving Performance of OpenCL on CPUs by Ralf Karrenberg and Sebastian Hack (http://llvm.org/devmtg/2012-04-12/Slides/Ralf_Karrenberg.pdf)
 // and the implementation available at:
 // https://github.com/karrenberg/wfvopencl/blob/master/src/passes/continuationGenerator.cpp
