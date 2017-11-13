@@ -205,7 +205,7 @@ std::string HSACOBackend::compile(llvm::Module &M) {
   args.push_back("-o");
   args.push_back(outfile.c_str());
  
-  lld::elf::link(args, true);
+  lld::elf::link(args, false);
 
   return outfile;
 }

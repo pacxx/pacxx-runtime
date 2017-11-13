@@ -112,11 +112,11 @@ static Function* mapPACXXIntrinsicAMDGCN(Module* M, Intrinsic::ID id)
   {
   case Intrinsic::pacxx_barrier0:
     return Intrinsic::getDeclaration(M, Intrinsic::amdgcn_s_barrier);
-  case Intrinsic::pacxx_read_ntid_x:
+  case Intrinsic::pacxx_read_ctaid_x:
     return Intrinsic::getDeclaration(M, Intrinsic::amdgcn_workgroup_id_x);
-  case Intrinsic::pacxx_read_ntid_y:
+  case Intrinsic::pacxx_read_ctaid_y:
     return Intrinsic::getDeclaration(M, Intrinsic::amdgcn_workgroup_id_y);
-  case Intrinsic::pacxx_read_ntid_z:
+  case Intrinsic::pacxx_read_ctaid_z:
     return Intrinsic::getDeclaration(M, Intrinsic::amdgcn_workgroup_id_z);
   case Intrinsic::pacxx_read_tid_x:
     return Intrinsic::getDeclaration(M, Intrinsic::amdgcn_workitem_id_x);

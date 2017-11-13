@@ -73,7 +73,7 @@ void HIPRuntime::compileAndLink() {
   std::string MC;
   SCOPED_TIMING { MC = _compiler->compile(*_M); };
 
-  SEC_HIP_CALL(hipModuleLoadData(&_mod, MC.c_str()));
+  SEC_HIP_CALL(hipModuleLoad(&_mod, MC.c_str()));
 
   _delayed_compilation = false;
 }
