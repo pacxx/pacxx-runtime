@@ -50,7 +50,8 @@ HSACOBackend::HSACOBackend()
     : _target(nullptr), _cpu("gfx803"), _features(""){}
 
 void HSACOBackend::initialize(unsigned gfx) {
-  _cpu = "gfx" + std::to_string(gfx);
+// FIXME: respect the gfx version from the runtime
+//  _cpu = "gfx" + std::to_string(gfx);
   __verbose("Intializing LLVM components for HSACO generation!");
   PassRegistry *Registry = PassRegistry::getPassRegistry();
   initializeCore(*Registry);

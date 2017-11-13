@@ -175,6 +175,8 @@ set(HIP_REQUIRED ON)
 
 set(HIP_LINK_LIBRARIES "-lhsa-runtime64 -lhip_hcc -lhc_am")
 
+set(LLD_LIBS lldCOFF lldDriver lldELF lldMinGW)
+
 if (BUILD_SHARED)
     set(HIP_USE_SHARED_RT ON)
     set(HIP_USE_STATIC_HIP_RUNTIME OFF CACHE BOOL "" FORCE) # unfortunately, this gets overwritten in FindHIP.cmake, so we have to force set it again
@@ -291,7 +293,7 @@ add_custom_command(TARGET ${PROJECT_NAME}
         COMMAND ${CMAKE_BINARY_DIR}/bin/llvm-as ${CMAKE_CURRENT_SOURCE_DIR}/lib/bitcode/syscalls.ll -o ${CMAKE_BINARY_DIR}/syscalls.bc)
 
 if (PACXX_USE_HIP)
-  target_compile_definitions(${PROJECT_NAME} PUBLIC -D__HIP_PLATFORM_NVCC__)
+  target_compile_definitions(${PROJECT_NAME} PUBLIC -D__HIP_PLATFORM_HCC__)
 endif()
 
 if(PACXX_USE_OpenMP)
@@ -312,4 +314,4 @@ install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/lib/asm/ DESTINATION lib)
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/ DESTINATION include)
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/cmake/pacxx/ DESTINATION lib/cmake/pacxx)
 
-target_link_libraries(${PROJECT_NAME} PUBLIC ${CUDA_LINK_LIBRARIES} PUBLIC ${PACXX_LLVM_LIBS} PUBLIC ${PACXX_LLVM_SYS_LIBS} PUBLIC ${TBB_LIBRARIES} PUBLIC ${nvdbFile} PUBLIC ${nadbFile} PUBLIC ${PACXX_RV_LIB})
+target_link_libraries(${PROJECT_NAME} PUBLIC ${CUDA_LINK_LIBRARIES} PUBLIC ${PACXX_LLVM_LIBS} PUBLIC ${PACXX_LLVM_SYS_LIBS} PUBLIC ${TBB_LIBRARIES} PUBLIC ${nvdbFile} PUBLIC ${nadbFile} PUBLIC ${PACXX_RV_LIB} PUBLIC ${LLD_LIBS})
