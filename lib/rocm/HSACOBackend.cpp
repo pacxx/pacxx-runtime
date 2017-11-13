@@ -12,7 +12,7 @@
 #include <llvm/Target/TargetLowering.h>
 
 #include "pacxx/detail/common/transforms/Passes.h"
-#include "pacxx/detail/cuda/transforms/Passes.h"
+#include "pacxx/detail/rocm/transforms/Passes.h"
 
 #include "pacxx/detail/common/Exceptions.h"
 #include "pacxx/detail/rocm/HSACOBackend.h"
@@ -127,12 +127,11 @@ std::unique_ptr<llvm::Module> HSACOBackend::prepareModule(llvm::Module &M) {
 
   PM.add(createTargetSelectionPass({"GPU", "Generic"}));
   PM.add(createIntrinsicMapperPass());
-  PM.add(createAddressSpaceTransformPass());
+ // PM.add(createAddressSpaceTransformPass());
  // PM.add(createLoadMotionPass());
   PM.add(createMSPRemoverPass());
 
-  // FIXME: write and AMDGCN Prepair Pass
- // PM.add(createNVPTXPrepairPass());
+  PM.add(createAMDGCNPrepairPass());
 
   PM.add(createMemoryCoalescingPass(false));
   PM.add(createAlwaysInlinerLegacyPass());

@@ -110,6 +110,7 @@ set(SOURCE_FILES include/pacxx/Executor.h
         include/pacxx/detail/cuda/PTXBackend.h
             lib/cuda/transforms/AddressSpaceTransform.cpp
             lib/cuda/transforms/NVPTXPrepair.cpp
+            lib/cuda/transforms/AMDGCNPrepair.cpp
         lib/IRRuntime.cpp
         lib/native/NativeEvent.cpp
         lib/common/TearDown.cpp)
