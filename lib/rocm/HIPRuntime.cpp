@@ -14,7 +14,6 @@
 #include <llvm/Transforms/Scalar.h>
 #include <llvm/Transforms/Vectorize.h>
 
-#define __HIP_PLATFORM_HCC__
 #include <hip/hip_runtime.h>
 
 using namespace llvm;

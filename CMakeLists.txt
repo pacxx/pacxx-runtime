@@ -106,6 +106,10 @@ set(SOURCE_FILES include/pacxx/Executor.h
         lib/native/NativeDeviceBuffer.cpp
         include/pacxx/pacxx_config.h
         lib/Kernel.cpp
+        lib/cuda/PTXBackend.cpp
+        include/pacxx/detail/cuda/PTXBackend.h
+            lib/cuda/transforms/AddressSpaceTransform.cpp
+            lib/cuda/transforms/NVPTXPrepair.cpp
         lib/IRRuntime.cpp
         lib/native/NativeEvent.cpp
         lib/common/TearDown.cpp)
@@ -116,10 +120,6 @@ if (PACXX_USE_CUDA)
     set(PACXX_CUDA_BACKEND 1)
     include_directories(${CUDA_TOOLKIT_INCLUDE})
     set(CUDA_SOURCE_FILES
-            lib/cuda/transforms/NVPTXPrepair.cpp
-            lib/cuda/transforms/AddressSpaceTransform.cpp
-            lib/cuda/PTXBackend.cpp
-            include/pacxx/detail/cuda/PTXBackend.h
             include/pacxx/detail/cuda/CUDARuntime.h
             lib/cuda/CUDARuntime.cpp
             include/pacxx/detail/cuda/CUDAErrorDetection.h
@@ -132,7 +132,8 @@ if (PACXX_USE_CUDA)
             lib/cuda/CUDAEvent.cpp)
     set(CUDA_REQUIRED ON)
 
-    set(CUDA_LINK_LIBRARIES "-lcuda -lcudart")
+    set (CUDA_LINK_LIBRARIES ${CUDA_LIBRARIES})
+    #   set(CUDA_LINK_LIBRARIES "-lcuda -lcudart")
 
     if (BUILD_SHARED)
         set(CUDA_USE_SHARED_RT ON)
@@ -149,6 +150,13 @@ endif (PACXX_USE_CUDA)
 
 if (PACXX_USE_HIP)
 find_package(HIP REQUIRED)
+find_package(CUDA)
+
+if (CUDA_FOUND)
+  include_directories(${CUDA_TOOLKIT_INCLUDE})
+  set (CUDA_LINK_LIBRARIES ${CUDA_LIBRARIES})
+endif()
+
 set(PACXX_HIP_BACKEND 1)
 include_directories(${HSA_HEADER})
 set(HIP_SOURCE_FILES
@@ -281,7 +289,7 @@ add_custom_command(TARGET ${PROJECT_NAME}
         COMMAND ${CMAKE_BINARY_DIR}/bin/llvm-as ${CMAKE_CURRENT_SOURCE_DIR}/lib/bitcode/syscalls.ll -o ${CMAKE_BINARY_DIR}/syscalls.bc)
 
 if (PACXX_USE_HIP)
-    target_compile_definitions(${PROJECT_NAME} PUBLIC -D__HIP_PLATFORM_HCC__)
+  target_compile_definitions(${PROJECT_NAME} PUBLIC -D__HIP_PLATFORM_NVCC__)
 endif()
 
 if(PACXX_USE_OpenMP)

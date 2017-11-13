@@ -10,8 +10,14 @@
 #include <functional>
 #include <map>
 #include <string>
-#define __HIP_PLATFORM_HCC__
-#include <hip/hip_runtime.h>
+
+#ifdef __HIP_PLATFORM_HCC__
+struct ihipModuleSymbol_t;
+typedef struct ihipModuleSymbol_t *hipFunction_t;
+#else
+struct CUfunc_st;
+typedef CUfunc_st * hipFunction_t;
+#endif 
 
 namespace pacxx {
 namespace v2 {

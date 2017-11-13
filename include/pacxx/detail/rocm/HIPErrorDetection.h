@@ -5,9 +5,8 @@
 #ifndef PACXX_V2_HIPERRORDETECTION_H
 #define PACXX_V2_HIPERRORDETECTION_H
 
-#define __HIP_PLATFORM_HCC__
 #include <hip/hip_runtime.h>
-#include <hip/hip_runtime_api.h>
+
 namespace pacxx {
 namespace v2 {
 

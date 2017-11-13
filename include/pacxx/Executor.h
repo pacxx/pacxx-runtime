@@ -27,6 +27,7 @@
 #include "pacxx/detail/codegen/Kernel.h"
 #include "pacxx/detail/Event.h"
 #include "pacxx/detail/cuda/CUDAEvent.h"  // TODO: move event create to the runtimes
+#include "pacxx/detail/rocm/HIPEvent.h"  // TODO: move event create to the runtimes
 #include "pacxx/detail/native/NativeEvent.h"
 #include <algorithm>
 #include <cstdlib>
@@ -206,6 +207,9 @@ public:
     case IRRuntime::RuntimeKind::RK_Native:
       return *cast<NativeRuntime>(_runtime.get())->template allocateMemory(count,
                                                                   host_ptr, mode);
+     case IRRuntime::RuntimeKind::RK_HIP:
+      return *cast<HIPRuntime>(_runtime.get())->template allocateMemory(count,
+                                                                  host_ptr, mode);
     default: llvm_unreachable("this runtime type is not defined!");
     }
 
@@ -221,6 +225,8 @@ public:
       break;
 #endif
     case IRRuntime::RuntimeKind::RK_Native: cast<NativeRuntime>(_runtime.get())->template deleteMemory(&buffer);
+      break;
+    case IRRuntime::RuntimeKind::RK_HIP: cast<HIPRuntime>(_runtime.get())->template deleteMemory(&buffer);
       break;
     default:llvm_unreachable("this runtime type is not defined!");
     }
@@ -259,6 +265,9 @@ public:
 #endif
     case IRRuntime::RuntimeKind::RK_Native:
       event.reset(new NativeEvent());
+      break;
+     case IRRuntime::RuntimeKind::RK_HIP:
+      event.reset(new HIPEvent());
       break;
     default:llvm_unreachable("this runtime type is not defined!");
     }

@@ -19,10 +19,25 @@
 
 // forward declarations of cuda driver structs
 struct ihipCtx_t;
-typedef struct ihipCtx_t *hipCtx_t;
 struct ihipModule_t;
+struct ihipStream_t;
+struct hipDeviceProp_t;
+#ifdef __HIP_PLATFORM_HCC__
+typedef struct ihipCtx_t *hipCtx_t;
 typedef struct ihipModule_t *hipModule_t;
+typedef struct ihipStream_t *hipStream_t;
+#else 
+struct CUctx_st;
+typedef struct CUctx_st *CUcontext;
+struct CUmod_st;
+typedef struct CUmod_st *CUmodule;
+struct CUstream_st;
+typedef struct CUstream_st *cudaStream_t;
 
+typedef CUcontext hipCtx_t;
+typedef CUmodule hipModule_t; 
+typedef cudaStream_t hipStream_t; 
+#endif 
 
 namespace pacxx {
 namespace v2 {
@@ -105,7 +120,7 @@ private:
   void compileAndLink();
 
 public:
-  static void fireCallback(hipStream_t stream, hipError_t status,
+  static void fireCallback(hipStream_t stream, int status,
                            void *userData) {
     (*reinterpret_cast<std::function<void()> *>(userData))();
   }

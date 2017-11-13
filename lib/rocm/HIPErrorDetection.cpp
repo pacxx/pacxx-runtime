@@ -5,7 +5,6 @@
 #include "pacxx/detail/common/Common.h"
 #include "pacxx/detail/common/Exceptions.h"
 
-#define __HIP_PLATFORM_HCC__
 #include <hip/hip_runtime.h>
 
 

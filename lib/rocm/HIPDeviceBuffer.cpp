@@ -4,7 +4,6 @@
 #include "pacxx/detail/rocm/HIPDeviceBuffer.h"
 #include "pacxx/detail/rocm/HIPErrorDetection.h"
 
-#define __HIP_PLATFORM_HCC__
 #include <hip/hip_runtime.h>
 
 namespace pacxx {

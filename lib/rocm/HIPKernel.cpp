@@ -5,7 +5,6 @@
 #include "pacxx/detail/common/Log.h"
 #include "pacxx/detail/rocm/HIPErrorDetection.h"
 #include "pacxx/detail/rocm/HIPRuntime.h"
-#define __HIP_PLATFORM_HCC__
 #include <hip/hip_runtime.h>
 
 namespace pacxx {
