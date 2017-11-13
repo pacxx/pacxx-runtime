@@ -162,6 +162,8 @@ include_directories(${HSA_HEADER})
 set(HIP_SOURCE_FILES
         include/pacxx/detail/rocm/HIPRuntime.h
         lib/rocm/HIPRuntime.cpp
+        include/pacxx/detail/rocm/HSACOBackend.h
+        lib/rocm/HSACOBackend.cpp
         include/pacxx/detail/rocm/HIPErrorDetection.h
         lib/rocm/HIPErrorDetection.cpp
         include/pacxx/detail/rocm/HIPKernel.h

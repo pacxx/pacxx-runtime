@@ -20,7 +20,7 @@ if (CUDA_REQUIRED)
         link_directories(${CUDA_TOOLKIT_ROOT_DIR}/lib64) #TODO make dynamic for non 64 bit systems
     endif ()
 
-    set(CUDA_LINK_LIBRARIES cuda cudart)
+    set(CUDA_LINK_LIBRARIES cuda)
 
 endif ()
 endif ()
@@ -30,11 +30,8 @@ find_package(HIP REQUIRED)
 
     if (HIP_FOUND)
         include_directories(${HSA_HEADER})
-        message("hello: " ${HIP_DIR})
         link_directories(${HIP_DIR}/../../../../lib)
     endif ()
-
-    add_compile_options(-D__HIP_PLATFORM_HCC__)
 
     set(HIP_LINK_LIBRARIES ${HSA_LIBRARY} hip_hcc hc_am)
 

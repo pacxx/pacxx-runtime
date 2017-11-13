@@ -9,7 +9,7 @@
 #include "../msp/MSPEngine.h"
 #include "HIPDeviceBuffer.h"
 #include "HIPKernel.h"
-#include "../cuda/PTXBackend.h"
+#include "HSACOBackend.h"
 #include "pacxx/detail/common/Exceptions.h"
 #include <cstdlib>
 #include <list>
@@ -44,7 +44,7 @@ namespace v2 {
 
 class HIPRuntime : public IRRuntime {
 public:
-  using CompilerT = PTXBackend;
+  using CompilerT = HSACOBackend;
 
   static bool classof(const IRRuntime *rt) {
     return rt->getKind() == RuntimeKind::RK_HIP;
