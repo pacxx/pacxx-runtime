@@ -62,7 +62,7 @@ static bool isPACXXIntrinsic(Intrinsic::ID id){
   return false;
 }
 
-static Function* mapPACXXIntrinsic(Module* M, Intrinsic::ID id)
+static Function* mapPACXXIntrinsicNVPTX(Module* M, Intrinsic::ID id)
 {
   switch(id)
   {
@@ -106,6 +106,30 @@ static Function* mapPACXXIntrinsic(Module* M, Intrinsic::ID id)
   return nullptr;
 }
 
+static Function* mapPACXXIntrinsicAMDGCN(Module* M, Intrinsic::ID id)
+{
+  switch(id)
+  {
+  case Intrinsic::pacxx_barrier0:
+    return Intrinsic::getDeclaration(M, Intrinsic::amdgcn_s_barrier);
+  case Intrinsic::pacxx_read_ntid_x:
+    return Intrinsic::getDeclaration(M, Intrinsic::amdgcn_workgroup_id_x);
+  case Intrinsic::pacxx_read_ntid_y:
+    return Intrinsic::getDeclaration(M, Intrinsic::amdgcn_workgroup_id_y);
+  case Intrinsic::pacxx_read_ntid_z:
+    return Intrinsic::getDeclaration(M, Intrinsic::amdgcn_workgroup_id_z);
+  case Intrinsic::pacxx_read_tid_x:
+    return Intrinsic::getDeclaration(M, Intrinsic::amdgcn_workitem_id_x);
+  case Intrinsic::pacxx_read_tid_y:
+    return Intrinsic::getDeclaration(M, Intrinsic::amdgcn_workitem_id_y);
+  case Intrinsic::pacxx_read_tid_z:
+    return Intrinsic::getDeclaration(M, Intrinsic::amdgcn_workitem_id_z);
+  default:
+    break;
+  }
+  return nullptr;
+}
+
 struct IntrinsicMapper : public ModulePass {
   static char ID;
   IntrinsicMapper() : ModulePass(ID) { initializeIntrinsicMapperPass(*PassRegistry::getPassRegistry()); }
@@ -124,8 +148,12 @@ bool IntrinsicMapper::runOnModule(Module &M) {
       if (auto II = dyn_cast<IntrinsicInst>(&CI)){
         if (isPACXXIntrinsic(II->getIntrinsicID()))
         {
-          if (auto mappedIntrin = mapPACXXIntrinsic(M, II->getIntrinsicID()))
-          {
+          if (M->getTargetTriple().find("nvptx") != std::string::npos){
+          if (auto mappedIntrin = mapPACXXIntrinsicNVPTX(M, II->getIntrinsicID()))
+            II->setCalledFunction(mappedIntrin);
+          }
+          else {
+            if (auto mappedIntrin = mapPACXXIntrinsicAMDGCN(M, II->getIntrinsicID()))
             II->setCalledFunction(mappedIntrin);
           }
         }
