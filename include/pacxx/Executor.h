@@ -11,7 +11,6 @@
 #define PACXX_V2_EXECUTOR_H
 
 #include "pacxx/pacxx_config.h"
-#include "CodePolicy.h"
 #include "ModuleLoader.h"
 #include "Promise.h"
 #include "pacxx/detail/CoreInitializer.h"
