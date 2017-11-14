@@ -261,7 +261,7 @@ add_custom_command(
 
 add_custom_command(
         OUTPUT ${CMAKE_BINARY_DIR}/lib/${amddbFile}.o
-        COMMAND ${CMAKE_BINARY_DIR}/bin/clang -DFILE='"${amddbFile}.linked.bc"' -DTAG='nvptx_binding' ${CMAKE_CURRENT_SOURCE_DIR}/lib/asm/embed.S -c -o ${amddbFile}.o
+        COMMAND ${CMAKE_BINARY_DIR}/bin/clang -DFILE='"${amddbFile}.linked.bc"' -DTAG='amdgcn_binding' ${CMAKE_CURRENT_SOURCE_DIR}/lib/asm/embed.S -c -o ${amddbFile}.o
         WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/lib
         DEPENDS ${amddbFile}.linked.bc
         COMMENT "Preparing AMDGCN Device Binding for linking")
