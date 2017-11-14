@@ -220,11 +220,18 @@ add_custom_command(
         DEPENDS clang
         COMMENT "Generating NVPTX Device Binding")
 
+        add_custom_command(
+            OUTPUT ${nvdbFile}.linked.bc
+            COMMAND ${CMAKE_BINARY_DIR}/bin/llvm-link -suppress-warnings ${nvdbFile}.bc ${CMAKE_CURRENT_SOURCE_DIR}/lib/bitcode/nvptx_libdevice.bc -o ${nvdbFile}.linked.bc
+            WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/lib    
+            DEPENDS ${nvdbFile}.bc
+            COMMENT "Linking AMDGCN libdevice into bitcode")
+
 add_custom_command(
         OUTPUT ${CMAKE_BINARY_DIR}/lib/${nvdbFile}.o
-        COMMAND ${CMAKE_BINARY_DIR}/bin/clang -DFILE='"${nvdbFile}.bc"' -DTAG='nvptx_binding' ${CMAKE_CURRENT_SOURCE_DIR}/lib/asm/embed.S -c -o ${nvdbFile}.o
+        COMMAND ${CMAKE_BINARY_DIR}/bin/clang -DFILE='"${nvdbFile}.linked.bc"' -DTAG='nvptx_binding' ${CMAKE_CURRENT_SOURCE_DIR}/lib/asm/embed.S -c -o ${nvdbFile}.o
         WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/lib
-        DEPENDS ${nvdbFile}.bc
+        DEPENDS ${nvdbFile}.linked.bc
         COMMENT "Preparing NVPTX Device Binding for linking")
 
 add_custom_target(${nvdbFile}_target DEPENDS ${nvdbFile}.bc ${CMAKE_BINARY_DIR}/lib/${nvdbFile}.o)
@@ -234,6 +241,38 @@ add_library(${nvdbFile} STATIC ${CMAKE_BINARY_DIR}/lib/${nvdbFile}.o)
 
 set_source_files_properties(${CMAKE_BINARY_DIR}/lib/${nvdbFile}.o PROPERTIES EXTERNAL_OBJECT true GENERATED true)
 set_target_properties(${nvdbFile} PROPERTIES LINKER_LANGUAGE C)
+
+# generate the amdgcn device binding
+set(amddbFile amdgcn_device_binding)
+
+add_custom_command(
+        OUTPUT ${amddbFile}.bc
+        COMMAND ${CMAKE_BINARY_DIR}/bin/clang -emit-llvm -c -std=c++14 -O3 -D__device_code__ -isystem ${CMAKE_CURRENT_SOURCE_DIR}/include -isystem ${CUDA_TOOLKIT_INCLUDE} -I ${CMAKE_CURRENT_SOURCE_DIR}/include ${CMAKE_CURRENT_SOURCE_DIR}/lib/bitcode/${amddbFile}.cpp -o ${amddbFile}.bc
+        WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/lib
+        DEPENDS clang
+        COMMENT "Generating AMDGCN Device Binding")
+
+add_custom_command(
+    OUTPUT ${amddbFile}.linked.bc
+    COMMAND ${CMAKE_BINARY_DIR}/bin/llvm-link -suppress-warnings ${amddbFile}.bc ${CMAKE_CURRENT_SOURCE_DIR}/lib/bitcode/amdgcn_libdevice.bc -o ${amddbFile}.linked.bc
+    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/lib    
+    DEPENDS ${amddbFile}.bc
+    COMMENT "Linking AMDGCN libdevice into bitcode")
+
+add_custom_command(
+        OUTPUT ${CMAKE_BINARY_DIR}/lib/${amddbFile}.o
+        COMMAND ${CMAKE_BINARY_DIR}/bin/clang -DFILE='"${amddbFile}.linked.bc"' -DTAG='nvptx_binding' ${CMAKE_CURRENT_SOURCE_DIR}/lib/asm/embed.S -c -o ${amddbFile}.o
+        WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/lib
+        DEPENDS ${amddbFile}.linked.bc
+        COMMENT "Preparing AMDGCN Device Binding for linking")
+
+add_custom_target(${amddbFile}_target DEPENDS ${amddbFile}.bc ${CMAKE_BINARY_DIR}/lib/${amddbFile}.o)
+
+add_library(${amddbFile} STATIC ${CMAKE_BINARY_DIR}/lib/${amddbFile}.o)
+
+
+set_source_files_properties(${CMAKE_BINARY_DIR}/lib/${amddbFile}.o PROPERTIES EXTERNAL_OBJECT true GENERATED true)
+set_target_properties(${amddbFile} PROPERTIES LINKER_LANGUAGE C)
 
 
 # generate the native device binding

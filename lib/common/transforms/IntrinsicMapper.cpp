@@ -12,6 +12,7 @@
 
 #define DEBUG_TYPE "pacxx_emit_select"
 
+#include "llvm/Analysis/TargetTransformInfo.h"
 #include "llvm/IR/Argument.h"
 #include "llvm/IR/BasicBlock.h"
 #include "llvm/IR/Constants.h"
@@ -23,24 +24,22 @@
 #include "llvm/Support/TargetRegistry.h"
 #include "llvm/Target/TargetLowering.h"
 #include "llvm/Transforms/Utils/Cloning.h"
-#include "llvm/Analysis/TargetTransformInfo.h"
 
-#include "pacxx/detail/common/transforms/PACXXTransforms.h"
 #include "pacxx/detail/common/transforms/ModuleHelper.h"
+#include "pacxx/detail/common/transforms/PACXXTransforms.h"
 
 using namespace llvm;
 using namespace std;
 using namespace pacxx;
 
 namespace llvm {
-  void initializeIntrinsicMapperPass(PassRegistry&);
+void initializeIntrinsicMapperPass(PassRegistry &);
 }
 
 namespace {
 
-static bool isPACXXIntrinsic(Intrinsic::ID id){
-  switch(id)
-  {
+static bool isPACXXIntrinsic(Intrinsic::ID id) {
+  switch (id) {
   case Intrinsic::pacxx_barrier0:
   case Intrinsic::pacxx_read_ntid_x:
   case Intrinsic::pacxx_read_ntid_y:
@@ -58,17 +57,15 @@ static bool isPACXXIntrinsic(Intrinsic::ID id){
   case Intrinsic::pacxx_read_nctaid_y:
   case Intrinsic::pacxx_read_nctaid_z:
   case Intrinsic::pacxx_read_nctaid_w:
-      return true;
+    return true;
   default:
     break;
   }
   return false;
 }
 
-static Function* mapPACXXIntrinsicNVPTX(Module* M, Intrinsic::ID id)
-{
-  switch(id)
-  {
+static Function *mapPACXXIntrinsicNVPTX(Module *M, IntrinsicInst *II) {
+  switch (II->getIntrinsicID()) {
   case Intrinsic::pacxx_barrier0:
     return Intrinsic::getDeclaration(M, Intrinsic::nvvm_barrier0);
   case Intrinsic::pacxx_read_ntid_x:
@@ -109,10 +106,47 @@ static Function* mapPACXXIntrinsicNVPTX(Module* M, Intrinsic::ID id)
   return nullptr;
 }
 
-static Function* mapPACXXIntrinsicAMDGCN(Module* M, Intrinsic::ID id)
-{
-  switch(id)
-  {
+static void mapPACXXIntrinsicToSpecialFunctionAMDGCN(Module *M,
+                                                     IntrinsicInst *II) {
+  IRBuilder<> builder(II);
+  std::string fname;
+  unsigned dim;
+  switch (II->getIntrinsicID()) {
+  case Intrinsic::pacxx_read_nctaid_x:
+    dim = 0;
+    fname = "__ockl_get_num_groups";
+    break;
+  case Intrinsic::pacxx_read_nctaid_y:
+    dim = 1;
+    fname = "__ockl_get_num_groups";
+    break;
+  case Intrinsic::pacxx_read_nctaid_z:
+    dim = 2;
+    fname = "__ockl_get_num_groups";
+    break;
+  case Intrinsic::pacxx_read_ntid_x:
+    dim = 0;
+    fname = "__ockl_get_local_size";
+    break;
+  case Intrinsic::pacxx_read_ntid_y:
+    dim = 1;
+    fname = "__ockl_get_local_size";
+    break;
+  case Intrinsic::pacxx_read_ntid_z:
+    dim = 2;
+    fname = "__ockl_get_local_size";
+    break;
+  default:
+    llvm_unreachable("Unhandled PACXX Intrinsic");
+    break;
+  }
+
+  auto call = builder.CreateCall(M->getFunction(fname), builder.getInt32(dim));
+  II->replaceAllUsesWith(call);
+}
+
+static Function *mapPACXXIntrinsicAMDGCN(Module *M, IntrinsicInst *II) {
+  switch (II->getIntrinsicID()) {
   case Intrinsic::pacxx_barrier0:
     return Intrinsic::getDeclaration(M, Intrinsic::amdgcn_s_barrier);
   case Intrinsic::pacxx_read_ctaid_x:
@@ -127,6 +161,14 @@ static Function* mapPACXXIntrinsicAMDGCN(Module* M, Intrinsic::ID id)
     return Intrinsic::getDeclaration(M, Intrinsic::amdgcn_workitem_id_y);
   case Intrinsic::pacxx_read_tid_z:
     return Intrinsic::getDeclaration(M, Intrinsic::amdgcn_workitem_id_z);
+  case Intrinsic::pacxx_read_nctaid_x:
+  case Intrinsic::pacxx_read_nctaid_y:
+  case Intrinsic::pacxx_read_nctaid_z:
+  case Intrinsic::pacxx_read_ntid_x:
+  case Intrinsic::pacxx_read_ntid_y:
+  case Intrinsic::pacxx_read_ntid_z:
+    mapPACXXIntrinsicToSpecialFunctionAMDGCN(M, II);
+    break;
   default:
     break;
   }
@@ -135,7 +177,9 @@ static Function* mapPACXXIntrinsicAMDGCN(Module* M, Intrinsic::ID id)
 
 struct IntrinsicMapper : public ModulePass {
   static char ID;
-  IntrinsicMapper() : ModulePass(ID) { initializeIntrinsicMapperPass(*PassRegistry::getPassRegistry()); }
+  IntrinsicMapper() : ModulePass(ID) {
+    initializeIntrinsicMapperPass(*PassRegistry::getPassRegistry());
+  }
   virtual ~IntrinsicMapper() {}
   virtual bool runOnModule(Module &M) override;
   virtual void getAnalysisUsage(AnalysisUsage &AU) const override;
@@ -148,23 +192,24 @@ bool IntrinsicMapper::runOnModule(Module &M) {
 
     void visitCallInst(CallInst &CI) {
 
-      if (auto II = dyn_cast<IntrinsicInst>(&CI)){
-        if (isPACXXIntrinsic(II->getIntrinsicID()))
-        {
-          if (M->getTargetTriple().find("nvptx") != std::string::npos){
-          if (auto mappedIntrin = mapPACXXIntrinsicNVPTX(M, II->getIntrinsicID()))
-            II->setCalledFunction(mappedIntrin);
-          }
-          else {
-            if (auto mappedIntrin = mapPACXXIntrinsicAMDGCN(M, II->getIntrinsicID()))
-            II->setCalledFunction(mappedIntrin);
+      if (auto II = dyn_cast<IntrinsicInst>(&CI)) {
+        if (isPACXXIntrinsic(II->getIntrinsicID())) {
+          if (M->getTargetTriple().find("nvptx") != std::string::npos) {
+            if (auto mappedIntrin = mapPACXXIntrinsicNVPTX(M, II))
+              II->setCalledFunction(mappedIntrin);
+              else dead.push_back(II);
+          } else {
+            if (auto mappedIntrin = mapPACXXIntrinsicAMDGCN(M, II))
+              II->setCalledFunction(mappedIntrin);
+              else dead.push_back(II);
           }
         }
       }
     }
 
-    Module* M;
+    Module *M;
     TargetTransformInfo *TTI;
+    SmallVector<IntrinsicInst*, 8> dead;
   } visitor;
 
   auto kernels = pacxx::getTagedFunctions(&M, "nvvm.annotations", "kernel");
@@ -173,6 +218,9 @@ bool IntrinsicMapper::runOnModule(Module &M) {
     visitor.TTI = &getAnalysis<TargetTransformInfoWrapperPass>().getTTI(F);
     visitor.visit(F);
   }
+  for (auto II : visitor.dead)
+    II->eraseFromParent();
+    
   return modified;
 }
 
@@ -181,19 +229,20 @@ void IntrinsicMapper::getAnalysisUsage(AnalysisUsage &AU) const {
   AU.addRequired<TargetTransformInfoWrapperPass>();
 }
 
-}
+} // namespace
 
 char IntrinsicMapper::ID = 0;
 
-INITIALIZE_PASS_BEGIN(IntrinsicMapper, "pacxx-intrin-mapper",
-                      "PACXXSelectEmitter: transform masked intrinsics to selects", true, true)
-  INITIALIZE_PASS_DEPENDENCY(TargetLibraryInfoWrapperPass)
-  INITIALIZE_PASS_DEPENDENCY(TargetTransformInfoWrapperPass)
+INITIALIZE_PASS_BEGIN(
+    IntrinsicMapper, "pacxx-intrin-mapper",
+    "PACXXSelectEmitter: transform masked intrinsics to selects", true, true)
+INITIALIZE_PASS_DEPENDENCY(TargetLibraryInfoWrapperPass)
+INITIALIZE_PASS_DEPENDENCY(TargetTransformInfoWrapperPass)
 INITIALIZE_PASS_END(IntrinsicMapper, "pacxx-emit-select",
-                    "IntrinsicMapper: transform pacxx intrinsics to target dependend intrinsics", true, true)
+                    "IntrinsicMapper: transform pacxx intrinsics to target "
+                    "dependend intrinsics",
+                    true, true)
 
 namespace pacxx {
-Pass *createIntrinsicMapperPass() {
-  return new IntrinsicMapper();
-}
-}
+Pass *createIntrinsicMapperPass() { return new IntrinsicMapper(); }
+} // namespace pacxx

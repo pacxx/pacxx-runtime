@@ -9,5 +9,5 @@ class Pass;
 }
 
 namespace pacxx {
-llvm::Pass *createAMDGCNPrepairPass();
+llvm::Pass *createAMDGCNPrepairPass(unsigned);
 }

@@ -85,8 +85,6 @@ std::unique_ptr<llvm::Module> PTXBackend::prepareModule(llvm::Module &M) {
   TargetLibraryInfoImpl TLII(Triple(M.getTargetTriple()));
   PM.add(new TargetLibraryInfoWrapperPass(TLII));
   PM.add(createPACXXCodeGenPrepare());
-  PM.add(createTypeBasedAAWrapperPass());
-  PM.add(createBasicAAWrapperPass());
   PM.add(createAlwaysInlinerLegacyPass());
   PM.add(createPACXXCodeGenPrepare());
   PM.add(createSROAPass());

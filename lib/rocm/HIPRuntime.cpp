@@ -1,6 +1,11 @@
+//===-----------------------------------------------------------*- C++ -*-===//
 //
-// Created by mhaidl on 30/05/16.
+//                       The LLVM-based PACXX Project
 //
+// This file is distributed under the University of Illinois Open Source
+// License. See LICENSE.TXT for details.
+//
+//===----------------------------------------------------------------------===//
 
 #include "pacxx/detail/rocm/HIPErrorDetection.h"
 #include "pacxx/detail/rocm/HIPRuntime.h"
@@ -40,11 +45,9 @@ HIPRuntime::HIPRuntime(unsigned dev_id)
   auto &prop = _dev_props[dev_id];
   SEC_HIP_CALL(hipGetDeviceProperties(&prop, dev_id));
 
-  unsigned CC = prop.major * 10 + prop.minor;
-
-  __verbose("Initializing PTXBackend for ", prop.name, " (dev: ", dev_id,
-            ") with compute capability ", prop.major, ".", prop.minor);
-  _compiler->initialize(CC);
+  __verbose("Initializing HSACOBackend for ", prop.name, " (dev: ", dev_id,
+            ") with GCN version ", prop.gcnArch);
+  _compiler->initialize(prop.gcnArch);
 }
 
 HIPRuntime::~HIPRuntime() {}

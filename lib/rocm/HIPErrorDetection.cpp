@@ -1,6 +1,12 @@
+//===-----------------------------------------------------------*- C++ -*-===//
 //
-// Created by mhaidl on 30/05/16.
+//                       The LLVM-based PACXX Project
 //
+// This file is distributed under the University of Illinois Open Source
+// License. See LICENSE.TXT for details.
+//
+//===----------------------------------------------------------------------===//
+
 #include "pacxx/detail/rocm/HIPErrorDetection.h"
 #include "pacxx/detail/common/Common.h"
 #include "pacxx/detail/common/Exceptions.h"

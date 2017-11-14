@@ -35,6 +35,7 @@ private:
   llvm::TargetOptions _options;
   std::unique_ptr<llvm::TargetMachine> _machine;
   std::string _cpu, _features;
+  unsigned _gcnArch;
 };
 }
 }

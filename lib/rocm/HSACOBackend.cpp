@@ -1,6 +1,12 @@
+//===-----------------------------------------------------------*- C++ -*-===//
 //
-// Created by mhaidl on 29/05/16.
+//                       The LLVM-based PACXX Project
 //
+// This file is distributed under the University of Illinois Open Source
+// License. See LICENSE.TXT for details.
+//
+//===----------------------------------------------------------------------===//
+
 #include <string>
 
 #include <llvm/ADT/SmallString.h>
@@ -17,6 +23,7 @@
 #include "pacxx/detail/common/Exceptions.h"
 #include "pacxx/detail/rocm/HSACOBackend.h"
 
+// FIXME: this looks awkward
 #include "pacxx/../../../lld/include/lld/Common/Driver.h"
 
 #include <llvm/Transforms/Scalar.h>
@@ -50,8 +57,8 @@ HSACOBackend::HSACOBackend()
     : _target(nullptr), _cpu("gfx803"), _features(""){}
 
 void HSACOBackend::initialize(unsigned gfx) {
-// FIXME: respect the gfx version from the runtime
-//  _cpu = "gfx" + std::to_string(gfx);
+  _gcnArch = gfx;
+  _cpu = "gfx" + std::to_string(gfx);
   __verbose("Intializing LLVM components for HSACO generation!");
   PassRegistry *Registry = PassRegistry::getPassRegistry();
   initializeCore(*Registry);
@@ -70,21 +77,18 @@ void HSACOBackend::initialize(unsigned gfx) {
 std::unique_ptr<llvm::Module> HSACOBackend::prepareModule(llvm::Module &M) {
 
   ModuleLoader loader(M.getContext());
-  // FIXME: implement a device binding for amdgcn
-  /*auto binding = loader.loadInternal(amdgcn_binding_start, amdgcn_binding_end - amdgcn_binding_start);
+  auto binding = loader.loadInternal(amdgcn_binding_start, amdgcn_binding_end - amdgcn_binding_start);
 
   M.setDataLayout(binding->getDataLayout());
   M.setTargetTriple(binding->getTargetTriple());
 
   auto linker = Linker(M);
   linker.linkInModule(std::move(binding), Linker::Flags::None);
-  */
+  
   llvm::legacy::PassManager PM;
   TargetLibraryInfoImpl TLII(Triple(M.getTargetTriple()));
   PM.add(new TargetLibraryInfoWrapperPass(TLII));
   PM.add(createPACXXCodeGenPrepare());
-  PM.add(createTypeBasedAAWrapperPass());
-  PM.add(createBasicAAWrapperPass());
   PM.add(createAlwaysInlinerLegacyPass());
   PM.add(createPACXXCodeGenPrepare());
   PM.add(createSROAPass());
@@ -92,7 +96,6 @@ std::unique_ptr<llvm::Module> HSACOBackend::prepareModule(llvm::Module &M) {
   PM.add(createLoopRotatePass());
   PM.add(createCFGSimplificationPass());
   PM.add(createCodeGenPreparePass());
-  PM.add(createPostOrderFunctionAttrsLegacyPass());
   PM.add(createSROAPass());
   PM.add(createEarlyCSEPass());
   PM.add(createLazyValueInfoPass());
@@ -131,7 +134,7 @@ std::unique_ptr<llvm::Module> HSACOBackend::prepareModule(llvm::Module &M) {
  // PM.add(createLoadMotionPass());
   PM.add(createMSPRemoverPass());
 
-  PM.add(createAMDGCNPrepairPass());
+  PM.add(createAMDGCNPrepairPass(_gcnArch));
 
   PM.add(createMemoryCoalescingPass(false));
   PM.add(createAlwaysInlinerLegacyPass());
