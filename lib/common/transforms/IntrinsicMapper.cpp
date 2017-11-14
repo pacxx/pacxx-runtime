@@ -162,6 +162,12 @@ static CallInst *mapPACXXIntrinsicToSpecialFunctionAMDGCN(Module *M,
     llvm_unreachable("Unhandled PACXX Intrinsic");
     break;
   }
+  auto mapping = M->getFunction(fname); 
+
+  if (!mapping)
+    M->dump(); 
+
+  assert(mapping && "No mapping function for this intrinsic!");
 
   return CallInst::Create(M->getFunction(fname), builder.getInt32(dim), "");
 }

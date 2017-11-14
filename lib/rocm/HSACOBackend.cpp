@@ -78,7 +78,7 @@ std::unique_ptr<llvm::Module> HSACOBackend::prepareModule(llvm::Module &M) {
 
   ModuleLoader loader(M.getContext());
   auto binding = loader.loadInternal(amdgcn_binding_start, amdgcn_binding_end - amdgcn_binding_start);
-
+  binding->dump();
   M.setDataLayout(binding->getDataLayout());
   M.setTargetTriple(binding->getTargetTriple());
 
@@ -88,6 +88,7 @@ std::unique_ptr<llvm::Module> HSACOBackend::prepareModule(llvm::Module &M) {
   llvm::legacy::PassManager PM;
   TargetLibraryInfoImpl TLII(Triple(M.getTargetTriple()));
   PM.add(new TargetLibraryInfoWrapperPass(TLII));
+  PM.add(createIntrinsicMapperPass());
   PM.add(createPACXXCodeGenPrepare());
   PM.add(createAlwaysInlinerLegacyPass());
   PM.add(createPACXXCodeGenPrepare());
