@@ -136,27 +136,27 @@ static CallInst *mapPACXXIntrinsicToSpecialFunctionAMDGCN(Module *M,
   switch (II->getIntrinsicID()) {
   case Intrinsic::pacxx_read_nctaid_x:
     dim = 0;
-    fname = "__ockl_get_num_groups";
+    fname = "__pacxx_get_num_groups";
     break;
   case Intrinsic::pacxx_read_nctaid_y:
     dim = 1;
-    fname = "__ockl_get_num_groups";
+    fname = "__pacxx_get_num_groups";
     break;
   case Intrinsic::pacxx_read_nctaid_z:
     dim = 2;
-    fname = "__ockl_get_num_groups";
+    fname = "__pacxx_get_num_groups";
     break;
   case Intrinsic::pacxx_read_ntid_x:
     dim = 0;
-    fname = "__ockl_get_local_size";
+    fname = "__pacxx_get_local_size";
     break;
   case Intrinsic::pacxx_read_ntid_y:
     dim = 1;
-    fname = "__ockl_get_local_size";
+    fname = "__pacxx_get_local_size";
     break;
   case Intrinsic::pacxx_read_ntid_z:
     dim = 2;
-    fname = "__ockl_get_local_size";
+    fname = "__pacxx_get_local_size";
     break;
   default:
     llvm_unreachable("Unhandled PACXX Intrinsic");
