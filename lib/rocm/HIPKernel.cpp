@@ -38,6 +38,14 @@ void HIPKernel::configurate(KernelConfiguration config) {
   }
 }
 
+void HIPKernel::setLambdaPtr(const void* ptr, size_t size){
+  _lambdaStorage.resize(size + 6*4);
+  _lambdaPtr = ptr; 
+  _lambdaSize = size; 
+
+  std::memcpy(_lambdaStorage.data() + 6*4, ptr, size);
+}
+
 void HIPKernel::launch() {
   if (!_fptr || _staged_values_changed) { // kernel has no function ptr yet.
                                           // request kernel transformation and
@@ -49,7 +57,7 @@ void HIPKernel::launch() {
   __verbose("setting kernel arguments");
   _launch_args.clear(); // remove old args first
   _launch_args.push_back(HIP_LAUNCH_PARAM_BUFFER_POINTER);
-  _launch_args.push_back(const_cast<void*>(_lambdaPtr));
+  _launch_args.push_back(reinterpret_cast<void*>(_lambdaStorage.data()));
   _launch_args.push_back(HIP_LAUNCH_PARAM_BUFFER_SIZE);
   _launch_args.push_back(reinterpret_cast<void *>(&_argBufferSize));
   _launch_args.push_back(HIP_LAUNCH_PARAM_END);

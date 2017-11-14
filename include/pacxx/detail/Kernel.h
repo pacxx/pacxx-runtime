@@ -38,7 +38,11 @@ public:
 
   virtual void setCallback(std::function<void()> callback);
 
-  virtual void setLambdaPtr(const void *ptr) { _lambdaPtr = ptr; };
+  virtual void setLambdaPtr(const void* ptr, size_t size) { 
+    _lambdaPtr = ptr;
+    _lambdaSize = size;
+  };
+
   virtual const void *getLambdaPtr() { return _lambdaPtr; };
 
 protected:
@@ -51,6 +55,7 @@ protected:
   bool _disable_staging;
   size_t _argBufferSize;
   const void *_lambdaPtr;
+  size_t _lambdaSize;
 };
 }
 }

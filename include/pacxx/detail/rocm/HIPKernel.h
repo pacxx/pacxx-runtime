@@ -35,6 +35,7 @@ public:
   virtual void configurate(KernelConfiguration config) override;
   virtual void launch() override;
 
+  virtual void setLambdaPtr(const void* ptr, size_t size) override;
 
 private:
   void overrideFptr(hipFunction_t fptr) { _fptr = fptr; }
@@ -43,7 +44,7 @@ private:
   HIPRuntime &_runtime;
   std::vector<void *> _launch_args;
   hipFunction_t _fptr;
-
+  std::vector<char> _lambdaStorage;
 };
 }
 }
