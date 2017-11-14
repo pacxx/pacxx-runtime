@@ -1,7 +1,11 @@
+//===-----------------------------------------------------------*- C++ -*-===//
 //
-// Created by mhaidl on 05/06/16.
+//                     The LLVM Compiler Infrastructure
 //
-
+// This file is distributed under the University of Illinois Open Source
+// License. See LICENSE.TXT for details.
+//
+//===----------------------------------------------------------------------===//
 
 //#include <type_traits>
 #include "pacxx/detail/device/DeviceCode.h"

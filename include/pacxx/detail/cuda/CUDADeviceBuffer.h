@@ -1,6 +1,11 @@
+//===-----------------------------------------------------------*- C++ -*-===//
 //
-// Created by mhaidl on 02/06/16.
+//                     The LLVM Compiler Infrastructure
 //
+// This file is distributed under the University of Illinois Open Source
+// License. See LICENSE.TXT for details.
+//
+//===----------------------------------------------------------------------===//
 
 #include "pacxx/detail/DeviceBuffer.h"
 #include "pacxx/detail/common/Log.h"

@@ -1,6 +1,11 @@
+//===-----------------------------------------------------------*- C++ -*-===//
 //
-// Created by mhaidl on 30/06/16.
+//                     The LLVM Compiler Infrastructure
 //
+// This file is distributed under the University of Illinois Open Source
+// License. See LICENSE.TXT for details.
+//
+//===----------------------------------------------------------------------===//
 
 #ifndef PACXX_V2_MSPENGINE_H
 #define PACXX_V2_MSPENGINE_H

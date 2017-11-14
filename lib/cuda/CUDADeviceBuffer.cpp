@@ -1,6 +1,12 @@
+//===-----------------------------------------------------------*- C++ -*-===//
 //
-// Created by mhaidl on 10/08/16.
+//                     The LLVM Compiler Infrastructure
 //
+// This file is distributed under the University of Illinois Open Source
+// License. See LICENSE.TXT for details.
+//
+//===----------------------------------------------------------------------===//
+
 #include "pacxx/detail/cuda/CUDADeviceBuffer.h"
 #include "pacxx/detail/cuda/CUDAErrorDetection.h"
 #include <cuda_runtime.h>
