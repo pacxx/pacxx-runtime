@@ -24,17 +24,14 @@ HIPKernel::~HIPKernel() {}
 void HIPKernel::configurate(KernelConfiguration config) {
   if (_config != config) {
     _config = config;
-    std::vector<size_t> a(6);
-    a[0] = config.threads.x;
-    a[1] = config.threads.y;
-    a[2] = config.threads.z;
-    a[3] = config.blocks.x;
-    a[4] = config.blocks.y;
-    a[5] = config.blocks.z;
+    unsigned * a = reinterpret_cast<unsigned*>(_lambdaStorage.data()); 
 
-    for (size_t i = 0; i < a.size(); ++i) {
-      // setStagedValue((i * -1) - 1, a[i], true);
-    }
+    a[0] = config.blocks.x;
+    a[1] = config.blocks.y;
+    a[2] = config.blocks.z;
+    a[3] = config.threads.x;
+    a[4] = config.threads.y;
+    a[5] = config.threads.z;
   }
 }
 
