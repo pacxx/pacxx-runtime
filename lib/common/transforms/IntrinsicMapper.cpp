@@ -141,7 +141,7 @@ static void mapPACXXIntrinsicToSpecialFunctionAMDGCN(Module *M,
     break;
   }
 
-  auto call = builder.CreateCall(M->getFunction(fname), builder.getInt32(dim));
+  auto call = CallInst::Create(M->getFunction(fname), builder.getInt32(dim), "", II);
   II->replaceAllUsesWith(call);
 }
 
@@ -220,7 +220,7 @@ bool IntrinsicMapper::runOnModule(Module &M) {
   }
   for (auto II : visitor.dead)
     II->eraseFromParent();
-    
+
   return modified;
 }
 
