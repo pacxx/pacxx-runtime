@@ -17,7 +17,7 @@ namespace pacxx {
 namespace v2 {
 
 HIPKernel::HIPKernel(HIPRuntime &runtime, hipFunction_t fptr, std::string name)
-    : Kernel(runtime, name), _runtime(runtime), _fptr(fptr) {}
+    : Kernel(runtime, name), _runtime(runtime), _fptr(fptr), _lambdaStorage(6*4){}
 
 HIPKernel::~HIPKernel() {}
 

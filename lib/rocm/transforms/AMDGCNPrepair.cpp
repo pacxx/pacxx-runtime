@@ -83,6 +83,7 @@ static Function *cloneKernelForLaunchConfig(Function *F) {
       }
     }
   }
+  F->eraseFromParent();
   return NF;
 }
 

@@ -187,7 +187,7 @@ private:
     auto &K = _runtime->getKernel(FName);
     // K.setName(FName);
     K.configurate(config);
-    K.setLambdaPtr(&lambda);
+    K.setLambdaPtr(&lambda, sizeof(L));
 
     _runtime->evaluateStagedFunctions(K);
 
