@@ -225,7 +225,7 @@ add_custom_command(
             COMMAND ${CMAKE_BINARY_DIR}/bin/llvm-link -suppress-warnings ${nvdbFile}.bc ${CMAKE_CURRENT_SOURCE_DIR}/lib/bitcode/nvptx_libdevice.bc -o ${nvdbFile}.linked.bc
             WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/lib    
             DEPENDS ${nvdbFile}.bc
-            COMMENT "Linking AMDGCN libdevice into bitcode")
+            COMMENT "Linking NVPTX libdevice into bitcode")
 
 add_custom_command(
         OUTPUT ${CMAKE_BINARY_DIR}/lib/${nvdbFile}.o

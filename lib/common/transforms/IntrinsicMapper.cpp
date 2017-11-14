@@ -64,50 +64,72 @@ static bool isPACXXIntrinsic(Intrinsic::ID id) {
   return false;
 }
 
-static Function *mapPACXXIntrinsicNVPTX(Module *M, IntrinsicInst *II) {
+static CallInst* mapPACXXIntrinsicNVPTX(Module *M, IntrinsicInst *II) {
+  Function *mapping = nullptr;
+
   switch (II->getIntrinsicID()) {
   case Intrinsic::pacxx_barrier0:
-    return Intrinsic::getDeclaration(M, Intrinsic::nvvm_barrier0);
+    mapping =  Intrinsic::getDeclaration(M, Intrinsic::nvvm_barrier0);
+    break;
   case Intrinsic::pacxx_read_ntid_x:
-    return Intrinsic::getDeclaration(M, Intrinsic::nvvm_read_ptx_sreg_ntid_x);
+    mapping = Intrinsic::getDeclaration(M, Intrinsic::nvvm_read_ptx_sreg_ntid_x);
+    break;
   case Intrinsic::pacxx_read_ntid_y:
-    return Intrinsic::getDeclaration(M, Intrinsic::nvvm_read_ptx_sreg_ntid_y);
+    mapping = Intrinsic::getDeclaration(M, Intrinsic::nvvm_read_ptx_sreg_ntid_y);
+    break;
   case Intrinsic::pacxx_read_ntid_z:
-    return Intrinsic::getDeclaration(M, Intrinsic::nvvm_read_ptx_sreg_ntid_z);
+    mapping = Intrinsic::getDeclaration(M, Intrinsic::nvvm_read_ptx_sreg_ntid_z);
+    break;
   case Intrinsic::pacxx_read_ntid_w:
-    return Intrinsic::getDeclaration(M, Intrinsic::nvvm_read_ptx_sreg_ntid_w);
+    mapping = Intrinsic::getDeclaration(M, Intrinsic::nvvm_read_ptx_sreg_ntid_w);
+    break;
   case Intrinsic::pacxx_read_tid_x:
-    return Intrinsic::getDeclaration(M, Intrinsic::nvvm_read_ptx_sreg_tid_x);
+    mapping = Intrinsic::getDeclaration(M, Intrinsic::nvvm_read_ptx_sreg_tid_x);
+    break;
   case Intrinsic::pacxx_read_tid_y:
-    return Intrinsic::getDeclaration(M, Intrinsic::nvvm_read_ptx_sreg_tid_y);
+    mapping = Intrinsic::getDeclaration(M, Intrinsic::nvvm_read_ptx_sreg_tid_y);
+    break;
   case Intrinsic::pacxx_read_tid_z:
-    return Intrinsic::getDeclaration(M, Intrinsic::nvvm_read_ptx_sreg_tid_z);
+    mapping = Intrinsic::getDeclaration(M, Intrinsic::nvvm_read_ptx_sreg_tid_z);
+    break;
   case Intrinsic::pacxx_read_tid_w:
-    return Intrinsic::getDeclaration(M, Intrinsic::nvvm_read_ptx_sreg_tid_w);
+    mapping = Intrinsic::getDeclaration(M, Intrinsic::nvvm_read_ptx_sreg_tid_w);
+    break;
   case Intrinsic::pacxx_read_ctaid_x:
-    return Intrinsic::getDeclaration(M, Intrinsic::nvvm_read_ptx_sreg_ctaid_x);
+    mapping = Intrinsic::getDeclaration(M, Intrinsic::nvvm_read_ptx_sreg_ctaid_x);
+    break;
   case Intrinsic::pacxx_read_ctaid_y:
-    return Intrinsic::getDeclaration(M, Intrinsic::nvvm_read_ptx_sreg_ctaid_y);
+    mapping = Intrinsic::getDeclaration(M, Intrinsic::nvvm_read_ptx_sreg_ctaid_y);
+    break;
   case Intrinsic::pacxx_read_ctaid_z:
-    return Intrinsic::getDeclaration(M, Intrinsic::nvvm_read_ptx_sreg_ctaid_z);
+    mapping = Intrinsic::getDeclaration(M, Intrinsic::nvvm_read_ptx_sreg_ctaid_z);
+    break;
   case Intrinsic::pacxx_read_ctaid_w:
-    return Intrinsic::getDeclaration(M, Intrinsic::nvvm_read_ptx_sreg_ctaid_w);
+    mapping = Intrinsic::getDeclaration(M, Intrinsic::nvvm_read_ptx_sreg_ctaid_w);
+    break;
   case Intrinsic::pacxx_read_nctaid_x:
-    return Intrinsic::getDeclaration(M, Intrinsic::nvvm_read_ptx_sreg_nctaid_x);
+    mapping = Intrinsic::getDeclaration(M, Intrinsic::nvvm_read_ptx_sreg_nctaid_x);
+    break;
   case Intrinsic::pacxx_read_nctaid_y:
-    return Intrinsic::getDeclaration(M, Intrinsic::nvvm_read_ptx_sreg_nctaid_y);
+    mapping = Intrinsic::getDeclaration(M, Intrinsic::nvvm_read_ptx_sreg_nctaid_y);
+    break;
   case Intrinsic::pacxx_read_nctaid_z:
-    return Intrinsic::getDeclaration(M, Intrinsic::nvvm_read_ptx_sreg_nctaid_z);
+    mapping = Intrinsic::getDeclaration(M, Intrinsic::nvvm_read_ptx_sreg_nctaid_z);
+    break;
   case Intrinsic::pacxx_read_nctaid_w:
-    return Intrinsic::getDeclaration(M, Intrinsic::nvvm_read_ptx_sreg_nctaid_w);
+    mapping = Intrinsic::getDeclaration(M, Intrinsic::nvvm_read_ptx_sreg_nctaid_w);
+    break;
   default:
     break;
   }
-  return nullptr;
+
+  assert(mapping && "No mapping for this intrinsic!");
+  II->setCalledFunction(mapping);
+  return II;
 }
 
-static void mapPACXXIntrinsicToSpecialFunctionAMDGCN(Module *M,
-                                                     IntrinsicInst *II) {
+static CallInst *mapPACXXIntrinsicToSpecialFunctionAMDGCN(Module *M,
+                                                          IntrinsicInst *II) {
   IRBuilder<> builder(II);
   std::string fname;
   unsigned dim;
@@ -141,38 +163,49 @@ static void mapPACXXIntrinsicToSpecialFunctionAMDGCN(Module *M,
     break;
   }
 
-  auto call = CallInst::Create(M->getFunction(fname), builder.getInt32(dim), "", II);
-  II->replaceAllUsesWith(call);
+  return CallInst::Create(M->getFunction(fname), builder.getInt32(dim), "");
 }
 
-static Function *mapPACXXIntrinsicAMDGCN(Module *M, IntrinsicInst *II) {
+static CallInst *mapPACXXIntrinsicAMDGCN(Module *M, IntrinsicInst *II) {
+  Function *mapping = nullptr;
   switch (II->getIntrinsicID()) {
   case Intrinsic::pacxx_barrier0:
-    return Intrinsic::getDeclaration(M, Intrinsic::amdgcn_s_barrier);
+    mapping = Intrinsic::getDeclaration(M, Intrinsic::amdgcn_s_barrier);
+    break;
   case Intrinsic::pacxx_read_ctaid_x:
-    return Intrinsic::getDeclaration(M, Intrinsic::amdgcn_workgroup_id_x);
+    mapping = Intrinsic::getDeclaration(M, Intrinsic::amdgcn_workgroup_id_x);
+    break;
   case Intrinsic::pacxx_read_ctaid_y:
-    return Intrinsic::getDeclaration(M, Intrinsic::amdgcn_workgroup_id_y);
+    mapping = Intrinsic::getDeclaration(M, Intrinsic::amdgcn_workgroup_id_y);
+    break;
   case Intrinsic::pacxx_read_ctaid_z:
-    return Intrinsic::getDeclaration(M, Intrinsic::amdgcn_workgroup_id_z);
+    mapping = Intrinsic::getDeclaration(M, Intrinsic::amdgcn_workgroup_id_z);
+    break;
   case Intrinsic::pacxx_read_tid_x:
-    return Intrinsic::getDeclaration(M, Intrinsic::amdgcn_workitem_id_x);
+    mapping = Intrinsic::getDeclaration(M, Intrinsic::amdgcn_workitem_id_x);
+    break;
   case Intrinsic::pacxx_read_tid_y:
-    return Intrinsic::getDeclaration(M, Intrinsic::amdgcn_workitem_id_y);
+    mapping = Intrinsic::getDeclaration(M, Intrinsic::amdgcn_workitem_id_y);
+    break;
   case Intrinsic::pacxx_read_tid_z:
-    return Intrinsic::getDeclaration(M, Intrinsic::amdgcn_workitem_id_z);
+    mapping = Intrinsic::getDeclaration(M, Intrinsic::amdgcn_workitem_id_z);
+    break;
   case Intrinsic::pacxx_read_nctaid_x:
   case Intrinsic::pacxx_read_nctaid_y:
   case Intrinsic::pacxx_read_nctaid_z:
   case Intrinsic::pacxx_read_ntid_x:
   case Intrinsic::pacxx_read_ntid_y:
   case Intrinsic::pacxx_read_ntid_z:
-    mapPACXXIntrinsicToSpecialFunctionAMDGCN(M, II);
-    break;
+    return mapPACXXIntrinsicToSpecialFunctionAMDGCN(M, II);
   default:
     break;
   }
-  return nullptr;
+
+  assert(mapping && "No mapping for this intrinsic!");
+
+  II->setCalledFunction(mapping);
+
+  return II;
 }
 
 struct IntrinsicMapper : public ModulePass {
@@ -195,13 +228,13 @@ bool IntrinsicMapper::runOnModule(Module &M) {
       if (auto II = dyn_cast<IntrinsicInst>(&CI)) {
         if (isPACXXIntrinsic(II->getIntrinsicID())) {
           if (M->getTargetTriple().find("nvptx") != std::string::npos) {
-            if (auto mappedIntrin = mapPACXXIntrinsicNVPTX(M, II))
-              II->setCalledFunction(mappedIntrin);
-              else dead.push_back(II);
+            if (auto mapped = mapPACXXIntrinsicNVPTX(M, II))
+              if (mapped != II)
+                replacements.push_back(make_pair(II, mapped));
           } else {
-            if (auto mappedIntrin = mapPACXXIntrinsicAMDGCN(M, II))
-              II->setCalledFunction(mappedIntrin);
-              else dead.push_back(II);
+            if (auto mapped = mapPACXXIntrinsicAMDGCN(M, II))
+              if (mapped != II)
+                replacements.push_back(make_pair(II, mapped));
           }
         }
       }
@@ -209,7 +242,7 @@ bool IntrinsicMapper::runOnModule(Module &M) {
 
     Module *M;
     TargetTransformInfo *TTI;
-    SmallVector<IntrinsicInst*, 8> dead;
+    SmallVector<std::pair<IntrinsicInst *, CallInst *>, 8> replacements;
   } visitor;
 
   auto kernels = pacxx::getTagedFunctions(&M, "nvvm.annotations", "kernel");
@@ -218,8 +251,11 @@ bool IntrinsicMapper::runOnModule(Module &M) {
     visitor.TTI = &getAnalysis<TargetTransformInfoWrapperPass>().getTTI(F);
     visitor.visit(F);
   }
-  for (auto II : visitor.dead)
-    II->eraseFromParent();
+  for (auto P : visitor.replacements) {
+    P.second->insertBefore(P.first);
+    P.first->replaceAllUsesWith(P.second);
+    P.first->eraseFromParent();
+  }
 
   return modified;
 }
