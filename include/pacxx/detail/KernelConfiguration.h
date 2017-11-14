@@ -1,6 +1,11 @@
+//===-----------------------------------------------------------*- C++ -*-===//
 //
-// Created by mhaidl on 31/05/16.
+//                       The LLVM-based PACXX Project
 //
+// This file is distributed under the University of Illinois Open Source
+// License. See LICENSE.TXT for details.
+//
+//===----------------------------------------------------------------------===//
 
 #ifndef PACXX_V2_KERNELCONFIGURATION_H
 #define PACXX_V2_KERNELCONFIGURATION_H

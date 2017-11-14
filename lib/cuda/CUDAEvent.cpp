@@ -1,6 +1,11 @@
+//===-----------------------------------------------------------*- C++ -*-===//
 //
-// Created by m_haid02 on 29.06.17.
+//                       The LLVM-based PACXX Project
 //
+// This file is distributed under the University of Illinois Open Source
+// License. See LICENSE.TXT for details.
+//
+//===----------------------------------------------------------------------===//
 
 #include <chrono>
 #include "pacxx/detail/cuda/CUDAEvent.h"

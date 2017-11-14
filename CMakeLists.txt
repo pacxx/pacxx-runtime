@@ -69,7 +69,6 @@ set(SOURCE_FILES include/pacxx/Executor.h
         include/pacxx/ModuleLoader.h
         lib/ModuleLoader.cpp
         include/pacxx/detail/IRRuntime.h
-        include/pacxx/CodePolicy.h
         include/pacxx/detail/KernelConfiguration.h
         lib/KernelConfiguration.cpp
         include/pacxx/detail/Kernel.h

@@ -1,6 +1,12 @@
+//===-----------------------------------------------------------*- C++ -*-===//
 //
-// Created by mhaidl on 30/06/16.
+//                       The LLVM-based PACXX Project
 //
+// This file is distributed under the University of Illinois Open Source
+// License. See LICENSE.TXT for details.
+//
+//===----------------------------------------------------------------------===//
+
 #include "pacxx/detail/msp/MSPEngine.h"
 #include "pacxx/detail/common/Exceptions.h"
 #include "pacxx/detail/common/LLVMHelper.h"
