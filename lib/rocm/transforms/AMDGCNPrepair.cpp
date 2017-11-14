@@ -42,10 +42,48 @@ static void createISAVersionFunction(Module *M, unsigned GFX) {
       Function::Create(FTy, GlobalValue::LinkageTypes::LinkOnceODRLinkage,
                        "__oclc_ISA_version", M);
   ISAFunc->setVisibility(GlobalValue::VisibilityTypes::ProtectedVisibility);
-  auto BB = BasicBlock::Create(M->getContext(),"", ISAFunc);
+  auto BB = BasicBlock::Create(M->getContext(), "", ISAFunc);
 
   IRBuilder<> builder(&ISAFunc->front());
   builder.CreateRet(builder.getInt32(GFX));
+}
+
+static Function *cloneKernelForLaunchConfig(Function *F) {
+
+  SmallVector<Type *, 14> Params;
+  for (unsigned i = 0; i < 6; ++i)
+    Params.push_back(Type::getInt32Ty(F->getContext()));
+  for (auto &arg : F->args())
+    Params.push_back(arg.getType());
+
+  Type *RetTy = F->getReturnType();
+  FunctionType *NFTy = FunctionType::get(RetTy, Params, false);
+  auto name = F->getName().str();
+  F->setName("undead");
+  auto NF = Function::Create(NFTy, F->getLinkage(), name, F->getParent());
+  auto DestI = NF->arg_begin() + 6;
+  ValueToValueMapTy VMap;
+  for (auto I = F->arg_begin(); I != F->arg_end(); ++I) {
+    DestI->setName(I->getName());
+    VMap[cast<Value>(I)] = cast<Value>(DestI++);
+  }
+  SmallVector<ReturnInst *, 8> returns;
+  CloneFunctionInto(NF, F, VMap, true, returns);
+  if (auto MD = F->getParent()->getNamedMetadata("nvvm.annotations")) {
+    for (unsigned i = 0; i != MD->getNumOperands(); ++i) {
+      auto Op = MD->getOperand(i);
+      if (Op->getOperand(0)) {
+        if (auto *KF = dyn_cast<Function>(
+                dyn_cast<ValueAsMetadata>(Op->getOperand(0).get())
+                    ->getValue())) {
+          if (KF == F) {
+            Op->replaceOperandWith(0, ValueAsMetadata::get(NF));
+          }
+        }
+      }
+    }
+  }
+  return NF;
 }
 
 struct AMDGCNPrepair : public ModulePass {
@@ -84,6 +122,12 @@ struct AMDGCNPrepair : public ModulePass {
     createISAVersionFunction(&M, GFX);
 
     auto kernels = pacxx::getKernels(&M);
+
+    for (auto &F : kernels)
+      cloneKernelForLaunchConfig(F);
+
+    // updated for cloned kernels
+    kernels = pacxx::getKernels(&M);
 
     for (auto &F : kernels) {
       F->setCallingConv(CallingConv::AMDGPU_KERNEL);
