@@ -23,24 +23,24 @@
 #include "pacxx/detail/common/Exceptions.h"
 #include "pacxx/detail/cuda/PTXBackend.h"
 
-#include <llvm/Transforms/Scalar.h>
-#include <llvm/Transforms/Vectorize.h>
-#include <llvm/Linker/Linker.h>
-#include <llvm/Transforms/IPO/PassManagerBuilder.h>
-#include <llvm/Analysis/TargetTransformInfo.h>
-#include <llvm/Analysis/BasicAliasAnalysis.h>
-#include <llvm/Analysis/TypeBasedAliasAnalysis.h>
-#include <llvm/Transforms/IPO/FunctionAttrs.h>
-#include <llvm/Analysis/Passes.h>
-#include <llvm/Transforms/Scalar/GVN.h>
-#include <llvm/Transforms/IPO/AlwaysInliner.h>
-#include <llvm/Transforms/IPO.h>
-#include <fstream>
 #include "pacxx/ModuleLoader.h"
+#include <fstream>
+#include <llvm/Analysis/BasicAliasAnalysis.h>
+#include <llvm/Analysis/Passes.h>
+#include <llvm/Analysis/TargetTransformInfo.h>
+#include <llvm/Analysis/TypeBasedAliasAnalysis.h>
+#include <llvm/Linker/Linker.h>
+#include <llvm/Transforms/IPO.h>
+#include <llvm/Transforms/IPO/AlwaysInliner.h>
+#include <llvm/Transforms/IPO/FunctionAttrs.h>
+#include <llvm/Transforms/IPO/PassManagerBuilder.h>
+#include <llvm/Transforms/Scalar.h>
+#include <llvm/Transforms/Scalar/GVN.h>
+#include <llvm/Transforms/Vectorize.h>
 
+#include "pacxx/detail/common/Timing.h"
 #include "pacxx/detail/common/transforms/PACXXTransforms.h"
 #include "pacxx/detail/common/transforms/Passes.h"
-#include "pacxx/detail/common/Timing.h"
 
 // nvptx device binding
 extern const char nvptx_binding_start[];
@@ -51,7 +51,7 @@ using namespace llvm;
 namespace pacxx {
 namespace v2 {
 PTXBackend::PTXBackend()
-    : _target(nullptr), _cpu("sm_20"), _features("+ptx40"){}
+    : _target(nullptr), _cpu("sm_20"), _features("+ptx40") {}
 
 void PTXBackend::initialize(unsigned CC) {
   _cpu = "sm_" + std::to_string(CC);
@@ -73,7 +73,8 @@ void PTXBackend::initialize(unsigned CC) {
 std::unique_ptr<llvm::Module> PTXBackend::prepareModule(llvm::Module &M) {
 
   ModuleLoader loader(M.getContext());
-  auto binding = loader.loadInternal(nvptx_binding_start, nvptx_binding_end - nvptx_binding_start);
+  auto binding = loader.loadInternal(nvptx_binding_start,
+                                     nvptx_binding_end - nvptx_binding_start);
 
   M.setDataLayout(binding->getDataLayout());
   M.setTargetTriple(binding->getTargetTriple());
@@ -124,14 +125,12 @@ std::unique_ptr<llvm::Module> PTXBackend::prepareModule(llvm::Module &M) {
   PM.add(createAlwaysInlinerLegacyPass());
   PM.add(createPACXXCodeGenPrepare());
   PM.add(createIntrinsicSchedulerPass());
-
   PM.add(createTargetSelectionPass({"GPU", "Generic"}));
   PM.add(createAddressSpaceTransformPass());
- // PM.add(createLoadMotionPass());
+  PM.add(createLoadMotionPass());
   PM.add(createMSPRemoverPass());
   PM.add(createNVPTXPrepairPass());
   PM.add(createIntrinsicMapperPass());
-
   PM.add(createMemoryCoalescingPass(false));
   PM.add(createAlwaysInlinerLegacyPass());
   PM.add(createPACXXCodeGenPrepare());
@@ -147,7 +146,7 @@ std::unique_ptr<llvm::Module> PTXBackend::prepareModule(llvm::Module &M) {
   PM.add(createInstructionCombiningPass());
 
   PM.run(M);
-
+  M.dump();
   auto RM = reinterpret_cast<MSPGeneration *>(PRP)->getReflectionModule();
 
   PassManagerBuilder builder;
@@ -200,9 +199,9 @@ std::string PTXBackend::compile(llvm::Module &M) {
   PM.add(createMemoryCoalescingPass(true));
   PM.add(createDeadInstEliminationPass());
   PM.add(createLoopLoadEliminationPass());
-  //PM.add(createLoopIdiomPass());
+  // PM.add(createLoopIdiomPass());
   PM.add(createLICMPass());
-  //PM.add(createEarlyCSEPass());
+  // PM.add(createEarlyCSEPass());
 
   if (common::GetEnv("PACXX_PTX_BACKEND_O3") != "") {
     PassManagerBuilder builder;
@@ -214,8 +213,8 @@ std::string PTXBackend::compile(llvm::Module &M) {
       TheTriple.getTriple(), _cpu, _features, _options, Reloc::Model::Static,
       CodeModel::Model::Medium, CodeGenOpt::None));
 
-  if (_machine->addPassesToEmitFile(
-      PM, _ptxOS, TargetMachine::CGFT_AssemblyFile, false)) {
+  if (_machine->addPassesToEmitFile(PM, _ptxOS,
+                                    TargetMachine::CGFT_AssemblyFile, false)) {
     throw common::generic_exception(
         "target does not support generation of this file type!\n");
   }
@@ -223,12 +222,12 @@ std::string PTXBackend::compile(llvm::Module &M) {
   PM.run(M);
 
   auto ptx = ptxString.str().str();
-  if (common::GetEnv("PACXX_DUMP_ASM") != ""){
+  if (common::GetEnv("PACXX_DUMP_ASM") != "") {
     std::ofstream out("dump.ptx");
     out << ptx;
   }
   return ptx;
 }
 
-}
-}
+} // namespace v2
+} // namespace pacxx

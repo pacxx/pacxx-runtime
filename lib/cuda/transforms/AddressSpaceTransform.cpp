@@ -152,6 +152,9 @@ struct AddressSpaceTransform : public ModulePass {
           }
         }
         if (!delay) {
+          // FIXME: we have to check first if all new values are in the same AS 
+          //        if not, we have to generate ASC Constant Expr for the 
+          //        incomming values and let the PHINode in the generic AS
           AS = mapping[PHI->getIncomingValue(0)]
                    ->getType()
                    ->getPointerAddressSpace();
