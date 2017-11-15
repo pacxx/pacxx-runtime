@@ -12,6 +12,9 @@
 #include "pacxx/detail/codegen/Reflection.h"
 #include "pacxx/detail/codegen/Types.h"
 #include "pacxx/detail/codegen/Kernel.h"
+
+#define PACXX_CLIENT_CODE
+
 #include "pacxx/Executor.h"
 
 

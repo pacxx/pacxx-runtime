@@ -252,7 +252,7 @@ bool IntrinsicMapper::runOnModule(Module &M) {
     SmallVector<std::pair<IntrinsicInst *, CallInst *>, 8> replacements;
   } visitor;
 
-  auto kernels = pacxx::getTagedFunctions(&M, "nvvm.annotations", "kernel");
+  auto kernels = pacxx::getKernels(&M);
   visitor.M = &M;
   for (auto &F : M) {
     visitor.TTI = &getAnalysis<TargetTransformInfoWrapperPass>().getTTI(F);

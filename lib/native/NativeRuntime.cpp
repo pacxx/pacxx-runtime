@@ -83,7 +83,7 @@ Kernel &NativeRuntime::getKernel(const std::string &name) {
 }
 
 size_t NativeRuntime::getPreferedMemoryAlignment() {
-  return _CPUMod->getDataLayout().getPointerABIAlignment();
+  return _CPUMod->getDataLayout().getPointerABIAlignment(0);
 }
 
 RawDeviceBuffer *NativeRuntime::allocateRawMemory(size_t bytes, MemAllocMode) {
