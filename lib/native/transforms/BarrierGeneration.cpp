@@ -229,7 +229,7 @@ void BarrierGeneration::getAnalysisUsage(AnalysisUsage &AU) const {
 
 bool BarrierGeneration::runOnModule(llvm::Module &M) {
 
-    auto kernels = getTagedFunctions(&M, "nvvm.annotations", "kernel");
+    auto kernels = pacxx::getKernels(&M);
 
     auto pacxx_block = M.getFunction("__pacxx_block");
 

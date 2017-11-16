@@ -83,6 +83,25 @@ IRRuntime &Executor::rt() { return *_runtime; }
 
 void Executor::synchronize() { _runtime->synchronize(); }
 
+const char *__moduleStart(const char *start) {
+  static const char *ptr = nullptr;
+  if (!ptr)
+    ptr = start;
+  return ptr;
+}
+
+const char *__moduleEnd(const char *end) {
+  static const char *ptr = nullptr;
+  if (!ptr)
+    ptr = end;
+  return ptr;
+}
+
+void registerModule(const char *start, const char *end) {
+  __moduleStart(start);
+  __moduleEnd(end);
+}
+
 }
 }
 

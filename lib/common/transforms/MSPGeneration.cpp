@@ -79,7 +79,7 @@ bool MSPGeneration::runOnModuleAtCompileTime(Module &M) {
 }
 
 void MSPGeneration::cleanFromKerneles(Module &M) {
-  auto kernels = pacxx::getTagedFunctions(&M, "nvvm.annotations", "kernel");
+  auto kernels = pacxx::getKernels(&M);
 
   for (auto F : kernels) {
     F->replaceAllUsesWith(UndefValue::get(F->getType()));

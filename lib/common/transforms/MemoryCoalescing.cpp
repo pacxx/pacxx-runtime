@@ -200,7 +200,7 @@ struct MemoryCoalecing : public ModulePass {
   virtual bool runOnModule(Module &M) {
     bool modified = true;
 
-    auto kernels = getTagedFunctions(&M, "nvvm.annotations", "kernel");
+    auto kernels = getKernels(&M);
 
     MemoryOpts opt(&M);
     for (auto &F : M.getFunctionList()) {

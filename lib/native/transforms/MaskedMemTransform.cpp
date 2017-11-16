@@ -144,7 +144,7 @@ bool MaskedMemTransform::runOnModule(Module &M) {
     TargetTransformInfo *TTI;
   } visitor;
 
-  auto kernels = pacxx::getTagedFunctions(&M, "nvvm.annotations", "kernel");
+  auto kernels = pacxx::getKernels(&M);
 
   for (auto &F : M) {
     visitor.TTI = &getAnalysis<TargetTransformInfoWrapperPass>().getTTI(F);

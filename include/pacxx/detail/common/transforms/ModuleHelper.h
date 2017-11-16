@@ -53,7 +53,8 @@ inline void cleanupDeadCode(Module *M) {
   for (auto &F : M->getFunctionList()) {
     if (find(kernels.begin(), kernels.end(), &F) == kernels.end() &&
         find(called.begin(), called.end(), &F) == called.end() &&
-        find(reflects.begin(), reflects.end(), &F) == reflects.end()) {
+        find(reflects.begin(), reflects.end(), &F) == reflects.end() && 
+        F.getName().find("__pacxx_block") == std::string::npos) {
       F.deleteBody();
       if (F.hasNUsesOrMore(1))
         F.replaceAllUsesWith(UndefValue::get(F.getType()));

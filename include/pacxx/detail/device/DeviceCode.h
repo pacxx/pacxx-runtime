@@ -13,39 +13,7 @@
 #define __forceinline__ __attribute__((always_inline))
 #endif
 
-#include <tuple>
-#include <type_traits>
-
-//////////////////////////////// PRINTF ////////////////////////////////
-
-extern "C" void __printf(const __attribute__((address_space(4))) char *,
-                         void *);
-
-extern "C" void _printf(const char *, void *);
-
-template <typename T> struct extend_type {
-
-  using type = typename std::conditional<
-      std::is_integral<T>::value,
-      typename std::conditional<std::is_same<T, short>::value, int, T>::type,
-      typename std::conditional<std::is_same<T, float>::value, double,
-                                T>::type>::type;
-};
-
-namespace native {
-inline namespace syscalls {
-template <typename... Args> void printf(const char *str, Args... args) {
-#ifdef __device_code__
-  std::tuple<typename extend_type<Args>::type..., int> tpl(args..., 0);
-  _printf(str, reinterpret_cast<void *>(&tpl));
-#endif
-}
-} // namespace syscalls
-} // namespace native
-
-// extern "C"
-// void __printf(const char*, long x);
-
+#include "DevicePrintf.h"
 #include "DeviceTypes.h"
 
 // atomics
