@@ -57,6 +57,7 @@ static bool isPACXXIntrinsic(Intrinsic::ID id) {
   case Intrinsic::pacxx_read_nctaid_y:
   case Intrinsic::pacxx_read_nctaid_z:
   case Intrinsic::pacxx_read_nctaid_w:
+  case Intrinsic::pacxx_backend_id:
     return true;
   default:
     break;
@@ -64,10 +65,22 @@ static bool isPACXXIntrinsic(Intrinsic::ID id) {
   return false;
 }
 
-static CallInst *mapPACXXIntrinsicNVPTX(Module *M, IntrinsicInst *II) {
+static Value *mapPACXXIntrinsicNative(Module *M, IntrinsicInst *II) {
+  switch (II->getIntrinsicID()) {
+  case Intrinsic::pacxx_backend_id:
+    return ConstantInt::get(II->getType(), 1);
+  default:
+    break;
+  }
+  return II;
+}
+
+static Value *mapPACXXIntrinsicNVPTX(Module *M, IntrinsicInst *II) {
   Function *mapping = nullptr;
 
   switch (II->getIntrinsicID()) {
+  case Intrinsic::pacxx_backend_id:
+    return ConstantInt::get(II->getType(), 0);
   case Intrinsic::pacxx_barrier0:
     mapping = Intrinsic::getDeclaration(M, Intrinsic::nvvm_barrier0);
     break;
@@ -153,7 +166,7 @@ static void mapPACXXIntrinsicToLaunchParamAMDGCN(Module *M, IntrinsicInst *II) {
     II->replaceAllUsesWith((F->arg_begin() + 2));
     break;
   case Intrinsic::pacxx_read_ntid_x:
-   II->replaceAllUsesWith((F->arg_begin() + 3));
+    II->replaceAllUsesWith((F->arg_begin() + 3));
     break;
   case Intrinsic::pacxx_read_ntid_y:
     II->replaceAllUsesWith((F->arg_begin() + 4));
@@ -166,15 +179,17 @@ static void mapPACXXIntrinsicToLaunchParamAMDGCN(Module *M, IntrinsicInst *II) {
   }
 }
 
-static CallInst *mapPACXXIntrinsicToSpecialFunctionAMDGCN(Module *M,
-                                                          IntrinsicInst *II) {
+static Value *mapPACXXIntrinsicToSpecialFunctionAMDGCN(Module *M,
+                                                       IntrinsicInst *II) {
   llvm_unreachable("not implemented");
   return nullptr;
 }
 
-static CallInst *mapPACXXIntrinsicAMDGCN(Module *M, IntrinsicInst *II) {
-  Function *mapping = nullptr;
+static Value *mapPACXXIntrinsicAMDGCN(Module *M, IntrinsicInst *II) {
+  Value *mapping = nullptr;
   switch (II->getIntrinsicID()) {
+  case Intrinsic::pacxx_backend_id:
+    return ConstantInt::get(II->getType(), 2);
   case Intrinsic::pacxx_barrier0:
     mapping = Intrinsic::getDeclaration(M, Intrinsic::amdgcn_s_barrier);
     break;
@@ -238,8 +253,12 @@ bool IntrinsicMapper::runOnModule(Module &M) {
             if (auto mapped = mapPACXXIntrinsicNVPTX(M, II))
               if (mapped != II)
                 replacements.push_back(make_pair(II, mapped));
-          } else {
+          } else if (M->getTargetTriple().find("amdgcn") != std::string::npos) {
             if (auto mapped = mapPACXXIntrinsicAMDGCN(M, II))
+              if (mapped != II)
+                replacements.push_back(make_pair(II, mapped));
+          } else {
+            if (auto mapped = mapPACXXIntrinsicNative(M, II))
               if (mapped != II)
                 replacements.push_back(make_pair(II, mapped));
           }
@@ -249,7 +268,7 @@ bool IntrinsicMapper::runOnModule(Module &M) {
 
     Module *M;
     TargetTransformInfo *TTI;
-    SmallVector<std::pair<IntrinsicInst *, CallInst *>, 8> replacements;
+    SmallVector<std::pair<IntrinsicInst *, Value *>, 8> replacements;
   } visitor;
 
   auto kernels = pacxx::getKernels(&M);
@@ -260,7 +279,8 @@ bool IntrinsicMapper::runOnModule(Module &M) {
   }
   for (auto P : visitor.replacements) {
     if (P.second != nullptr) {
-      P.second->insertBefore(P.first);
+      if (auto I = dyn_cast<Instruction>(P.second))
+        I->insertBefore(P.first);
       P.first->replaceAllUsesWith(P.second);
     }
     P.first->eraseFromParent();

@@ -12,7 +12,6 @@
 #ifndef __forceinline__
 #define __forceinline__ __attribute__((always_inline))
 #endif
-
 #include "DevicePrintf.h"
 #include "DeviceTypes.h"
 

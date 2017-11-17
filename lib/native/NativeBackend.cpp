@@ -151,6 +151,7 @@ std::unique_ptr<llvm::Module> NativeBackend::prepareModule(llvm::Module &M) {
   TargetLibraryInfoImpl TLII(Triple(M.getTargetTriple()));
   PM.add(new TargetLibraryInfoWrapperPass(TLII));
   PM.add(createPACXXCodeGenPrepare());
+  PM.add(createIntrinsicMapperPass());
   PM.add(createSROAPass());
   PM.add(createPromoteMemoryToRegisterPass());
   PM.add(createLoopRotatePass());
@@ -203,6 +204,8 @@ std::unique_ptr<llvm::Module> NativeBackend::prepareModule(llvm::Module &M) {
   PM.add(createInstructionCombiningPass());
 
   PM.run(M);
+
+  M.dump();
 
   auto RM = reinterpret_cast<MSPGeneration*>(PRP)->getReflectionModule();
   PassManagerBuilder builder;
