@@ -20,8 +20,8 @@
 #include "llvm/IR/InlineAsm.h"
 #include "llvm/Support/FileSystem.h"
 #include "llvm/Support/TargetRegistry.h"
-#include "llvm/Target/TargetLowering.h"
-
+#include "llvm/Target/TargetMachine.h"
+#include "llvm/Target/TargetOptions.h"
 #include "llvm/Transforms/Utils/Cloning.h"
 
 #include "pacxx/detail/common/transforms/PACXXTransforms.h"

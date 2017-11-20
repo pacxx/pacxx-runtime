@@ -13,6 +13,7 @@
 
 #include "pacxx/detail/common/Log.h"
 #include "LivenessAnalysis.h"
+#include "llvm/ADT/SetVector.h"
 
 using namespace llvm;
 using namespace pacxx;
