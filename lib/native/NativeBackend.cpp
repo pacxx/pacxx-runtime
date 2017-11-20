@@ -151,8 +151,7 @@ std::unique_ptr<llvm::Module> NativeBackend::prepareModule(llvm::Module &M) {
   TargetLibraryInfoImpl TLII(Triple(M.getTargetTriple()));
   PM.add(new TargetLibraryInfoWrapperPass(TLII));
   PM.add(createPACXXCodeGenPrepare());
-  PM.add(createTypeBasedAAWrapperPass());
-  PM.add(createBasicAAWrapperPass());
+  PM.add(createIntrinsicMapperPass());
   PM.add(createSROAPass());
   PM.add(createPromoteMemoryToRegisterPass());
   PM.add(createLoopRotatePass());
@@ -205,6 +204,8 @@ std::unique_ptr<llvm::Module> NativeBackend::prepareModule(llvm::Module &M) {
   PM.add(createInstructionCombiningPass());
 
   PM.run(M);
+
+  M.dump();
 
   auto RM = reinterpret_cast<MSPGeneration*>(PRP)->getReflectionModule();
   PassManagerBuilder builder;
@@ -342,8 +343,10 @@ void NativeBackend::applyPasses(Module &M) {
     }
     _PM.add(createLowerSwitchPass());
     //builder.populateModulePassManager(_PM);
-    if (!_disableVectorizer)
+    if (!_disableVectorizer){
+   //   _PM.add(createPACXXCodeGenPrepare());
       _PM.add(createSPMDVectorizerPass());
+    }
     _PM.add(createAlwaysInlinerLegacyPass());
     if (!_disableSelectEmitter)
       _PM.add(createMaskedMemTransformPass());

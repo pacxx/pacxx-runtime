@@ -20,7 +20,6 @@
 #include "llvm/IR/InlineAsm.h"
 #include "llvm/Support/FileSystem.h"
 #include "llvm/Support/TargetRegistry.h"
-#include "llvm/Target/TargetLowering.h"
 
 #include "llvm/Transforms/Utils/Cloning.h"
 #include "llvm/Analysis/TargetTransformInfo.h"
@@ -144,7 +143,7 @@ bool MaskedMemTransform::runOnModule(Module &M) {
     TargetTransformInfo *TTI;
   } visitor;
 
-  auto kernels = pacxx::getTagedFunctions(&M, "nvvm.annotations", "kernel");
+  auto kernels = pacxx::getKernels(&M);
 
   for (auto &F : M) {
     visitor.TTI = &getAnalysis<TargetTransformInfoWrapperPass>().getTTI(F);

@@ -32,7 +32,6 @@
 #include "llvm/IR/InlineAsm.h"
 #include "llvm/Support/Host.h"
 #include "llvm/Target/TargetMachine.h"
-#include "llvm/Target/TargetLowering.h"
 #include "llvm/Support/TargetRegistry.h"
 #include "llvm/Support/TargetSelect.h"
 #include "llvm/Transforms/Scalar.h"
@@ -79,7 +78,7 @@ bool MSPGeneration::runOnModuleAtCompileTime(Module &M) {
 }
 
 void MSPGeneration::cleanFromKerneles(Module &M) {
-  auto kernels = pacxx::getTagedFunctions(&M, "nvvm.annotations", "kernel");
+  auto kernels = pacxx::getKernels(&M);
 
   for (auto F : kernels) {
     F->replaceAllUsesWith(UndefValue::get(F->getType()));

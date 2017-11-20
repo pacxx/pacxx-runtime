@@ -15,7 +15,8 @@
 #include <llvm/IR/LegacyPassManager.h>
 #include <llvm/IR/Module.h>
 #include <llvm/Support/TargetRegistry.h>
-#include <llvm/Target/TargetLowering.h>
+#include <llvm/Target/TargetMachine.h>
+#include <llvm/Target/TargetOptions.h>
 
 #include "pacxx/detail/common/transforms/Passes.h"
 #include "pacxx/detail/rocm/transforms/Passes.h"

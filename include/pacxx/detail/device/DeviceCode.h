@@ -12,41 +12,7 @@
 #ifndef __forceinline__
 #define __forceinline__ __attribute__((always_inline))
 #endif
-
-/*
-#include <tuple>
-#include <type_traits>
-
-extern "C" void __printf(const __attribute__((address_space(4))) char*, void*
-x);
-
-inline void _printf(const char* ptr, void* x) {
-  __printf((const __attribute__((address_space(4))) char*)ptr, x);
-}
-
-template <typename T> struct extend_type {
-
-  using type = typename std::conditional<
-      std::is_integral<T>::value,
-      typename std::conditional<std::is_same<T, short>::value, int, T>::type,
-      typename std::conditional<std::is_same<T, float>::value, double,
-T>::type>::type;
-};
-
-namespace native {
-  inline namespace syscalls {
-    template <typename... Args> void printf(const char* str, Args... args) {
-#ifdef __device_code__
-      std::tuple<typename extend_type<Args>::type...> tpl(args...);
-      _printf(str, reinterpret_cast<void*>(&tpl));
-#endif
-    }
-  }
-}
-
-// extern "C"
-// void __printf(const char*, long x);
-*/
+#include "DevicePrintf.h"
 #include "DeviceTypes.h"
 
 // atomics
@@ -57,30 +23,38 @@ namespace native {
 #define atomic_decl_(op, ctype)                                                \
   __atomic_op_decl_(op, ctype, global) __atomic_op_decl_(op, ctype, shared)
 
-atomic_decl_(add, int) atomic_decl_(add, uint) atomic_decl_(add, ulong)
-    atomic_decl_(add, float)
+atomic_decl_(add, int) 
+atomic_decl_(add, uint) 
+atomic_decl_(add, ulong)
+atomic_decl_(add, float)
 
-        atomic_decl_(min, int) atomic_decl_(min, uint) atomic_decl_(min, long)
-            atomic_decl_(min, ulong)
+atomic_decl_(min, int) 
+atomic_decl_(min, uint) 
+atomic_decl_(min, long)
+atomic_decl_(min, ulong)
 
-                atomic_decl_(max, int) atomic_decl_(max, uint)
-                    atomic_decl_(max, long) atomic_decl_(max, ulong)
+atomic_decl_(max, int) 
+atomic_decl_(max, uint)
+atomic_decl_(max, long) 
+atomic_decl_(max, ulong)
 
-                        atomic_decl_(inc, uint) atomic_decl_(dec, uint)
+atomic_decl_(inc, uint) 
+atomic_decl_(dec, uint)
 
-                            atomic_decl_(cas, uint) atomic_decl_(cas, ulong)
+atomic_decl_(cas, uint) 
+atomic_decl_(cas, ulong)
 
-                                atomic_decl_(exch, uint) atomic_decl_(exch,
-                                                                      ulong)
+atomic_decl_(exch, uint) 
+atomic_decl_(exch,ulong)
 
-                                    atomic_decl_(and, uint) atomic_decl_(and,
-                                                                         ulong)
-                                        atomic_decl_(or, uint)
-                                            atomic_decl_(or, ulong)
-                                                atomic_decl_ (xor, uint)
-                                                    atomic_decl_ (xor, ulong)
+atomic_decl_(and, uint) 
+atomic_decl_(and, ulong)
+atomic_decl_(or, uint)
+atomic_decl_(or, ulong)
+atomic_decl_(xor, uint)
+atomic_decl_(xor, ulong)
 
-                                                        namespace native {
+namespace native {
   namespace index {
   struct idx {
     enum value { thread = 0, block = 1, global = 2 };
@@ -93,7 +67,7 @@ atomic_decl_(add, int) atomic_decl_(add, uint) atomic_decl_(add, ulong)
   template <int> unsigned int x();
   template <int> unsigned int y();
   template <int> unsigned int z();
-  } /* index */
+  } // namespace index
 } /* native */
 
 // generated intrinsic wrapper
@@ -336,7 +310,7 @@ int bitcast_f2i(float val);
 float bitcast_i2f(int val);
 double bitcast_ll2d(long long val);
 long long bitcast_d2ll(double val);
-}
+} // namespace nvvm
 
 float exp(float val);
 float log(float val);
@@ -347,7 +321,7 @@ float sin(float val);
 float cos(float val);
 // barriers
 void barrier();
-
+/*
 namespace atomic {
 namespace global {
 template <typename T> T atomic_add(T *ptr, T value) {
@@ -457,8 +431,10 @@ template <typename T> T atomic_min(T *ptr, T value) {
 #endif
 }
 }
+
 }
-}
+*/
+} // namespace native
 
 #ifdef signbit
 #undef signbit

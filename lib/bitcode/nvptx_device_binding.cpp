@@ -17,12 +17,12 @@
 
 using intptr_t = long;
 
-/*typedef const __attribute__((address_space(4))) char *_format_t;
-__forceinline__ void __vprintf_conv(_format_t ptr) {
-  const char *out;
-  asm("cvta.const.u64  %0, %1;" : "=r"(out) : "r"(ptr) :);
-}
-*/
+// typedef const __attribute__((address_space(4))) char *_format_t;
+// __forceinline__ void __vprintf_conv(_format_t ptr) {
+//   const char *out;
+//   asm volatile("cvta.const.u64  %0, %1;" : "=r"(out) : "r"(ptr) :);
+// }
+
 ///////////////////////////// ATOMICS ////////////////////////////
 /*
 #define __to_string(v) #v

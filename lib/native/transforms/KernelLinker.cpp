@@ -70,7 +70,7 @@ private:
 
 bool KernelLinker::runOnModule(Module &M) {
 
-  auto kernels = pacxx::getTagedFunctions(&M, "nvvm.annotations", "kernel");
+  auto kernels = pacxx::getKernels(&M);
 
   for (auto &F : kernels) {
     bool vectorized = F->hasFnAttribute("vectorized") ? true : false;

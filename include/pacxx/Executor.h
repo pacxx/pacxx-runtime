@@ -41,8 +41,6 @@
 #include <regex>
 #include <string>
 
-extern const char llvm_start[];
-extern const char llvm_end[];
 
 #ifndef PACXX_ENABLE_CUDA
 using Runtime = pacxx::v2::NativeRuntime;
@@ -52,6 +50,12 @@ using Runtime = pacxx::v2::CUDARuntime;
 
 namespace pacxx {
 namespace v2 {
+
+const char *__moduleStart(const char *start = nullptr);
+
+const char *__moduleEnd(const char *end = nullptr);
+
+void registerModule(const char *start, const char *end);
 
 class Executor;
 
@@ -99,7 +103,8 @@ public:
     instance._id = executors.size() - 1;
     __verbose("Created new Executor with id: ", instance.getID());
     ModuleLoader loader(instance.getLLVMContext());
-    auto M = loader.loadInternal(llvm_start, llvm_end - llvm_start);
+    auto M = loader.loadInternal(__moduleStart(), __moduleEnd() - __moduleStart());
+
     instance.setModule(std::move(M));
 
     return instance;

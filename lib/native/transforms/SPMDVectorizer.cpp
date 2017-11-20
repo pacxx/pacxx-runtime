@@ -19,23 +19,22 @@
 #include "llvm/Analysis/ValueTracking.h"
 
 #include "llvm/IR/InlineAsm.h"
-#include "llvm/IR/MDBuilder.h"
-#include "llvm/IR/LegacyPassManager.h"
 #include "llvm/IR/InstIterator.h"
+#include "llvm/IR/LegacyPassManager.h"
+#include "llvm/IR/MDBuilder.h"
 
 #include "llvm/Passes/PassBuilder.h"
 #include "llvm/Target/TargetMachine.h"
-#include "llvm/Target/TargetLowering.h"
-#include "llvm/Transforms/Utils/BasicBlockUtils.h"
 #include "llvm/Transforms/Scalar.h"
+#include "llvm/Transforms/Utils/BasicBlockUtils.h"
 
+#include "llvm/Support/FileSystem.h"
 #include "llvm/Support/TargetRegistry.h"
 #include "llvm/Support/TargetSelect.h"
-#include "llvm/Support/FileSystem.h"
 
+#include "rv/passes.h"
 #include "rv/rv.h"
 #include "rv/sleefLibrary.h"
-#include "rv/passes.h"
 #include "rv/transform/loopExitCanonicalizer.h"
 
 using namespace llvm;
@@ -53,7 +52,9 @@ class SPMDVectorizer : public llvm::ModulePass {
 public:
   static char ID;
 
-  SPMDVectorizer() : llvm::ModulePass(ID) { initializeSPMDVectorizerPass(*PassRegistry::getPassRegistry()); }
+  SPMDVectorizer() : llvm::ModulePass(ID) {
+    initializeSPMDVectorizerPass(*PassRegistry::getPassRegistry());
+  }
 
   virtual ~SPMDVectorizer() {}
 
@@ -64,19 +65,20 @@ public:
   bool runOnModule(llvm::Module &M) override;
 
 private:
-
   Function *createScalarCopy(Module *M, Function *kernel);
 
   Function *createVectorizedKernelHeader(Module *M, Function *kernel);
 
   void normalizeFunction(Function *F);
 
-  unsigned determineVectorWidth(Function *F, rv::VectorizationInfo &vecInfo, TargetTransformInfo *TTI);
+  unsigned determineVectorWidth(Function *F, rv::VectorizationInfo &vecInfo,
+                                TargetTransformInfo *TTI);
 
-  void prepareForVectorization(Function *kernel, rv::VectorizationInfo &vecInfo);
+  void prepareForVectorization(Function *kernel,
+                               rv::VectorizationInfo &vecInfo);
 
-  bool modifyWrapperLoop(Function *dummyFunction, Function *vectorizedKernel, Function *kernel,
-                         unsigned vectorWidth, Module &M);
+  bool modifyWrapperLoop(Function *dummyFunction, Function *vectorizedKernel,
+                         Function *kernel, unsigned vectorWidth, Module &M);
 
   Function *createKernelSpecificFoo(Module &M, Function *F, Function *kernel);
 
@@ -87,9 +89,8 @@ private:
   Value *determineMaxx(Function *F);
 
   Value *determine_x(Function *F);
-
 };
-}
+} // namespace
 
 void SPMDVectorizer::releaseMemory() {}
 
@@ -105,7 +106,7 @@ bool SPMDVectorizer::runOnModule(Module &M) {
 
   bool kernelsVectorized = true;
 
-  auto kernels = getTagedFunctions(&M, "nvvm.annotations", "kernel");
+  auto kernels = pacxx::getKernels(&M);
 
   Function *dummyFunction = M.getFunction("__dummy_kernel");
 
@@ -123,9 +124,11 @@ bool SPMDVectorizer::runOnModule(Module &M) {
     PB.registerFunctionAnalyses(fam);
     PB.registerModuleAnalyses(mam);
 
-    //platform API
-    TargetTransformInfo *TTI = &getAnalysis<TargetTransformInfoWrapperPass>().getTTI(*scalarCopy);
-    TargetLibraryInfo *TLI = &getAnalysis<TargetLibraryInfoWrapperPass>().getTLI();
+    // platform API
+    TargetTransformInfo *TTI =
+        &getAnalysis<TargetTransformInfoWrapperPass>().getTTI(*scalarCopy);
+    TargetLibraryInfo *TLI =
+        &getAnalysis<TargetLibraryInfoWrapperPass>().getTLI();
 
     rv::PlatformInfo platformInfo(M, TTI, TLI);
 
@@ -133,23 +136,33 @@ bool SPMDVectorizer::runOnModule(Module &M) {
       if (func.isIntrinsic()) {
         auto IntrinID = func.getIntrinsicID();
         if (IntrinID == Intrinsic::pacxx_barrier0) {
-          rv::VectorMapping mapping(&func, &func, 0, -1, rv::VectorShape::uni(), {rv::VectorShape::uni()});
-          platformInfo.addSIMDMapping(mapping);
-        } else if (IntrinID == Intrinsic::lifetime_start || IntrinID == Intrinsic::lifetime_end) {
           rv::VectorMapping mapping(&func, &func, 0, -1, rv::VectorShape::uni(),
-                                    {rv::VectorShape::uni(), rv::VectorShape::uni()});
+                                    {rv::VectorShape::uni()});
+          platformInfo.addSIMDMapping(mapping);
+        } else if (IntrinID == Intrinsic::lifetime_start ||
+                   IntrinID == Intrinsic::lifetime_end) {
+          rv::VectorMapping mapping(
+              &func, &func, 0, -1, rv::VectorShape::uni(),
+              {rv::VectorShape::uni(), rv::VectorShape::uni()});
           platformInfo.addSIMDMapping(mapping);
 
           for (auto U : func.users())
             cast<CallInst>(U)->eraseFromParent();
-
         }
+      } else if (func.getName().find("puts") != std::string::npos ||
+                 func.getName().find("printf") != std::string::npos) {
+        rv::VectorMapping mapping(
+            &func, &func, 0, -1, rv::VectorShape::uni(),
+            {rv::VectorShape::uni(), rv::VectorShape::varying()});
+            
+        platformInfo.addSIMDMapping(mapping);
       }
     }
 
     Function *vectorizedKernel = createVectorizedKernelHeader(&M, scalarCopy);
 
-    auto featureString = kernel->getFnAttribute("target-features").getValueAsString().str();
+    auto featureString =
+        kernel->getFnAttribute("target-features").getValueAsString().str();
 
     // configure RV
     rv::Config config;
@@ -157,7 +170,8 @@ bool SPMDVectorizer::runOnModule(Module &M) {
     config.useAVX2 = featureString.find("+avx2") != std::string::npos;
     config.useAVX512 = featureString.find("+avx512f") != std::string::npos;
     config.useNEON = featureString.find("+neon") != std::string::npos;
-    config.useADVSIMD = featureString.find("+neon") != std::string::npos; // FIXME: ?
+    config.useADVSIMD =
+        featureString.find("+neon") != std::string::npos; // FIXME: ?
 
     config.useSLEEF = true;
     config.enableStructOpt = false;
@@ -175,7 +189,7 @@ bool SPMDVectorizer::runOnModule(Module &M) {
     // build Analysis that is independent of vecInfo
     DominatorTree domTree(*scalarCopy);
 
-    //normalize loop exits
+    // normalize loop exits
     {
       LoopInfo loopInfo(domTree);
       LoopExitCanonicalizer canonicalizer(loopInfo);
@@ -185,8 +199,10 @@ bool SPMDVectorizer::runOnModule(Module &M) {
 
     LoopInfo loopInfo(domTree);
 
-    ScalarEvolution *SE = &getAnalysis<ScalarEvolutionWrapperPass>(*scalarCopy).getSE();
-    MemoryDependenceResults *MDR = &getAnalysis<MemoryDependenceWrapperPass>(*scalarCopy).getMemDep();
+    ScalarEvolution *SE =
+        &getAnalysis<ScalarEvolutionWrapperPass>(*scalarCopy).getSE();
+    MemoryDependenceResults *MDR =
+        &getAnalysis<MemoryDependenceWrapperPass>(*scalarCopy).getMemDep();
 
     // Dominance Frontier Graph
     DFG dfg(domTree);
@@ -200,8 +216,7 @@ bool SPMDVectorizer::runOnModule(Module &M) {
     CDG cdg(postDomTree);
     cdg.create(*scalarCopy);
 
-
-    //return and arguments are uniform
+    // return and arguments are uniform
     rv::VectorShape resShape = rv::VectorShape::uni();
     rv::VectorShapeVec argShapes;
 
@@ -213,7 +228,8 @@ bool SPMDVectorizer::runOnModule(Module &M) {
     }
 
     // tmp mapping to determine possible vector width
-    rv::VectorMapping tmpMapping(scalarCopy, vectorizedKernel, 4, -1, resShape, argShapes);
+    rv::VectorMapping tmpMapping(scalarCopy, vectorizedKernel, 4, -1, resShape,
+                                 argShapes);
 
     rv::VectorizationInfo tmpInfo(tmpMapping);
 
@@ -236,13 +252,14 @@ bool SPMDVectorizer::runOnModule(Module &M) {
     __verbose("width: ", vectorWidth);
     if (vectorWidth == 1)
       continue;
-    rv::VectorMapping targetMapping(scalarCopy, vectorizedKernel, vectorWidth, -1, resShape, argShapes);
+    rv::VectorMapping targetMapping(scalarCopy, vectorizedKernel, vectorWidth,
+                                    -1, resShape, argShapes);
 
     rv::VectorizationInfo vecInfo(targetMapping);
 
     prepareForVectorization(scalarCopy, vecInfo);
 
-    //early math function lowering
+    // early math function lowering
     vectorizer.lowerRuntimeCalls(vecInfo, loopInfo);
     domTree.recalculate(*scalarCopy);
     postDomTree.recalculate(*scalarCopy);
@@ -263,9 +280,11 @@ bool SPMDVectorizer::runOnModule(Module &M) {
         errs() << "linearization failed";
 #endif
 
-    // Control conversion does not preserve the domTree so we have to rebuild it for now
+    // Control conversion does not preserve the domTree so we have to rebuild it
+    // for now
     DominatorTree domTreeNew(*vecInfo.getMapping().scalarFn);
-    bool vectorizeOk = vectorizer.vectorize(vecInfo, domTreeNew, loopInfo, *SE, *MDR, nullptr);
+    bool vectorizeOk =
+        vectorizer.vectorize(vecInfo, domTreeNew, loopInfo, *SE, *MDR, nullptr);
     if (!vectorizeOk)
       errs() << "vector code generation failed";
 
@@ -275,7 +294,8 @@ bool SPMDVectorizer::runOnModule(Module &M) {
     scalarCopy->eraseFromParent();
 
     if (vectorizeOk)
-      vectorized = modifyWrapperLoop(dummyFunction, kernel, vectorizedKernel, vectorWidth, M);
+      vectorized = modifyWrapperLoop(dummyFunction, kernel, vectorizedKernel,
+                                     vectorWidth, M);
 
     __verbose("vectorized: ", vectorized);
 
@@ -301,7 +321,7 @@ Function *SPMDVectorizer::createScalarCopy(Module *M, Function *kernel) {
   ValueToValueMapTy valueMap;
   Function *scalarCopy = CloneFunction(kernel, valueMap, nullptr);
 
-  assert (scalarCopy);
+  assert(scalarCopy);
   scalarCopy->setCallingConv(kernel->getCallingConv());
   scalarCopy->setAttributes(kernel->getAttributes());
   scalarCopy->setAlignment(kernel->getAlignment());
@@ -311,10 +331,12 @@ Function *SPMDVectorizer::createScalarCopy(Module *M, Function *kernel) {
   return scalarCopy;
 }
 
-Function *SPMDVectorizer::createVectorizedKernelHeader(Module *M, Function *kernel) {
+Function *SPMDVectorizer::createVectorizedKernelHeader(Module *M,
+                                                       Function *kernel) {
 
-  Function *vectorizedKernel = Function::Create(kernel->getFunctionType(), GlobalValue::LinkageTypes::ExternalLinkage,
-                                                std::string("__vectorized__") + kernel->getName().str(), M);
+  Function *vectorizedKernel = Function::Create(
+      kernel->getFunctionType(), GlobalValue::LinkageTypes::ExternalLinkage,
+      std::string("__vectorized__") + kernel->getName().str(), M);
 
   Function::arg_iterator AI = vectorizedKernel->arg_begin();
   for (const Argument &I : kernel->args()) {
@@ -333,7 +355,9 @@ void SPMDVectorizer::normalizeFunction(Function *F) {
   FPM.run(*F);
 }
 
-unsigned SPMDVectorizer::determineVectorWidth(Function *F, rv::VectorizationInfo &vecInfo, TargetTransformInfo *TTI) {
+unsigned SPMDVectorizer::determineVectorWidth(Function *F,
+                                              rv::VectorizationInfo &vecInfo,
+                                              TargetTransformInfo *TTI) {
 
   unsigned MaxWidth = 8;
   const DataLayout &DL = F->getParent()->getDataLayout();
@@ -341,7 +365,8 @@ unsigned SPMDVectorizer::determineVectorWidth(Function *F, rv::VectorizationInfo
   for (auto &B : *F) {
     for (auto &I : B) {
 
-      if (vecInfo.getVectorShape(I).isVarying() || vecInfo.getVectorShape(I).isContiguous()) {
+      if (vecInfo.getVectorShape(I).isVarying() ||
+          vecInfo.getVectorShape(I).isContiguous()) {
 
         bool ignore = false;
 
@@ -351,7 +376,8 @@ unsigned SPMDVectorizer::determineVectorWidth(Function *F, rv::VectorizationInfo
           for (auto user : I.users()) {
             if (GetElementPtrInst *GEP = dyn_cast<GetElementPtrInst>(user)) {
               // the result of the cast is not used as an idx
-              if (std::find(GEP->idx_begin(), GEP->idx_end(), &I) == GEP->idx_end())
+              if (std::find(GEP->idx_begin(), GEP->idx_end(), &I) ==
+                  GEP->idx_end())
                 ignore = false;
             } else
               // we have a user different than a GEP
@@ -366,7 +392,8 @@ unsigned SPMDVectorizer::determineVectorWidth(Function *F, rv::VectorizationInfo
             T = T->getPointerElementType();
 
           if (T->isSized() && !T->isAggregateType()) {
-            MaxWidth = std::max(MaxWidth, (unsigned) DL.getTypeSizeInBits(T->getScalarType()));
+            MaxWidth = std::max(
+                MaxWidth, (unsigned)DL.getTypeSizeInBits(T->getScalarType()));
           }
         }
       }
@@ -377,35 +404,16 @@ unsigned SPMDVectorizer::determineVectorWidth(Function *F, rv::VectorizationInfo
   return vectorWidth == 0 ? 1 : vectorWidth;
 }
 
-void SPMDVectorizer::prepareForVectorization(Function *kernel, rv::VectorizationInfo &vecInfo) {
+void SPMDVectorizer::prepareForVectorization(Function *kernel,
+                                             rv::VectorizationInfo &vecInfo) {
 
   Module *M = kernel->getParent();
 
-  // test code for alloca in AS 3
-  struct AllocaRewriter : public InstVisitor<AllocaRewriter> {
-    void visitAllocaInst(AllocaInst &I) {
-      if (I.getMetadata("pacxx.as.shared")) {
-        IRBuilder<> builder(&I);
-        //auto alloca = builder.CreateAlloca(I.getAllocatedType(), 3, I.getArraySize(), "sharedMem");
-        //alloca->setAlignment(I.getAlignment());
-//        auto M = I.getParent()->getParent()->getParent();
-//        auto GV = new GlobalVariable(*M, I.getAllocatedType(), false,
-//                                     GlobalValue::ExternalLinkage, nullptr, "sm", nullptr, GlobalValue::NotThreadLocal, 0, false);
-//        GV->setMetadata("pacxx.as.shared", MDNode::get(M->getContext(), nullptr));
-//        GV->setAlignment(I.getAlignment());
-        //auto cast = builder.CreateAddrSpaceCast(GV, I.getAllocatedType()->getPointerTo(0));
-        I.setAlignment(4);
-      }
-    }
-  } allocaRewriter;
-
-  allocaRewriter.visit(kernel);
-
   for (auto &global : M->globals()) {
-    for (User *user: global.users()) {
+    for (User *user : global.users()) {
       if (Instruction *Inst = dyn_cast<Instruction>(user)) {
         if (Inst->getParent()->getParent() == kernel) {
-          //vecInfo.setVectorShape(global, rv::VectorShape::uni());
+          // vecInfo.setVectorShape(global, rv::VectorShape::uni());
           vecInfo.setPinnedShape(global, rv::VectorShape::uni());
           break;
         }
@@ -413,12 +421,14 @@ void SPMDVectorizer::prepareForVectorization(Function *kernel, rv::Vectorization
     }
   }
 
-  for (llvm::inst_iterator II = inst_begin(kernel), IE = inst_end(kernel); II != IE; ++II) {
+  for (llvm::inst_iterator II = inst_begin(kernel), IE = inst_end(kernel);
+       II != IE; ++II) {
     Instruction *inst = &*II;
 
     if (auto AI = dyn_cast<AllocaInst>(inst)) {
-      //vecInfo.setVectorShape(*AI, rv::VectorShape::uni());
-      vecInfo.setPinnedShape(*AI, rv::VectorShape::varying()); // FIXME: seems lika a bug in RV
+      // vecInfo.setVectorShape(*AI, rv::VectorShape::uni());
+      vecInfo.setPinnedShape(
+          *AI, rv::VectorShape::varying()); // FIXME: seems lika a bug in RV
     }
 
     // mark intrinsics
@@ -429,7 +439,7 @@ void SPMDVectorizer::prepareForVectorization(Function *kernel, rv::Vectorization
 
         switch (intrin_id) {
         case Intrinsic::pacxx_read_tid_x: {
-          //vecInfo.setVectorShape(*CI, rv::VectorShape::cont());
+          // vecInfo.setVectorShape(*CI, rv::VectorShape::cont());
           vecInfo.setPinnedShape(*CI, rv::VectorShape::cont());
           break;
         }
@@ -444,18 +454,26 @@ void SPMDVectorizer::prepareForVectorization(Function *kernel, rv::Vectorization
         case Intrinsic::pacxx_read_ntid_x:
         case Intrinsic::pacxx_read_ntid_y:
         case Intrinsic::pacxx_read_ntid_z: {
-          //vecInfo.setVectorShape(*CI, rv::VectorShape::uni());
+          // vecInfo.setVectorShape(*CI, rv::VectorShape::uni());
           vecInfo.setPinnedShape(*CI, rv::VectorShape::uni());
           break;
         }
-        default: break;
+        default:
+          break;
+        }
+      } else {
+        if (called->getName().find("puts") != std::string::npos ||
+            called->getName().find("printf") != std::string::npos) {
+          vecInfo.setPinnedShape(*CI, rv::VectorShape::varying());
         }
       }
     }
   }
 }
 
-bool SPMDVectorizer::modifyWrapperLoop(Function *dummyFunction, Function *kernel, Function *vectorizedKernel,
+bool SPMDVectorizer::modifyWrapperLoop(Function *dummyFunction,
+                                       Function *kernel,
+                                       Function *vectorizedKernel,
                                        unsigned vectorWidth, Module &M) {
 
   auto &ctx = M.getContext();
@@ -463,7 +481,8 @@ bool SPMDVectorizer::modifyWrapperLoop(Function *dummyFunction, Function *kernel
 
   Function *F = M.getFunction("__pacxx_block");
 
-  // creating a new pacxx block wrapper, because every kernel could have a different vector width
+  // creating a new pacxx block wrapper, because every kernel could have a
+  // different vector width
   Function *vecFoo = createKernelSpecificFoo(M, F, kernel);
 
   BasicBlock *oldLoopHeader = determineOldLoopPreHeader(vecFoo);
@@ -480,14 +499,16 @@ bool SPMDVectorizer::modifyWrapperLoop(Function *dummyFunction, Function *kernel
 
   modifyOldLoop(vecFoo);
 
-
   // construct required BasicBlocks
-  BasicBlock *loopEnd = BasicBlock::Create(ctx, "loop-end", vecFoo, oldLoopHeader);
+  BasicBlock *loopEnd =
+      BasicBlock::Create(ctx, "loop-end", vecFoo, oldLoopHeader);
   BasicBlock *loopBody = BasicBlock::Create(ctx, "loop-body", vecFoo, loopEnd);
-  BasicBlock *loopHeader = BasicBlock::Create(ctx, "loop-header", vecFoo, loopBody);
-  BasicBlock *loopPreHeader = BasicBlock::Create(ctx, "pre-header", vecFoo, loopHeader);
+  BasicBlock *loopHeader =
+      BasicBlock::Create(ctx, "loop-header", vecFoo, loopBody);
+  BasicBlock *loopPreHeader =
+      BasicBlock::Create(ctx, "pre-header", vecFoo, loopHeader);
 
-  //modify predecessor of oldLoopPreHeader to branch into the newLoopPreHeader
+  // modify predecessor of oldLoopPreHeader to branch into the newLoopPreHeader
   BasicBlock *predecessor = oldLoopHeader->getUniquePredecessor();
   if (!predecessor)
     oldLoopHeader->dump();
@@ -498,16 +519,18 @@ bool SPMDVectorizer::modifyWrapperLoop(Function *dummyFunction, Function *kernel
         BI->setSuccessor(i, loopPreHeader);
     }
 
-  //insert instructions into loop preHeader
+  // insert instructions into loop preHeader
   new StoreInst(ConstantInt::get(int32_type, 0), __x, loopPreHeader);
   BranchInst::Create(loopHeader, loopPreHeader);
 
-  //insert Instruction into loop header
+  // insert Instruction into loop header
   LoadInst *headerLoadVar = new LoadInst(__x, "loadVar", loopHeader);
   LoadInst *loadMaxx = new LoadInst(maxx, "loadmaxx", loopHeader);
-  Instruction *inc = BinaryOperator::CreateAdd(headerLoadVar, ConstantInt::get(int32_type, vectorWidth),
-                                               "increment loop var", loopHeader);
-  ICmpInst *varLessThanMaxx = new ICmpInst(*loopHeader, ICmpInst::ICMP_SLE, inc, loadMaxx, "cmp");
+  Instruction *inc = BinaryOperator::CreateAdd(
+      headerLoadVar, ConstantInt::get(int32_type, vectorWidth),
+      "increment loop var", loopHeader);
+  ICmpInst *varLessThanMaxx =
+      new ICmpInst(*loopHeader, ICmpInst::ICMP_SLE, inc, loadMaxx, "cmp");
   BranchInst::Create(loopBody, oldLoopHeader, varLessThanMaxx, loopHeader);
 
   InlineFunctionInfo IFI;
@@ -531,14 +554,16 @@ bool SPMDVectorizer::modifyWrapperLoop(Function *dummyFunction, Function *kernel
     }
   }
 
-  CallInst *vecFunction = CallInst::Create(vectorizedKernel, args, "", loopBody);
+  CallInst *vecFunction =
+      CallInst::Create(vectorizedKernel, args, "", loopBody);
 
   BranchInst::Create(loopEnd, loopBody);
 
-  //insert instructions into loop end
+  // insert instructions into loop end
   LoadInst *loadLoopVar = new LoadInst(__x, "loadVar", loopEnd);
-  Instruction *incLoopEnd = BinaryOperator::CreateAdd(loadLoopVar, ConstantInt::get(int32_type, vectorWidth),
-                                                      "increment loop var", loopEnd);
+  Instruction *incLoopEnd = BinaryOperator::CreateAdd(
+      loadLoopVar, ConstantInt::get(int32_type, vectorWidth),
+      "increment loop var", loopEnd);
   new StoreInst(incLoopEnd, __x, loopEnd);
   BranchInst::Create(loopHeader, loopEnd);
 
@@ -559,8 +584,8 @@ bool SPMDVectorizer::modifyWrapperLoop(Function *dummyFunction, Function *kernel
   return true;
 }
 
-Function *SPMDVectorizer::createKernelSpecificFoo(Module &M, Function *F, Function *kernel) {
-
+Function *SPMDVectorizer::createKernelSpecificFoo(Module &M, Function *F,
+                                                  Function *kernel) {
   ValueToValueMapTy VMap;
 
   SmallVector<Type *, 8> Params;
@@ -573,11 +598,11 @@ Function *SPMDVectorizer::createKernelSpecificFoo(Module &M, Function *F, Functi
     Params.push_back(arg.getType());
   }
 
-  FunctionType *FTy = FunctionType::get(Type::getVoidTy(M.getContext()), Params, false);
+  FunctionType *FTy =
+      FunctionType::get(Type::getVoidTy(M.getContext()), Params, false);
 
-  Function *vecFoo = cast<Function>(
-      M.getOrInsertFunction("__vectorized__pacxx_block__" + kernel->getName().str(), FTy));
-
+  Function *vecFoo = cast<Function>(M.getOrInsertFunction(
+      "__vectorized__pacxx_block__" + kernel->getName().str(), FTy));
   SmallVector<ReturnInst *, 3> rets;
   for (auto &BB : kernel->getBasicBlockList())
     for (auto &I : BB.getInstList()) {
@@ -585,13 +610,12 @@ Function *SPMDVectorizer::createKernelSpecificFoo(Module &M, Function *F, Functi
         rets.push_back(r);
       }
     }
-
   auto DestI = vecFoo->arg_begin();
   for (auto I = F->arg_begin(); I != F->arg_end(); ++I) {
     DestI->setName(I->getName().str());
     VMap[cast<Value>(I)] = cast<Value>(DestI++);
   }
-
+ 
   CloneFunctionInto(vecFoo, F, VMap, false, rets);
 
   vecFoo->setCallingConv(F->getCallingConv());
@@ -660,18 +684,14 @@ Value *SPMDVectorizer::determine_x(Function *F) {
 
 char SPMDVectorizer::ID = 0;
 
-INITIALIZE_PASS_BEGIN(SPMDVectorizer, "spmd",
-                      "SPMD vectorizer", true, true)
-  INITIALIZE_PASS_DEPENDENCY(ScalarEvolutionWrapperPass)
-  INITIALIZE_PASS_DEPENDENCY(MemoryDependenceWrapperPass)
-  INITIALIZE_PASS_DEPENDENCY(TargetLibraryInfoWrapperPass)
-  INITIALIZE_PASS_DEPENDENCY(TargetTransformInfoWrapperPass)
-  INITIALIZE_PASS_DEPENDENCY(LoopInfoWrapperPass)
-INITIALIZE_PASS_END(SPMDVectorizer, "spmd",
-                    "SPMD vectorizer", true, true)
+INITIALIZE_PASS_BEGIN(SPMDVectorizer, "spmd", "SPMD vectorizer", true, true)
+INITIALIZE_PASS_DEPENDENCY(ScalarEvolutionWrapperPass)
+INITIALIZE_PASS_DEPENDENCY(MemoryDependenceWrapperPass)
+INITIALIZE_PASS_DEPENDENCY(TargetLibraryInfoWrapperPass)
+INITIALIZE_PASS_DEPENDENCY(TargetTransformInfoWrapperPass)
+INITIALIZE_PASS_DEPENDENCY(LoopInfoWrapperPass)
+INITIALIZE_PASS_END(SPMDVectorizer, "spmd", "SPMD vectorizer", true, true)
 
 namespace pacxx {
-llvm::Pass *createSPMDVectorizerPass() {
-  return new SPMDVectorizer();
-}
-}
+llvm::Pass *createSPMDVectorizerPass() { return new SPMDVectorizer(); }
+} // namespace pacxx

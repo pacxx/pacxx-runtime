@@ -28,7 +28,7 @@ namespace {
         virtual bool runOnModule(Module &M) {
 
             bool modified = false;
-            auto kernels = pacxx::getTagedFunctions(&M, "nvvm.annotations", "kernel");
+            auto kernels = pacxx::getKernels(&M);
             for (auto kernel : kernels) {
                 if (auto MD = kernel->getMetadata("pacxx.target")) {
                     auto Target = cast<MDString>(MD->getOperand(0).get());

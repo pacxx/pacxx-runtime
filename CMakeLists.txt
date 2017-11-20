@@ -222,7 +222,7 @@ add_custom_command(
 
         add_custom_command(
             OUTPUT ${nvdbFile}.linked.bc
-            COMMAND ${CMAKE_BINARY_DIR}/bin/llvm-link -suppress-warnings ${nvdbFile}.bc ${CMAKE_CURRENT_SOURCE_DIR}/lib/bitcode/nvptx_libdevice.bc -o ${nvdbFile}.linked.bc
+            COMMAND ${CMAKE_BINARY_DIR}/bin/llvm-link -suppress-warnings ${nvdbFile}.bc ${CMAKE_CURRENT_SOURCE_DIR}/lib/bitcode/syscalls.ll ${CMAKE_CURRENT_SOURCE_DIR}/lib/bitcode/nvptx_libdevice.bc -o ${nvdbFile}.linked.bc
             WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/lib    
             DEPENDS ${nvdbFile}.bc
             COMMENT "Linking NVPTX libdevice into bitcode")
