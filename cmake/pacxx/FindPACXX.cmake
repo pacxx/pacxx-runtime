@@ -26,15 +26,15 @@ endif ()
 endif ()
 
 if (HIP_REQUIRED)
-find_package(HIP REQUIRED)
-
+  if (NOT TARGET hsa-runtime64) # Workaround since HCC always wants to define this target)
+    find_package(HIP REQUIRED)
+  endif()
     if (HIP_FOUND)
         include_directories(${HSA_HEADER})
-        link_directories(${HIP_DIR}/../../../../lib)
     endif ()
 
+    link_directories(${HIP_DIR}/../../../../lib)
     set(HIP_LINK_LIBRARIES ${HSA_LIBRARY} hip_hcc hc_am)
-
 endif()
 
 if (OpenMP_REQUIRED)

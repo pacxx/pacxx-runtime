@@ -172,7 +172,6 @@ void SMGeneration::createInternalSharedMemoryBuffer(Module &M,
     for (auto GV : globals) {
 
         Type *sm_type = GV->getType()->getElementType();
-        sm_type->dump();
         IRBuilder<> builder(sharedMemBB);
 
         auto sm_alloc = builder.CreateAlloca(sm_type);

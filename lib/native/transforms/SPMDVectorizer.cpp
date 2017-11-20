@@ -163,7 +163,7 @@ bool SPMDVectorizer::runOnModule(Module &M) {
     config.enableStructOpt = false;
     config.enableIRPolish = false;
 
-    config.print(outs());
+    //config.print(outs());
 
     const bool useImpreciseFunctions = true;
 
