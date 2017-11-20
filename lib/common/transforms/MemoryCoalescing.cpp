@@ -248,35 +248,35 @@ struct MemoryCoalecing : public ModulePass {
       bcstrip.visit(F);
     }
 
-    struct UglyGEPFixer : public InstVisitor<UglyGEPFixer>{
-      void visitGetElementPtrInst(GetElementPtrInst& I){
-        if (auto idx = dyn_cast<IntToPtrInst>(I.getPointerOperand())){
-          idx->dump();
-          if (auto ptr = dyn_cast<PtrToIntInst>(I.getOperand(1))){
-            ptr->dump();
-            I.dump();
-            if (auto CE = dyn_cast<ConstantInt>(idx->getOperand(0))){
-              auto newCE = ConstantInt::get(CE->getType(), *CE->getValue().getRawData() / (ptr->getSrcTy()->getPointerElementType()->getScalarSizeInBits()/8));
-              SmallVector<Value*, 1> indices;
-              indices.push_back(newCE);
-              auto newGEP = GetElementPtrInst::Create(ptr->getSrcTy()->getPointerElementType(), ptr->getOperand(0), indices, "", &I);
-              newGEP->dump();
-              for (auto U : I.users()){
-                if (auto BC = dyn_cast<BitCastInst>(U)){
-                  if (BC->getType() == newGEP->getType()){
-                    BC->replaceAllUsesWith(newGEP);
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    }gepFixer;
-#if 1
-    for (auto F : kernels)
-        gepFixer.visit(F);
-#endif 
+//     struct UglyGEPFixer : public InstVisitor<UglyGEPFixer>{
+//       void visitGetElementPtrInst(GetElementPtrInst& I){
+//         if (auto idx = dyn_cast<IntToPtrInst>(I.getPointerOperand())){
+//           idx->dump();
+//           if (auto ptr = dyn_cast<PtrToIntInst>(I.getOperand(1))){
+//             ptr->dump();
+//             I.dump();
+//             if (auto CE = dyn_cast<ConstantInt>(idx->getOperand(0))){
+//               auto newCE = ConstantInt::get(CE->getType(), *CE->getValue().getRawData() / (ptr->getSrcTy()->getPointerElementType()->getScalarSizeInBits()/8));
+//               SmallVector<Value*, 1> indices;
+//               indices.push_back(newCE);
+//               auto newGEP = GetElementPtrInst::Create(ptr->getSrcTy()->getPointerElementType(), ptr->getOperand(0), indices, "", &I);
+//               newGEP->dump();
+//               for (auto U : I.users()){
+//                 if (auto BC = dyn_cast<BitCastInst>(U)){
+//                   if (BC->getType() == newGEP->getType()){
+//                     BC->replaceAllUsesWith(newGEP);
+//                   }
+//                 }
+//               }
+//             }
+//           }
+//         }
+//       }
+//     }gepFixer;
+// #if 0
+//     for (auto F : kernels)
+//         gepFixer.visit(F);
+// #endif 
     for (auto V : bcstrip.dead) {
       V->replaceAllUsesWith(UndefValue::get(V->getType()));
       cast<Instruction>(V)->eraseFromParent();

@@ -147,7 +147,6 @@ std::unique_ptr<llvm::Module> PTXBackend::prepareModule(llvm::Module &M) {
   PM.add(createInstructionCombiningPass());
 
   PM.run(M);
-  M.dump();
   auto RM = reinterpret_cast<MSPGeneration *>(PRP)->getReflectionModule();
 
   PassManagerBuilder builder;

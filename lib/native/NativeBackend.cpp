@@ -205,8 +205,6 @@ std::unique_ptr<llvm::Module> NativeBackend::prepareModule(llvm::Module &M) {
 
   PM.run(M);
 
-  M.dump();
-
   auto RM = reinterpret_cast<MSPGeneration*>(PRP)->getReflectionModule();
   PassManagerBuilder builder;
   builder.OptLevel = 3;
