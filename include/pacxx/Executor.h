@@ -24,9 +24,9 @@
 #ifdef PACXX_ENABLE_CUDA
 #include "pacxx/detail/cuda/CUDARuntime.h"
 #endif
-
+#ifdef PACXX_ENABLE_HIP
 #include "pacxx/detail/rocm/HIPRuntime.h"
-
+#endif
 #include "pacxx/detail/Event.h"
 #include "pacxx/detail/codegen/Kernel.h"
 #include "pacxx/detail/cuda/CUDAEvent.h" // TODO: move event create to the runtimes
@@ -42,6 +42,7 @@
 #include <string>
 
 
+// set the default backend 
 #ifndef PACXX_ENABLE_CUDA
 using Runtime = pacxx::v2::NativeRuntime;
 #else
@@ -215,9 +216,11 @@ public:
     case IRRuntime::RuntimeKind::RK_Native:
       return *cast<NativeRuntime>(_runtime.get())
                   ->template allocateMemory(count, host_ptr, mode);
+#ifdef PACXX_ENABLE_HIP
     case IRRuntime::RuntimeKind::RK_HIP:
       return *cast<HIPRuntime>(_runtime.get())
                   ->template allocateMemory(count, host_ptr, mode);
+#endif
     default:
       llvm_unreachable("this runtime type is not defined!");
     }
@@ -238,9 +241,11 @@ public:
     case IRRuntime::RuntimeKind::RK_Native:
       cast<NativeRuntime>(_runtime.get())->template deleteMemory(&buffer);
       break;
+#ifdef PACXX_ENABLE_HIP
     case IRRuntime::RuntimeKind::RK_HIP:
       cast<HIPRuntime>(_runtime.get())->template deleteMemory(&buffer);
       break;
+#endif
     default:
       llvm_unreachable("this runtime type is not defined!");
     }
@@ -282,9 +287,11 @@ public:
     case IRRuntime::RuntimeKind::RK_Native:
       event.reset(new NativeEvent());
       break;
+#ifdef PACXX_ENABLE_HIP
     case IRRuntime::RuntimeKind::RK_HIP:
       event.reset(new HIPEvent());
       break;
+#endif
     default:
       llvm_unreachable("this runtime type is not defined!");
     }
