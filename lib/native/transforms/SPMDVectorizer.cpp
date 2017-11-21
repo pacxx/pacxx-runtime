@@ -205,7 +205,7 @@ bool SPMDVectorizer::runOnModule(Module &M) {
         &getAnalysis<MemoryDependenceWrapperPass>(*scalarCopy).getMemDep();
 
     // Dominance Frontier Graph
-    DFG dfg(domTree);
+    rv::DFG dfg(domTree);
     dfg.create(*scalarCopy);
 
     // post dom
@@ -213,7 +213,7 @@ bool SPMDVectorizer::runOnModule(Module &M) {
     postDomTree.recalculate(*scalarCopy);
 
     // Control Dependence Graph
-    CDG cdg(postDomTree);
+    rv::CDG cdg(postDomTree);
     cdg.create(*scalarCopy);
 
     // return and arguments are uniform
