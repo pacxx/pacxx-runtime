@@ -265,7 +265,7 @@ function(add_pacxx_to_target targetName binDir srcFiles)
 
     set_target_properties(${targetName} PROPERTIES LINK_FLAGS ${PACXX_LD_FLAGS})
     target_link_libraries(${targetName} PUBLIC ${PACXX_RUNTIME_LIBRARY} PUBLIC ${PACXX_RV_LIBRARY}
-            PUBLIC ${CUDA_LINK_LIBRARIES} PUBLIC ${HIP_LINK_LIBRARIES} PUBLIC ${PACXX_LLVM_LIBS} PUBLIC ${PACXX_LLVM_SYS_LIBS} PUBLIC ${TBB_LIBRARIES} PUBLIC libpacxx_main.a)
+            PUBLIC ${HIP_LINK_LIBRARIES} PUBLIC ${CUDA_LINK_LIBRARIES} PUBLIC ${PACXX_LLVM_LIBS} PUBLIC ${PACXX_LLVM_SYS_LIBS} PUBLIC ${TBB_LIBRARIES} PUBLIC libpacxx_main.a)
 
 
     set(PACXX_ADDITIONAL_LINKER_FLAGS "-Wl,-wrap=main")

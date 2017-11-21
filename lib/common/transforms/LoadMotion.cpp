@@ -150,7 +150,6 @@ struct LoadMotion : public ModulePass {
       collector.geps.clear();
       collector.visit(F);
       auto geps = collectGEPPairs(collector.geps);
-      llvm::errs() << "Mateched " << geps.size() << "\n";
       moveLoads(geps);
     }
 
