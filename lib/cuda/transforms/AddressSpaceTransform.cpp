@@ -152,8 +152,8 @@ struct AddressSpaceTransform : public ModulePass {
           }
         }
         if (!delay) {
-          // FIXME: we have to check first if all new values are in the same AS 
-          //        if not, we have to generate ASC Constant Expr for the 
+          // FIXME: we have to check first if all new values are in the same AS
+          //        if not, we have to generate ASC Constant Expr for the
           //        incomming values and let the PHINode in the generic AS
           AS = mapping[PHI->getIncomingValue(0)]
                    ->getType()
@@ -164,11 +164,9 @@ struct AddressSpaceTransform : public ModulePass {
               PHI->getParent()->getFirstNonPHI());
           mapping[PHI] = newPhi;
           for (unsigned i = 0; i < PHI->getNumIncomingValues(); ++i) {
-             // adding incomming values to set the new value
-            newPhi->addIncoming(
-                mapping[PHI->getIncomingValue(i)],
-                      PHI->getIncomingBlock(i));
-               
+            // adding incomming values to set the new value
+            newPhi->addIncoming(mapping[PHI->getIncomingValue(i)],
+                                PHI->getIncomingBlock(i));
           }
           std::vector<Value *> new_worklist;
           dead.insert(PHI);
@@ -395,6 +393,28 @@ struct AddressSpaceTransform : public ModulePass {
           SMMapping[F] = i + 1;
         }
       }
+      if (GV.getMetadata("pacxx.as.constant")) {
+        GV.dump();
+        GV.getType()->dump();
+        Type *oldType = GV.getType();
+        if (GV.getType()->getPointerAddressSpace() == 0) {
+          std::map<Instruction *, std::pair<Value *, Instruction *>> GVtoASC;
+
+          GV.mutateType(GV.getType()->getPointerElementType()->getPointerTo(4));
+          for (auto U : GV.users()) {
+            auto ASC = new AddrSpaceCastInst(cast<Value>(&GV), oldType, "",
+                                             cast<Instruction>(U));
+            GVtoASC[cast<Instruction>(U)] = make_pair(&GV, ASC);
+          }
+
+          for (auto p : GVtoASC) {
+            for (unsigned i = 0; i < p.first->getNumOperands(); ++i)
+              if (p.first->getOperand(i) == p.second.first) {
+                p.first->setOperand(i, p.second.second);
+              }
+          }
+        }
+      }
     }
 
     // test code for alloca in AS 3
@@ -406,7 +426,7 @@ struct AddressSpaceTransform : public ModulePass {
       }
     } allocaRewriter;
 
-    for (auto F : kernels)
+    for (auto& F : M.getFunctionList())
       allocaRewriter.visit(F);
 
     // delete old kernel functions
@@ -430,7 +450,6 @@ struct AddressSpaceTransform : public ModulePass {
       GV->replaceAllUsesWith(UndefValue::get(GV->getType()));
       GV->eraseFromParent();
     }
-
     return modified;
   }
 };
@@ -439,8 +458,8 @@ char AddressSpaceTransform::ID = 0;
 static RegisterPass<AddressSpaceTransform>
     X("pacxx-addr-space-transform", "Transforms generic AS to NVPTX AS", false,
       false);
-}
+} // namespace
 
 namespace pacxx {
 Pass *createAddressSpaceTransformPass() { return new AddressSpaceTransform(); }
-}
+} // namespace pacxx

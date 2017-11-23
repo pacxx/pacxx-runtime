@@ -99,6 +99,8 @@ inline void cleanupDeadCode(Module *M) {
 
     if (auto GV = dyn_cast<GlobalVariable>(&G)){
     // FIXME: is this realy true?
+      if (GV->isConstant() && !GV->getMetadata("pacxx.as.constant"))
+        GV->setMetadata("pacxx.as.constant", llvm::MDNode::get(GV->getContext(), nullptr));
       isConstantMem = GV->getMetadata("pacxx.as.constant") != nullptr || GV->getType()->getAddressSpace() == 4;
       isSharedMem = GV->getMetadata("pacxx.as.shared") != nullptr || GV->getType()->getAddressSpace() == 3;
     }

@@ -27,24 +27,24 @@
 // FIXME: this looks awkward
 #include "pacxx/../../../lld/include/lld/Common/Driver.h"
 
-#include <llvm/Transforms/Scalar.h>
-#include <llvm/Transforms/Vectorize.h>
-#include <llvm/Linker/Linker.h>
-#include <llvm/Transforms/IPO/PassManagerBuilder.h>
-#include <llvm/Analysis/TargetTransformInfo.h>
-#include <llvm/Analysis/BasicAliasAnalysis.h>
-#include <llvm/Analysis/TypeBasedAliasAnalysis.h>
-#include <llvm/Transforms/IPO/FunctionAttrs.h>
-#include <llvm/Analysis/Passes.h>
-#include <llvm/Transforms/Scalar/GVN.h>
-#include <llvm/Transforms/IPO/AlwaysInliner.h>
-#include <llvm/Transforms/IPO.h>
-#include <fstream>
 #include "pacxx/ModuleLoader.h"
+#include <fstream>
+#include <llvm/Analysis/BasicAliasAnalysis.h>
+#include <llvm/Analysis/Passes.h>
+#include <llvm/Analysis/TargetTransformInfo.h>
+#include <llvm/Analysis/TypeBasedAliasAnalysis.h>
+#include <llvm/Linker/Linker.h>
+#include <llvm/Transforms/IPO.h>
+#include <llvm/Transforms/IPO/AlwaysInliner.h>
+#include <llvm/Transforms/IPO/FunctionAttrs.h>
+#include <llvm/Transforms/IPO/PassManagerBuilder.h>
+#include <llvm/Transforms/Scalar.h>
+#include <llvm/Transforms/Scalar/GVN.h>
+#include <llvm/Transforms/Vectorize.h>
 
+#include "pacxx/detail/common/Timing.h"
 #include "pacxx/detail/common/transforms/PACXXTransforms.h"
 #include "pacxx/detail/common/transforms/Passes.h"
-#include "pacxx/detail/common/Timing.h"
 
 // amdgcn device binding
 extern const char amdgcn_binding_start[];
@@ -55,7 +55,7 @@ using namespace llvm;
 namespace pacxx {
 namespace v2 {
 HSACOBackend::HSACOBackend()
-    : _target(nullptr), _cpu("gfx803"), _features(""){}
+    : _target(nullptr), _cpu("gfx803"), _features("") {}
 
 void HSACOBackend::initialize(unsigned gfx) {
   _gcnArch = gfx;
@@ -78,13 +78,14 @@ void HSACOBackend::initialize(unsigned gfx) {
 std::unique_ptr<llvm::Module> HSACOBackend::prepareModule(llvm::Module &M) {
 
   ModuleLoader loader(M.getContext());
-  auto binding = loader.loadInternal(amdgcn_binding_start, amdgcn_binding_end - amdgcn_binding_start);
+  auto binding = loader.loadInternal(amdgcn_binding_start,
+                                     amdgcn_binding_end - amdgcn_binding_start);
   M.setDataLayout(binding->getDataLayout());
   M.setTargetTriple(binding->getTargetTriple());
 
   auto linker = Linker(M);
   linker.linkInModule(std::move(binding), Linker::Flags::None);
-  
+
   llvm::legacy::PassManager PM;
   TargetLibraryInfoImpl TLII(Triple(M.getTargetTriple()));
   PM.add(new TargetLibraryInfoWrapperPass(TLII));
@@ -129,8 +130,8 @@ std::unique_ptr<llvm::Module> HSACOBackend::prepareModule(llvm::Module &M) {
   PM.add(createIntrinsicSchedulerPass());
 
   PM.add(createTargetSelectionPass({"GPU", "Generic"}));
- // PM.add(createAddressSpaceTransformPass());
- // PM.add(createLoadMotionPass());
+  // PM.add(createAddressSpaceTransformPass());
+  // PM.add(createLoadMotionPass());
   PM.add(createMSPRemoverPass());
 
   PM.add(createAMDGCNPrepairPass(_gcnArch));
@@ -176,7 +177,7 @@ std::string HSACOBackend::compile(llvm::Module &M) {
     throw common::generic_exception(Error);
   }
 
- llvm::legacy::PassManager PM;
+  llvm::legacy::PassManager PM;
   TargetLibraryInfoImpl TLII(Triple(M.getTargetTriple()));
   PassManagerBuilder builder;
   builder.OptLevel = 3;
@@ -186,19 +187,23 @@ std::string HSACOBackend::compile(llvm::Module &M) {
       TheTriple.getTriple(), _cpu, _features, _options, Reloc::Model::Static,
       CodeModel::Model::Medium, CodeGenOpt::Aggressive));
 
-  if (_machine->addPassesToEmitFile(
-      PM, _ptxOS, TargetMachine::CGFT_ObjectFile, false)) {
+  if (_machine->addPassesToEmitFile(PM, _ptxOS, TargetMachine::CGFT_ObjectFile,
+                                    false)) {
     throw std::logic_error(
         "target does not support generation of this file type!\n");
   }
 
   PM.run(M);
 
-  auto ptx = ptxString.str().str();
-    std::ofstream out(".pacxx.isabin");
-    out << ptx;
+  if (common::GetEnv("PACXX_DUMP_FINAL_IR") != "") {
+    M.dump();
+  }
 
-  std::vector<const char *> args; 
+  auto ptx = ptxString.str().str();
+  std::ofstream out(".pacxx.isabin");
+  out << ptx;
+
+  std::vector<const char *> args;
 
   std::string outfile = ".pacxx.hsaco";
 
@@ -207,11 +212,11 @@ std::string HSACOBackend::compile(llvm::Module &M) {
   args.push_back(".pacxx.isabin");
   args.push_back("-o");
   args.push_back(outfile.c_str());
- 
+
   lld::elf::link(args, false);
 
   return outfile;
 }
 
-}
-}
+} // namespace v2
+} // namespace pacxx

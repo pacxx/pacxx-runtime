@@ -9,8 +9,8 @@
 
 #include "pacxx/detail/native/NativeBackend.h"
 #include "pacxx/ModuleLoader.h"
-#include "pacxx/detail/common/Exceptions.h"
 #include "pacxx/detail/common/Common.h"
+#include "pacxx/detail/common/Exceptions.h"
 #include "pacxx/detail/common/transforms/Passes.h"
 #include "pacxx/detail/native/transforms/Passes.h"
 #include <llvm/Analysis/LoopInfo.h>
@@ -26,9 +26,9 @@
 #include <llvm/Support/SourceMgr.h>
 #include <llvm/Transforms/IPO/PassManagerBuilder.h>
 
+#include <llvm/CodeGen/MachineModuleInfo.h>
 #include <llvm/Transforms/Scalar.h>
 #include <llvm/Transforms/Vectorize.h>
-#include <llvm/CodeGen/MachineModuleInfo.h>
 
 #include "pacxx/detail/common/transforms/PACXXTransforms.h"
 #include "pacxx/detail/common/transforms/Passes.h"
@@ -124,17 +124,15 @@ extern const char native_binding_end[];
 
 namespace pacxx {
 namespace v2 {
-NativeBackend::NativeBackend() : _pmInitialized(false),
-                                 _disableVectorizer(false),
-                                 _disableSelectEmitter(false),
-                                 _disableExpPasses(false){
+NativeBackend::NativeBackend()
+    : _pmInitialized(false), _disableVectorizer(false),
+      _disableSelectEmitter(false), _disableExpPasses(false) {
   if (common::GetEnv("PACXX_DISABLE_RV") != "")
     _disableVectorizer = true;
   if (common::GetEnv("PACXX_DISABLE_SE") != "")
     _disableSelectEmitter = true;
   if (common::GetEnv("PACXX_DISABLE_EXP_PASS") != "")
     _disableExpPasses = true;
-
 }
 
 NativeBackend::~NativeBackend() {}
@@ -142,7 +140,8 @@ NativeBackend::~NativeBackend() {}
 std::unique_ptr<llvm::Module> NativeBackend::prepareModule(llvm::Module &M) {
 
   ModuleLoader loader(M.getContext());
-  auto binding = loader.loadInternal(native_binding_start, native_binding_end - native_binding_start);
+  auto binding = loader.loadInternal(native_binding_start,
+                                     native_binding_end - native_binding_start);
 
   auto linker = Linker(M);
   linker.linkInModule(std::move(binding), Linker::Flags::None);
@@ -205,7 +204,7 @@ std::unique_ptr<llvm::Module> NativeBackend::prepareModule(llvm::Module &M) {
 
   PM.run(M);
 
-  auto RM = reinterpret_cast<MSPGeneration*>(PRP)->getReflectionModule();
+  auto RM = reinterpret_cast<MSPGeneration *>(PRP)->getReflectionModule();
   PassManagerBuilder builder;
   builder.OptLevel = 3;
   legacy::PassManager RPM;
@@ -232,7 +231,6 @@ Module *NativeBackend::compile(std::unique_ptr<Module> &M) {
   EngineBuilder builder{std::move(_composite)};
 
   auto triple = Triple(sys::getProcessTriple());
-
 
   _machine = builder.selectTarget(Triple(sys::getProcessTriple()), "",
                                   sys::getHostCPUName(), getTargetFeatures());
@@ -329,20 +327,21 @@ void NativeBackend::applyPasses(Module &M) {
 
     TargetLibraryInfoImpl TLII(Triple(M.getTargetTriple()));
     _PM.add(new TargetLibraryInfoWrapperPass(TLII));
-    _PM.add(createTargetTransformInfoWrapperPass(_machine->getTargetIRAnalysis()));
+    _PM.add(
+        createTargetTransformInfoWrapperPass(_machine->getTargetIRAnalysis()));
     _PM.add(createCFGSimplificationPass());
     _PM.add(createLoopSimplifyPass());
     _PM.add(createLCSSAPass());
 
     _PM.add(createEarlyCSEPass(true));
-    if(!_disableExpPasses) {
+    if (!_disableExpPasses) {
       _PM.add(createMemoryCoalescingPass(false));
       _PM.add(createDeadInstEliminationPass());
     }
     _PM.add(createLowerSwitchPass());
-    //builder.populateModulePassManager(_PM);
-    if (!_disableVectorizer){
-   //   _PM.add(createPACXXCodeGenPrepare());
+    // builder.populateModulePassManager(_PM);
+    if (!_disableVectorizer) {
+      //   _PM.add(createPACXXCodeGenPrepare());
       _PM.add(createSPMDVectorizerPass());
     }
     _PM.add(createAlwaysInlinerLegacyPass());
@@ -350,7 +349,7 @@ void NativeBackend::applyPasses(Module &M) {
       _PM.add(createMaskedMemTransformPass());
     _PM.add(createIntrinsicSchedulerPass());
     _PM.add(createBarrierGenerationPass());
-   // _PM.add(createVerifierPass());
+    // _PM.add(createVerifierPass());
 
     _PM.add(createKernelLinkerPass());
 
@@ -368,8 +367,12 @@ void NativeBackend::applyPasses(Module &M) {
   }
 
   _PM.run(M);
+
+  if (common::GetEnv("PACXX_DUMP_FINAL_IR") != "") {
+    M.dump();
+  }
 }
 
 legacy::PassManager &NativeBackend::getPassManager() { return _PM; }
-}
-}
+} // namespace v2
+} // namespace pacxx

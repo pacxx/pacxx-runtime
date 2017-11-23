@@ -220,6 +220,9 @@ std::string PTXBackend::compile(llvm::Module &M) {
   }
 
   PM.run(M);
+  if (common::GetEnv("PACXX_DUMP_FINAL_IR") != "") {
+    M.dump();
+  }
 
   auto ptx = ptxString.str().str();
   if (common::GetEnv("PACXX_DUMP_ASM") != "") {
