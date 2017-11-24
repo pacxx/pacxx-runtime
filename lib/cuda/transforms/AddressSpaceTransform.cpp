@@ -217,7 +217,19 @@ struct AddressSpaceTransform : public ModulePass {
         } else {
           delayed.push_back(V);
         }
-      } else {
+      } else if (auto CI = dyn_cast<CallInst>(V)){
+
+        unsigned opi = 0; 
+        for (;opi < CI->getNumOperands(); ++opi)
+          if (mapping.find(CI->getOperand(opi)) != mapping.end())
+            break;
+
+        auto ASC = new AddrSpaceCastInst(
+                mapping[CI->getOperand(opi)], CI->getOperand(opi)->getType(),
+                "", CI);
+        CI->setOperand(opi, ASC);
+      }
+      else {
         llvm::errs() << "unhandled AS user\n";
         V->dump();
       }
@@ -393,9 +405,7 @@ struct AddressSpaceTransform : public ModulePass {
           SMMapping[F] = i + 1;
         }
       }
-      if (GV.getMetadata("pacxx.as.constant")) {
-        GV.dump();
-        GV.getType()->dump();
+      if (GV.getMetadata("pacxx.as.constant") && !GV.getMetadata("pacxx.as.noopt")) {
         Type *oldType = GV.getType();
         if (GV.getType()->getPointerAddressSpace() == 0) {
           std::map<Instruction *, std::pair<Value *, Instruction *>> GVtoASC;
@@ -422,7 +432,8 @@ struct AddressSpaceTransform : public ModulePass {
       std::vector<Value *> worklist;
 
       void visitAddrSpaceCastInst(AddrSpaceCastInst &ASC) {
-        worklist.push_back(&ASC);
+        if (!ASC.getMetadata("pacxx.as.noopt"))
+          worklist.push_back(&ASC);
       }
     } allocaRewriter;
 

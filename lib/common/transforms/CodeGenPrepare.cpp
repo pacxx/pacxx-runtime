@@ -34,6 +34,9 @@ static void handlePrintfCall(CallInst *I, PFStyle flavour) {
         if (!str->getMetadata("pacxx.as.constant"))
           str->setMetadata("pacxx.as.constant",
                            llvm::MDNode::get(F->getContext(), nullptr));
+        if (!str->getMetadata("pacxx.as.noopt"))
+          str->setMetadata("pacxx.as.noopt",
+                           llvm::MDNode::get(F->getContext(), nullptr));
         auto c0 =
             ConstantInt::get(Type::getInt64Ty(F->getParent()->getContext()), 0);
         vector<Value *> idx;
@@ -44,6 +47,7 @@ static void handlePrintfCall(CallInst *I, PFStyle flavour) {
         auto ASC = AddrSpaceCastInst::CreatePointerBitCastOrAddrSpaceCast(
             newGEP, newGEP->getType()->getPointerElementType()->getPointerTo(),
             "", I);
+        ASC->setMetadata("pacxx.as.noopt", llvm::MDNode::get(F->getContext(), nullptr));
         I->setOperand(0, ASC);
       }
     }

@@ -90,6 +90,7 @@ set(SOURCE_FILES include/pacxx/Executor.h
         lib/native/transforms/SMGeneration.h
         lib/native/transforms/SMGeneration.cpp
         lib/native/transforms/SPMDVectorizer.cpp
+        lib/common/transforms/ModuleHelper.cpp
         include/pacxx/detail/native/NativeBackend.h
         lib/native/NativeBackend.cpp
         include/pacxx/detail/native/NativeRuntime.h

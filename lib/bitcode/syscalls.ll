@@ -5,14 +5,16 @@ declare i32 @vprintf(i8* nocapture, i8*)
 
 define void @__printf(i8 addrspace(4)* %ptr, i8* %val){
 entry:
-  %0 = addrspacecast i8 addrspace(4)* %ptr to i8*
+  %0 = addrspacecast i8 addrspace(4)* %ptr to i8*, !pacxx.as.noopt !0
   %call = call i32 @vprintf(i8* %0, i8* %val)
   ret void
 }
 
 define void @_printf(i8* %ptr, i8* %val){
 entry:
-  %0 = addrspacecast i8* %ptr to i8 addrspace(4)*
+  %0 = addrspacecast i8* %ptr to i8 addrspace(4)*,  !pacxx.as.noopt !0
   call void @__printf(i8 addrspace(4)* %0, i8* %val)
   ret void
 }
+
+!0 = !{null}

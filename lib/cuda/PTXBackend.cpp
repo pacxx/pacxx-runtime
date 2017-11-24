@@ -128,7 +128,7 @@ std::unique_ptr<llvm::Module> PTXBackend::prepareModule(llvm::Module &M) {
   PM.add(createIntrinsicSchedulerPass());
   PM.add(createTargetSelectionPass({"GPU", "Generic"}));
   PM.add(createAddressSpaceTransformPass());
-  PM.add(createLoadMotionPass());
+  //PM.add(createLoadMotionPass());
   PM.add(createMSPRemoverPass());
   PM.add(createNVPTXPrepairPass());
   PM.add(createIntrinsicMapperPass());
