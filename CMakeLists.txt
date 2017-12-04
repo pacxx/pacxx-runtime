@@ -112,7 +112,7 @@ set(SOURCE_FILES include/pacxx/Executor.h
         lib/Kernel.cpp
         lib/cuda/PTXBackend.cpp
         include/pacxx/detail/cuda/PTXBackend.h
-            lib/cuda/transforms/AddressSpaceTransform.cpp
+            lib/common/transforms/AddressSpaceTransform.cpp
             lib/cuda/transforms/NVPTXPrepair.cpp
             lib/rocm/transforms/AMDGCNPrepair.cpp
         lib/IRRuntime.cpp
