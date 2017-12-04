@@ -15,5 +15,4 @@ class Pass;
 
 namespace pacxx {
 llvm::Pass *createNVPTXPrepairPass();
-llvm::Pass *createAddressSpaceTransformPass();
 }
