@@ -7,12 +7,16 @@ set(CMAKE_MODULE_PATH ${HIP_ROOT})
 find_package(CUDA)
 find_package(HIP)
 
+if (NOT WIN32)
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/pacxx/FindTBB.cmake)
+endif()
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 include_directories(${LLVM_INCLUDE_DIRS})
+if (TBB_INCLUDE_DIRS)
 include_directories(${TBB_INCLUDE_DIRS})
+endif()
 
 if (NOT DEFINED RV_INCLUDE_DIR)
     find_file(RV_HEADER rv.h PATHS ${CMAKE_CURRENT_SOURCE_DIR}/../../tools/rv/include/rv
@@ -47,7 +51,7 @@ else ()
     set(TBB_REQUIRED ON)
 endif(PACXX_USE_OpenMP)
 
-
+message("HIP found:" ${HIP_FOUND})
 #option(BUILD_SHARED "Build PACXX Runtime as shared object" OFF)
 set(PACXX_RV_LIB RV)
 
@@ -318,6 +322,7 @@ set(CMAKE_SHARED_LINKER_FLAGS "-Wl,--allow-shlib-undefined")
 add_library(${PROJECT_NAME} ${SOURCE_FILES} ${CUDA_SOURCE_FILES} ${HIP_SOURCE_FILES})
 
 add_library(pacxx_main STATIC lib/common/WrappedMain.cpp)
+add_dependencies(pacxx_main ${PROJECT_NAME})
 
 add_dependencies(${PROJECT_NAME} RV)
 
