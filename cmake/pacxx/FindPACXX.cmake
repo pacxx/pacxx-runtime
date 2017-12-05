@@ -2,14 +2,14 @@ cmake_minimum_required(VERSION 3.5)
 
 include(FindPACXXConfig)
 
-if (NOT PACXX_ROOT)
+if (NOT PACXX_DIR)
     message(FATAL_ERROR
-            "PACXX - Not found! (please set PACXX_ROOT)")
+            "PACXX - Not found! (please set PACXX_DIR)")
 else ()
     message(STATUS "PACXX - Found")
 endif ()
 
-set(PACXX_ROOT ${PACXX_ROOT} CACHE PATH "Path to PACXX")
+set(PACXX_DIR ${PACXX_DIR} CACHE PATH "Path to PACXX")
 
 if (NOT CUDA_FOUND)
 if (CUDA_REQUIRED)
@@ -26,15 +26,18 @@ endif ()
 endif ()
 
 if (HIP_REQUIRED)
-  if (NOT TARGET hsa-runtime64) # Workaround since HCC always wants to define this target)
-    find_package(HIP REQUIRED)
-  endif()
+	if (NOT ROCM_DIR)
+		message(FATAL_ERROR
+				"ROCm - Not found! (please set ROCM_DIR)")
+	else ()
+		message(STATUS "ROCm - Found")
+	endif ()
     if (HIP_FOUND)
-        include_directories(${HSA_HEADER})
+        include_directories(${ROCM_DIR}/include)
     endif ()
 
-    link_directories(${HIP_DIR}/../../../../lib)
-    set(HIP_LINK_LIBRARIES ${HSA_LIBRARY} hip_hcc hc_am)
+    link_directories(${ROCM_DIR}/lib)
+    set(HIP_LINK_LIBRARIES hsa-runtime64 hip_hcc hc_am)
 endif()
 
 if (OpenMP_REQUIRED)
@@ -51,7 +54,7 @@ endif ()
 
 # Set the path to llvm-config
 find_program(PACXX_LLVM_CONFIG llvm-config PATHS 
-  ${PACXX_ROOT} PATH_SUFFIXES bin NO_DEFAULT_PATH)
+  ${PACXX_DIR} PATH_SUFFIXES bin NO_DEFAULT_PATH)
 if (EXISTS ${PACXX_LLVM_CONFIG})
     mark_as_advanced(PACXX_LLVM_CONFIG)
     message(STATUS "llvm-config (PACXX) - Found")
@@ -90,7 +93,7 @@ endif ()
 
 
 find_program(PACXX_COMPILER clang++ PATHS 
-  ${PACXX_ROOT} PATH_SUFFIXES bin NO_DEFAULT_PATH)
+  ${PACXX_DIR} PATH_SUFFIXES bin NO_DEFAULT_PATH)
 if (EXISTS ${PACXX_COMPILER})
     message(STATUS "clang location: ${PACXX_COMPILER}")
     mark_as_advanced(PACXX_COMPILER)
@@ -100,7 +103,7 @@ else ()
 endif ()
 
 find_program(PACXX_LINK llvm-link PATHS 
-  ${PACXX_ROOT} PATH_SUFFIXES bin NO_DEFAULT_PATH)
+  ${PACXX_DIR} PATH_SUFFIXES bin NO_DEFAULT_PATH)
 if (EXISTS ${PACXX_LINK})
     mark_as_advanced(PACXX_LINK)
     message(STATUS "llvm-link (PACXX) - Found")
@@ -108,10 +111,10 @@ else ()
     message(FATAL_ERROR "llvm-link (PACXX) - Not found! (${PACXX_LINK})")
 endif ()
 
-find_program(PACXX_OPT opt PATHS ${PACXX_ROOT}/bin NO_DEFAULT_PATH)
+find_program(PACXX_OPT opt PATHS ${PACXX_DIR}/bin NO_DEFAULT_PATH)
 if (EXISTS ${PACXX_OPT})
     message(STATUS "opt location: ${PACXX_OPT}")
-    message(STATUS "pacxx: ${PACXX_ROOT}")
+    message(STATUS "pacxx: ${PACXX_DIR}")
     mark_as_advanced(PACXX_OPT)
     message(STATUS "opt (PACXX) - Found")
 else ()
@@ -119,8 +122,8 @@ else ()
 endif ()
 
 
-find_library(PACXX_RUNTIME_LIBRARY pacxxrt2 PATHS ${PACXX_ROOT}
-        HINTS ${PACXX_ROOT}/lib PATH_SUFFIXES lib
+find_library(PACXX_RUNTIME_LIBRARY pacxxrt2 PATHS ${PACXX_DIR}
+        HINTS ${PACXX_DIR}/lib PATH_SUFFIXES lib
         DOC "PACXX Runtime Library" NO_DEFAULT_PATH)
 
 if (EXISTS ${PACXX_RUNTIME_LIBRARY})
@@ -130,8 +133,8 @@ else ()
     message(FATAL_ERROR "libpacxxrt2 - Not found!")
 endif ()
 
-find_library(PACXX_RV_LIBRARY RV PATHS ${PACXX_ROOT}
-        HINTS ${PACXX_ROOT}/lib PATH_SUFFIXES lib
+find_library(PACXX_RV_LIBRARY RV PATHS ${PACXX_DIR}
+        HINTS ${PACXX_DIR}/lib PATH_SUFFIXES lib
         DOC "Region Vectorizer Library" NO_DEFAULT_PATH)
 
 if (EXISTS ${PACXX_RV_LIBRARY})
@@ -142,8 +145,8 @@ else ()
 endif ()
 
 
-find_file(PACXX_ASM_WRAPPER embed.S PATHS ${PACXX_ROOT}
-        HINTS ${PACXX_ROOT}/lib PATH_SUFFIXES lib
+find_file(PACXX_ASM_WRAPPER embed.S PATHS ${PACXX_DIR}
+        HINTS ${PACXX_DIR}/lib PATH_SUFFIXES lib
         DOC "PACXX Wrapper Assembly File" NO_DEFAULT_PATH)
 
 if (EXISTS ${PACXX_ASM_WRAPPER})
@@ -154,7 +157,7 @@ else ()
 endif ()
 
 
-set(PACXX_INCLUDE_DIRECTORY ${PACXX_ROOT}/include)
+set(PACXX_INCLUDE_DIRECTORY ${PACXX_DIR}/include)
 if (NOT EXISTS ${PACXX_INCLUDE_DIRECTORY})
     message(FATAL_ERROR "PACXX includes - Not found!")
 else ()

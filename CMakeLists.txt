@@ -1,11 +1,7 @@
 cmake_minimum_required(VERSION 3.0)
 project(pacxxrt2)
 
-set(CMAKE_MODULE_PATH ${HIP_ROOT})
-#set(LLVM_DIR $ENV{PACXX_PATH}/lib/cmake/llvm/)
-#find_package(LLVM REQUIRED CONFIG)
 find_package(CUDA)
-find_package(HIP)
 
 if (NOT WIN32)
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/pacxx/FindTBB.cmake)
@@ -40,7 +36,7 @@ endif ()
 
 option(PACXX_USE_OpenMP "use OpenMP instead of TBB" ${ENABLE_OPENMP})
 option(PACXX_USE_CUDA "Build the CUDA backend" ${CUDA_FOUND})
-option(PACXX_USE_HIP "Build the ROCM/HIP backend" ${HIP_FOUND})
+option(PACXX_USE_HIP "Build the ROCM/HIP backend" OFF)
 
 if(PACXX_USE_OpenMP)
     add_compile_options(-fopenmp)
@@ -51,10 +47,8 @@ else ()
     set(TBB_REQUIRED ON)
 endif(PACXX_USE_OpenMP)
 
-message("HIP found:" ${HIP_FOUND})
 #option(BUILD_SHARED "Build PACXX Runtime as shared object" OFF)
 set(PACXX_RV_LIB RV)
-
 
 set(SOURCE_FILES include/pacxx/Executor.h
         include/pacxx/detail/common/Exceptions.h
@@ -154,16 +148,15 @@ endif (PACXX_USE_CUDA)
 
 
 if (PACXX_USE_HIP)
-find_package(HIP REQUIRED)
-find_package(CUDA)
-
-if (CUDA_FOUND)
-  include_directories(${CUDA_TOOLKIT_INCLUDE})
-  set (CUDA_LINK_LIBRARIES ${CUDA_LIBRARIES})
-endif()
-
+	if (NOT ROCM_DIR)
+		message(FATAL_ERROR
+				"ROCm - Not found! (please set ROCM_DIR)")
+	else ()
+		message(STATUS "ROCm - Found")
+	endif ()
 set(PACXX_HIP_BACKEND 1)
-include_directories(${HSA_HEADER})
+include_directories(${ROCM_DIR}/include)
+link_directories(${ROCM_DIR}/lib)
 set(HIP_SOURCE_FILES
         include/pacxx/detail/rocm/HIPRuntime.h
         lib/rocm/HIPRuntime.cpp
@@ -181,13 +174,6 @@ set(HIP_REQUIRED ON)
 set(HIP_LINK_LIBRARIES "-lhsa-runtime64 -lhip_hcc -lhc_am")
 
 set(LLD_LIBS lldCOFF lldDriver lldELF lldMinGW)
-
-if (BUILD_SHARED)
-    set(HIP_USE_SHARED_RT ON)
-    set(HIP_USE_STATIC_HIP_RUNTIME OFF CACHE BOOL "" FORCE) # unfortunately, this gets overwritten in FindHIP.cmake, so we have to force set it again
-else ()
-    set(HIP_USE_SHARED_RT OFF)
-endif ()
 
 else (PACXX_USE_HIP)
 set(HIP_REQUIRED OFF)
