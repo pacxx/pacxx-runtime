@@ -1,6 +1,5 @@
 cmake_minimum_required(VERSION 3.5)
 
-include(FindPACXXConfig)
 
 if (NOT PACXX_DIR)
     message(FATAL_ERROR
@@ -10,6 +9,8 @@ else ()
 endif ()
 
 set(PACXX_DIR ${PACXX_DIR} CACHE PATH "Path to PACXX")
+
+include(${PACXX_DIR}/lib/cmake/pacxx/FindPACXXConfig.cmake)
 
 if (NOT CUDA_FOUND)
 if (CUDA_REQUIRED)
@@ -26,6 +27,7 @@ endif ()
 endif ()
 
 if (HIP_REQUIRED)
+	set(ROCM_DIR ${ROCM_DIR} CACHE PATH "Path to ROCm")
 	if (NOT ROCM_DIR)
 		message(FATAL_ERROR
 				"ROCm - Not found! (please set ROCM_DIR)")
@@ -49,7 +51,7 @@ if (OpenMP_REQUIRED)
 endif ()
 
 if (TBB_REQUIRED)
-    find_package(TBB REQUIRED)
+    include(${PACXX_DIR}/lib/cmake/pacxx/FindTBB.cmake)
 endif ()
 
 # Set the path to llvm-config
