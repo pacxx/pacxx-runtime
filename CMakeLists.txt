@@ -36,7 +36,7 @@ endif ()
 
 option(PACXX_USE_OpenMP "use OpenMP instead of TBB" ${ENABLE_OPENMP})
 option(PACXX_USE_CUDA "Build the CUDA backend" ${CUDA_FOUND})
-option(PACXX_USE_HIP "Build the ROCM/HIP backend" OFF)
+option(PACXX_USE_HIP "Build the ROCM/HIP backend" ${HIP_FOUND})
 
 if(PACXX_USE_OpenMP)
     add_compile_options(-fopenmp)
