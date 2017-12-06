@@ -130,7 +130,7 @@ std::unique_ptr<llvm::Module> HSACOBackend::prepareModule(llvm::Module &M) {
   PM.add(createIntrinsicSchedulerPass());
 
   PM.add(createTargetSelectionPass({"GPU", "Generic"}));
-  // PM.add(createAddressSpaceTransformPass());
+  PM.add(createAddressSpaceTransformPass());
   // PM.add(createLoadMotionPass());
   PM.add(createMSPRemoverPass());
 
@@ -169,8 +169,8 @@ std::unique_ptr<llvm::Module> HSACOBackend::prepareModule(llvm::Module &M) {
 std::string HSACOBackend::compile(llvm::Module &M) {
   Triple TheTriple = Triple(M.getTargetTriple());
   std::string Error;
-  SmallString<128> ptxString;
-  llvm::raw_svector_ostream _ptxOS(ptxString);
+  SmallString<128> hsaString;
+  llvm::raw_svector_ostream _ptxOS(hsaString);
   if (!_target)
     _target = TargetRegistry::lookupTarget("amdgcn", TheTriple, Error);
   if (!_target) {
@@ -182,26 +182,28 @@ std::string HSACOBackend::compile(llvm::Module &M) {
   PassManagerBuilder builder;
   builder.OptLevel = 3;
   builder.populateModulePassManager(PM);
+  PM.run(M); 
 
+  llvm::legacy::PassManager lowerPM;
   _machine.reset(_target->createTargetMachine(
       TheTriple.getTriple(), _cpu, _features, _options, Reloc::Model::Static,
       CodeModel::Model::Medium, CodeGenOpt::Aggressive));
 
-  if (_machine->addPassesToEmitFile(PM, _ptxOS, TargetMachine::CGFT_ObjectFile,
+  if (_machine->addPassesToEmitFile(lowerPM, _ptxOS, TargetMachine::CGFT_ObjectFile,
                                     false)) {
     throw std::logic_error(
         "target does not support generation of this file type!\n");
   }
 
-  PM.run(M);
+  lowerPM.run(M);
 
   if (common::GetEnv("PACXX_DUMP_FINAL_IR") != "") {
     M.dump();
   }
 
-  auto ptx = ptxString.str().str();
+  auto hsa = hsaString.str().str();
   std::ofstream out(".pacxx.isabin");
-  out << ptx;
+  out << hsa;
 
   std::vector<const char *> args;
 

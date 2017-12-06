@@ -253,7 +253,7 @@ struct AddressSpaceTransform : public ModulePass {
     });
 
     // handle parameters to bring them into AS 1
-    if (M.getTargetTriple().find("nvptx") != std::string::npos) {
+    if (!M.getTargetTriple().find("nvptx") != std::string::npos) {
       for (auto &F : kernels) {
         visitor.visit(F);
 
@@ -463,6 +463,7 @@ struct AddressSpaceTransform : public ModulePass {
       GV->replaceAllUsesWith(UndefValue::get(GV->getType()));
       GV->eraseFromParent();
     }
+    M.dump();
     return modified;
   }
 };
