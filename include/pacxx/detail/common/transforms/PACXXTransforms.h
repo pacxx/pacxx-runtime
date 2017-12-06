@@ -148,9 +148,6 @@ PTy getTagedFunction(MDNode *MD, StringRef desc) {
   return PTy(nullptr, -1);
 }
 
-
-
-
 template <typename CTy = std::set<Function *>>
 CTy getTagedFunctions(Module *M, StringRef twine, StringRef desc) {
   CTy functions;

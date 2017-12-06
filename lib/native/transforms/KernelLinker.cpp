@@ -489,7 +489,7 @@ bool KernelLinker::isCorrectId(Instruction *inst, IdType id) {
 
 void KernelLinker::markWrapperAsKernel(Module &M, Function *wrapper, bool vectorized) {
   LLVMContext &ctx = M.getContext();
-  NamedMDNode *MD = M.getOrInsertNamedMetadata("nvvm.annotations");
+  NamedMDNode *MD = M.getOrInsertNamedMetadata("nvvm.anntations");
   SmallVector < Metadata * , 3 > MDVals;
   MDVals.push_back(ConstantAsMetadata::get(wrapper));
   MDVals.push_back(MDString::get(ctx, "kernel"));

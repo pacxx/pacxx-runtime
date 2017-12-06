@@ -25,9 +25,8 @@ void SMGeneration::getAnalysisUsage(AnalysisUsage &AU) const {}
 bool SMGeneration::runOnModule(Module &M) {
 
     __verbose("Generating shared memory \n");
-
     auto kernels = pacxx::getKernels(&M);
-
+    __message(kernels.size());
     for(auto &kernel : kernels) {
         runOnKernel(kernel);
     }
@@ -75,7 +74,7 @@ set<GlobalVariable *> SMGeneration::getSMGlobalsUsedByKernel(Module *M, Function
     set<GlobalVariable *> sm;
     for (auto &GV : M->globals()) {
         bool consider = false;
-        if(GV.hasMetadata() && GV.getMetadata("pacxx.as.shared")) {
+       if(GV.hasMetadata() && GV.getMetadata("pacxx.as.shared")) {
             Type *sm_type = GV.getType()->getElementType();
             consider = internal ? sm_type->getArrayNumElements() != 0 : sm_type->getArrayNumElements() == 0;
         }
