@@ -7,15 +7,16 @@
 //
 //===----------------------------------------------------------------------===//
 
+#include "pacxx/detail/common/ExecutorHelper.h"
 #include "pacxx/Executor.h"
-#include "pacxx/detail/common/Common.h"
+#include <llvm/IR/Module.h>
 
-namespace pacxx{
+namespace pacxx {
 namespace v2 {
 
-void pacxxTearDown(){
-  auto &executors = Executor::getExecutors();
-  delete &executors;
+void pacxxTearDown() {
+  auto executors = getExecutorMemory();
+  delete executors;
 }
-}
-}
+} // namespace v2
+} // namespace pacxx

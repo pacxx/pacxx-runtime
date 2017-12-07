@@ -39,7 +39,7 @@ public:
       } else {
         if (F == cand) {
           auto op = I.getArgOperand(0);
-          if (auto CI = dyn_cast<llvm::ConstantInt>(op)) {
+          if (auto CI = llvm::dyn_cast<llvm::ConstantInt>(op)) {
             if (static_cast<unsigned>(*(CI->getValue().getRawData())) == value)
               found.push_back(&I);
           }

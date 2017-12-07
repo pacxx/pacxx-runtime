@@ -15,6 +15,7 @@
 #include "Kernel.h"
 #include <string>
 #include <vector>
+#include <memory>
 #include "pacxx/detail/msp/MSPEngine.h"
 
 namespace llvm {

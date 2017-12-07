@@ -10,7 +10,6 @@
 #include "pacxx/detail/cuda/CUDAErrorDetection.h"
 #include "pacxx/detail/cuda/CUDARuntime.h"
 #include "pacxx/detail/common/Exceptions.h"
-#include "pacxx/detail/common/LLVMHelper.h"
 #include "pacxx/detail/common/Timing.h"
 #include <llvm/IR/Constants.h>
 #include <llvm/IR/Intrinsics.h>
