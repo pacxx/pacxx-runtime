@@ -55,8 +55,6 @@ const char *__moduleStart(const char *start = nullptr);
 
 const char *__moduleEnd(const char *end = nullptr);
 
-void registerModule(const char *start, const char *end);
-
 class Executor;
 
 enum ExecutingDevice { GPUNvidia, CPU, GPUAMD };

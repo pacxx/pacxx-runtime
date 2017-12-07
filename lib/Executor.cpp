@@ -20,7 +20,7 @@ std::vector<Executor> *getExecutorMemory() {
   return executors; // TODO: free resources at application's exit
 }
 
-std::vector<Executor> &Executor::getExecutors() { *getExecutorMemory(); }
+std::vector<Executor> &Executor::getExecutors() { return *getExecutorMemory(); }
 
 Executor::Executor(std::unique_ptr<IRRuntime> &&rt)
     : _ctx(new LLVMContext()), _runtime(std::move(rt)) {
