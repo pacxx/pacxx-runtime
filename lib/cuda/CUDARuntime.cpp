@@ -12,10 +12,11 @@
 #include "pacxx/detail/common/Exceptions.h"
 #include "pacxx/detail/common/LLVMHelper.h"
 #include "pacxx/detail/common/Timing.h"
+#include <llvm/IR/Module.h>
 #include <llvm/IR/Constants.h>
 #include <llvm/IR/Intrinsics.h>
 #include <llvm/Transforms/Utils/Cloning.h>
-
+#include <llvm/Target/TargetMachine.h>
 #include <llvm/Transforms/Scalar.h>
 #include <llvm/Transforms/Vectorize.h>
 

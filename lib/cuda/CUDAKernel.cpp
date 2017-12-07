@@ -11,6 +11,8 @@
 #include "pacxx/detail/common/Log.h"
 #include "pacxx/detail/cuda/CUDAErrorDetection.h"
 #include "pacxx/detail/cuda/CUDARuntime.h"
+#include <llvm/IR/Module.h>
+#include <llvm/Target/TargetMachine.h>
 #include <cuda.h>
 
 namespace pacxx {

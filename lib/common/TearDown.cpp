@@ -9,6 +9,7 @@
 
 #include "pacxx/Executor.h"
 #include "pacxx/detail/common/Common.h"
+#include <llvm/Target/TargetMachine.h>
 
 namespace pacxx{
 namespace v2 {

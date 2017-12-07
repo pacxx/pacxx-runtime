@@ -11,6 +11,8 @@
 #include "pacxx/detail/common/Log.h"
 #include "pacxx/detail/rocm/HIPErrorDetection.h"
 #include "pacxx/detail/rocm/HIPRuntime.h"
+#include <llvm/IR/Module.h>
+#include <llvm/Target/TargetMachine.h>
 #include <hip/hip_runtime.h>
 
 namespace pacxx {
