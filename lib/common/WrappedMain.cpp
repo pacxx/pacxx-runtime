@@ -8,7 +8,7 @@
 //===----------------------------------------------------------------------===//
 
 #include "pacxx/detail/common/TearDown.h"
-#include "pacxx/Executor.h"
+#include "pacxx/detail/common/ExecutorHelper.h"
 
 extern const char llvm_start[];
 extern const char llvm_end[];
