@@ -15,6 +15,8 @@ namespace v2 {
 
 IRRuntime::IRRuntime(RuntimeKind kind) : _kind(kind), _msp_engine() {}
 
+IRRuntime::~IRRuntime(){}
+
 void IRRuntime::initializeMSP(std::unique_ptr<llvm::Module> M) {
   if (!_msp_engine.isDisabled())
     return;
