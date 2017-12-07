@@ -16,6 +16,7 @@
 #include <map>
 #include <memory>
 #include <string>
+#include <algorithm>
 
 // forward declarations of cuda driver structs
 struct ihipCtx_t;

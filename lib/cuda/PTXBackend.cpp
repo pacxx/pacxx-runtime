@@ -54,6 +54,8 @@ namespace v2 {
 PTXBackend::PTXBackend()
     : _target(nullptr), _cpu("sm_20"), _features("+ptx40") {}
 
+PTXBackend::~PTXBackend(){}
+
 void PTXBackend::initialize(unsigned CC) {
   _cpu = "sm_" + std::to_string(CC);
   __verbose("Intializing LLVM components for PTX generation!");

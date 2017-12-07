@@ -23,7 +23,7 @@ class PTXBackend {
 public:
   PTXBackend();
 
-  ~PTXBackend() {}
+  ~PTXBackend();
 
   void initialize(unsigned CC);
 

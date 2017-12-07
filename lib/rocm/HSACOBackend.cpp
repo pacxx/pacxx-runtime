@@ -57,6 +57,8 @@ namespace v2 {
 HSACOBackend::HSACOBackend()
     : _target(nullptr), _cpu("gfx803"), _features("") {}
 
+HSACOBackend::~HSACOBackend(){}
+
 void HSACOBackend::initialize(unsigned gfx) {
   _gcnArch = gfx;
   _cpu = "gfx" + std::to_string(gfx);

@@ -35,11 +35,16 @@
 #include "pacxx/detail/rocm/HIPEvent.h" // TODO: move event create to the runtimes
 #include <algorithm>
 #include <cstdlib>
-#include <llvm/IR/Constants.h>
-#include <llvm/IR/Module.h>
 #include <memory>
 #include <regex>
 #include <string>
+
+#include <llvm/Support/Casting.h>
+
+namespace llvm {
+	class LLVMContext;
+	class Module;
+}
 
 // set the default backend
 #ifndef PACXX_ENABLE_CUDA
@@ -193,24 +198,7 @@ private:
   auto &get_kernel_by_name(std::string name, KernelConfiguration config,
                            const L &lambda) {
 
-    std::string FName;
-    const llvm::Module &M = _runtime->getModule();
-    auto it = _kernel_translation.find(name);
-    if (it == _kernel_translation.end()) {
-      auto clean_name = cleanName(name);
-      for (auto &p : _kernel_translation)
-        if (p.first.find(clean_name) != std::string::npos) {
-          FName = p.second;
-          //_kernel_translation[name] = F.getName().str();
-        }
-    } else
-      FName = it->second;
-
-    auto F = M.getFunction(FName);
-    if (!F) {
-      throw common::generic_exception("Kernel function not found in module! " +
-                                      cleanName(name));
-    }
+	  std::string FName = getFNameForLambda(name);
 
     auto &K = _runtime->getKernel(FName);
     // K.setName(FName);
@@ -235,15 +223,15 @@ public:
     switch (_runtime->getKind()) {
 #ifdef PACXX_ENABLE_CUDA
     case IRRuntime::RuntimeKind::RK_CUDA:
-      return *cast<CUDARuntime>(_runtime.get())
+      return *llvm::cast<CUDARuntime>(_runtime.get())
                   ->template allocateMemory(count, host_ptr, mode);
 #endif
     case IRRuntime::RuntimeKind::RK_Native:
-      return *cast<NativeRuntime>(_runtime.get())
+      return *llvm::cast<NativeRuntime>(_runtime.get())
                   ->template allocateMemory(count, host_ptr, mode);
 #ifdef PACXX_ENABLE_HIP
     case IRRuntime::RuntimeKind::RK_HIP:
-      return *cast<HIPRuntime>(_runtime.get())
+      return *llvm::cast<HIPRuntime>(_runtime.get())
                   ->template allocateMemory(count, host_ptr, mode);
 #endif
     default:
@@ -260,15 +248,15 @@ public:
     switch (_runtime->getKind()) {
 #ifdef PACXX_ENABLE_CUDA
     case IRRuntime::RuntimeKind::RK_CUDA:
-      cast<CUDARuntime>(_runtime.get())->template deleteMemory(&buffer);
+      llvm::cast<CUDARuntime>(_runtime.get())->template deleteMemory(&buffer);
       break;
 #endif
     case IRRuntime::RuntimeKind::RK_Native:
-      cast<NativeRuntime>(_runtime.get())->template deleteMemory(&buffer);
+      llvm::cast<NativeRuntime>(_runtime.get())->template deleteMemory(&buffer);
       break;
 #ifdef PACXX_ENABLE_HIP
     case IRRuntime::RuntimeKind::RK_HIP:
-      cast<HIPRuntime>(_runtime.get())->template deleteMemory(&buffer);
+      llvm::cast<HIPRuntime>(_runtime.get())->template deleteMemory(&buffer);
       break;
 #endif
     default:
@@ -298,7 +286,7 @@ public:
     delete &instance;
   }
 
-  LLVMContext &getLLVMContext() { return *_ctx; }
+  llvm::LLVMContext &getLLVMContext() { return *_ctx; }
 
   Event &createEvent() {
     _events.emplace_back();
@@ -324,7 +312,10 @@ public:
   }
 
 private:
-  std::unique_ptr<LLVMContext> _ctx;
+
+	std::string getFNameForLambda(std::string name);
+
+  std::unique_ptr<llvm::LLVMContext> _ctx;
   std::unique_ptr<IRRuntime> _runtime;
   std::map<std::string, std::string> _kernel_translation;
   std::vector<std::unique_ptr<Event>> _events;

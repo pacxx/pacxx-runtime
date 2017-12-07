@@ -18,7 +18,7 @@ class HSACOBackend {
 public:
   HSACOBackend();
 
-  ~HSACOBackend() {}
+  ~HSACOBackend();
 
   void initialize(unsigned gfx);
 

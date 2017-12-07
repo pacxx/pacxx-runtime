@@ -9,7 +9,10 @@
 
 #include "pacxx/Executor.h"
 #include "pacxx/detail/common/ExecutorHelper.h"
+#include <llvm/IR/Module.h>
 #include <llvm/Target/TargetMachine.h>
+
+using namespace llvm;
 
 namespace pacxx {
 namespace v2 {
@@ -54,10 +57,14 @@ ExecutingDevice Executor::getExecutingDeviceType() {
 #endif
   case IRRuntime::RuntimeKind::RK_Native:
     return ExecutingDevice::CPU;
+#ifdef PACXX_ENABLE_HIP
   case IRRuntime::RuntimeKind::RK_HIP:
     return ExecutingDevice::GPUAMD;
+#endif
+  default:
+	  break;
   }
-  llvm_unreachable("unknown runtime kind");
+  llvm_unreachable("unknown runtime kind maybe the runtime is not linked in");
 }
 
 size_t Executor::getConcurrentCores() { return _runtime->getConcurrentCores(); }
@@ -93,6 +100,30 @@ void Executor::freeRaw(RawDeviceBuffer &buffer) {
 IRRuntime &Executor::rt() { return *_runtime; }
 
 void Executor::synchronize() { _runtime->synchronize(); }
+
+std::string Executor::getFNameForLambda(std::string name)
+{
+	std::string FName;
+	const llvm::Module &M = _runtime->getModule();
+	auto it = _kernel_translation.find(name);
+	if (it == _kernel_translation.end()) {
+		auto clean_name = cleanName(name);
+		for (auto &p : _kernel_translation)
+			if (p.first.find(clean_name) != std::string::npos) {
+				FName = p.second;
+				//_kernel_translation[name] = F.getName().str();
+			}
+	}
+	else
+		FName = it->second;
+
+	auto F = M.getFunction(FName);
+	if (!F) {
+		throw common::generic_exception("Kernel function not found in module! " +
+			cleanName(name));
+	}
+	return FName;
+}
 
 const char *__moduleStart(const char *start) {
   static const char *ptr = nullptr;

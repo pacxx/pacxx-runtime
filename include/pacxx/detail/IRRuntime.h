@@ -15,6 +15,7 @@
 #include "Kernel.h"
 #include <string>
 #include <vector>
+#include <memory>
 #include "pacxx/detail/msp/MSPEngine.h"
 
 namespace llvm {
@@ -42,7 +43,7 @@ public:
 
   IRRuntime(RuntimeKind kind);
 
-  virtual ~IRRuntime(){};
+  virtual ~IRRuntime();
 
   virtual void link(std::unique_ptr<llvm::Module> M) = 0;
 

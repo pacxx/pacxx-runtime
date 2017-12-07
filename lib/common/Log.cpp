@@ -7,18 +7,26 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "include/pacxx/detail/common/Log.h"
+#include "pacxx/detail/common/Log.h"
+#include <sstream>
+#include <string>
+
+#include <llvm/IR/Value.h>
+#include <llvm/Support/SourceMgr.h>
+#include <llvm/Support/raw_ostream.h>
+
+using namespace llvm;
+
 namespace pacxx {
 namespace common {
-//  static Log* the_log = nullptr;
-//
-//  __attribute__((constructor)) static void intializeLogging() {
-//    the_log = new Log();
-//  }
-//
-//  __attribute__((destructor)) static void shutdownLogging() {
-//    delete the_log;
-//  }
+
+void dumpToLog(const llvm::Value &V, std::string prefix, const char *file,
+               int line) {
+  std::string str;
+  llvm::raw_string_ostream ss(str);
+  V.print(ss);
+  pacxx_log_print<LOG_LEVEL::verbose>(file, line, "[", prefix, "] ", ss.str());
+}
 
 Log &Log::get() {
   static Log the_log;
@@ -35,5 +43,34 @@ Log::Log() : _silent(false), _no_warnings(false), output(std::cout) {
 }
 
 Log::~Log() { resetStream(); }
+
+void Log::printDiagnositc(const std::string &program,
+                          const std::stringstream &file_line,
+                          const std::string &msg_str,
+                          LOG_LEVEL::LEVEL debug_level) {
+  SourceMgr::DiagKind kind = SourceMgr::DiagKind::DK_Note;
+
+  switch (debug_level) {
+  case LOG_LEVEL::exception:
+  case LOG_LEVEL::fatal:
+  case LOG_LEVEL::error:
+    kind = SourceMgr::DiagKind::DK_Error;
+    break;
+  case LOG_LEVEL::warning:
+    if (_no_warnings)
+      return;
+    kind = SourceMgr::DiagKind::DK_Warning;
+    break;
+  default:
+    break;
+  }
+
+  SMDiagnostic msg(file_line.str(), kind, msg_str);
+
+  if (kind == SourceMgr::DiagKind::DK_Error)
+    msg.print(program.c_str(), errs());
+  else
+    msg.print(program.c_str(), outs());
 }
-}
+} // namespace common
+} // namespace pacxx

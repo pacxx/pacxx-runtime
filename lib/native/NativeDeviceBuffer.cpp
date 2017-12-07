@@ -9,7 +9,8 @@
 
 #include "pacxx/detail/native/NativeDeviceBuffer.h"
 #include "pacxx/detail/common/Exceptions.h"
-#include <malloc.h>
+#include <cstdlib>
+#include <cstring>
 
 namespace pacxx {
 namespace v2 {

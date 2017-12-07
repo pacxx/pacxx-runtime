@@ -14,6 +14,7 @@
 #include "pacxx/detail/common/Log.h"
 #include "pacxx/detail/common/Meta.h"
 #include <set>
+#include <memory>
 
 #include "../KernelArgument.h"
 

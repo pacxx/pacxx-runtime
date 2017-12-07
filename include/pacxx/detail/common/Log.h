@@ -36,8 +36,8 @@ struct LOG_LEVEL {
     none = -999
   };
 };
-}
-}
+} // namespace common
+} // namespace pacxx
 
 template <pacxx::common::LOG_LEVEL::LEVEL debug_level =
               pacxx::common::LOG_LEVEL::info,
@@ -96,24 +96,19 @@ static void pacxx_log_print(const char *file, int line, Params &&... args);
 #include <sstream>
 #include <string>
 
-#include "llvm/Support/SourceMgr.h"
-#include "llvm/Support/raw_ostream.h"
-
 #include "Common.h"
 #include "TearDown.h"
-using namespace llvm;
+
+namespace llvm {
+class Value;
+}
 
 namespace pacxx {
 
 namespace common {
-template <typename T>
-void dumpToLog(const T &V, std::string prefix = "", const char *file = "",
-               int line = 0) {
-  std::string str;
-  raw_string_ostream ss(str);
-  V.print(ss);
-  pacxx_log_print<LOG_LEVEL::verbose>(file, line, "[", prefix, "] ", ss.str());
-}
+
+void dumpToLog(const llvm::Value &V, std::string prefix = "",
+               const char *file = "", int line = 0);
 
 //  static void intializeLogging();
 //  static void shutdownLogging();
@@ -148,21 +143,19 @@ public:
 
     std::string program("");
 
-    SourceMgr::DiagKind kind = SourceMgr::DiagKind::DK_Note;
+    size_t label_length = 5;
 
     switch (debug_level) {
     case LOG_LEVEL::exception:
       ss << "EXCEPTION: ";
-      kind = SourceMgr::DiagKind::DK_Error;
-      break;
     case LOG_LEVEL::fatal:
     case LOG_LEVEL::error:
-      kind = SourceMgr::DiagKind::DK_Error;
+      label_length = 6;
       break;
     case LOG_LEVEL::warning:
       if (_no_warnings)
         return;
-      kind = SourceMgr::DiagKind::DK_Warning;
+      label_length = 8;
       break;
     case LOG_LEVEL::info:
       break;
@@ -176,22 +169,6 @@ public:
       break;
     }
 
-    size_t label_length = 0;
-
-    switch (kind) {
-    case SourceMgr::DiagKind::DK_Note:
-      label_length = 5;
-      break;
-    case SourceMgr::DiagKind::DK_Warning:
-      label_length = 8;
-      break;
-    case SourceMgr::DiagKind::DK_Error:
-      label_length = 6;
-      break;
-    default: 
-      break;
-    }
-
     size_t offset =
         file_line.str().length() + 2 + label_length + 1 + ss.str().length();
 
@@ -202,16 +179,15 @@ public:
     std::string msg_str =
         common::replace_substring(ss.str(), "\n", "\n" + replacement);
 
-    SMDiagnostic msg(file_line.str(), kind, msg_str);
-
-
-    if (kind == SourceMgr::DiagKind::DK_Error)
-      msg.print(program.c_str(), errs());
-    else
-      msg.print(program.c_str(), outs());
+    printDiagnositc(program, file_line, msg_str, debug_level);
   }
 
 private:
+  void printDiagnositc(const std::string &program,
+                       const std::stringstream &file_line,
+                       const std::string &msg_str,
+                       LOG_LEVEL::LEVEL debug_level);
+
   template <typename T, typename... Params>
   void printValue(std::stringstream &ss, T &&first, Params &&... other) {
     ss << first;
@@ -230,8 +206,8 @@ private:
   std::ostream &output;
   std::streambuf *_old_buffer;
 };
-}
-}
+} // namespace common
+} // namespace pacxx
 
 template <pacxx::common::LOG_LEVEL::LEVEL debug_level, typename... Params>
 static void pacxx_log_print(const char *file, int line, Params &&... args) {
