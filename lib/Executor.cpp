@@ -9,6 +9,7 @@
 
 #include "pacxx/Executor.h"
 #include "pacxx/detail/common/ExecutorHelper.h"
+#include "pacxx/ModuleLoader.h"
 #include <llvm/IR/Module.h>
 #include <llvm/Target/TargetMachine.h>
 
@@ -18,7 +19,6 @@ namespace pacxx {
 namespace v2 {
 
 std::vector<Executor> *getExecutorMemory() {
-
   static std::vector<Executor> *executors = new std::vector<Executor>();
   return executors; // TODO: free resources at application's exit
 }
@@ -62,7 +62,7 @@ ExecutingDevice Executor::getExecutingDeviceType() {
     return ExecutingDevice::GPUAMD;
 #endif
   default:
-	  break;
+    break;
   }
   llvm_unreachable("unknown runtime kind maybe the runtime is not linked in");
 }
@@ -101,28 +101,26 @@ IRRuntime &Executor::rt() { return *_runtime; }
 
 void Executor::synchronize() { _runtime->synchronize(); }
 
-std::string Executor::getFNameForLambda(std::string name)
-{
-	std::string FName;
-	const llvm::Module &M = _runtime->getModule();
-	auto it = _kernel_translation.find(name);
-	if (it == _kernel_translation.end()) {
-		auto clean_name = cleanName(name);
-		for (auto &p : _kernel_translation)
-			if (p.first.find(clean_name) != std::string::npos) {
-				FName = p.second;
-				//_kernel_translation[name] = F.getName().str();
-			}
-	}
-	else
-		FName = it->second;
+std::string Executor::getFNameForLambda(std::string name) {
+  std::string FName;
+  const llvm::Module &M = _runtime->getModule();
+  auto it = _kernel_translation.find(name);
+  if (it == _kernel_translation.end()) {
+    auto clean_name = cleanName(name);
+    for (auto &p : _kernel_translation)
+      if (p.first.find(clean_name) != std::string::npos) {
+        FName = p.second;
+        //_kernel_translation[name] = F.getName().str();
+      }
+  } else
+    FName = it->second;
 
-	auto F = M.getFunction(FName);
-	if (!F) {
-		throw common::generic_exception("Kernel function not found in module! " +
-			cleanName(name));
-	}
-	return FName;
+  auto F = M.getFunction(FName);
+  if (!F) {
+    throw common::generic_exception("Kernel function not found in module! " +
+                                    cleanName(name));
+  }
+  return FName;
 }
 
 const char *__moduleStart(const char *start) {
@@ -143,6 +141,11 @@ void registerModule(const char *start, const char *end) {
   __moduleStart(start);
   __moduleEnd(end);
 }
+void intializeModule(Executor &exec) {
+  ModuleLoader loader(exec.getLLVMContext());
+  auto M =
+      loader.loadInternal(__moduleStart(), __moduleEnd() - __moduleStart());
+  exec.setModule(std::move(M));
+}
 } // namespace v2
 } // namespace pacxx
-

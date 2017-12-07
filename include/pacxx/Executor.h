@@ -10,7 +10,6 @@
 #ifndef PACXX_V2_EXECUTOR_H
 #define PACXX_V2_EXECUTOR_H
 
-#include "ModuleLoader.h"
 #include "Promise.h"
 #include "pacxx/detail/CoreInitializer.h"
 #include "pacxx/detail/DeviceBuffer.h"
@@ -42,9 +41,9 @@
 #include <llvm/Support/Casting.h>
 
 namespace llvm {
-	class LLVMContext;
-	class Module;
-}
+class LLVMContext;
+class Module;
+} // namespace llvm
 
 // set the default backend
 #ifndef PACXX_ENABLE_CUDA
@@ -70,6 +69,7 @@ Executor &get_executor(Ts... args);
 
 class Executor {
 public:
+  friend void intializeModule(Executor &exec);
   static std::vector<Executor> &getExecutors();
 
   static Executor &get(unsigned id = 0) {
@@ -132,12 +132,7 @@ public:
 
     instance._id = executors.size() - 1;
     __verbose("Created new Executor with id: ", instance.getID());
-    ModuleLoader loader(instance.getLLVMContext());
-    auto M =
-        loader.loadInternal(__moduleStart(), __moduleEnd() - __moduleStart());
-
-    instance.setModule(std::move(M));
-
+	intializeModule(instance);
     return instance;
   }
   Executor(std::unique_ptr<IRRuntime> &&rt);
@@ -198,7 +193,7 @@ private:
   auto &get_kernel_by_name(std::string name, KernelConfiguration config,
                            const L &lambda) {
 
-	  std::string FName = getFNameForLambda(name);
+    std::string FName = getFNameForLambda(name);
 
     auto &K = _runtime->getKernel(FName);
     // K.setName(FName);
@@ -312,8 +307,7 @@ public:
   }
 
 private:
-
-	std::string getFNameForLambda(std::string name);
+  std::string getFNameForLambda(std::string name);
 
   std::unique_ptr<llvm::LLVMContext> _ctx;
   std::unique_ptr<IRRuntime> _runtime;

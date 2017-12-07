@@ -5,5 +5,7 @@ namespace pacxx {
 		class Executor;
 		std::vector<Executor> * getExecutorMemory();
 		void registerModule(const char *start, const char *end);
+
+		void intializeModule(Executor& exec);
 	}
 }
