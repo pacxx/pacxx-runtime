@@ -17,16 +17,20 @@
 #include <llvm/Analysis/LoopPass.h>
 #include <llvm/Analysis/TargetLibraryInfo.h>
 #include <llvm/Analysis/TargetTransformInfo.h>
+#include <llvm/CodeGen/MachineModuleInfo.h>
+#include <llvm/ExecutionEngine/ExecutionEngine.h>
 #include <llvm/ExecutionEngine/SectionMemoryManager.h>
+#include <llvm/IR/Module.h>
 #include <llvm/IR/GVMaterializer.h>
 #include <llvm/IR/LLVMContext.h>
+#include <llvm/IR/LegacyPassManager.h>
 #include <llvm/IR/Verifier.h>
 #include <llvm/IRReader/IRReader.h>
 #include <llvm/LinkAllPasses.h>
+#include <llvm/Linker/Linker.h>
 #include <llvm/Support/SourceMgr.h>
+#include <llvm/Support/TargetRegistry.h>
 #include <llvm/Transforms/IPO/PassManagerBuilder.h>
-
-#include <llvm/CodeGen/MachineModuleInfo.h>
 #include <llvm/Transforms/Scalar.h>
 #include <llvm/Transforms/Vectorize.h>
 
@@ -121,6 +125,24 @@ using namespace llvm;
 // native device binding
 extern const char native_binding_start[];
 extern const char native_binding_end[];
+
+namespace {
+static SmallVector<std::string, 10> getTargetFeatures() {
+  StringMap<bool> HostFeatures;
+  SmallVector<std::string, 10> attr;
+
+  llvm::sys::getHostCPUFeatures(HostFeatures);
+
+  for (StringMap<bool>::const_iterator it = HostFeatures.begin();
+       it != HostFeatures.end(); it++) {
+    std::string att = it->getValue() ? it->getKey().str()
+                                     : std::string("-") + it->getKey().str();
+    attr.append(1, att);
+  }
+
+  return attr;
+}
+} // namespace
 
 namespace pacxx {
 namespace v2 {
@@ -273,22 +295,6 @@ Module *NativeBackend::compile(std::unique_ptr<Module> &M) {
   return TheModule;
 }
 
-SmallVector<std::string, 10> NativeBackend::getTargetFeatures() {
-  StringMap<bool> HostFeatures;
-  SmallVector<std::string, 10> attr;
-
-  llvm::sys::getHostCPUFeatures(HostFeatures);
-
-  for (StringMap<bool>::const_iterator it = HostFeatures.begin();
-       it != HostFeatures.end(); it++) {
-    std::string att = it->getValue() ? it->getKey().str()
-                                     : std::string("-") + it->getKey().str();
-    attr.append(1, att);
-  }
-
-  return attr;
-}
-
 void *NativeBackend::getKernelFptr(Module *module, const std::string name) {
   Function *kernel = module->getFunction("__wrapped__" + name);
   // get the kernel wrapper function from the module
@@ -318,61 +324,57 @@ std::unique_ptr<Module> NativeBackend::createModule(LLVMContext &Context,
 void NativeBackend::applyPasses(Module &M) {
   if (!_machine)
     throw common::generic_exception("Can not get target machine");
-  if (!_pmInitialized) {
+  llvm::legacy::PassManager PM;
 
-    PassManagerBuilder builder;
-    builder.OptLevel = 3;
+  PassManagerBuilder builder;
+  builder.OptLevel = 3;
 
-    __verbose(_machine->getTargetFeatureString().str());
+  __verbose(_machine->getTargetFeatureString().str());
 
-    TargetLibraryInfoImpl TLII(Triple(M.getTargetTriple()));
-    _PM.add(new TargetLibraryInfoWrapperPass(TLII));
-    _PM.add(
-        createTargetTransformInfoWrapperPass(_machine->getTargetIRAnalysis()));
-    _PM.add(createCFGSimplificationPass());
-    _PM.add(createLoopSimplifyPass());
-    _PM.add(createLCSSAPass());
+  TargetLibraryInfoImpl TLII(Triple(M.getTargetTriple()));
+  PM.add(new TargetLibraryInfoWrapperPass(TLII));
+  PM.add(createTargetTransformInfoWrapperPass(_machine->getTargetIRAnalysis()));
+  PM.add(createCFGSimplificationPass());
+  PM.add(createLoopSimplifyPass());
+  PM.add(createLCSSAPass());
 
-    _PM.add(createEarlyCSEPass(true));
-    if (!_disableExpPasses) {
-      _PM.add(createMemoryCoalescingPass(false));
-      _PM.add(createDeadInstEliminationPass());
-    }
-    _PM.add(createLowerSwitchPass());
-    // builder.populateModulePassManager(_PM);
-    if (!_disableVectorizer) {
-      //   _PM.add(createPACXXCodeGenPrepare());
-      _PM.add(createSPMDVectorizerPass());
-    }
-    _PM.add(createAlwaysInlinerLegacyPass());
-    if (!_disableSelectEmitter)
-      _PM.add(createMaskedMemTransformPass());
-    _PM.add(createIntrinsicSchedulerPass());
-    _PM.add(createBarrierGenerationPass());
-    // _PM.add(createVerifierPass());
-
-    _PM.add(createKernelLinkerPass());
-
-    _PM.add(createSMGenerationPass());
-
-    _PM.add(createVerifierPass());
-    builder.populateModulePassManager(_PM);
-    _pmInitialized = true;
+  PM.add(createEarlyCSEPass(true));
+  if (!_disableExpPasses) {
+    PM.add(createMemoryCoalescingPass(false));
+    PM.add(createDeadInstEliminationPass());
   }
+  PM.add(createLowerSwitchPass());
+  // builder.populateModulePassManager(PM);
+  if (!_disableVectorizer) {
+    //   PM.add(createPACXXCodeGenPrepare());
+    PM.add(createSPMDVectorizerPass());
+  }
+  PM.add(createAlwaysInlinerLegacyPass());
+  if (!_disableSelectEmitter)
+    PM.add(createMaskedMemTransformPass());
+  PM.add(createIntrinsicSchedulerPass());
+  PM.add(createBarrierGenerationPass());
+  // PM.add(createVerifierPass());
+
+  PM.add(createKernelLinkerPass());
+
+  PM.add(createSMGenerationPass());
+
+  PM.add(createVerifierPass());
+  builder.populateModulePassManager(PM);
 
   if (common::GetEnv("PACXX_DUMP_ASM") != "") {
     std::error_code EC;
     raw_fd_ostream OS2("dump.asm", EC, sys::fs::F_None);
-    _machine->addPassesToEmitFile(_PM, OS2, TargetMachine::CGFT_AssemblyFile);
+    _machine->addPassesToEmitFile(PM, OS2, TargetMachine::CGFT_AssemblyFile);
   }
 
-  _PM.run(M);
+  PM.run(M);
 
   if (common::GetEnv("PACXX_DUMP_FINAL_IR") != "") {
     M.dump();
   }
 }
 
-legacy::PassManager &NativeBackend::getPassManager() { return _PM; }
 } // namespace v2
 } // namespace pacxx

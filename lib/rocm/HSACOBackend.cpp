@@ -67,12 +67,6 @@ void HSACOBackend::initialize(unsigned gfx) {
   initializeLoopStrengthReducePass(*Registry);
   initializeLowerIntrinsicsPass(*Registry);
   initializeUnreachableMachineBlockElimPass(*Registry);
-
-  _options.UnsafeFPMath = false;
-  _options.NoInfsFPMath = false;
-  _options.NoNaNsFPMath = false;
-  _options.HonorSignDependentRoundingFPMathOption = false;
-  _options.AllowFPOpFusion = FPOpFusion::Fast;
 }
 
 std::unique_ptr<llvm::Module> HSACOBackend::prepareModule(llvm::Module &M) {
@@ -167,6 +161,13 @@ std::unique_ptr<llvm::Module> HSACOBackend::prepareModule(llvm::Module &M) {
 }
 
 std::string HSACOBackend::compile(llvm::Module &M) {
+  llvm::TargetOptions options;
+  options.UnsafeFPMath = false;
+  options.NoInfsFPMath = false;
+  options.NoNaNsFPMath = false;
+  options.HonorSignDependentRoundingFPMathOption = false;
+  options.AllowFPOpFusion = FPOpFusion::Fast;
+
   Triple TheTriple = Triple(M.getTargetTriple());
   std::string Error;
   SmallString<128> hsaString;
@@ -182,15 +183,15 @@ std::string HSACOBackend::compile(llvm::Module &M) {
   PassManagerBuilder builder;
   builder.OptLevel = 3;
   builder.populateModulePassManager(PM);
-  PM.run(M); 
+  PM.run(M);
 
   llvm::legacy::PassManager lowerPM;
   _machine.reset(_target->createTargetMachine(
-      TheTriple.getTriple(), _cpu, _features, _options, Reloc::Model::Static,
+      TheTriple.getTriple(), _cpu, _features, options, Reloc::Model::Static,
       CodeModel::Model::Medium, CodeGenOpt::Aggressive));
 
-  if (_machine->addPassesToEmitFile(lowerPM, _ptxOS, TargetMachine::CGFT_ObjectFile,
-                                    false)) {
+  if (_machine->addPassesToEmitFile(lowerPM, _ptxOS,
+                                    TargetMachine::CGFT_ObjectFile, false)) {
     throw std::logic_error(
         "target does not support generation of this file type!\n");
   }

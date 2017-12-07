@@ -10,16 +10,12 @@
 #ifndef PACXX_V2_PTXBACKEND_H
 #define PACXX_V2_PTXBACKEND_H
 
-#include <llvm/ADT/SmallString.h>
-#include <llvm/Support/raw_ostream.h>
-#include <llvm/Target/TargetMachine.h>
-#include <llvm/Target/TargetOptions.h>
-
 namespace llvm {
-class Module;
-
-class Target;
-}
+	class Module;
+	class Target;
+	class TargetOptions;
+	class TargetMachine;
+} // namespace llvm
 
 namespace pacxx {
 namespace v2 {
@@ -37,7 +33,6 @@ public:
 
 private:
   const llvm::Target *_target;
-  llvm::TargetOptions _options;
   std::unique_ptr<llvm::TargetMachine> _machine;
   std::string _cpu, _features;
 };

@@ -9,7 +9,7 @@
 
 #include "pacxx/detail/Kernel.h"
 #include "pacxx/detail/IRRuntime.h"
-
+#include <llvm/IR/Module.h>
 namespace pacxx {
 namespace v2 {
 

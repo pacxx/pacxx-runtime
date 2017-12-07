@@ -63,12 +63,6 @@ void PTXBackend::initialize(unsigned CC) {
   initializeLoopStrengthReducePass(*Registry);
   initializeLowerIntrinsicsPass(*Registry);
   initializeUnreachableMachineBlockElimPass(*Registry);
-
-  _options.UnsafeFPMath = false;
-  _options.NoInfsFPMath = false;
-  _options.NoNaNsFPMath = false;
-  _options.HonorSignDependentRoundingFPMathOption = false;
-  _options.AllowFPOpFusion = FPOpFusion::Fast;
 }
 
 std::unique_ptr<llvm::Module> PTXBackend::prepareModule(llvm::Module &M) {
@@ -128,7 +122,7 @@ std::unique_ptr<llvm::Module> PTXBackend::prepareModule(llvm::Module &M) {
   PM.add(createIntrinsicSchedulerPass());
   PM.add(createTargetSelectionPass({"GPU", "Generic"}));
   PM.add(createAddressSpaceTransformPass());
-  //PM.add(createLoadMotionPass());
+  // PM.add(createLoadMotionPass());
   PM.add(createMSPRemoverPass());
   PM.add(createNVPTXPrepairPass());
   PM.add(createIntrinsicMapperPass());
@@ -161,6 +155,13 @@ std::unique_ptr<llvm::Module> PTXBackend::prepareModule(llvm::Module &M) {
 }
 
 std::string PTXBackend::compile(llvm::Module &M) {
+  llvm::TargetOptions options;
+  options.UnsafeFPMath = false;
+  options.NoInfsFPMath = false;
+  options.NoNaNsFPMath = false;
+  options.HonorSignDependentRoundingFPMathOption = false;
+  options.AllowFPOpFusion = FPOpFusion::Fast;
+
   Triple TheTriple = Triple(M.getTargetTriple());
   std::string Error;
   SmallString<128> ptxString;
@@ -210,7 +211,7 @@ std::string PTXBackend::compile(llvm::Module &M) {
   }
 
   _machine.reset(_target->createTargetMachine(
-      TheTriple.getTriple(), _cpu, _features, _options, Reloc::Model::Static,
+      TheTriple.getTriple(), _cpu, _features, options, Reloc::Model::Static,
       CodeModel::Model::Medium, CodeGenOpt::None));
 
   if (_machine->addPassesToEmitFile(PM, _ptxOS,

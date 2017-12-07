@@ -13,11 +13,13 @@
 #include "pacxx/pacxx_config.h"
 #include "DeviceBuffer.h"
 #include "Kernel.h"
-#include <llvm/IR/LegacyPassManager.h>
-#include <llvm/IR/Module.h>
 #include <string>
 #include <vector>
 #include "pacxx/detail/msp/MSPEngine.h"
+
+namespace llvm {
+	class Module;
+}
 
 namespace pacxx {
 namespace v2 {

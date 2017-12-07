@@ -13,12 +13,15 @@
 #include "pacxx/detail/Kernel.h"
 #include "pacxx/detail/common/Log.h"
 #include "pacxx/detail/common/Meta.h"
-#include <llvm/ExecutionEngine/ExecutionEngine.h>
-#include <llvm/IR/Function.h>
-#include <llvm/IR/Module.h>
 #include <set>
 
 #include "../KernelArgument.h"
+
+namespace llvm {
+	class Module; 
+	class Function;
+	class ExecutionEngine;
+}
 
 namespace pacxx {
 namespace v2 {

@@ -17,7 +17,6 @@
 #include "pacxx/detail/common/Exceptions.h"
 #include "pacxx/detail/msp/MSPEngine.h"
 #include <list>
-#include <llvm/ExecutionEngine/ExecutionEngine.h>
 #include <map>
 #include <memory>
 #include <string>

@@ -12,6 +12,7 @@
 #include "pacxx/detail/common/Log.h"
 #include "pacxx/detail/common/Timing.h"
 #include "pacxx/detail/native/NativeRuntime.h"
+#include <llvm/IR/Module.h>
 
 #ifndef PACXX_DISABLE_TBB
 #include <tbb/tbb.h>
