@@ -41,8 +41,7 @@
 #include <regex>
 #include <string>
 
-
-// set the default backend 
+// set the default backend
 #ifndef PACXX_ENABLE_CUDA
 using Runtime = pacxx::v2::NativeRuntime;
 #else
@@ -68,57 +67,54 @@ Executor &get_executor(Ts... args);
 
 class Executor {
 public:
-  static auto &getExecutors() {
-    static std::vector<Executor> *executors = new std::vector<Executor>();
-    return *executors; // TODO: free resources at application's exit
-  }
+  static std::vector<Executor> &getExecutors();
 
   static Executor &get(unsigned id = 0) {
     auto &executors = getExecutors();
     if (executors.empty()) {
-		CreateDefalt();
+      CreateDefalt();
     }
     return executors[id];
   }
 
 private:
-  static Executor& CreateDefalt() {
-	  int runtime = 0; 
-	  auto str = common::GetEnv("PACXX_DEFAULT_RT");
-	  if (str != "") {
-		  runtime = std::stoi(str);
-	  }
+  static Executor &CreateDefalt() {
+    int runtime = 0;
+    auto str = common::GetEnv("PACXX_DEFAULT_RT");
+    if (str != "") {
+      runtime = std::stoi(str);
+    }
 
-	  switch (runtime) {
-	  case 2: // HIP Runtime
+    switch (runtime) {
+    case 2: // HIP Runtime
 #ifdef PACXX_ENABLE_HIP
-		  if (HIPRuntime::checkSupportedHardware()) {
-			  return Create<HIPRuntime>(0); // TODO: make dynamic for different devices
-		  }
-		  else {
-			  __verbose("No ROCm Device found: Using Fallback to CUDARuntime for "
-				  "GPU execution as default Executor");
-		  }
-#else 
-		  __verbose("HIP Runtime not linked in! Falling back to CUDARuntime!");
+      if (HIPRuntime::checkSupportedHardware()) {
+        return Create<HIPRuntime>(
+            0); // TODO: make dynamic for different devices
+      } else {
+        __verbose("No ROCm Device found: Using Fallback to CUDARuntime for "
+                  "GPU execution as default Executor");
+      }
+#else
+      __verbose("HIP Runtime not linked in! Falling back to CUDARuntime!");
 #endif
-	  case 0: // CUDA Runtime
+    case 0: // CUDA Runtime
 #ifdef PACXX_ENABLE_CUDA
-		  if (CUDARuntime::checkSupportedHardware()) {
-			  return Create<CUDARuntime>(0); // TODO: make dynamic for different devices
-		  }
-		  else {
-			  __verbose("No CUDA Device found: Using Fallback to NativeRuntime for "
-				  "CPU execution as default Executor");
-		  }
-#else 
-	__verbose("CUDA Runtime not linked in! Falling back to NativeRuntime!");
+      if (CUDARuntime::checkSupportedHardware()) {
+        return Create<CUDARuntime>(
+            0); // TODO: make dynamic for different devices
+      } else {
+        __verbose("No CUDA Device found: Using Fallback to NativeRuntime for "
+                  "CPU execution as default Executor");
+      }
+#else
+      __verbose("CUDA Runtime not linked in! Falling back to NativeRuntime!");
 #endif
-	  case 1: // Native Runtime
-	  default:
-		  break;
-	  }
-	  return Create<NativeRuntime>(0);
+    case 1: // Native Runtime
+    default:
+      break;
+    }
+    return Create<NativeRuntime>(0);
   }
 
 public:
@@ -134,7 +130,8 @@ public:
     instance._id = executors.size() - 1;
     __verbose("Created new Executor with id: ", instance.getID());
     ModuleLoader loader(instance.getLLVMContext());
-    auto M = loader.loadInternal(__moduleStart(), __moduleEnd() - __moduleStart());
+    auto M =
+        loader.loadInternal(__moduleStart(), __moduleEnd() - __moduleStart());
 
     instance.setModule(std::move(M));
 
