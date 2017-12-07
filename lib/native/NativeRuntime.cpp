@@ -28,7 +28,6 @@ namespace v2 {
 
 NativeRuntime::NativeRuntime(unsigned)
     : IRRuntime(RuntimeKind::RK_Native), _compiler(std::make_unique<CompilerT>()), _delayed_compilation(false) {
-  llvm::sys::getHostCPUFeatures(_host_features);
 }
 
 NativeRuntime::~NativeRuntime() {}
@@ -125,28 +124,19 @@ void NativeRuntime::requestIRTransformation(Kernel &K) {
 void NativeRuntime::synchronize() {}
 
 size_t NativeRuntime::getPreferedVectorSize(size_t dtype_size) {
-
-  if (_host_features["avx512f"])
-    return 64 / dtype_size;
-  if (_host_features["avx"] || _host_features["avx2"])
-    return 32 / dtype_size;
-  if (_host_features["sse2"] || _host_features["altivec"])
-    return 16 / dtype_size;
-  if (_host_features["mmx"])
-    return 8 / dtype_size;
-
-  return 1;
+	return getPreferedVectorSizeInBytes() / dtype_size;
 }
 
 size_t NativeRuntime::getPreferedVectorSizeInBytes() {
-
-  if (_host_features["avx512f"])
+	llvm::StringMap<bool> host_features;
+	llvm::sys::getHostCPUFeatures(host_features);
+  if (host_features["avx512f"])
     return 64;
-  if (_host_features["avx"] || _host_features["avx2"])
+  if (host_features["avx"] || host_features["avx2"])
     return 32;
-  if (_host_features["sse2"] || _host_features["altivec"])
+  if (host_features["sse2"] || host_features["altivec"])
     return 16;
-  if (_host_features["mmx"])
+  if (host_features["mmx"])
     return 8;
 
   return 1;

@@ -39,6 +39,7 @@
 #include <string>
 
 #include <llvm/Support/Casting.h>
+#include <llvm/Support/ErrorHandling.h>
 
 namespace llvm {
 class LLVMContext;

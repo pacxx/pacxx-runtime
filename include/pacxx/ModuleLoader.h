@@ -10,10 +10,10 @@
 #ifndef PACXX_V2_MODULELOADER_H
 #define PACXX_V2_MODULELOADER_H
 
-#include <llvm/IR/LLVMContext.h>
 #include <memory>
 
 namespace llvm {
+class LLVMContext;
 class Module;
 }
 

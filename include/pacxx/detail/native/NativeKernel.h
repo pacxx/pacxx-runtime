@@ -13,8 +13,6 @@
 #include "pacxx/detail/Kernel.h"
 #include "pacxx/detail/KernelConfiguration.h"
 #include <functional>
-#include <llvm/ExecutionEngine/GenericValue.h>
-#include <llvm/IR/Function.h>
 #include <map>
 #include <string>
 #include <numeric>

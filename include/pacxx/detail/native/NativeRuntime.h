@@ -107,7 +107,6 @@ private:
   std::unique_ptr<CompilerT> _compiler;
   std::map<std::string, std::unique_ptr<NativeKernel>> _kernels;
   std::list<std::unique_ptr<DeviceBufferBase>> _memory;
-  llvm::StringMap<bool> _host_features;
   bool _delayed_compilation;
 
 };
