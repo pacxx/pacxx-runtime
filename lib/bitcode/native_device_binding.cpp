@@ -13,14 +13,13 @@
 #include "pacxx/detail/device/DeviceCode.h"
 #include "pacxx/detail/device/DeviceFunctionDecls.h"
 
-#ifndef __forceinline__
-#define __forceinline__ __attribute__((always_inline))
-#endif
 
-extern "C" double rsqrt(double val) {
-  return 1.0 / sqrt(val);
-}
+extern "C" {
+	double rsqrt(double val) {
+		return 1.0 / sqrt(val);
+	}
 
-extern "C" float rsqrtf(float val) {
-  return 1.0f / sqrtf(val);
+    float rsqrtf(float val) {
+		return 1.0f / sqrtf(val);
+	}
 }
