@@ -37,6 +37,8 @@ Executor::Executor(Executor &&other) {
   _kernel_translation = std::move(other._kernel_translation);
 }
 
+Executor::~Executor() { __verbose("destroying executor ", _id); }
+
 void Executor::setModule(std::unique_ptr<llvm::Module> M) {
   _runtime->link(std::move(M));
 

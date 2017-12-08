@@ -463,7 +463,7 @@ struct AddressSpaceTransform : public ModulePass {
       GV->replaceAllUsesWith(UndefValue::get(GV->getType()));
       GV->eraseFromParent();
     }
-    M.dump();
+    
     return modified;
   }
 };

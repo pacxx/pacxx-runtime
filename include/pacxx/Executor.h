@@ -140,7 +140,7 @@ public:
 
   Executor(Executor &&other);
 
-  ~Executor() { __verbose("destroying executor ", _id); }
+  ~Executor();
 
 private:
   std::string cleanName(const std::string &name);

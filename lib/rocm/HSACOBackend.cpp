@@ -169,7 +169,7 @@ std::string HSACOBackend::compile(llvm::Module &M) {
   options.NoNaNsFPMath = false;
   options.HonorSignDependentRoundingFPMathOption = false;
   options.AllowFPOpFusion = FPOpFusion::Fast;
-
+  
   Triple TheTriple = Triple(M.getTargetTriple());
   std::string Error;
   SmallString<128> hsaString;
@@ -181,7 +181,6 @@ std::string HSACOBackend::compile(llvm::Module &M) {
   }
 
   llvm::legacy::PassManager PM;
-  TargetLibraryInfoImpl TLII(Triple(M.getTargetTriple()));
   PassManagerBuilder builder;
   builder.OptLevel = 3;
   builder.populateModulePassManager(PM);
