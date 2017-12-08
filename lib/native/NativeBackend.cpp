@@ -167,7 +167,7 @@ std::unique_ptr<llvm::Module> NativeBackend::prepareModule(llvm::Module &M) {
 
   auto linker = Linker(M);
   linker.linkInModule(std::move(binding), Linker::Flags::None);
-  M.dump();
+  
   llvm::legacy::PassManager PM;
   TargetLibraryInfoImpl TLII(Triple(M.getTargetTriple()));
   PM.add(new TargetLibraryInfoWrapperPass(TLII));
