@@ -100,6 +100,7 @@ void cleanupDeadCode(Module *M) {
     auto Aliasee = A->getAliasee();
 
     if (isa<UndefValue>(Aliasee)) {
+      A->replaceAllUsesWith(UndefValue::get(A->getType()));
       A->eraseFromParent();
       continue;
     }
