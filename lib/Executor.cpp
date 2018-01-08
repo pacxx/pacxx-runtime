@@ -143,11 +143,34 @@ void registerModule(const char *start, const char *end) {
   __moduleStart(start);
   __moduleEnd(end);
 }
-void intializeModule(Executor &exec) {
+void initializeModule(Executor &exec) {
   ModuleLoader loader(exec.getLLVMContext());
-  auto M =
+	auto M =
       loader.loadInternal(__moduleStart(), __moduleEnd() - __moduleStart());
   exec.setModule(std::move(M));
 }
+
+void initializeModule(Executor &exec, const std::string& bytes) {
+  ModuleLoader loader(exec.getLLVMContext());
+	auto M =
+      loader.loadInternal(bytes.data(), bytes.size());
+  exec.setModule(std::move(M));
+}
+
+    Kernel &Executor::get_kernel_by_name(std::string name, KernelConfiguration config,
+                           const void* args, size_t size) {
+
+    std::string FName = getFNameForLambda(name);
+
+    Kernel &K = _runtime->getKernel(FName);
+
+    K.configurate(config);
+    K.setLambdaPtr(args, size);
+
+    _runtime->evaluateStagedFunctions(K);
+
+    return K;
+  }
+
 } // namespace v2
 } // namespace pacxx

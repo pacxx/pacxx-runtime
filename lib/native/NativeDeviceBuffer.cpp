@@ -46,6 +46,7 @@ void NativeRawDeviceBuffer::allocate(size_t bytes, char *host_ptr) {
 }
 
 NativeRawDeviceBuffer::~NativeRawDeviceBuffer() {
+  __verbose("deleting buffer");
   if (_buffer && !_isHost) {
     free(_buffer);
   }
@@ -77,10 +78,12 @@ void *NativeRawDeviceBuffer::get(size_t offset) const {
 
 void NativeRawDeviceBuffer::upload(const void *src, size_t bytes,
                                    size_t offset) {
+  __verbose("uploading ", bytes, " bytes");
   std::memcpy(_buffer + offset, src, bytes);
 }
 
 void NativeRawDeviceBuffer::download(void *dest, size_t bytes, size_t offset) {
+  __verbose("downloading ", bytes, " bytes");
   std::memcpy(dest, _buffer + offset, bytes);
 }
 

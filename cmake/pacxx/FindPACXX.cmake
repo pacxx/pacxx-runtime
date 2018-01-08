@@ -253,6 +253,13 @@ function(pacxx_embed_ir targetName bcFiles binDir)
     target_link_libraries(${targetName} PUBLIC ${outFile}.o)
 endfunction()
 
+function(add_pacxx_libs_to_target targetName)
+set_target_properties(${targetName} PROPERTIES LINK_FLAGS ${PACXX_LD_FLAGS})
+
+target_link_libraries(${targetName} PUBLIC ${PACXX_RUNTIME_LIBRARY} PUBLIC ${PACXX_RV_LIBRARY}
+            PUBLIC ${HIP_LINK_LIBRARIES} PUBLIC ${CUDA_LINK_LIBRARIES} PUBLIC ${PACXX_LLVM_LIBS} PUBLIC ${PACXX_LLVM_SYS_LIBS} PUBLIC ${TBB_LIBRARIES})
+endfunction(add_pacxx_libs_to_target)
+
 function(add_pacxx_to_target targetName binDir srcFiles)
     get_target_property(ALREADY_A_PACXX_TARGET ${targetName} IS_PACXX_TARGET)
     if (NOT ALREADY_A_PACXX_TARGET EQUAL "1")
@@ -267,10 +274,8 @@ function(add_pacxx_to_target targetName binDir srcFiles)
     endforeach ()
 
     pacxx_embed_ir(${targetName} ${bcFiles} ${binDir})
-
-    set_target_properties(${targetName} PROPERTIES LINK_FLAGS ${PACXX_LD_FLAGS})
-    target_link_libraries(${targetName} PUBLIC ${PACXX_RUNTIME_LIBRARY} PUBLIC ${PACXX_RV_LIBRARY}
-            PUBLIC ${HIP_LINK_LIBRARIES} PUBLIC ${CUDA_LINK_LIBRARIES} PUBLIC ${PACXX_LLVM_LIBS} PUBLIC ${PACXX_LLVM_SYS_LIBS} PUBLIC ${TBB_LIBRARIES} PUBLIC libpacxx_main.a)
+	add_pacxx_libs_to_target(${targetName})
+    target_link_libraries(${targetName} PUBLIC libpacxx_main.a)
 
 
     set(PACXX_ADDITIONAL_LINKER_FLAGS "-Wl,-wrap=main")

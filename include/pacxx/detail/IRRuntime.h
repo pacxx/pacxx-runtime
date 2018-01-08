@@ -34,7 +34,8 @@ public:
   enum RuntimeKind {
     RK_CUDA,
     RK_Native, 
-    RK_HIP
+    RK_HIP, 
+	RK_Remote
   };
 private:
   const RuntimeKind _kind;

@@ -70,7 +70,9 @@ Executor &get_executor(Ts... args);
 
 class Executor {
 public:
-  friend void intializeModule(Executor &exec);
+  friend void initializeModule(Executor &exec);
+  friend void initializeModule(Executor &exec, const std::string& bytes);
+  
   static std::vector<Executor> &getExecutors();
 
   static Executor &get(unsigned id = 0) {
@@ -133,7 +135,7 @@ public:
 
     instance._id = executors.size() - 1;
     __verbose("Created new Executor with id: ", instance.getID());
-	intializeModule(instance);
+	  initializeModule(instance);
     return instance;
   }
   Executor(std::unique_ptr<IRRuntime> &&rt);
@@ -173,7 +175,11 @@ public:
 private:
   void setModule(std::unique_ptr<llvm::Module> M);
 
-  void setModule(std::string module_bytes);
+  void run(std::string name, const void* args, size_t size, KernelConfiguration config) {
+    // auto& dev_lambda = _mem_manager.getTemporaryLambda(lambda);
+    auto &K = get_kernel_by_name(name, config, args, size);
+    K.launch();
+  }
 
   template <typename L> void run(const L &lambda, KernelConfiguration config) {
     // auto& dev_lambda = _mem_manager.getTemporaryLambda(lambda);
@@ -191,20 +197,13 @@ private:
   }
 
   template <typename L>
-  auto &get_kernel_by_name(std::string name, KernelConfiguration config,
+  Kernel &get_kernel_by_name(std::string name, KernelConfiguration config,
                            const L &lambda) {
-
-    std::string FName = getFNameForLambda(name);
-
-    auto &K = _runtime->getKernel(FName);
-    // K.setName(FName);
-    K.configurate(config);
-    K.setLambdaPtr(&lambda, sizeof(L));
-
-    _runtime->evaluateStagedFunctions(K);
-
-    return K;
+    return get_kernel_by_name(name, config, &lambda, sizeof(L));
   }
+
+  Kernel &get_kernel_by_name(std::string name, KernelConfiguration config,
+                          const void* args, size_t size);
 
 public:
   template <typename T>
