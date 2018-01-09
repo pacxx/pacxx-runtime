@@ -311,6 +311,7 @@ add_library(pacxx_main STATIC lib/common/WrappedMain.cpp)
 add_dependencies(pacxx_main ${PROJECT_NAME})
 
 add_dependencies(${PROJECT_NAME} RV)
+add_dependencies(${PROJECT_NAME} llvm-link)
 
 add_dependencies(${nvdbFile}_target clang)
 add_dependencies(${nadbFile}_target clang)
