@@ -215,7 +215,7 @@ add_custom_command(
             OUTPUT ${nvdbFile}.linked.bc
             COMMAND ${CMAKE_BINARY_DIR}/bin/llvm-link -suppress-warnings ${nvdbFile}.bc ${CMAKE_CURRENT_SOURCE_DIR}/lib/bitcode/syscalls.ll ${CMAKE_CURRENT_SOURCE_DIR}/lib/bitcode/nvptx_libdevice.bc -o ${nvdbFile}.linked.bc
             WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/lib    
-            DEPENDS ${nvdbFile}.bc
+            DEPENDS ${nvdbFile}.bc llvm-link
             COMMENT "Linking NVPTX libdevice into bitcode")
 
 add_custom_command(
@@ -247,7 +247,7 @@ add_custom_command(
     OUTPUT ${amddbFile}.linked.bc
     COMMAND ${CMAKE_BINARY_DIR}/bin/llvm-link -suppress-warnings ${amddbFile}.bc ${CMAKE_CURRENT_SOURCE_DIR}/lib/bitcode/amdgcn_libdevice.bc -o ${amddbFile}.linked.bc
     WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/lib    
-    DEPENDS ${amddbFile}.bc
+    DEPENDS ${amddbFile}.bc llvm-link
     COMMENT "Linking AMDGCN libdevice into bitcode")
 
 add_custom_command(
@@ -311,7 +311,6 @@ add_library(pacxx_main STATIC lib/common/WrappedMain.cpp)
 add_dependencies(pacxx_main ${PROJECT_NAME})
 
 add_dependencies(${PROJECT_NAME} RV)
-add_dependencies(${PROJECT_NAME} llvm-link)
 
 add_dependencies(${nvdbFile}_target clang)
 add_dependencies(${nadbFile}_target clang)
