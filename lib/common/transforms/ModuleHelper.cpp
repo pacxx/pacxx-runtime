@@ -16,6 +16,7 @@ void cleanupDeadCode(Module *M) {
 
   vector<Function *> deleted;
   for (auto &F : M->getFunctionList()) {
+
     if (find(kernels.begin(), kernels.end(), &F) == kernels.end() &&
         find(called.begin(), called.end(), &F) == called.end() &&
         find(reflects.begin(), reflects.end(), &F) == reflects.end() && 
@@ -98,7 +99,6 @@ void cleanupDeadCode(Module *M) {
 
   for (auto A : aliases) {
     auto Aliasee = A->getAliasee();
-
     if (isa<UndefValue>(Aliasee)) {
       A->replaceAllUsesWith(UndefValue::get(A->getType()));
       A->eraseFromParent();

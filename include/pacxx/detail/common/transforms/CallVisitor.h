@@ -43,6 +43,14 @@ namespace pacxx
 					this->visit(F);
 				}
             }
+            else{
+                if (auto A = dyn_cast<GlobalAlias>(I.getCalledValue())){
+                    if (auto F = dyn_cast<Function>(A->getAliasee())){
+                        visited.insert(F);
+                        this->visit(F);
+                    }
+                }
+            }
 
             _transform(&I);
         }

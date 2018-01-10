@@ -253,73 +253,71 @@ struct AddressSpaceTransform : public ModulePass {
     });
 
     // handle parameters to bring them into AS 1
-    if (!M.getTargetTriple().find("nvptx") != std::string::npos) {
-      for (auto &F : kernels) {
-        visitor.visit(F);
+    for (auto &F : kernels) {
+      visitor.visit(F);
 
-        // Mutate pointer types to bring them into AS 1
-        auto &BB = F->getBasicBlockList().front();
-        auto II = &BB.getInstList().front();
-        bool mutate = false;
-        for (auto &arg : F->args()) {
-          if (arg.getType()->isPointerTy()) {
-            if (arg.getType()->getPointerAddressSpace() == 0) {
-              auto AL = new AllocaInst(arg.getType(), 0, "", II);
-              auto SI = new StoreInst(&arg, AL, II);
-              auto LI = new LoadInst(AL, "", II);
-              arg.replaceAllUsesWith(LI);
-              arg.mutateType(
-                  arg.getType()->getPointerElementType()->getPointerTo(1));
+      // Mutate pointer types to bring them into AS 1
+      auto &BB = F->getBasicBlockList().front();
+      auto II = &BB.getInstList().front();
+      bool mutate = false;
+      for (auto &arg : F->args()) {
+        if (arg.getType()->isPointerTy()) {
+          if (arg.getType()->getPointerAddressSpace() == 0) {
+            auto AL = new AllocaInst(arg.getType(), 0, "", II);
+            auto SI = new StoreInst(&arg, AL, II);
+            auto LI = new LoadInst(AL, "", II);
+            arg.replaceAllUsesWith(LI);
+            arg.mutateType(
+                arg.getType()->getPointerElementType()->getPointerTo(1));
 
-              auto ASC = new AddrSpaceCastInst(
-                  &arg, arg.getType()->getPointerElementType()->getPointerTo(0),
-                  "", II);
-              LI->replaceAllUsesWith(ASC);
-              LI->eraseFromParent();
-              SI->eraseFromParent();
-              AL->eraseFromParent();
-              mutate = true;
-            }
+            auto ASC = new AddrSpaceCastInst(
+                &arg, arg.getType()->getPointerElementType()->getPointerTo(0),
+                "", II);
+            LI->replaceAllUsesWith(ASC);
+            LI->eraseFromParent();
+            SI->eraseFromParent();
+            AL->eraseFromParent();
+            mutate = true;
           }
         }
+      }
 
-        if (mutate) {
-          SmallVector<Type *, 8> Params;
-          for (auto &arg : F->args())
-            Params.push_back(arg.getType());
+      if (mutate) {
+        SmallVector<Type *, 8> Params;
+        for (auto &arg : F->args())
+          Params.push_back(arg.getType());
 
-          Type *RetTy = F->getReturnType();
-          FunctionType *NFTy = FunctionType::get(RetTy, Params, false);
-          auto name = F->getName().str();
-          F->setName("undead");
-          auto NF = Function::Create(NFTy, F->getLinkage(), name, &M);
-          auto DestI = NF->arg_begin();
-          ValueToValueMapTy VMap;
-          for (auto I = F->arg_begin(); I != F->arg_end(); ++I) {
-            DestI->setName(I->getName());
-            VMap[cast<Value>(I)] = cast<Value>(DestI++);
-          }
-          SmallVector<ReturnInst *, 8> returns;
-          CloneFunctionInto(NF, F, VMap, true, returns);
-          if (auto MD = M.getNamedMetadata("nvvm.annotations")) {
-            for (unsigned i = 0; i != MD->getNumOperands(); ++i) {
-              auto Op = MD->getOperand(i);
-              if (Op->getOperand(0)) {
-                if (auto *KF = dyn_cast<Function>(
-                        dyn_cast<ValueAsMetadata>(Op->getOperand(0).get())
-                            ->getValue())) {
-                  if (KF == F) {
-                    Op->replaceOperandWith(0, ValueAsMetadata::get(NF));
-                  }
+        Type *RetTy = F->getReturnType();
+        FunctionType *NFTy = FunctionType::get(RetTy, Params, false);
+        auto name = F->getName().str();
+        F->setName("undead");
+        auto NF = Function::Create(NFTy, F->getLinkage(), name, &M);
+        auto DestI = NF->arg_begin();
+        ValueToValueMapTy VMap;
+        for (auto I = F->arg_begin(); I != F->arg_end(); ++I) {
+          DestI->setName(I->getName());
+          VMap[cast<Value>(I)] = cast<Value>(DestI++);
+        }
+        SmallVector<ReturnInst *, 8> returns;
+        CloneFunctionInto(NF, F, VMap, true, returns);
+        if (auto MD = M.getNamedMetadata("nvvm.annotations")) {
+          for (unsigned i = 0; i != MD->getNumOperands(); ++i) {
+            auto Op = MD->getOperand(i);
+            if (Op->getOperand(0)) {
+              if (auto *KF = dyn_cast<Function>(
+                      dyn_cast<ValueAsMetadata>(Op->getOperand(0).get())
+                          ->getValue())) {
+                if (KF == F) {
+                  Op->replaceOperandWith(0, ValueAsMetadata::get(NF));
                 }
               }
             }
           }
-
-          // F->replaceAllUsesWith(NF);
-          ReplaceUnsafe(F, NF);
-          //  F->eraseFromParent();
         }
+
+        // F->replaceAllUsesWith(NF);
+        ReplaceUnsafe(F, NF);
+        //  F->eraseFromParent();
       }
     }
 
@@ -463,7 +461,7 @@ struct AddressSpaceTransform : public ModulePass {
       GV->replaceAllUsesWith(UndefValue::get(GV->getType()));
       GV->eraseFromParent();
     }
-    
+
     return modified;
   }
 };

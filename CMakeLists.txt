@@ -50,6 +50,29 @@ endif(PACXX_USE_OpenMP)
 #option(BUILD_SHARED "Build PACXX Runtime as shared object" OFF)
 set(PACXX_RV_LIB RV)
 
+set(TRANSFORMS_SOURCE_FILES         
+lib/common/transforms/MemoryCoalescing.cpp
+lib/common/transforms/IntrinsicMapper.cpp
+lib/common/transforms/MSPRemover.cpp
+lib/common/transforms/TargetSelection.cpp
+lib/common/transforms/MSPGeneration.cpp
+lib/common/transforms/MSPCleanup.cpp
+lib/common/transforms/IntrinsicScheduler.cpp
+lib/common/transforms/CodeGenPrepare.cpp
+lib/common/transforms/LoadMotion.cpp
+lib/native/transforms/LivenessAnalysis.h
+lib/native/transforms/LivenessAnalysis.cpp
+lib/native/transforms/BarrierGeneration.cpp
+lib/native/transforms/KernelLinker.cpp
+lib/native/transforms/MaskedMemTransform.cpp
+lib/native/transforms/SMGeneration.h
+lib/native/transforms/SMGeneration.cpp
+lib/native/transforms/SPMDVectorizer.cpp
+lib/common/transforms/ModuleHelper.cpp
+lib/common/transforms/AddressSpaceTransform.cpp
+lib/cuda/transforms/NVPTXPrepair.cpp
+lib/rocm/transforms/AMDGCNPrepair.cpp)
+
 set(SOURCE_FILES include/pacxx/Executor.h
         include/pacxx/detail/common/Exceptions.h
         include/pacxx/detail/common/Log.h
@@ -322,9 +345,11 @@ execute_process(COMMAND ${CMAKE_BINARY_DIR}/bin/llvm-config --ldflags
 set(CMAKE_SHARED_LINKER_FLAGS "-Wl,--allow-shlib-undefined")
 
 add_library(${PROJECT_NAME} ${SOURCE_FILES} ${CUDA_SOURCE_FILES} ${HIP_SOURCE_FILES} ${REMOTE_SOURCE_FILES})
+add_library(${PROJECT_NAME}transforms ${TRANSFORMS_SOURCE_FILES})
 
 add_library(pacxx_main STATIC lib/common/WrappedMain.cpp)
 add_dependencies(pacxx_main ${PROJECT_NAME})
+add_dependencies(${PROJECT_NAME}transforms ${PROJECT_NAME})
 
 add_dependencies(${PROJECT_NAME} RV)
 
@@ -355,6 +380,7 @@ endif()
 file(GLOB PACXX_FILES ${CMAKE_BINARY_DIR}/*.S)
 
 install(TARGETS ${PROJECT_NAME} DESTINATION lib)
+install(TARGETS ${PROJECT_NAME}transforms DESTINATION lib)
 install(TARGETS pacxx_main DESTINATION lib)
 
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/lib/asm/ DESTINATION lib)
@@ -362,3 +388,4 @@ install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/ DESTINATION include)
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/cmake/pacxx/ DESTINATION lib/cmake/pacxx)
 
 target_link_libraries(${PROJECT_NAME} PUBLIC ${CUDA_LINK_LIBRARIES} PUBLIC ${PACXX_LLVM_LIBS} PUBLIC ${PACXX_LLVM_SYS_LIBS} PUBLIC ${TBB_LIBRARIES} PUBLIC ${nvdbFile} PUBLIC ${amddbFile} PUBLIC ${nadbFile} PUBLIC ${PACXX_RV_LIB} PUBLIC ${LLD_LIBS})
+target_link_libraries(${PROJECT_NAME}transforms PUBLIC ${PACXX_LLVM_LIBS} PUBLIC ${PACXX_LLVM_SYS_LIBS})
