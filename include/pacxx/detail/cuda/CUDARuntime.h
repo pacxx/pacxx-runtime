@@ -67,11 +67,11 @@ public:
 
   template <typename T>
   DeviceBuffer<T> *allocateMemory(size_t count, T *host_ptr, MemAllocMode mode = Standard) {
-    CUDARawDeviceBuffer raw([this](CUDARawDeviceBuffer& buffer){ deleteRawMemory(&buffer); }, mode);
-    raw.allocate(count * sizeof(T));
-    auto wrapped = new CUDADeviceBuffer<T>(std::move(raw));
-    _memory.push_back(std::unique_ptr<DeviceBufferBase>(
-        static_cast<DeviceBufferBase *>(wrapped)));
+    auto raw = std::make_unique<CUDARawDeviceBuffer>([this](CUDARawDeviceBuffer& buffer){ deleteRawMemory(&buffer); }, mode);
+    raw->allocate(count * sizeof(T));
+    auto wrapped = new DeviceBuffer<T>(std::move(raw));
+    _memory.push_back(std::unique_ptr<DeviceBufferBase<void>>(
+        reinterpret_cast<DeviceBufferBase<void> *>(wrapped)));
     if (host_ptr)
       wrapped->upload(host_ptr, count);
     return wrapped;
@@ -80,8 +80,7 @@ public:
   template <typename T> DeviceBuffer<T> *translateMemory(T *ptr) {
     auto It =
         std::find_if(_memory.begin(), _memory.end(), [&](const auto &element) {
-          return reinterpret_cast<CUDADeviceBuffer<T> *>(element.get())
-                     ->get() == ptr;
+          return reinterpret_cast<DeviceBuffer<T> *>(element.get())->get() == ptr;
         });
 
     if (It != _memory.end())
@@ -125,7 +124,6 @@ private:
   CUmodule _mod;
   std::unique_ptr<CompilerT> _compiler;
   std::map<std::string, std::unique_ptr<CUDAKernel>> _kernels;
-  std::list<std::unique_ptr<DeviceBufferBase>> _memory;
   std::vector<cudaDeviceProp> _dev_props;
 
   struct callback_mem {

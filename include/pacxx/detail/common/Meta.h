@@ -40,18 +40,6 @@ template <class T>
 struct is_wrapped_callable<pacxx::meta::callable_wrapper<T>> : std::true_type {
 };
 
-template <typename T>
-struct is_devbuffer : std::is_base_of<v2::DeviceBufferBase, T> {};
-
-// since genericKernel takes all parameters as lvalue and not as xvalue we let
-// the types of form int*&& decay to int* to avoid the automatic decay to int**
-template <typename T> struct add_gpu_reference {
-  using type = std::conditional_t<is_vector<std::decay_t<T>>::value,
-                                  std::add_lvalue_reference_t<T>, T>;
-};
-
-template <typename T>
-using add_gpu_reference_t = typename add_gpu_reference<T>::type;
 }
 }
 

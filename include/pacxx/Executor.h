@@ -71,7 +71,7 @@ Executor &get_executor(Ts... args);
 class Executor {
 public:
   friend void initializeModule(Executor &exec);
-  friend void initializeModule(Executor &exec, const std::string& bytes);
+  friend void initializeModule(Executor &exec, const char* ptr, size_t size);
   
   static std::vector<Executor> &getExecutors();
 
@@ -172,14 +172,14 @@ public:
 
   ExecutingDevice getExecutingDeviceType();
 
-private:
-  void setModule(std::unique_ptr<llvm::Module> M);
-
-  void run(std::string name, const void* args, size_t size, KernelConfiguration config) {
+  void run_by_name(std::string name, const void* args, size_t size, KernelConfiguration config) {
     // auto& dev_lambda = _mem_manager.getTemporaryLambda(lambda);
     auto &K = get_kernel_by_name(name, config, args, size);
     K.launch();
   }
+
+private:
+  void setModule(std::unique_ptr<llvm::Module> M);
 
   template <typename L> void run(const L &lambda, KernelConfiguration config) {
     // auto& dev_lambda = _mem_manager.getTemporaryLambda(lambda);
@@ -203,7 +203,7 @@ private:
   }
 
   Kernel &get_kernel_by_name(std::string name, KernelConfiguration config,
-                          const void* args, size_t size);
+                          const void* args, size_t size, bool force_name = false);
 
 public:
   template <typename T>

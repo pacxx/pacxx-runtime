@@ -73,11 +73,11 @@ public:
 
   template <typename T>
   DeviceBuffer<T> *allocateMemory(size_t count, T *host_ptr, MemAllocMode mode = Standard) {
-    HIPRawDeviceBuffer raw([this](HIPRawDeviceBuffer& buffer){ deleteRawMemory(&buffer); }, mode);
-    raw.allocate(count * sizeof(T));
-    auto wrapped = new HIPDeviceBuffer<T>(std::move(raw));
-    _memory.push_back(std::unique_ptr<DeviceBufferBase>(
-        static_cast<DeviceBufferBase *>(wrapped)));
+    auto raw = std::make_unique<HIPRawDeviceBuffer>([this](HIPRawDeviceBuffer& buffer){ deleteRawMemory(&buffer); }, mode);
+    raw->allocate(count * sizeof(T));
+    auto wrapped = new DeviceBuffer<T>(std::move(raw));
+    _memory.push_back(std::unique_ptr<DeviceBufferBase<void>>(
+        reinterpret_cast<DeviceBufferBase<void> *>(wrapped)));
     if (host_ptr)
       wrapped->upload(host_ptr, count);
     return wrapped;
@@ -86,7 +86,7 @@ public:
   template <typename T> DeviceBuffer<T> *translateMemory(T *ptr) {
     auto It =
         std::find_if(_memory.begin(), _memory.end(), [&](const auto &element) {
-          return reinterpret_cast<HIPDeviceBuffer<T> *>(element.get())
+          return reinterpret_cast<DeviceBuffer<T> *>(element.get())
                      ->get() == ptr;
         });
 
@@ -131,7 +131,6 @@ private:
   hipModule_t _mod;
   std::unique_ptr<CompilerT> _compiler;
   std::map<std::string, std::unique_ptr<HIPKernel>> _kernels;
-  std::list<std::unique_ptr<DeviceBufferBase>> _memory;
   std::vector<hipDeviceProp_t> _dev_props;
 
   struct callback_mem {

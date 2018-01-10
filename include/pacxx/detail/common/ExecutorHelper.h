@@ -13,6 +13,6 @@ namespace pacxx {
 		void registerModule(const char *start, const char *end);
 
 		void initializeModule(Executor& exec);
-		void initializeModule(Executor &exec, const std::string& bytes);
+		void initializeModule(Executor &exec, const char* ptr, size_t size);
 	}
 }

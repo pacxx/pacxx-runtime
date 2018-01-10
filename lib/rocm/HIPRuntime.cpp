@@ -105,17 +105,13 @@ size_t HIPRuntime::getPreferedMemoryAlignment() {
 }
 
 RawDeviceBuffer *HIPRuntime::allocateRawMemory(size_t bytes, MemAllocMode mode) {
-  HIPRawDeviceBuffer raw([this](HIPRawDeviceBuffer& buffer){ deleteRawMemory(&buffer); }, mode);
-  raw.allocate(bytes);
-  auto wrapped = new HIPDeviceBuffer<char>(std::move(raw));
-  _memory.push_back(std::unique_ptr<DeviceBufferBase>(
-      static_cast<DeviceBufferBase *>(wrapped)));
+  auto wrapped = allocateMemory<char>(bytes, nullptr, mode);
   return wrapped->getRawBuffer();
 }
 
 void HIPRuntime::deleteRawMemory(RawDeviceBuffer *ptr) {
   auto It = std::find_if(_memory.begin(), _memory.end(), [&](const auto &uptr) {
-    return static_cast<HIPDeviceBuffer<char> *>(uptr.get())->getRawBuffer() ==
+    return reinterpret_cast<DeviceBuffer<char> *>(uptr.get())->getRawBuffer() ==
            ptr;
   });
   if (It != _memory.end())

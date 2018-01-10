@@ -171,6 +171,22 @@ set(HIP_SOURCE_FILES
         lib/rocm/HIPEvent.cpp)
 set(HIP_REQUIRED ON)
 
+find_file(ASIO_HEADER asio.hpp PATHS /usr/include)
+
+if (EXISTS ${ASIO_HEADER})
+    message(STATUS "ASIO found")
+    set(REMOTE_SOURCE_FILES
+        include/pacxx/detail/remote/RemoteRuntime.h
+        lib/remote/RemoteRuntime.cpp
+        include/pacxx/detail/remote/RemoteKernel.h
+        lib/remote/RemoteKernel.cpp
+        include/pacxx/detail/remote/RemoteDeviceBuffer.h
+        lib/remote/RemoteDeviceBuffer.cpp
+        lib/remote/RemoteEvent.cpp)
+else()
+    message(FATAL_ERROR "ASIO not found")
+endif()
+
 set(HIP_LINK_LIBRARIES "-lhsa-runtime64 -lhip_hcc -lhc_am")
 
 set(LLD_LIBS lldCOFF lldDriver lldELF lldMinGW)
@@ -305,7 +321,7 @@ execute_process(COMMAND ${CMAKE_BINARY_DIR}/bin/llvm-config --ldflags
 
 set(CMAKE_SHARED_LINKER_FLAGS "-Wl,--allow-shlib-undefined")
 
-add_library(${PROJECT_NAME} ${SOURCE_FILES} ${CUDA_SOURCE_FILES} ${HIP_SOURCE_FILES})
+add_library(${PROJECT_NAME} ${SOURCE_FILES} ${CUDA_SOURCE_FILES} ${HIP_SOURCE_FILES} ${REMOTE_SOURCE_FILES})
 
 add_library(pacxx_main STATIC lib/common/WrappedMain.cpp)
 add_dependencies(pacxx_main ${PROJECT_NAME})

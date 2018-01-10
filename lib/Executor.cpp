@@ -150,19 +150,19 @@ void initializeModule(Executor &exec) {
   exec.setModule(std::move(M));
 }
 
-void initializeModule(Executor &exec, const std::string& bytes) {
+void initializeModule(Executor &exec, const char* ptr, size_t size) {
   ModuleLoader loader(exec.getLLVMContext());
 	auto M =
-      loader.loadInternal(bytes.data(), bytes.size());
+      loader.loadInternal(ptr, size);
   exec.setModule(std::move(M));
 }
 
     Kernel &Executor::get_kernel_by_name(std::string name, KernelConfiguration config,
-                           const void* args, size_t size) {
+                           const void* args, size_t size, bool force_name) {
+    if (!force_name)
+      name = getFNameForLambda(name);
 
-    std::string FName = getFNameForLambda(name);
-
-    Kernel &K = _runtime->getKernel(FName);
+    Kernel &K = _runtime->getKernel(name);
 
     K.configurate(config);
     K.setLambdaPtr(args, size);

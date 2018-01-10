@@ -7,34 +7,32 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef PACXX_V2_NATIVEDEVICEBUFFER_H
-#define PACXX_V2_NATIVEDEVICEBUFFER_H
-
 #include "pacxx/detail/DeviceBuffer.h"
 #include "pacxx/detail/common/Log.h"
 #include <memory>
-#include <functional>
+
+#pragma once
 
 namespace pacxx {
 namespace v2 {
 
-class NativeRawDeviceBuffer : public RawDeviceBuffer {
+class RemoteRuntime;
+
+class RemoteRawDeviceBuffer : public RawDeviceBuffer {
 public:
-  NativeRawDeviceBuffer(std::function<void(NativeRawDeviceBuffer&)> deleter);
+  RemoteRawDeviceBuffer(std::function<void(RemoteRawDeviceBuffer&)> deleter, RemoteRuntime* runtime, MemAllocMode mode = Standard);
 
-  void allocate(size_t bytes, unsigned padding = 0);
+  void allocate(size_t bytes);
 
-  void allocate(size_t bytes, char *host_ptr);
+  virtual ~RemoteRawDeviceBuffer();
 
-  virtual ~NativeRawDeviceBuffer();
+  RemoteRawDeviceBuffer(const RemoteRawDeviceBuffer &) = delete;
 
-  NativeRawDeviceBuffer(const NativeRawDeviceBuffer &) = delete;
+  RemoteRawDeviceBuffer &operator=(const RemoteRawDeviceBuffer &) = delete;
 
-  NativeRawDeviceBuffer &operator=(const NativeRawDeviceBuffer &) = delete;
+  RemoteRawDeviceBuffer(RemoteRawDeviceBuffer &&rhs);
 
-  NativeRawDeviceBuffer(NativeRawDeviceBuffer &&rhs);
-
-  NativeRawDeviceBuffer &operator=(NativeRawDeviceBuffer &&rhs);
+  RemoteRawDeviceBuffer &operator=(RemoteRawDeviceBuffer &&rhs);
 
   virtual void *get(size_t offset = 0) const final;
 
@@ -56,13 +54,13 @@ public:
   virtual void mercy() override;
 
 private:
-  char *[[pacxx::device_memory]] _buffer;
+  [[pacxx::device_memory]] char *_buffer;
   size_t _size;
   unsigned _mercy;
-  bool _isHost;
-  std::function<void(NativeRawDeviceBuffer&)> _deleter;
+  MemAllocMode _mode;
+  std::function<void(RemoteRawDeviceBuffer&)> _deleter;
+  RemoteRuntime* _runtime;
 };
-} // v2 namespace
-} // pacxx namespace
+}
+}
 
-#endif // PACXX_V2_NATIVEDEVICEBUFFER_H

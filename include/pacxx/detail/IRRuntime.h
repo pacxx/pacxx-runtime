@@ -16,6 +16,7 @@
 #include <string>
 #include <vector>
 #include <memory>
+#include <list>
 #include "pacxx/detail/msp/MSPEngine.h"
 
 namespace llvm {
@@ -79,6 +80,7 @@ public:
 protected:
   MSPEngine _msp_engine;
   std::unique_ptr<llvm::Module> _M, _rawM;
+  std::list<std::unique_ptr<DeviceBufferBase<void>>> _memory;
 };
 }
 }

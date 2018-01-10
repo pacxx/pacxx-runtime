@@ -16,14 +16,11 @@
 namespace pacxx {
 namespace v2 {
 class CUDARawDeviceBuffer : public RawDeviceBuffer {
-  friend class CUDARuntime;
-
-private:
+public:
   CUDARawDeviceBuffer(std::function<void(CUDARawDeviceBuffer&)> deleter, MemAllocMode mode = Standard);
 
   void allocate(size_t bytes);
 
-public:
   virtual ~CUDARawDeviceBuffer();
 
   CUDARawDeviceBuffer(const CUDARawDeviceBuffer &) = delete;
@@ -59,60 +56,6 @@ private:
   unsigned _mercy;
   MemAllocMode _mode;
   std::function<void(CUDARawDeviceBuffer&)> _deleter;
-};
-
-template <typename T> class CUDADeviceBuffer : public DeviceBuffer<T> {
-  friend class CUDARuntime;
-
-private:
-  CUDADeviceBuffer(CUDARawDeviceBuffer buffer) : _buffer(std::move(buffer)) {}
-
-  CUDARawDeviceBuffer *getRawBuffer() { return &_buffer; }
-
-public:
-  virtual ~CUDADeviceBuffer() {}
-
-  CUDADeviceBuffer(const CUDADeviceBuffer &) = delete;
-
-  CUDADeviceBuffer &operator=(const CUDADeviceBuffer &) = delete;
-
-  CUDADeviceBuffer(CUDADeviceBuffer &&rhs) { _buffer = std::move(rhs._buffer); }
-
-  CUDADeviceBuffer &operator=(CUDADeviceBuffer &&rhs) {
-    _buffer = std::move(rhs._buffer);
-    return *this;
-  }
-
-  virtual T* [[pacxx::device_memory]] get(size_t offset = 0) const final {
-    return reinterpret_cast<T *>(_buffer.get(sizeof(T) * offset));
-  }
-
-  virtual void upload(const T *src, size_t count, size_t offset = 0) override {
-    _buffer.upload(src, count * sizeof(T), offset);
-  }
-
-  virtual void download(T *dest, size_t count, size_t offset = 0) override {
-    _buffer.download(dest, count * sizeof(T), offset);
-  }
-
-  virtual void uploadAsync(const T *src, size_t count,
-                           size_t offset = 0) override {
-    _buffer.uploadAsync(src, count * sizeof(T), offset);
-  }
-
-  virtual void downloadAsync(T *dest, size_t count,
-                             size_t offset = 0) override {
-    _buffer.downloadAsync(dest, count * sizeof(T), offset);
-  }
-
-  virtual void abandon() override { _buffer.abandon(); }
-
-  virtual void mercy() override { _buffer.mercy(); }
-
-  virtual void copyTo(T *dest) override { _buffer.copyTo(dest); }
-
-private:
-  CUDARawDeviceBuffer _buffer;
 };
 }
 }

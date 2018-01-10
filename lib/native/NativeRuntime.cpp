@@ -85,19 +85,14 @@ size_t NativeRuntime::getPreferedMemoryAlignment() {
   return _CPUMod->getDataLayout().getPointerABIAlignment(0);
 }
 
-RawDeviceBuffer *NativeRuntime::allocateRawMemory(size_t bytes, MemAllocMode) {
-  NativeRawDeviceBuffer rawBuffer([this](NativeRawDeviceBuffer& buffer){ deleteRawMemory(&buffer); });
-
-  rawBuffer.allocate(bytes, 8 * getPreferedVectorSize(1));
-  auto wrapped = new NativeDeviceBuffer<char>(std::move(rawBuffer));
-  _memory.push_back(std::unique_ptr<DeviceBufferBase>(
-      static_cast<DeviceBufferBase *>(wrapped)));
+RawDeviceBuffer *NativeRuntime::allocateRawMemory(size_t bytes, MemAllocMode mode) {
+  auto wrapped = allocateMemory<char>(bytes, nullptr, mode);
   return wrapped->getRawBuffer();
 }
 
 void NativeRuntime::deleteRawMemory(RawDeviceBuffer *ptr) {
   auto It = std::find_if(_memory.begin(), _memory.end(), [&](const auto &uptr) {
-    return static_cast<NativeDeviceBuffer<char> *>(uptr.get())
+    return reinterpret_cast<DeviceBuffer<char> *>(uptr.get())
         ->getRawBuffer() == ptr;
   });
   if (It != _memory.end())
