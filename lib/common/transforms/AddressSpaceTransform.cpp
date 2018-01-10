@@ -124,11 +124,13 @@ struct AddressSpaceTransform : public ModulePass {
         LI->replaceAllUsesWith(newLI);
         LI->eraseFromParent();
       } else if (auto SI = dyn_cast<StoreInst>(V)) {
+        if (mapping[SI->getOperand(1)] != nullptr){ // operand not mapped do nothing 
         auto newSI =
             new StoreInst(SI->getOperand(0), mapping[SI->getOperand(1)],
                           SI->isVolatile(), SI);
         newSI->setAlignment(4);
         SI->eraseFromParent();
+        }
       } else if (auto GEP = dyn_cast<GetElementPtrInst>(V)) {
         auto ptr = mapping[GEP->getOperand(0)];
         std::vector<Value *> new_worklist;
