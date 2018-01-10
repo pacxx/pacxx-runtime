@@ -208,5 +208,9 @@ bool RemoteRuntime::supportsUnifiedAddressing() { return false; }
 
 const llvm::Module &RemoteRuntime::getModule() { return *_M; }
 
+void RemoteRuntime::requestIRTransformation(Kernel &K) {
+
+}
+
 } // namespace v2
 } // namespace pacxx

@@ -31,6 +31,8 @@
 #include "pacxx/detail/cuda/CUDAEvent.h" // TODO: move event create to the runtimes
 #include "pacxx/detail/native/NativeEvent.h"
 #include "pacxx/detail/native/NativeRuntime.h"
+#include "pacxx/detail/remote/RemoteEvent.h"
+#include "pacxx/detail/remote/RemoteRuntime.h"
 #include "pacxx/detail/rocm/HIPEvent.h" // TODO: move event create to the runtimes
 #include <algorithm>
 #include <cstdlib>
@@ -229,6 +231,9 @@ public:
       return *llvm::cast<HIPRuntime>(_runtime.get())
                   ->template allocateMemory(count, host_ptr, mode);
 #endif
+    case IRRuntime::RuntimeKind::RK_Remote:
+      return *llvm::cast<RemoteRuntime>(_runtime.get())
+                  ->template allocateMemory(count, host_ptr, mode);
     default:
       llvm_unreachable("this runtime type is not defined!");
     }
@@ -254,6 +259,9 @@ public:
       llvm::cast<HIPRuntime>(_runtime.get())->template deleteMemory(&buffer);
       break;
 #endif
+    case IRRuntime::RuntimeKind::RK_Remote:
+      llvm::cast<RemoteRuntime>(_runtime.get())->template deleteMemory(&buffer);
+      break;
     default:
       llvm_unreachable("this runtime type is not defined!");
     }
@@ -300,6 +308,9 @@ public:
       event.reset(new HIPEvent());
       break;
 #endif
+    case IRRuntime::RuntimeKind::RK_Remote:
+      event.reset(new RemoteEvent());
+      break;
     default:
       llvm_unreachable("this runtime type is not defined!");
     }

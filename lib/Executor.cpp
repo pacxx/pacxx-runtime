@@ -63,6 +63,8 @@ ExecutingDevice Executor::getExecutingDeviceType() {
   case IRRuntime::RuntimeKind::RK_HIP:
     return ExecutingDevice::GPUAMD;
 #endif
+  case IRRuntime::RuntimeKind::RK_Remote:
+    return ExecutingDevice::CPU; // FIXME
   default:
     break;
   }
