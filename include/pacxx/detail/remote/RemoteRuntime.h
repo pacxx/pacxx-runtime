@@ -114,6 +114,8 @@ private:
 
   void connectToDeamon(const std::string &host, const std::string &port);
 
+  void disconnectFromDeamon();
+
   void createRemoteBackend(IRRuntime::RuntimeKind kind,
                            const char *llvm, size_t size);
 

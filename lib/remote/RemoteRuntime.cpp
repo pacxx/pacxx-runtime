@@ -8,6 +8,7 @@
 //===----------------------------------------------------------------------===//
 
 #include "pacxx/detail/remote/RemoteRuntime.h"
+#include "pacxx/detail/common/transforms/Passes.h"
 #include "pacxx/detail/common/Exceptions.h"
 #include "pacxx/detail/common/Timing.h"
 #include <llvm/IR/Constants.h>
@@ -17,6 +18,8 @@
 #include <llvm/Transforms/Scalar.h>
 #include <llvm/Transforms/Utils/Cloning.h>
 #include <llvm/Transforms/Vectorize.h>
+#include <llvm/IR/LegacyPassManager.h>
+#include <llvm/Transforms/IPO/PassManagerBuilder.h>
 
 #include <asio.hpp>
 
@@ -31,7 +34,10 @@ RemoteRuntime::RemoteRuntime(const std::string& host, const std::string& port, R
       connectToDeamon(host, port);
     }
 
-RemoteRuntime::~RemoteRuntime() {}
+RemoteRuntime::~RemoteRuntime() {
+  _memory.clear();
+  disconnectFromDeamon();
+}
 
 void RemoteRuntime::link(std::unique_ptr<llvm::Module> M) {
 
@@ -44,6 +50,13 @@ void RemoteRuntime::link(std::unique_ptr<llvm::Module> M) {
   llvm::raw_svector_ostream OS(llvm);
 
   _M->print(OS, nullptr);
+
+  llvm::legacy::PassManager PM;
+  PassManagerBuilder builder;
+  builder.OptLevel = 3;
+  PM.add(createPACXXCodeGenPrepare());
+  builder.populateModulePassManager(PM);
+  PM.run(*_M);
 
   createRemoteBackend(_kind, llvm.data(), llvm.size());
   
@@ -123,6 +136,12 @@ void RemoteRuntime::connectToDeamon(const std::string &host,
   asio::connect(*_socket, endpoint_iterator);
 
   send_message("HELLO");
+}
+
+void RemoteRuntime::disconnectFromDeamon() {
+  send_message("BYE");
+  _socket.reset();
+  _service.reset();
 }
 
 void RemoteRuntime::createRemoteBackend(pacxx::v2::IRRuntime::RuntimeKind kind,
