@@ -51,12 +51,14 @@ public:
 
   virtual void copyTo(void *dest) override;
 
+  virtual void restore() override;
+
   virtual void abandon() override;
 
   virtual void mercy() override;
 
 private:
-  char *[[pacxx::device_memory]] _buffer;
+  [[pacxx::device_memory]] char *_buffer;
   size_t _size;
   unsigned _mercy;
   bool _isHost;

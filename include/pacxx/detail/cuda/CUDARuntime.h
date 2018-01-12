@@ -30,7 +30,7 @@
 // typedef struct CUmod_st *CUmodule;
 // struct CUstream_st;
 // typedef struct CUstream_st *cudaStream_t;
-// enum cudaError; 
+// enum cudaError;
 // typedef enum cudaError cudaError_t;
 
 #include <driver_types.h>
@@ -108,7 +108,6 @@ public:
   virtual const llvm::Module &getModule() override;
 
   virtual void synchronize() override;
-
 
 private:
   void compileAndLink();

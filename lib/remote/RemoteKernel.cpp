@@ -27,6 +27,10 @@ void RemoteKernel::configurate(KernelConfiguration config) {
 }
 }
 
+RemoteRuntime &RemoteKernel::getRuntime() {
+	return _runtime;
+}
+
 void RemoteKernel::launch() {
   __debug("Launching kernel: ", _name);
   __verbose("Kernel configuration: \nblocks(", _config.blocks.x, ",",

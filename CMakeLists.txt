@@ -50,7 +50,7 @@ endif(PACXX_USE_OpenMP)
 #option(BUILD_SHARED "Build PACXX Runtime as shared object" OFF)
 set(PACXX_RV_LIB RV)
 
-set(TRANSFORMS_SOURCE_FILES         
+set(TRANSFORMS_SOURCE_FILES
 lib/common/transforms/MemoryCoalescing.cpp
 lib/common/transforms/IntrinsicMapper.cpp
 lib/common/transforms/MSPRemover.cpp
@@ -90,6 +90,7 @@ set(SOURCE_FILES include/pacxx/Executor.h
         include/pacxx/ModuleLoader.h
         lib/ModuleLoader.cpp
         include/pacxx/detail/IRRuntime.h
+        include/pacxx/detail/IRProfiler.h
         include/pacxx/detail/KernelConfiguration.h
         lib/KernelConfiguration.cpp
         include/pacxx/detail/Kernel.h
@@ -132,6 +133,7 @@ set(SOURCE_FILES include/pacxx/Executor.h
             lib/common/transforms/AddressSpaceTransform.cpp
             lib/cuda/transforms/NVPTXPrepair.cpp
             lib/rocm/transforms/AMDGCNPrepair.cpp
+        lib/IRProfiler.cpp
         lib/IRRuntime.cpp
         lib/native/NativeEvent.cpp
         lib/common/TearDown.cpp)
@@ -141,11 +143,14 @@ if (PACXX_USE_CUDA)
     find_package(CUDA REQUIRED)
     set(PACXX_CUDA_BACKEND 1)
     include_directories(${CUDA_TOOLKIT_INCLUDE})
+    include_directories(${CUDA_TOOLKIT_ROOT_DIR}/extras/CUPTI/include)
     set(CUDA_SOURCE_FILES
             include/pacxx/detail/cuda/CUDARuntime.h
             lib/cuda/CUDARuntime.cpp
             include/pacxx/detail/cuda/CUDAErrorDetection.h
             lib/cuda/CUDAErrorDetection.cpp
+            #include/pacxx/detail/cuda/CUPTIProfiler.h
+            #lib/cuda/CUPTIProfiler.cpp
             include/pacxx/detail/cuda/CUDAKernel.h
             lib/cuda/CUDAKernel.cpp
             include/pacxx/detail/cuda/CUDADeviceBuffer.h
@@ -154,7 +159,7 @@ if (PACXX_USE_CUDA)
             lib/cuda/CUDAEvent.cpp)
     set(CUDA_REQUIRED ON)
 
-    set (CUDA_LINK_LIBRARIES ${CUDA_LIBRARIES})
+    set (CUDA_LINK_LIBRARIES ${CUDA_LIBRARIES} ${CUDA_cupti_LIBRARY})
     #   set(CUDA_LINK_LIBRARIES "-lcuda -lcudart")
 
     if (BUILD_SHARED)
@@ -187,6 +192,8 @@ set(HIP_SOURCE_FILES
         lib/rocm/HSACOBackend.cpp
         include/pacxx/detail/rocm/HIPErrorDetection.h
         lib/rocm/HIPErrorDetection.cpp
+        #include/pacxx/detail/cuda/GPAProfiler.h
+        #lib/cuda/GPAProfiler.cpp
         include/pacxx/detail/rocm/HIPKernel.h
         lib/rocm/HIPKernel.cpp
         include/pacxx/detail/rocm/HIPDeviceBuffer.h
@@ -225,7 +232,7 @@ configure_file(cmake/config/FindPACXXConfig.cmake.in ${CMAKE_CURRENT_SOURCE_DIR}
 
 set(CMAKE_CXX_STANDARD 14)
 
-add_compile_options(-include ${CMAKE_CURRENT_SOURCE_DIR}/include/pacxx/pacxx_config.h -Wno-attributes)
+add_compile_options(-include ${CMAKE_CURRENT_SOURCE_DIR}/include/pacxx/pacxx_config.h -Wno-ignored-attributes -Wno-attributes)
 
 #add_definitions(${LLVM_DEFINITIONS} -D__PACXX_RUNTIME_LINKING)
 add_definitions(${LLVM_DEFINITIONS})
@@ -253,7 +260,7 @@ add_custom_command(
         add_custom_command(
             OUTPUT ${nvdbFile}.linked.bc
             COMMAND ${CMAKE_BINARY_DIR}/bin/llvm-link -suppress-warnings ${nvdbFile}.bc ${CMAKE_CURRENT_SOURCE_DIR}/lib/bitcode/syscalls.ll ${CMAKE_CURRENT_SOURCE_DIR}/lib/bitcode/nvptx_libdevice.bc -o ${nvdbFile}.linked.bc
-            WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/lib    
+            WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/lib
             DEPENDS ${nvdbFile}.bc llvm-link
             COMMENT "Linking NVPTX libdevice into bitcode")
 
@@ -285,7 +292,7 @@ add_custom_command(
 add_custom_command(
     OUTPUT ${amddbFile}.linked.bc
     COMMAND ${CMAKE_BINARY_DIR}/bin/llvm-link -suppress-warnings ${amddbFile}.bc ${CMAKE_CURRENT_SOURCE_DIR}/lib/bitcode/amdgcn_libdevice.bc -o ${amddbFile}.linked.bc
-    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/lib    
+    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/lib
     DEPENDS ${amddbFile}.bc llvm-link
     COMMENT "Linking AMDGCN libdevice into bitcode")
 

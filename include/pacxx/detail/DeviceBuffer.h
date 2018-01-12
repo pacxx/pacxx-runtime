@@ -33,17 +33,19 @@ public:
   virtual void uploadAsync(const T *src, size_t count, size_t offset = 0) = 0;
   virtual void downloadAsync(T *dest, size_t count, size_t offset = 0) = 0;
   virtual void copyTo(T *dest) = 0;
-
+  virtual void restore() = 0;
   virtual void mercy() = 0;
   virtual void abandon() = 0;
+protected:
+  char *src_shadow;
+  size_t count_shadow;
+  size_t offset_shadow;
 };
 
 class RawDeviceBuffer : public DeviceBufferBase<void> {};
 
 
 template <typename T> class DeviceBuffer : public DeviceBufferBase<T> {
-public:
-
 public:
   DeviceBuffer(std::unique_ptr<RawDeviceBuffer> buffer) : _buffer(std::move(buffer)) {}
 
@@ -84,11 +86,13 @@ public:
     _buffer->downloadAsync(dest, count * sizeof(T), offset);
   }
 
+  virtual void copyTo(T *dest) override { _buffer->copyTo(dest); }
+
+  virtual void restore() override { _buffer->restore(); }
+
   virtual void abandon() override { _buffer->abandon(); }
 
   virtual void mercy() override { _buffer->mercy(); }
-
-  virtual void copyTo(T *dest) override { _buffer->copyTo(dest); }
 
 private:
   std::unique_ptr<RawDeviceBuffer> _buffer;

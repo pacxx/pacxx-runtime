@@ -74,7 +74,7 @@ class Executor {
 public:
   friend void initializeModule(Executor &exec);
   friend void initializeModule(Executor &exec, const char* ptr, size_t size);
-  
+
   static std::vector<Executor> &getExecutors();
 
   static Executor &get(unsigned id = 0) {
@@ -183,9 +183,15 @@ public:
 private:
   void setModule(std::unique_ptr<llvm::Module> M);
 
+  void profile(Kernel &kernel) {
+    kernel.profile();
+    restoreArgs();
+  }
+
   template <typename L> void run(const L &lambda, KernelConfiguration config) {
     // auto& dev_lambda = _mem_manager.getTemporaryLambda(lambda);
     auto &K = get_kernel_by_name(typeid(L).name(), config, lambda);
+    profile(std::ref(K));
     K.launch();
   }
 
@@ -194,6 +200,7 @@ private:
                          CallbackFunc &&cb, Args &&... args) {
     auto &K = get_kernel_by_name(typeid(L).name(), config, lambda,
                                  std::forward<Args>(args)...);
+    profile(std::ref(K));
     K.setCallback(std::move(cb));
     K.launch();
   }
@@ -290,6 +297,30 @@ public:
   }
 
   llvm::LLVMContext &getLLVMContext() { return *_ctx; }
+
+  void restoreArgs() {
+    switch (_runtime->getKind()) {
+#ifdef PACXX_ENABLE_CUDA
+    case IRRuntime::RuntimeKind::RK_CUDA:
+      llvm::cast<CUDARuntime>(_runtime.get())->restoreMemory();
+      break;
+#endif
+    case IRRuntime::RuntimeKind::RK_Native:
+      llvm::cast<NativeRuntime>(_runtime.get())->restoreMemory();
+      break;
+#ifdef PACXX_ENABLE_HIP
+    case IRRuntime::RuntimeKind::RK_HIP:
+      llvm::cast<HIPRuntime>(_runtime.get())->restoreMemory();
+      break;
+#endif
+    case IRRuntime::RuntimeKind::RK_Remote:
+      llvm::cast<RemoteRuntime>(_runtime.get())->restoreMemory();
+      break;
+    default:
+      llvm_unreachable("this runtime type is not defined!");
+    }
+    __verbose("Args restored");
+  }
 
   Event &createEvent() {
     _events.emplace_back();

@@ -131,7 +131,7 @@ private:
                           KernelConfiguration config);
 
   std::map<std::string, std::unique_ptr<RemoteKernel>> _kernels;
-  std::unique_ptr<asio::io_service> _service; 
+  std::unique_ptr<asio::io_service> _service;
   std::unique_ptr<asio::ip::tcp::socket> _socket;
   RuntimeKind _kind;
 };

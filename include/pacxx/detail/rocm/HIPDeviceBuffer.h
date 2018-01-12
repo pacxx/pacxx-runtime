@@ -41,6 +41,8 @@ public:
 
   virtual void copyTo(void *dest) override;
 
+  virtual void restore() override;
+
   virtual void abandon() override;
 
   virtual void mercy() override;
@@ -54,4 +56,5 @@ private:
 };
 }
 }
+
 #endif // PACXX_V2_HIPDEVICEBUFFER_H

@@ -18,10 +18,11 @@ if (CUDA_REQUIRED)
 
     if (CUDA_FOUND)
         include_directories(${CUDA_TOOLKIT_INCLUDE})
+        include_directories(${CUDA_TOOLKIT_ROOT_DIR}/extras/CUPTI/include)
         link_directories(${CUDA_TOOLKIT_ROOT_DIR}/lib64) #TODO make dynamic for non 64 bit systems
     endif ()
 
-    set(CUDA_LINK_LIBRARIES cuda)
+    set(CUDA_LINK_LIBRARIES cuda ${CUDA_cupti_LIBRARY})
 
 endif ()
 endif ()
@@ -55,7 +56,7 @@ if (TBB_REQUIRED)
 endif ()
 
 # Set the path to llvm-config
-find_program(PACXX_LLVM_CONFIG llvm-config PATHS 
+find_program(PACXX_LLVM_CONFIG llvm-config PATHS
   ${PACXX_DIR} PATH_SUFFIXES bin NO_DEFAULT_PATH)
 if (EXISTS ${PACXX_LLVM_CONFIG})
     mark_as_advanced(PACXX_LLVM_CONFIG)
@@ -94,7 +95,7 @@ else ()
 endif ()
 
 
-find_program(PACXX_COMPILER clang++ PATHS 
+find_program(PACXX_COMPILER clang++ PATHS
   ${PACXX_DIR} PATH_SUFFIXES bin NO_DEFAULT_PATH)
 if (EXISTS ${PACXX_COMPILER})
     message(STATUS "clang location: ${PACXX_COMPILER}")
@@ -104,7 +105,7 @@ else ()
     message(FATAL_ERROR "clang++ (PACXX) - Not found! (${PACXX_COMPILER})")
 endif ()
 
-find_program(PACXX_LINK llvm-link PATHS 
+find_program(PACXX_LINK llvm-link PATHS
   ${PACXX_DIR} PATH_SUFFIXES bin NO_DEFAULT_PATH)
 if (EXISTS ${PACXX_LINK})
     mark_as_advanced(PACXX_LINK)
@@ -168,7 +169,7 @@ endif ()
 
 set(PACXX_FOUND 1)
 
-set(PACXX_DEVICE_FLAGS "-std=c++1z -pacxx -O0 -emit-llvm -D__STDC_CONSTANT_MACROS -D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS -DNDEBUG -D__CUDA_DEVICE_CODE" CACHE "PACXX Device compilation flags" STRING)
+set(PACXX_DEVICE_FLAGS "-Wno-invalid-noreturn -std=c++1z -pacxx -O0 -emit-llvm -D__STDC_CONSTANT_MACROS -D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS -DNDEBUG -D__CUDA_DEVICE_CODE" CACHE "PACXX Device compilation flags" STRING)
 set(PACXX_LINK_FLAGS "-suppress-warnings" CACHE "PACXX bytecode linker flags" STRING)
 
 function(pacxx_generate_ir targetName srcFile binDir)
@@ -284,7 +285,7 @@ function(add_pacxx_to_target targetName binDir srcFiles)
     set_target_properties(${targetName} PROPERTIES LINK_FLAGS ${NEW_LINK_FLAGS})
 
 
-    target_compile_options(${targetName} PUBLIC -Wno-ignored-attributes)
+    target_compile_options(${targetName} PUBLIC -Wno-ignored-attributes -Wno-attributes)
     endif()
 endfunction(add_pacxx_to_target)
 

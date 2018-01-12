@@ -40,6 +40,10 @@ void CUDAKernel::configurate(KernelConfiguration config) {
   }
 }
 
+CUDARuntime &CUDAKernel::getRuntime() {
+	return _runtime;
+}
+
 void CUDAKernel::launch() {
   if (!_fptr || _staged_values_changed) { // kernel has no function ptr yet.
                                           // request kernel transformation and

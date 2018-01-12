@@ -26,7 +26,7 @@ HIPKernel::~HIPKernel() {}
 void HIPKernel::configurate(KernelConfiguration config) {
   if (_config != config) {
     _config = config;
-    unsigned * a = reinterpret_cast<unsigned*>(_lambdaStorage.data()); 
+    unsigned * a = reinterpret_cast<unsigned*>(_lambdaStorage.data());
 
     a[0] = config.blocks.x;
     a[1] = config.blocks.y;
@@ -39,10 +39,14 @@ void HIPKernel::configurate(KernelConfiguration config) {
 
 void HIPKernel::setLambdaPtr(const void* ptr, size_t size){
   _lambdaStorage.resize(size + 6*4);
-  _lambdaPtr = ptr; 
-  _lambdaSize = size; 
+  _lambdaPtr = ptr;
+  _lambdaSize = size;
 
   std::memcpy(_lambdaStorage.data() + 6*4, ptr, size);
+}
+
+HIPRuntime &HIPKernel::getRuntime() {
+	return _runtime;
 }
 
 void HIPKernel::launch() {

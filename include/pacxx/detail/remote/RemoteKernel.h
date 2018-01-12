@@ -30,6 +30,9 @@ public:
 
   virtual void configurate(KernelConfiguration config) override;
   virtual void launch() override;
+  virtual void profile() override;
+
+  RemoteRuntime &getRuntime();
 
 private:
   RemoteRuntime &_runtime;

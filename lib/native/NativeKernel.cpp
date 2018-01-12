@@ -40,6 +40,9 @@ void NativeKernel::configurate(KernelConfiguration config) {
   }
 }
 
+NativeRuntime &NativeKernel::getRuntime() {
+	return _runtime;
+}
 
 void NativeKernel::launch() {
 

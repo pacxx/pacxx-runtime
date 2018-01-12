@@ -12,7 +12,7 @@
 
 #include "pacxx/pacxx_config.h"
 #include "DeviceBuffer.h"
-#include "Kernel.h"
+#include "IRProfiler.h"
 #include <string>
 #include <vector>
 #include <memory>
@@ -34,8 +34,8 @@ class IRRuntime {
 public:
   enum RuntimeKind {
     RK_CUDA,
-    RK_Native, 
-    RK_HIP, 
+    RK_Native,
+    RK_HIP,
 	RK_Remote
   };
 private:
@@ -61,6 +61,8 @@ public:
 
   virtual bool supportsUnifiedAddressing() = 0;
 
+  virtual void restoreMemory();
+
   virtual RawDeviceBuffer *allocateRawMemory(size_t bytes, MemAllocMode mode) = 0;
 
   virtual void deleteRawMemory(RawDeviceBuffer *ptr) = 0;
@@ -75,12 +77,15 @@ public:
 
   virtual void synchronize() = 0;
 
+  virtual IRProfiler* getProfiler() {return _profiler.get();}
+
   virtual bool isSupportingDoublePrecission(){ return true; }
 
 protected:
   MSPEngine _msp_engine;
+  std::unique_ptr<IRProfiler> _profiler;
   std::unique_ptr<llvm::Module> _M, _rawM;
-  std::list<std::unique_ptr<DeviceBufferBase<void>>> _memory;
+  std::list<std::unique_ptr<RawDeviceBuffer>> _memory;
 };
 }
 }

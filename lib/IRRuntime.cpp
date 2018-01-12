@@ -31,6 +31,12 @@ void IRRuntime::evaluateStagedFunctions(Kernel &K) {
   }
 }
 
+void IRRuntime::restoreMemory() {
+  for (std::unique_ptr<RawDeviceBuffer>& entry : _memory) {
+    entry.get()->restore();
+  }
+}
+
 const llvm::Module &IRRuntime::getModule() { return *_rawM; }
 }
 }

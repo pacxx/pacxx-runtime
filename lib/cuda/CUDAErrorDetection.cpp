@@ -10,13 +10,16 @@
 #include "pacxx/detail/cuda/CUDAErrorDetection.h"
 #include "pacxx/detail/common/Common.h"
 #include "pacxx/detail/common/Exceptions.h"
-#include <cuda.h>
-#include <cuda_runtime.h>
 
 namespace {
 static std::string _cudaGetErrorEnum(CUresult error) {
   const char *p = nullptr;
   cuGetErrorString(error, &p);
+  return std::string(p);
+}
+static std::string _cuptiGetErrorEnum(CUptiResult error) {
+  const char *p = nullptr;
+  cuptiGetResultString(error, &p);
   return std::string(p);
 }
 }
@@ -43,6 +46,18 @@ bool checkCUDACall(cudaError_t result, char const *const func,
     throw common::generic_exception(
         common::to_string("CUDA (runtime api) error: ", func, " failed! ",
                           cudaGetErrorString(result), " (", result, ") ",
+                          common::get_file_from_filepath(file), ":", line));
+  }
+
+  return true;
+}
+
+bool checkCUPTICall(CUptiResult result, char const *const func,
+                   const char *const file, int const line) {
+  if (result != CUPTI_SUCCESS) {
+    throw common::generic_exception(
+        common::to_string("CUpti (profiler api) error: ", func, " failed! ",
+                          _cuptiGetErrorEnum(result), " (", result, ") ",
                           common::get_file_from_filepath(file), ":", line));
   }
 
