@@ -118,6 +118,8 @@ public:
     (*reinterpret_cast<std::function<void()> *>(userData))();
   }
 
+  CUcontext &getContext();
+
 private:
   CUcontext _context;
   CUmodule _mod;

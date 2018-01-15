@@ -149,8 +149,8 @@ if (PACXX_USE_CUDA)
             lib/cuda/CUDARuntime.cpp
             include/pacxx/detail/cuda/CUDAErrorDetection.h
             lib/cuda/CUDAErrorDetection.cpp
-            #include/pacxx/detail/cuda/CUPTIProfiler.h
-            #lib/cuda/CUPTIProfiler.cpp
+            include/pacxx/detail/cuda/CUPTIProfiler.h
+            lib/cuda/CUPTIProfiler.cpp
             include/pacxx/detail/cuda/CUDAKernel.h
             lib/cuda/CUDAKernel.cpp
             include/pacxx/detail/cuda/CUDADeviceBuffer.h

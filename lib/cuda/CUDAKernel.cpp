@@ -75,6 +75,12 @@ void CUDAKernel::launch() {
                                         &_callback, 0));
 }
 
+void CUDAKernel::profile() {
+  CUDAProfiler* ptr = _runtime.getProfiler();
+  ptr->updateKernel(this);
+  ptr->dryrun();
+  ptr->profile();
+}
 
 }
 }

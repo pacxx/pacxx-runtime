@@ -9,6 +9,7 @@
 
 #include "pacxx/detail/cuda/CUDAErrorDetection.h"
 #include "pacxx/detail/cuda/CUDARuntime.h"
+#include "pacxx/detail/cuda/CUPTIProfiler.h"
 #include "pacxx/detail/common/Exceptions.h"
 #include "pacxx/detail/common/Timing.h"
 #include <llvm/IR/Module.h>
@@ -28,7 +29,8 @@ namespace pacxx {
 namespace v2 {
 CUDARuntime::CUDARuntime(unsigned dev_id)
     : IRRuntime(RuntimeKind::RK_CUDA), _context(nullptr), _compiler(std::make_unique<CompilerT>()),
-      _dev_props(16), _delayed_compilation(false) {
+      _profiler(new CUPTIProfiler()), _dev_props(16), _delayed_compilation(false) {
+  _profiler->preinit(&dev_id);
   SEC_CUDA_CALL(cuInit(0));
   CUcontext old;
   SEC_CUDA_CALL(cuCtxGetCurrent(&old)); // check if there is already a context
@@ -51,9 +53,12 @@ CUDARuntime::CUDARuntime(unsigned dev_id)
   __verbose("Initializing PTXBackend for ", prop.name, " (dev: ", dev_id,
             ") with compute capability ", prop.major, ".", prop.minor);
   _compiler->initialize(CC);
+  _profiler->postinit();
 }
 
-CUDARuntime::~CUDARuntime() {}
+CUDARuntime::~CUDARuntime() {
+  _profiler->report();
+}
 
 void CUDARuntime::link(std::unique_ptr<llvm::Module> M) {
 
@@ -124,6 +129,11 @@ Kernel &CUDARuntime::getKernel(const std::string &name) {
   } else {
     return *It->second;
   }
+}
+
+CUcontext &CUDARuntime::getContext()
+{
+  return _context;
 }
 
 size_t CUDARuntime::getPreferedMemoryAlignment() {
