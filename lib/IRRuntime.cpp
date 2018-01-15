@@ -32,7 +32,7 @@ void IRRuntime::evaluateStagedFunctions(Kernel &K) {
 }
 
 void IRRuntime::restoreMemory() {
-  for (std::unique_ptr<RawDeviceBuffer>& entry : _memory) {
+  for (std::unique_ptr<DeviceBufferBase<void>>& entry : _memory) {
     entry.get()->restore();
   }
 }

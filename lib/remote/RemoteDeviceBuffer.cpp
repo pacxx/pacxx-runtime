@@ -15,7 +15,7 @@ namespace v2 {
 RemoteRawDeviceBuffer::RemoteRawDeviceBuffer(
     std::function<void(RemoteRawDeviceBuffer &)> deleter,
     RemoteRuntime *runtime, MemAllocMode mode)
-    : _size(0), _mercy(1), _mode(mode), _deleter(deleter), _runtime(runtime), count_shadow(0), offset_shadow(0), src_shadow(nullptr) {}
+    : _size(0), _mercy(1), _mode(mode), _deleter(deleter), _runtime(runtime) {}
 
 void RemoteRawDeviceBuffer::allocate(size_t bytes) {
   _buffer = reinterpret_cast<char*>(_runtime->allocateRemoteMemory(bytes));

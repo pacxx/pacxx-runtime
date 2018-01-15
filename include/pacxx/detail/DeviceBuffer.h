@@ -24,6 +24,8 @@ enum MemAllocMode {
 template <typename T>
 class DeviceBufferBase {
 public:
+  DeviceBufferBase() : src_shadow(nullptr), count_shadow(0), offset_shadow(0) {}
+
   virtual ~DeviceBufferBase() {}
 
   virtual T *[[pacxx::device_memory]] get(size_t offset = 0) const = 0;

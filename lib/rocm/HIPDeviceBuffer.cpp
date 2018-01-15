@@ -17,7 +17,7 @@ namespace v2 {
 HIPRawDeviceBuffer::HIPRawDeviceBuffer(
     std::function<void(HIPRawDeviceBuffer&)> deleter,
     MemAllocMode mode)
-    : _size(0), _mercy(1), _mode(mode), _deleter(deleter), count_shadow(0), offset_shadow(0), src_shadow(nullptr) {}
+    : _size(0), _mercy(1), _mode(mode), _deleter(deleter) {}
 
 void HIPRawDeviceBuffer::allocate(size_t bytes) {
   switch(_mode) {

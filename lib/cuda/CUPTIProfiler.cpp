@@ -84,7 +84,7 @@ void CUPTIProfiler::dryrun() {
 	static_cast<CUDAKernel*>(_kernel)->getRuntime().synchronize();
 	SEC_CUPTI_CALL(cuptiActivityFlushAll(0));
 	static_cast<CUDAKernel*>(_kernel)->launch();
-	Executor::get()->restoreArgs();
+	Executor::get().restoreArgs();
 	static_cast<CUDAKernel*>(_kernel)->getRuntime().synchronize();
 	SEC_CUPTI_CALL(cuptiActivityFlushAll(0));
 	__debug("Kernel run time: ", kernelDuration, "us");
@@ -281,7 +281,7 @@ void CUPTIProfiler::profileSingle(const std::string& metricName) {
 		__verbose("Pass ", pass);
 		metricData.eventGroups = passData->sets + pass;
 		static_cast<CUDAKernel*>(_kernel)->launch();
-		Executor::get()->restoreArgs();
+		Executor::get().restoreArgs();
 	}
 
 	if (metricData.eventIdx != metricData.numEvents) {

@@ -11,6 +11,7 @@
 #include "pacxx/detail/common/Log.h"
 #include "pacxx/detail/cuda/CUDAErrorDetection.h"
 #include "pacxx/detail/cuda/CUDARuntime.h"
+#include "pacxx/detail/cuda/CUPTIProfiler.h"
 #include <llvm/IR/Module.h>
 #include <llvm/Target/TargetMachine.h>
 #include <cuda.h>
@@ -76,7 +77,7 @@ void CUDAKernel::launch() {
 }
 
 void CUDAKernel::profile() {
-  CUDAProfiler* ptr = _runtime.getProfiler();
+  CUPTIProfiler* ptr = static_cast<CUPTIProfiler*>(_runtime.getProfiler());
   ptr->updateKernel(this);
   ptr->dryrun();
   ptr->profile();

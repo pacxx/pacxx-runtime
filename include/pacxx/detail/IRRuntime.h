@@ -36,7 +36,7 @@ public:
     RK_CUDA,
     RK_Native,
     RK_HIP,
-	RK_Remote
+    RK_Remote
   };
 private:
   const RuntimeKind _kind;
@@ -85,7 +85,7 @@ protected:
   MSPEngine _msp_engine;
   std::unique_ptr<IRProfiler> _profiler;
   std::unique_ptr<llvm::Module> _M, _rawM;
-  std::list<std::unique_ptr<RawDeviceBuffer>> _memory;
+  std::list<std::unique_ptr<DeviceBufferBase<void>>> _memory;
 };
 }
 }

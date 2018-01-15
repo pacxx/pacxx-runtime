@@ -16,7 +16,7 @@ namespace pacxx {
 namespace v2 {
 NativeRawDeviceBuffer::NativeRawDeviceBuffer(
     std::function<void(NativeRawDeviceBuffer&)> deleter)
-    : _size(0), _mercy(1), _isHost(false), _deleter(deleter), count_shadow(0), offset_shadow(0), src_shadow(nullptr){}
+    : _size(0), _mercy(1), _isHost(false), _deleter(deleter) {}
 
 void NativeRawDeviceBuffer::allocate(size_t bytes, unsigned padding) {
 
