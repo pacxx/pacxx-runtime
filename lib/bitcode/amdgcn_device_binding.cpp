@@ -18,4 +18,13 @@ unsigned __pacxx_get_num_groups(unsigned dim){
 unsigned __pacxx_get_local_size(unsigned dim){
     return __ockl_get_local_size(dim);
 }
+
+float sqrtf(float value){
+    return __builtin_sqrtf(value);
+}
+
+float expf(float value){
+    return __builtin_expf(value);
+}
+
 }

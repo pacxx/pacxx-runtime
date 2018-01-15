@@ -42,7 +42,7 @@ static void createISAVersionFunction(Module *M, unsigned GFX) {
       Function::Create(FTy, GlobalValue::LinkageTypes::LinkOnceODRLinkage,
                        "__oclc_ISA_version", M);
   ISAFunc->setVisibility(GlobalValue::VisibilityTypes::ProtectedVisibility);
-  auto BB = BasicBlock::Create(M->getContext(), "", ISAFunc);
+  BasicBlock::Create(M->getContext(), "", ISAFunc);
 
   IRBuilder<> builder(&ISAFunc->front());
   builder.CreateRet(builder.getInt32(GFX));
