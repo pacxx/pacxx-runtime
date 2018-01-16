@@ -21,7 +21,7 @@ if (CUDA_REQUIRED)
         link_directories(${CUDA_TOOLKIT_ROOT_DIR}/lib64) #TODO make dynamic for non 64 bit systems
     endif ()
 
-    set(CUDA_LINK_LIBRARIES cuda)
+    set(CUDA_LINK_LIBRARIES PACXXBeCUDA cuda)
 
 endif ()
 endif ()
@@ -39,7 +39,7 @@ if (HIP_REQUIRED)
     endif ()
 
     link_directories(${ROCM_DIR}/lib)
-    set(HIP_LINK_LIBRARIES hsa-runtime64 hip_hcc hc_am)
+    set(HIP_LINK_LIBRARIES PACXXBeROCm hsa-runtime64 hip_hcc hc_am)
 endif()
 
 if (OpenMP_REQUIRED)

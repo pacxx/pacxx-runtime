@@ -7,6 +7,10 @@ if (NOT WIN32)
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/pacxx/FindTBB.cmake)
 endif()
 
+if (EXISTS /opt/rocm)
+set (ROCM_DIR /opt/rocm)
+endif()
+
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 include_directories(${LLVM_INCLUDE_DIRS})
@@ -73,65 +77,20 @@ lib/common/transforms/AddressSpaceTransform.cpp
 lib/cuda/transforms/NVPTXPrepair.cpp
 lib/rocm/transforms/AMDGCNPrepair.cpp)
 
-set(SOURCE_FILES include/pacxx/Executor.h
-        include/pacxx/detail/common/Exceptions.h
-        include/pacxx/detail/common/Log.h
-        include/pacxx/detail/common/transforms/PACXXTransforms.h
-        include/pacxx/detail/common/transforms/ModuleHelper.h
-        include/pacxx/detail/common/transforms/CallVisitor.h
-        lib/common/transforms/MemoryCoalescing.cpp
-        lib/common/transforms/IntrinsicMapper.cpp
-        lib/common/transforms/MSPRemover.cpp
-        lib/common/transforms/TargetSelection.cpp
-        include/pacxx/detail/common/Common.h
+set(SOURCE_FILES 
         lib/common/Common.cpp
-        include/pacxx/detail/CoreInitializer.h
         lib/CoreInitializer.cpp
-        include/pacxx/ModuleLoader.h
         lib/ModuleLoader.cpp
-        include/pacxx/detail/IRRuntime.h
-        include/pacxx/detail/KernelConfiguration.h
         lib/KernelConfiguration.cpp
-        include/pacxx/detail/Kernel.h
-        include/pacxx/detail/DeviceBuffer.h
-        include/pacxx/detail/common/Meta.h
         lib/common/Log.cpp
         lib/Executor.cpp
-        include/pacxx/detail/common/Timing.h
-        lib/common/transforms/MSPGeneration.cpp
-        lib/common/transforms/MSPCleanup.cpp
-        lib/common/transforms/IntrinsicScheduler.cpp
-        lib/common/transforms/CodeGenPrepare.cpp
-        lib/common/transforms/LoadMotion.cpp
-        lib/native/transforms/LivenessAnalysis.h
-        lib/native/transforms/LivenessAnalysis.cpp
-        lib/native/transforms/BarrierGeneration.cpp
-        lib/native/transforms/KernelLinker.cpp
-        lib/native/transforms/MaskedMemTransform.cpp
-        lib/native/transforms/SMGeneration.h
-        lib/native/transforms/SMGeneration.cpp
-        lib/native/transforms/SPMDVectorizer.cpp
-        lib/common/transforms/ModuleHelper.cpp
-        include/pacxx/detail/native/NativeBackend.h
         lib/native/NativeBackend.cpp
-        include/pacxx/detail/native/NativeRuntime.h
         lib/native/NativeRuntime.cpp
-        include/pacxx/detail/msp/MSPEngine.h
-        include/pacxx/detail/KernelArgument.h
         lib/MSPEngine.cpp
-        include/pacxx/detail/common/LLVMHelper.h
-        include/pacxx/Promise.h
         lib/native/NativeKernel.cpp
-        include/pacxx/detail/native/NativeKernel.h
-        include/pacxx/detail/native/NativeDeviceBuffer.h
         lib/native/NativeDeviceBuffer.cpp
-        include/pacxx/pacxx_config.h
         lib/Kernel.cpp
         lib/cuda/PTXBackend.cpp
-        include/pacxx/detail/cuda/PTXBackend.h
-            lib/common/transforms/AddressSpaceTransform.cpp
-            lib/cuda/transforms/NVPTXPrepair.cpp
-            lib/rocm/transforms/AMDGCNPrepair.cpp
         lib/IRRuntime.cpp
         lib/native/NativeEvent.cpp
         lib/common/TearDown.cpp)
@@ -142,14 +101,9 @@ if (PACXX_USE_CUDA)
     set(PACXX_CUDA_BACKEND 1)
     include_directories(${CUDA_TOOLKIT_INCLUDE})
     set(CUDA_SOURCE_FILES
-            include/pacxx/detail/cuda/CUDARuntime.h
             lib/cuda/CUDARuntime.cpp
-            include/pacxx/detail/cuda/CUDAErrorDetection.h
             lib/cuda/CUDAErrorDetection.cpp
-            include/pacxx/detail/cuda/CUDAKernel.h
             lib/cuda/CUDAKernel.cpp
-            include/pacxx/detail/cuda/CUDADeviceBuffer.h
-            include/pacxx/detail/cuda/CUDAUtility.h
             lib/cuda/CUDADeviceBuffer.cpp
             lib/cuda/CUDAEvent.cpp)
     set(CUDA_REQUIRED ON)
@@ -181,15 +135,10 @@ set(PACXX_HIP_BACKEND 1)
 include_directories(${ROCM_DIR}/include)
 link_directories(${ROCM_DIR}/lib)
 set(HIP_SOURCE_FILES
-        include/pacxx/detail/rocm/HIPRuntime.h
         lib/rocm/HIPRuntime.cpp
-        include/pacxx/detail/rocm/HSACOBackend.h
         lib/rocm/HSACOBackend.cpp
-        include/pacxx/detail/rocm/HIPErrorDetection.h
         lib/rocm/HIPErrorDetection.cpp
-        include/pacxx/detail/rocm/HIPKernel.h
         lib/rocm/HIPKernel.cpp
-        include/pacxx/detail/rocm/HIPDeviceBuffer.h
         lib/rocm/HIPDeviceBuffer.cpp
         lib/rocm/HIPEvent.cpp)
 set(HIP_REQUIRED ON)
@@ -199,18 +148,15 @@ find_file(ASIO_HEADER asio.hpp PATHS /usr/include)
 if (EXISTS ${ASIO_HEADER})
     message(STATUS "ASIO found")
     set(REMOTE_SOURCE_FILES
-        include/pacxx/detail/remote/RemoteRuntime.h
         lib/remote/RemoteRuntime.cpp
-        include/pacxx/detail/remote/RemoteKernel.h
         lib/remote/RemoteKernel.cpp
-        include/pacxx/detail/remote/RemoteDeviceBuffer.h
         lib/remote/RemoteDeviceBuffer.cpp
         lib/remote/RemoteEvent.cpp)
 else()
     message(FATAL_ERROR "ASIO not found")
 endif()
 
-set(HIP_LINK_LIBRARIES "-lhsa-runtime64 -lhip_hcc -lhc_am")
+set(HIP_LINK_LIBRARIES hsa-runtime64 hip_hcc hc_am)
 
 set(LLD_LIBS lldCOFF lldDriver lldELF lldMinGW)
 
@@ -230,7 +176,7 @@ add_compile_options(-include ${CMAKE_CURRENT_SOURCE_DIR}/include/pacxx/pacxx_con
 #add_definitions(${LLVM_DEFINITIONS} -D__PACXX_RUNTIME_LINKING)
 add_definitions(${LLVM_DEFINITIONS})
 
-set(PACXX_DEV_FLAGS -std=c++14 -emit-llvm -c -O3 -D__device_code__ -isystem ${CMAKE_CURRENT_SOURCE_DIR}/include)
+set(PACXX_DEV_FLAGS -std=c++14 -pacxx -emit-llvm -c -O3 -D__device_code__ -isystem ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 
 
@@ -344,48 +290,54 @@ execute_process(COMMAND ${CMAKE_BINARY_DIR}/bin/llvm-config --ldflags
 
 set(CMAKE_SHARED_LINKER_FLAGS "-Wl,--allow-shlib-undefined")
 
-add_library(${PROJECT_NAME} ${SOURCE_FILES} ${CUDA_SOURCE_FILES} ${HIP_SOURCE_FILES} ${REMOTE_SOURCE_FILES})
-add_library(${PROJECT_NAME}transforms ${TRANSFORMS_SOURCE_FILES})
+# main runtime lib
+add_library(${PROJECT_NAME} ${SOURCE_FILES} ${REMOTE_SOURCE_FILES})
+target_link_libraries(${PROJECT_NAME} PUBLIC PACXXTransforms PUBLIC ${PACXX_LLVM_LIBS} PUBLIC ${PACXX_LLVM_SYS_LIBS} PUBLIC ${TBB_LIBRARIES} PUBLIC ${nadbFile})
+
+#cuda device back end
+if (PACXX_USE_CUDA)
+add_library(PACXXBeCUDA ${CUDA_SOURCE_FILES})
+target_link_libraries(PACXXBeCUDA PUBLIC ${CUDA_LINK_LIBRARIES} PUBLIC ${PACXX_LLVM_LIBS} PUBLIC ${PACXX_LLVM_SYS_LIBS} PUBLIC ${nvdbFile})
+install(TARGETS PACXXBeCUDA DESTINATION lib)
+target_link_libraries(${PROJECT_NAME} PUBLIC PACXXBeCUDA)
+endif()
+
+#rocm device back end
+if (PACXX_USE_HIP)
+add_library(PACXXBeROCm ${HIP_SOURCE_FILES})
+target_link_libraries(PACXXBeROCm PUBLIC ${HIP_LINK_LIBRARIES} PUBLIC ${LLD_LIBS} PUBLIC ${PACXX_LLVM_LIBS} PUBLIC ${PACXX_LLVM_SYS_LIBS} PUBLIC ${amddbFile})
+target_compile_definitions(PACXXBeROCm PUBLIC -D__HIP_PLATFORM_HCC__)
+install(TARGETS PACXXBeROCm DESTINATION lib)
+target_link_libraries(${PROJECT_NAME} PUBLIC PACXXBeROCm)
+endif()
+
+#llvm transformations
+add_library(PACXXTransforms ${TRANSFORMS_SOURCE_FILES})
+target_link_libraries(PACXXTransforms PUBLIC ${PACXX_LLVM_LIBS} PUBLIC ${PACXX_LLVM_SYS_LIBS} PUBLIC ${PACXX_RV_LIB})
+install(TARGETS PACXXTransforms DESTINATION lib)
+
 
 add_library(pacxx_main STATIC lib/common/WrappedMain.cpp)
 add_dependencies(pacxx_main ${PROJECT_NAME})
-add_dependencies(${PROJECT_NAME}transforms ${PROJECT_NAME})
 
 add_dependencies(${PROJECT_NAME} RV)
-
-add_dependencies(${nvdbFile}_target clang)
-add_dependencies(${nadbFile}_target clang)
-
-add_dependencies(${PROJECT_NAME} ${nvdbFile}_target)
-add_dependencies(${PROJECT_NAME} ${nadbFile}_target)
-
 
 add_custom_command(TARGET ${PROJECT_NAME}
         POST_BUILD
         COMMAND ${CMAKE_BINARY_DIR}/bin/llvm-as ${CMAKE_CURRENT_SOURCE_DIR}/lib/bitcode/syscalls.ll -o ${CMAKE_BINARY_DIR}/syscalls.bc)
 
-if (PACXX_USE_HIP)
-  target_compile_definitions(${PROJECT_NAME} PUBLIC -D__HIP_PLATFORM_HCC__)
-endif()
+
 
 if(PACXX_USE_OpenMP)
     target_compile_definitions(${PROJECT_NAME} PUBLIC -D__PACXX_OMP PUBLIC -DPACXX_DISABLE_TBB)
 endif()
 
-#target_compile_definitions(${PROJECT_NAME} PUBLIC -D__PACXX_RUNTIME_LINKING)
-
-#add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD COMMAND cp ${CMAKE_CURRENT_SOURCE_DIR}/lib/asm/embed_/*.S ${CMAKE_BINARY_DIR}/)
-
-
 file(GLOB PACXX_FILES ${CMAKE_BINARY_DIR}/*.S)
 
 install(TARGETS ${PROJECT_NAME} DESTINATION lib)
-install(TARGETS ${PROJECT_NAME}transforms DESTINATION lib)
 install(TARGETS pacxx_main DESTINATION lib)
 
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/lib/asm/ DESTINATION lib)
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/ DESTINATION include)
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/cmake/pacxx/ DESTINATION lib/cmake/pacxx)
 
-target_link_libraries(${PROJECT_NAME} PUBLIC ${CUDA_LINK_LIBRARIES} PUBLIC ${PACXX_LLVM_LIBS} PUBLIC ${PACXX_LLVM_SYS_LIBS} PUBLIC ${TBB_LIBRARIES} PUBLIC ${nvdbFile} PUBLIC ${amddbFile} PUBLIC ${nadbFile} PUBLIC ${PACXX_RV_LIB} PUBLIC ${LLD_LIBS})
-target_link_libraries(${PROJECT_NAME}transforms PUBLIC ${PACXX_LLVM_LIBS} PUBLIC ${PACXX_LLVM_SYS_LIBS})

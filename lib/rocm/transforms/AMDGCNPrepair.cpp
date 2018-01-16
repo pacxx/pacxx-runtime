@@ -34,18 +34,12 @@ using namespace pacxx;
 
 namespace {
 
-static void createISAVersionFunction(Module *M, unsigned GFX) {
-  // create an ISA version function
-  auto FTy =
-      FunctionType::get(cast<Type>(Type::getInt32Ty(M->getContext())), false);
-  auto ISAFunc =
-      Function::Create(FTy, GlobalValue::LinkageTypes::LinkOnceODRLinkage,
-                       "__oclc_ISA_version", M);
-  ISAFunc->setVisibility(GlobalValue::VisibilityTypes::ProtectedVisibility);
-  BasicBlock::Create(M->getContext(), "", ISAFunc);
-
-  IRBuilder<> builder(&ISAFunc->front());
-  builder.CreateRet(builder.getInt32(GFX));
+static void replaceOCLConfigCall(Function* F, unsigned value) {
+      for (auto U : F->users()){
+        if (auto CI = dyn_cast<CallInst>(U)){
+          CI->replaceAllUsesWith(ConstantInt::get(CI->getType(), value));
+        }
+      }
 }
 
 static Function *cloneKernelForLaunchConfig(Function *F) {
@@ -112,7 +106,6 @@ struct AMDGCNPrepair : public ModulePass {
       return Str;
     };
 
-    // replace the . to _ according to the PTX standard
     for (auto &GV : M.getGlobalList()) {
       if (GV.getType()->isPointerTy() && GV.getType()->getAddressSpace() == 3) {
         auto newName = replaceSubstring(GV.getName(), ".", "_");
@@ -120,7 +113,17 @@ struct AMDGCNPrepair : public ModulePass {
       }
     }
 
-    createISAVersionFunction(&M, GFX);
+    if (auto F = M.getFunction("__oclc_ISA_version")){
+      replaceOCLConfigCall(F, GFX); 
+    }
+
+    if (auto F = M.getFunction("__oclc_daz_opt")){
+      replaceOCLConfigCall(F, 0); // disable flush to zero
+    }
+
+    if (auto F = M.getFunction("__oclc_unsafe_math_opt")){
+      replaceOCLConfigCall(F, 0); // disable unsafe math opts
+    }
 
     auto kernels = pacxx::getKernels(&M);
 
