@@ -186,6 +186,11 @@ std::string HSACOBackend::compile(llvm::Module &M) {
   builder.populateModulePassManager(PM);
   PM.run(M);
 
+  if (common::GetEnv("PACXX_DUMP_FINAL_IR") != "") {
+    M.dump();
+  }
+
+
   llvm::legacy::PassManager lowerPM;
   _machine.reset(_target->createTargetMachine(
       TheTriple.getTriple(), _cpu, _features, options, Reloc::Model::Static,

@@ -254,6 +254,7 @@ struct AddressSpaceTransform : public ModulePass {
       }
     });
 
+    //if (M.getTargetTriple().find("nvptx") != std::string::npos){
     // handle parameters to bring them into AS 1
     for (auto &F : kernels) {
       visitor.visit(F);
@@ -322,7 +323,7 @@ struct AddressSpaceTransform : public ModulePass {
         //  F->eraseFromParent();
       }
     }
-
+    //}
     CEExtractor ceExtractor;
 
     kernels = pacxx::getKernels(&M);

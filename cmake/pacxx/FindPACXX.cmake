@@ -22,7 +22,7 @@ if (CUDA_REQUIRED)
         link_directories(${CUDA_TOOLKIT_ROOT_DIR}/lib64) #TODO make dynamic for non 64 bit systems
     endif ()
 
-    set(CUDA_LINK_LIBRARIES cuda ${CUDA_cupti_LIBRARY})
+    set(CUDA_LINK_LIBRARIES PACXXBeCUDA cuda ${CUDA_cupti_LIBRARY})
 
 endif ()
 endif ()
@@ -40,7 +40,7 @@ if (HIP_REQUIRED)
     endif ()
 
     link_directories(${ROCM_DIR}/lib)
-    set(HIP_LINK_LIBRARIES hsa-runtime64 hip_hcc hc_am)
+    set(HIP_LINK_LIBRARIES PACXXBeROCm hsa-runtime64 hip_hcc hc_am)
 endif()
 
 if (OpenMP_REQUIRED)
@@ -288,4 +288,3 @@ function(add_pacxx_to_target targetName binDir srcFiles)
     target_compile_options(${targetName} PUBLIC -Wno-ignored-attributes -Wno-attributes)
     endif()
 endfunction(add_pacxx_to_target)
-

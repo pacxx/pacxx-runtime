@@ -8,18 +8,18 @@
 //===----------------------------------------------------------------------===//
 
 #include "pacxx/detail/remote/RemoteRuntime.h"
-#include "pacxx/detail/common/transforms/Passes.h"
 #include "pacxx/detail/common/Exceptions.h"
 #include "pacxx/detail/common/Timing.h"
+#include "pacxx/detail/common/transforms/Passes.h"
 #include <llvm/IR/Constants.h>
 #include <llvm/IR/Intrinsics.h>
+#include <llvm/IR/LegacyPassManager.h>
 #include <llvm/IR/Module.h>
 #include <llvm/Target/TargetMachine.h>
+#include <llvm/Transforms/IPO/PassManagerBuilder.h>
 #include <llvm/Transforms/Scalar.h>
 #include <llvm/Transforms/Utils/Cloning.h>
 #include <llvm/Transforms/Vectorize.h>
-#include <llvm/IR/LegacyPassManager.h>
-#include <llvm/Transforms/IPO/PassManagerBuilder.h>
 
 #include <asio.hpp>
 
@@ -29,10 +29,11 @@ using namespace llvm;
 
 namespace pacxx {
 namespace v2 {
-RemoteRuntime::RemoteRuntime(const std::string& host, const std::string& port, RuntimeKind rkind, unsigned dev_id)
+RemoteRuntime::RemoteRuntime(const std::string &host, const std::string &port,
+                             RuntimeKind rkind, unsigned dev_id)
     : IRRuntime(RuntimeKind::RK_Remote), _kind(rkind) {
-      connectToDeamon(host, port);
-    }
+  connectToDeamon(host, port);
+}
 
 RemoteRuntime::~RemoteRuntime() {
   _memory.clear();
@@ -59,7 +60,6 @@ void RemoteRuntime::link(std::unique_ptr<llvm::Module> M) {
   PM.run(*_M);
 
   createRemoteBackend(_kind, llvm.data(), llvm.size());
-  
 }
 
 Kernel &RemoteRuntime::getKernel(const std::string &name) {
@@ -87,8 +87,8 @@ RawDeviceBuffer *RemoteRuntime::allocateRawMemory(size_t bytes,
 
 void RemoteRuntime::deleteRawMemory(RawDeviceBuffer *ptr) {
   auto It = std::find_if(_memory.begin(), _memory.end(), [&](const auto &uptr) {
-    return reinterpret_cast<DeviceBuffer<char> *>(uptr.get())
-               ->getRawBuffer() == ptr;
+    return reinterpret_cast<DeviceBuffer<char> *>(uptr.get())->getRawBuffer() ==
+           ptr;
   });
   if (It != _memory.end())
     _memory.erase(It);
@@ -179,7 +179,8 @@ void RemoteRuntime::freeRemoteMemory(void *ptr) {
   send_message(std::to_string(reinterpret_cast<uint64_t>(ptr)));
 }
 
-void RemoteRuntime::uploadToRemoteMemory(void *dest, const void *src, size_t size) {
+void RemoteRuntime::uploadToRemoteMemory(void *dest, const void *src,
+                                         size_t size) {
   send_message("UPLOAD");
   send_message(std::to_string(reinterpret_cast<uint64_t>(dest)));
   send_message(std::to_string(size));
@@ -194,8 +195,8 @@ void RemoteRuntime::downloadFromRemoteMemory(void *dest, const void *src,
   auto answer = read_data(dest, size);
 }
 
-void RemoteRuntime::launchRemoteKernel(const std::string &name, const void *args,
-                                       size_t size,
+void RemoteRuntime::launchRemoteKernel(const std::string &name,
+                                       const void *args, size_t size,
                                        KernelConfiguration config) {
   send_message("LAUNCH");
   send_message(name);
@@ -227,9 +228,7 @@ bool RemoteRuntime::supportsUnifiedAddressing() { return false; }
 
 const llvm::Module &RemoteRuntime::getModule() { return *_M; }
 
-void RemoteRuntime::requestIRTransformation(Kernel &K) {
-
-}
+void RemoteRuntime::requestIRTransformation(Kernel &K) {}
 
 } // namespace v2
 } // namespace pacxx
