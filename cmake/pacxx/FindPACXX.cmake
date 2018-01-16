@@ -8,6 +8,10 @@ else ()
     message(STATUS "PACXX - Found")
 endif ()
 
+if (EXISTS /opt/rocm)
+set (ROCM_DIR /opt/rocm)
+endif()
+
 set(PACXX_DIR ${PACXX_DIR} CACHE PATH "Path to PACXX")
 
 include(${PACXX_DIR}/lib/cmake/pacxx/FindPACXXConfig.cmake)
@@ -256,7 +260,7 @@ endfunction()
 function(add_pacxx_libs_to_target targetName)
 set_target_properties(${targetName} PROPERTIES LINK_FLAGS ${PACXX_LD_FLAGS})
 
-target_link_libraries(${targetName} PUBLIC ${PACXX_RUNTIME_LIBRARY} PUBLIC ${PACXX_RV_LIBRARY}
+target_link_libraries(${targetName} PUBLIC ${PACXX_RUNTIME_LIBRARY} PUBLIC PACXXTransforms PUBLIC ${PACXX_RV_LIBRARY}
             PUBLIC ${HIP_LINK_LIBRARIES} PUBLIC ${CUDA_LINK_LIBRARIES} PUBLIC ${PACXX_LLVM_LIBS} PUBLIC ${PACXX_LLVM_SYS_LIBS} PUBLIC ${TBB_LIBRARIES})
 endfunction(add_pacxx_libs_to_target)
 
