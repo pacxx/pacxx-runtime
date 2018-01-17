@@ -140,6 +140,15 @@ if (PACXX_USE_HIP)
             lib/rocm/HIPEvent.cpp)
 set(HIP_REQUIRED ON)
 
+set(HIP_LINK_LIBRARIES hsa-runtime64 hip_hcc hc_am)
+
+set(LLD_LIBS lldCOFF lldDriver lldELF lldMinGW)
+
+else (PACXX_USE_HIP)
+set(HIP_REQUIRED OFF)
+set(PACXX_HIP_BACKEND 0)
+endif (PACXX_USE_HIP)
+
 find_file(ASIO_HEADER asio.hpp PATHS /usr/include)
 
 if (EXISTS ${ASIO_HEADER})
@@ -151,15 +160,6 @@ if (EXISTS ${ASIO_HEADER})
 else()
     message(FATAL_ERROR "ASIO not found")
 endif()
-
-set(HIP_LINK_LIBRARIES hsa-runtime64 hip_hcc hc_am)
-
-set(LLD_LIBS lldCOFF lldDriver lldELF lldMinGW)
-
-else (PACXX_USE_HIP)
-set(HIP_REQUIRED OFF)
-set(PACXX_HIP_BACKEND 0)
-endif (PACXX_USE_HIP)
 
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config/config.h.in ${CMAKE_CURRENT_SOURCE_DIR}/include/pacxx/pacxx_config.h)
 configure_file(cmake/config/FindPACXXConfig.cmake.in ${CMAKE_CURRENT_SOURCE_DIR}/cmake/pacxx/FindPACXXConfig.cmake)
