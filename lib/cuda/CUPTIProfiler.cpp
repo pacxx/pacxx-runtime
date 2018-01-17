@@ -54,13 +54,13 @@ bool CUPTIProfiler::preinit(void* settings) {
 	__verbose("CUPTIProfiler preinit");
 	stage = 1;
 	SEC_CUPTI_CALL(cuptiActivityEnable(CUPTI_ACTIVITY_KIND_KERNEL));
-	SEC_CUDA_CALL(cuDeviceGet(&_device, *(static_cast<unsigned*>(settings))));/// this is broken in sooo many ways (what happens with "old" context?)
 	return true;
 }
 
-void CUPTIProfiler::postinit() {
+void CUPTIProfiler::postinit(void* settings) {
 	if (!checkStage(1, "postinit")) return;
 	__verbose("CUPTIProfiler postinit");
+	SEC_CUDA_CALL(cuDeviceGet(&_device, *(static_cast<unsigned*>(settings))));/// this is broken in sooo many ways (what happens with "old" context?)
 	SEC_CUPTI_CALL(cuptiActivityRegisterCallbacks(bufferRequested, bufferCompleted));
 	std::ifstream profiles("PACXX.prof");
 	if (profiles.is_open()) {

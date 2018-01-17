@@ -26,7 +26,7 @@ public:
 
   virtual bool preinit(void* settings) = 0;
 
-  virtual void postinit() = 0;
+  virtual void postinit(void* settings) = 0;
 
   virtual void updateKernel(Kernel *kernel);
 
