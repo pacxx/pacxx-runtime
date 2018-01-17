@@ -99,7 +99,7 @@ void RemoteRawDeviceBuffer::downloadAsync(void *dest, size_t bytes,
   download(dest, bytes, offset);
 }
 
-void NativeRawDeviceBuffer::restore() {
+void RemoteRawDeviceBuffer::restore() {
   __debug("Restoring ", count_shadow, "b");
   if (count_shadow) _runtime->uploadToRemoteMemory(_buffer + offset_shadow, src_shadow, count_shadow);
   __debug("Restored ", count_shadow, "b");
