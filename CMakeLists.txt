@@ -78,23 +78,21 @@ lib/cuda/transforms/NVPTXPrepair.cpp
 lib/rocm/transforms/AMDGCNPrepair.cpp)
 
 set(SOURCE_FILES 
-        lib/common/Common.cpp
         lib/CoreInitializer.cpp
         lib/ModuleLoader.cpp
         lib/KernelConfiguration.cpp
-        lib/common/Log.cpp
         lib/Executor.cpp
-        lib/native/NativeBackend.cpp
-        lib/native/NativeRuntime.cpp
         lib/MSPEngine.cpp
+        lib/Kernel.cpp
+        lib/IRRuntime.cpp
+        lib/common/Log.cpp
+        lib/common/Common.cpp
+        lib/common/TearDown.cpp
         lib/native/NativeKernel.cpp
         lib/native/NativeDeviceBuffer.cpp
-        lib/Kernel.cpp
-        lib/cuda/PTXBackend.cpp
-        lib/IRRuntime.cpp
-        lib/native/NativeEvent.cpp
-        lib/common/TearDown.cpp)
-
+        lib/native/NativeBackend.cpp
+        lib/native/NativeRuntime.cpp
+        lib/native/NativeEvent.cpp)
 
 if (PACXX_USE_CUDA)
     find_package(CUDA REQUIRED)
@@ -105,7 +103,8 @@ if (PACXX_USE_CUDA)
             lib/cuda/CUDAErrorDetection.cpp
             lib/cuda/CUDAKernel.cpp
             lib/cuda/CUDADeviceBuffer.cpp
-            lib/cuda/CUDAEvent.cpp)
+            lib/cuda/CUDAEvent.cpp
+            lib/cuda/PTXBackend.cpp)
     set(CUDA_REQUIRED ON)
 
     set (CUDA_LINK_LIBRARIES ${CUDA_LIBRARIES})
@@ -128,25 +127,22 @@ if (PACXX_USE_HIP)
 	if (NOT ROCM_DIR)
 		message(FATAL_ERROR
 				"ROCm - Not found! (please set ROCM_DIR)")
-	else ()
-		message(STATUS "ROCm - Found")
 	endif ()
-set(PACXX_HIP_BACKEND 1)
-include_directories(${ROCM_DIR}/include)
-link_directories(${ROCM_DIR}/lib)
-set(HIP_SOURCE_FILES
-        lib/rocm/HIPRuntime.cpp
-        lib/rocm/HSACOBackend.cpp
-        lib/rocm/HIPErrorDetection.cpp
-        lib/rocm/HIPKernel.cpp
-        lib/rocm/HIPDeviceBuffer.cpp
-        lib/rocm/HIPEvent.cpp)
+    set(PACXX_HIP_BACKEND 1)
+    include_directories(${ROCM_DIR}/include)
+    link_directories(${ROCM_DIR}/lib)
+    set(HIP_SOURCE_FILES
+            lib/rocm/HIPRuntime.cpp
+            lib/rocm/HSACOBackend.cpp
+            lib/rocm/HIPErrorDetection.cpp
+            lib/rocm/HIPKernel.cpp
+            lib/rocm/HIPDeviceBuffer.cpp
+            lib/rocm/HIPEvent.cpp)
 set(HIP_REQUIRED ON)
 
 find_file(ASIO_HEADER asio.hpp PATHS /usr/include)
 
 if (EXISTS ${ASIO_HEADER})
-    message(STATUS "ASIO found")
     set(REMOTE_SOURCE_FILES
         lib/remote/RemoteRuntime.cpp
         lib/remote/RemoteKernel.cpp
@@ -316,7 +312,6 @@ add_library(PACXXTransforms ${TRANSFORMS_SOURCE_FILES})
 target_link_libraries(PACXXTransforms PUBLIC ${PACXX_LLVM_LIBS} PUBLIC ${PACXX_LLVM_SYS_LIBS} PUBLIC ${PACXX_RV_LIB})
 install(TARGETS PACXXTransforms DESTINATION lib)
 
-
 add_library(pacxx_main STATIC lib/common/WrappedMain.cpp)
 add_dependencies(pacxx_main ${PROJECT_NAME})
 
@@ -325,8 +320,6 @@ add_dependencies(${PROJECT_NAME} RV)
 add_custom_command(TARGET ${PROJECT_NAME}
         POST_BUILD
         COMMAND ${CMAKE_BINARY_DIR}/bin/llvm-as ${CMAKE_CURRENT_SOURCE_DIR}/lib/bitcode/syscalls.ll -o ${CMAKE_BINARY_DIR}/syscalls.bc)
-
-
 
 if(PACXX_USE_OpenMP)
     target_compile_definitions(${PROJECT_NAME} PUBLIC -D__PACXX_OMP PUBLIC -DPACXX_DISABLE_TBB)
