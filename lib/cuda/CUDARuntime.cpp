@@ -54,7 +54,7 @@ CUDARuntime::CUDARuntime(unsigned dev_id)
   __verbose("Initializing PTXBackend for ", prop.name, " (dev: ", dev_id,
             ") with compute capability ", prop.major, ".", prop.minor);
   _compiler->initialize(CC);
-  _profiler->postinit();
+  _profiler->postinit(&dev_id);
 }
 
 CUDARuntime::~CUDARuntime() {
