@@ -8,6 +8,7 @@
 //===----------------------------------------------------------------------===//
 
 #include "pacxx/detail/native/NativeDeviceBuffer.h"
+#include "pacxx/detail/native/NativeRuntime.h"
 #include "pacxx/detail/common/Exceptions.h"
 #include <cstdlib>
 #include <cstring>
@@ -15,8 +16,9 @@
 namespace pacxx {
 namespace v2 {
 NativeRawDeviceBuffer::NativeRawDeviceBuffer(
-    std::function<void(NativeRawDeviceBuffer&)> deleter)
-    : _size(0), _mercy(1), _isHost(false), _deleter(deleter) {}
+    std::function<void(NativeRawDeviceBuffer&)> deleter,
+    NativeRuntime *runtime)
+    : _size(0), _mercy(1), _isHost(false), _deleter(deleter), _runtime(runtime) {}
 
 void NativeRawDeviceBuffer::allocate(size_t bytes, unsigned padding) {
 
@@ -37,8 +39,11 @@ void NativeRawDeviceBuffer::allocate(size_t bytes, unsigned padding) {
     throw new common::generic_exception("buffer allocation failed");
   __debug("Allocating ", bytes, "b");
   _size = bytes;
-  count_shadow = bytes;
-  src_shadow = new char[bytes];
+  if (_runtime->getProfiler()->enabled())
+  {
+    count_shadow = bytes;
+    src_shadow = new char[bytes];
+  }
 }
 
 void NativeRawDeviceBuffer::allocate(size_t bytes, char *host_ptr) {
@@ -52,10 +57,13 @@ NativeRawDeviceBuffer::~NativeRawDeviceBuffer() {
   __verbose("deleting buffer");
   if (_buffer && !_isHost) {
     free(_buffer);
-    if (src_shadow) delete[] src_shadow;
-    else __warning("(decon)shadow double clean");
-    offset_shadow = 0;
-    count_shadow = 0;
+    if (_runtime->getProfiler()->enabled())
+    {
+      if (src_shadow) delete[] src_shadow;
+      else __warning("(decon)shadow double clean");
+      offset_shadow = 0;
+      count_shadow = 0;
+    }
   }
 }
 
@@ -67,12 +75,16 @@ NativeRawDeviceBuffer::NativeRawDeviceBuffer(NativeRawDeviceBuffer &&rhs) {
   _mercy = rhs._mercy;
   rhs._mercy = 0;
 
-  src_shadow = rhs.src_shadow;
-  rhs.src_shadow = nullptr;
-  offset_shadow = rhs.offset_shadow;
-  rhs.offset_shadow = 0;
-  count_shadow = rhs.count_shadow;
-  rhs.count_shadow = 0;
+  if (_runtime->getProfiler()->enabled())
+  {
+    src_shadow = rhs.src_shadow;
+    rhs.src_shadow = nullptr;
+    offset_shadow = rhs.offset_shadow;
+    rhs.offset_shadow = 0;
+    count_shadow = rhs.count_shadow;
+    rhs.count_shadow = 0;
+  }
+
   _isHost = rhs._isHost;
   rhs._isHost = false;
 }
@@ -86,12 +98,15 @@ operator=(NativeRawDeviceBuffer &&rhs) {
   _mercy = rhs._mercy;
   rhs._mercy = 0;
 
-  src_shadow = rhs.src_shadow;
-  rhs.src_shadow = nullptr;
-  offset_shadow = rhs.offset_shadow;
-  rhs.offset_shadow = 0;
-  count_shadow = rhs.count_shadow;
-  rhs.count_shadow = 0;
+  if (_runtime->getProfiler()->enabled())
+  {
+    src_shadow = rhs.src_shadow;
+    rhs.src_shadow = nullptr;
+    offset_shadow = rhs.offset_shadow;
+    rhs.offset_shadow = 0;
+    count_shadow = rhs.count_shadow;
+    rhs.count_shadow = 0;
+  }
 
   _isHost = rhs._isHost;
   rhs._isHost = false;
@@ -105,13 +120,19 @@ void *NativeRawDeviceBuffer::get(size_t offset) const {
 void NativeRawDeviceBuffer::upload(const void *src, size_t bytes,
                                    size_t offset) {
   __verbose("uploading ", bytes, " bytes");
-  __debug("Storing ", bytes, "b");
-  if (count_shadow && count_shadow != bytes) __warning("Double upload");
-  count_shadow = bytes;
-  offset_shadow = offset;
+  if (_runtime->getProfiler()->enabled())
+  {
+    __debug("Storing ", bytes, "b");
+    if (count_shadow && count_shadow != bytes) __warning("Double upload");
+    count_shadow = bytes;
+    offset_shadow = offset;
+  }
   std::memcpy(_buffer + offset, src, bytes);
-  std::memcpy(src_shadow, _buffer + offset, bytes);
-  __debug("Stored ", count_shadow, "b");
+  if (_runtime->getProfiler()->enabled())
+  {
+    std::memcpy(src_shadow, _buffer + offset, bytes);
+    __debug("Stored ", count_shadow, "b");
+  }
 }
 
 void NativeRawDeviceBuffer::download(void *dest, size_t bytes, size_t offset) {
@@ -130,9 +151,12 @@ void NativeRawDeviceBuffer::downloadAsync(void *dest, size_t bytes,
 }
 
 void NativeRawDeviceBuffer::restore() {
-  __debug("Restoring ", count_shadow, "b");
-  if (count_shadow) std::memcpy(_buffer + offset_shadow, src_shadow, count_shadow);
-  __debug("Restored ", count_shadow, "b");
+  if (_runtime->getProfiler()->enabled())
+  {
+    __debug("Restoring ", count_shadow, "b");
+    if (count_shadow) std::memcpy(_buffer + offset_shadow, src_shadow, count_shadow);
+    __debug("Restored ", count_shadow, "b");
+  }
 }
 
 void NativeRawDeviceBuffer::abandon() {
@@ -140,9 +164,12 @@ void NativeRawDeviceBuffer::abandon() {
   if (_mercy == 0) {
     _deleter(*this);
     _buffer = nullptr;
-    delete[] src_shadow;
-    offset_shadow = 0;
-    count_shadow = 0;
+    if (_runtime->getProfiler()->enabled())
+    {
+      delete[] src_shadow;
+      offset_shadow = 0;
+      count_shadow = 0;
+    }
   }
 }
 

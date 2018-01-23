@@ -32,8 +32,11 @@ void IRRuntime::evaluateStagedFunctions(Kernel &K) {
 }
 
 void IRRuntime::restoreMemory() {
-  for (std::unique_ptr<DeviceBufferBase<void>>& entry : _memory) {
-    entry.get()->restore();
+  if (_profiler->enabled())
+  {
+    for (std::unique_ptr<DeviceBufferBase<void>>& entry : _memory) {
+      entry.get()->restore();
+    }
   }
 }
 

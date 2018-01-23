@@ -52,7 +52,7 @@ public:
 
   template <typename T>
   DeviceBuffer<T> *allocateMemory(size_t count, T *host_ptr, MemAllocMode mode = Standard) {
-    auto raw = std::make_unique<NativeRawDeviceBuffer>([this](NativeRawDeviceBuffer& buffer){ deleteRawMemory(&buffer); });
+    auto raw = std::make_unique<NativeRawDeviceBuffer>([this](NativeRawDeviceBuffer& buffer){ deleteRawMemory(&buffer); }, this);
 
     auto bytes = count * sizeof(T);
 

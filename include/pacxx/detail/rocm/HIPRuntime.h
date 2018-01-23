@@ -73,7 +73,7 @@ public:
 
   template <typename T>
   DeviceBuffer<T> *allocateMemory(size_t count, T *host_ptr, MemAllocMode mode = Standard) {
-    auto raw = std::make_unique<HIPRawDeviceBuffer>([this](HIPRawDeviceBuffer& buffer){ deleteRawMemory(&buffer); }, mode);
+    auto raw = std::make_unique<HIPRawDeviceBuffer>([this](HIPRawDeviceBuffer& buffer){ deleteRawMemory(&buffer); }, this, mode);
     raw->allocate(count * sizeof(T));
     auto wrapped = new DeviceBuffer<T>(std::move(raw));
     _memory.push_back(std::unique_ptr<DeviceBufferBase<void>>(

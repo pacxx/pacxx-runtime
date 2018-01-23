@@ -18,9 +18,11 @@
 namespace pacxx {
 namespace v2 {
 
+class NativeRuntime;
+
 class NativeRawDeviceBuffer : public RawDeviceBuffer {
 public:
-  NativeRawDeviceBuffer(std::function<void(NativeRawDeviceBuffer&)> deleter);
+  NativeRawDeviceBuffer(std::function<void(NativeRawDeviceBuffer&)> deleter, NativeRuntime* runtime);
 
   void allocate(size_t bytes, unsigned padding = 0);
 
@@ -63,6 +65,7 @@ private:
   unsigned _mercy;
   bool _isHost;
   std::function<void(NativeRawDeviceBuffer&)> _deleter;
+  NativeRuntime* _runtime;
 };
 } // v2 namespace
 } // pacxx namespace

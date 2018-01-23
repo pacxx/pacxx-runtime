@@ -7,17 +7,21 @@
 //
 //===----------------------------------------------------------------------===//
 
+#ifndef PACXX_V2_CUDADEVICEBUFFER_H
+#define PACXX_V2_CUDADEVICEBUFFER_H
+
 #include "pacxx/detail/DeviceBuffer.h"
 #include "pacxx/detail/common/Log.h"
 #include <memory>
 
-#ifndef PACXX_V2_CUDADEVICEBUFFER_H
-#define PACXX_V2_CUDADEVICEBUFFER_H
 namespace pacxx {
 namespace v2 {
+
+class CUDARuntime;
+
 class CUDARawDeviceBuffer : public RawDeviceBuffer {
 public:
-  CUDARawDeviceBuffer(std::function<void(CUDARawDeviceBuffer&)> deleter, MemAllocMode mode = Standard);
+  CUDARawDeviceBuffer(std::function<void(CUDARawDeviceBuffer&)> deleter, CUDARuntime* runtime, MemAllocMode mode = Standard);
 
   void allocate(size_t bytes);
 
@@ -58,7 +62,9 @@ private:
   unsigned _mercy;
   MemAllocMode _mode;
   std::function<void(CUDARawDeviceBuffer&)> _deleter;
+  CUDARuntime* _runtime;
 };
 }
 }
+
 #endif // PACXX_V2_CUDADEVICEBUFFER_H
