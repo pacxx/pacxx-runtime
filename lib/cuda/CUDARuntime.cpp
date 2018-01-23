@@ -58,7 +58,7 @@ CUDARuntime::CUDARuntime(unsigned dev_id)
 }
 
 CUDARuntime::~CUDARuntime() {
-  _profiler->report();
+  if (_profiler->enabled()) _profiler->report();
 }
 
 void CUDARuntime::link(std::unique_ptr<llvm::Module> M) {

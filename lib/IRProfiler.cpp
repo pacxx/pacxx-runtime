@@ -16,8 +16,11 @@ namespace v2 {
 Kernel* IRProfiler::_kernel = nullptr;
 
 IRProfiler::IRProfiler() {
-	if (std::getenv("PACXX_NO_PROF")) _enabled = false;
-	else _enabled = true;
+  InFilePath = common::GetEnv("PACXX_PROF_IN");
+  if (InFilePath.empty()) InFilePath = "PACXX.prof";
+  OutFilePath = common::GetEnv("PACXX_PROF_OUT");
+  if (std::getenv("PACXX_NO_PROF")) _enabled = false;
+  else _enabled = true;
 }
 
 bool IRProfiler::enabled() {

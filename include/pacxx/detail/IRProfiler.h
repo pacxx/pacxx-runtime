@@ -38,6 +38,7 @@ public:
 
 protected:
   static Kernel* _kernel;
+  std::string InFilePath, OutFilePath;
   bool _enabled;
 };
 

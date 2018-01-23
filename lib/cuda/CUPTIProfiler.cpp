@@ -11,6 +11,7 @@
 #include "pacxx/detail/cuda/CUDARuntime.h"
 #include "pacxx/Executor.h"
 #include <fstream>
+#include "pacxx/detail/common/json.hpp"
 
 namespace pacxx {
 namespace v2 {
@@ -62,7 +63,7 @@ void CUPTIProfiler::postinit(void* settings) {
 	__verbose("CUPTIProfiler postinit");
 	SEC_CUDA_CALL(cuDeviceGet(&_device, *(static_cast<unsigned*>(settings))));/// this is broken in sooo many ways (what happens with "old" context?)
 	SEC_CUPTI_CALL(cuptiActivityRegisterCallbacks(bufferRequested, bufferCompleted));
-	std::ifstream profiles("PACXX.prof");
+	std::ifstream profiles(InFilePath);
 	if (profiles.is_open()) {
 		for (std::string metricString; std::getline(profiles, metricString); ) profilingMetrics.push_back(metricString);
 		profiles.close();
@@ -95,20 +96,10 @@ void CUPTIProfiler::profile() {
 	if (!checkStage(4, "profile")) return;
 	__verbose("CUPTIProfiler profile");
 	for (const std::string& metricString : profilingMetrics) profileSingle(metricString);
-	/*for (const std::pair<std::string, std::pair<CUpti_MetricValue, CUpti_MetricValueKind>>& entry : stats[_kernel->getName()].back()) {
-		__message("Metric ", entry.first, " = ", stringSingleMetric(entry.second));
-	}*/
 }
 
 void CUPTIProfiler::report() {
-	for (std::pair<std::string, std::vector<std::map<std::string, std::pair<CUpti_MetricValue, CUpti_MetricValueKind>>>> kernelStat : stats) {
-		/*__message("Report on kernel ", kernelStat.first, ":");
-		for (size_t i = 0; i < kernelStat.second.size(); i++) {
-			__message("\tRun ", i+1, ":");
-			for (const std::pair<std::string, std::pair<CUpti_MetricValue, CUpti_MetricValueKind>>& entry : kernelStat.second[i]) {
-				__message("Metric ", entry.first, " = ", stringSingleMetric(entry.second));
-			}
-		}*/
+	/*for (std::pair<std::string, std::vector<std::map<std::string, std::string>>> kernelStat : stats) {
 		__message("Summary on kernel ", kernelStat.first, ":");
 		{
 			std::stringstream line;
@@ -116,12 +107,22 @@ void CUPTIProfiler::report() {
 				line.str("");
 				for (size_t i = 0; i < kernelStat.second.size(); i++) {
 					if (i) line << " -> ";
-					line << stringSingleMetric((kernelStat.second[i])[metricString]);
+					line << (kernelStat.second[i])[metricString];
 				}
 				__message("\tMetric ", metricString, ": ", line.str());
 			}
 		}
-	}
+	}*/
+	nlohmann::json rprt(stats);
+	if (OutFilePath.empty()) __message(rprt.dump(4));
+	else
+  {
+    std::ofstream ReportFile(OutFilePath, std::ios_base::out | std::ios_base::trunc);
+    if (ReportFile.is_open()) {
+      ReportFile << std::setw(4) << rprt << std::endl;
+      ReportFile.close();
+    }
+  }
 }
 
 void CUPTIAPI CUPTIProfiler::bufferRequested(uint8_t **buffer, size_t *size, size_t *maxNumRecords) {
@@ -296,7 +297,7 @@ void CUPTIProfiler::profileSingle(const std::string& metricName) {
 			CUpti_MetricValueKind valueKind;
 			size_t valueKindSize = sizeof(valueKind);
 			SEC_CUPTI_CALL(cuptiMetricGetAttribute(metricId, CUPTI_METRIC_ATTR_VALUE_KIND, &valueKindSize, &valueKind));
-			stats[static_cast<CUDAKernel*>(_kernel)->getName()].back()[metricName] = std::make_pair(metricValue, valueKind);
+			stats[static_cast<CUDAKernel*>(_kernel)->getName()].back()[metricName] = stringSingleMetric(std::make_pair(metricValue, valueKind));
 			//__message("Metric ", metricName, " recorded.");
 		}
 	}
