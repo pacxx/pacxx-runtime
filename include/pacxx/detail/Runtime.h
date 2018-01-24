@@ -78,14 +78,12 @@ public:
   virtual bool isSupportingDoublePrecission() { return true; }
 
   template <typename T>
-  DeviceBuffer<T> *allocateMemory(size_t count, T *host_ptr,
+  DeviceBuffer<T> *allocateMemory(size_t count,
                                   MemAllocMode mode = Standard) {
     auto raw = allocateRawMemory(count * sizeof(T), mode);
     auto wrapped = new DeviceBuffer<T>(std::move(raw));
     _memory.push_back(std::unique_ptr<DeviceBufferBase<void>>(
         reinterpret_cast<DeviceBufferBase<void> *>(wrapped)));
-    if (host_ptr)
-      wrapped->upload(host_ptr, count);
     return wrapped;
   }
 

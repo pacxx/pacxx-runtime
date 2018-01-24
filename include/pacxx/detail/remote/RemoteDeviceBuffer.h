@@ -20,9 +20,7 @@ class RemoteRuntime;
 
 class RemoteRawDeviceBuffer : public RawDeviceBuffer {
 public:
-  RemoteRawDeviceBuffer(std::function<void(RemoteRawDeviceBuffer&)> deleter, RemoteRuntime* runtime, MemAllocMode mode = Standard);
-
-  void allocate(size_t bytes);
+  RemoteRawDeviceBuffer(size_t size, RemoteRuntime* runtime);
 
   virtual ~RemoteRawDeviceBuffer();
 
@@ -56,9 +54,6 @@ public:
 private:
   [[pacxx::device_memory]] char *_buffer;
   size_t _size;
-  unsigned _mercy;
-  MemAllocMode _mode;
-  std::function<void(RemoteRawDeviceBuffer&)> _deleter;
   RemoteRuntime* _runtime;
 };
 }

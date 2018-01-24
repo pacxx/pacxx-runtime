@@ -130,9 +130,8 @@ size_t CUDARuntime::getPreferedMemoryAlignment() {
   return 256; // on CUDA devices memory is best aligned at 256 bytes
 }
 
-RawDeviceBuffer *CUDARuntime::allocateRawMemory(size_t bytes, MemAllocMode mode) {
-  auto wrapped = allocateMemory<char>(bytes, nullptr, mode);
-  return wrapped->getRawBuffer();
+std::unique_ptr<RawDeviceBuffer> CUDARuntime::allocateRawMemory(size_t bytes, MemAllocMode mode) {
+  return std::unique_ptr<RawDeviceBuffer>(new CUDARawDeviceBuffer(bytes, mode));
 }
 
 void CUDARuntime::deleteRawMemory(RawDeviceBuffer *ptr) {

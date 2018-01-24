@@ -20,11 +20,7 @@ namespace v2 {
 
 class NativeRawDeviceBuffer : public RawDeviceBuffer {
 public:
-  NativeRawDeviceBuffer(std::function<void(NativeRawDeviceBuffer&)> deleter);
-
-  void allocate(size_t bytes, unsigned padding = 0);
-
-  void allocate(size_t bytes, char *host_ptr);
+  NativeRawDeviceBuffer(size_t size, unsigned padding);
 
   virtual ~NativeRawDeviceBuffer();
 
@@ -51,16 +47,9 @@ public:
 
   virtual void copyTo(void *dest) override;
 
-  virtual void abandon() override;
-
-  virtual void mercy() override;
-
 private:
   char *[[pacxx::device_memory]] _buffer;
   size_t _size;
-  unsigned _mercy;
-  bool _isHost;
-  std::function<void(NativeRawDeviceBuffer&)> _deleter;
 };
 } // v2 namespace
 } // pacxx namespace

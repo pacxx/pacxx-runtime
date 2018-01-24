@@ -40,7 +40,6 @@ public:
 
 class RawDeviceBuffer : public DeviceBufferBase<void> {};
 
-
 template <typename T> class DeviceBuffer : public DeviceBufferBase<T> {
 public:
 
@@ -83,10 +82,6 @@ public:
                              size_t offset = 0) override {
     _buffer->downloadAsync(dest, count * sizeof(T), offset);
   }
-
-  virtual void abandon() override { _buffer->abandon(); }
-
-  virtual void mercy() override { _buffer->mercy(); }
 
   virtual void copyTo(T *dest) override { _buffer->copyTo(dest); }
 

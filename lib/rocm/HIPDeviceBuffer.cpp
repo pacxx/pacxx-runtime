@@ -14,16 +14,9 @@
 
 namespace pacxx {
 namespace v2 {
-HIPRawDeviceBuffer::HIPRawDeviceBuffer(std::function<void(HIPRawDeviceBuffer&)> deleter, MemAllocMode mode) : _size(0), _mercy(1), _mode(mode), _deleter(deleter) {}
-
-void HIPRawDeviceBuffer::allocate(size_t bytes) {
-  switch(_mode) {
-  case MemAllocMode::Standard:SEC_HIP_CALL(hipMalloc((void **) &_buffer, bytes));
-    break;
-  case MemAllocMode::Unified:
-    break;
-  }
-  _size = bytes;
+HIPRawDeviceBuffer::HIPRawDeviceBuffer(size_t size) 
+: _size(size) {
+  SEC_HIP_CALL(hipMalloc((void **) &_buffer, _size)); 
 }
 
 HIPRawDeviceBuffer::~HIPRawDeviceBuffer() {
@@ -70,16 +63,6 @@ void HIPRawDeviceBuffer::downloadAsync(void *dest, size_t bytes,
   SEC_HIP_CALL(
       hipMemcpyAsync(dest, _buffer + offset, bytes, hipMemcpyDeviceToHost));
 }
-
-void HIPRawDeviceBuffer::abandon() {
-  --_mercy;
-  if (_mercy == 0) {
-    _deleter(*this);
-    _buffer = nullptr;
-  }
-}
-
-void HIPRawDeviceBuffer::mercy() { ++_mercy; }
 
 void HIPRawDeviceBuffer::copyTo(void *dest) {
   if (!dest)

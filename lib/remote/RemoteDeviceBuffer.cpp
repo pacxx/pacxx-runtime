@@ -12,14 +12,9 @@
 
 namespace pacxx {
 namespace v2 {
-RemoteRawDeviceBuffer::RemoteRawDeviceBuffer(
-    std::function<void(RemoteRawDeviceBuffer &)> deleter,
-    RemoteRuntime *runtime, MemAllocMode mode)
-    : _size(0), _mercy(1), _mode(mode), _deleter(deleter), _runtime(runtime) {}
-
-void RemoteRawDeviceBuffer::allocate(size_t bytes) {
-  _buffer = reinterpret_cast<char*>(_runtime->allocateRemoteMemory(bytes));
-  _size = bytes;
+RemoteRawDeviceBuffer::RemoteRawDeviceBuffer( size_t size, RemoteRuntime *runtime)
+    : _size(size), _runtime(runtime) {
+  _buffer = reinterpret_cast<char*>(_runtime->allocateRemoteMemory(size));
 }
 
 RemoteRawDeviceBuffer::~RemoteRawDeviceBuffer() {
@@ -66,16 +61,6 @@ void RemoteRawDeviceBuffer::downloadAsync(void *dest, size_t bytes,
                                           size_t offset) {
   _runtime->downloadFromRemoteMemory(dest, _buffer + offset, bytes);
 }
-
-void RemoteRawDeviceBuffer::abandon() {
-  --_mercy;
-  if (_mercy == 0) {
-    _deleter(*this);
-    _buffer = nullptr;
-  }
-}
-
-void RemoteRawDeviceBuffer::mercy() { ++_mercy; }
 
 void RemoteRawDeviceBuffer::copyTo(void *dest) {
   // TODO

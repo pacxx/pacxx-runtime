@@ -14,11 +14,8 @@
 
 namespace pacxx {
 namespace v2 {
-NativeRawDeviceBuffer::NativeRawDeviceBuffer(std::function<void(NativeRawDeviceBuffer&)> deleter)
-    : _size(0), _mercy(1), _isHost(false), _deleter(deleter){}
-
-void NativeRawDeviceBuffer::allocate(size_t bytes, unsigned padding) {
-
+NativeRawDeviceBuffer::NativeRawDeviceBuffer(size_t size, unsigned padding)
+    : _size(size) {
   auto padSize = [=](size_t bytes, unsigned vf) {
     if (vf == 0)
       return bytes;
@@ -34,20 +31,11 @@ void NativeRawDeviceBuffer::allocate(size_t bytes, unsigned padding) {
   _buffer = (char *) malloc(total);
   if (!_buffer)
     throw new common::generic_exception("buffer allocation failed");
-
-  _size = bytes;
-}
-
-void NativeRawDeviceBuffer::allocate(size_t bytes, char *host_ptr) {
-  __verbose("allocating host buffer");
-  _buffer = host_ptr;
-  _size = bytes;
-  _isHost = true;
 }
 
 NativeRawDeviceBuffer::~NativeRawDeviceBuffer() {
   __verbose("deleting buffer");
-  if (_buffer && !_isHost) {
+  if (_buffer) {
     free(_buffer);
   }
 }
@@ -57,8 +45,6 @@ NativeRawDeviceBuffer::NativeRawDeviceBuffer(NativeRawDeviceBuffer &&rhs) {
   rhs._buffer = nullptr;
   _size = rhs._size;
   rhs._size = 0;
-  _isHost = rhs._isHost;
-  rhs._isHost = false;
 }
 
 NativeRawDeviceBuffer &NativeRawDeviceBuffer::
@@ -67,8 +53,6 @@ operator=(NativeRawDeviceBuffer &&rhs) {
   rhs._buffer = nullptr;
   _size = rhs._size;
   rhs._size = 0;
-  _isHost = rhs._isHost;
-  rhs._isHost = false;
   return *this;
 }
 
@@ -96,17 +80,6 @@ void NativeRawDeviceBuffer::downloadAsync(void *dest, size_t bytes,
                                           size_t offset) {
   download(dest, bytes, offset);
 }
-
-void NativeRawDeviceBuffer::abandon() {
-  --_mercy;
-  if (_mercy == 0) {
-    _deleter(*this);
-
-    _buffer = nullptr;
-  }
-}
-
-void NativeRawDeviceBuffer::mercy() { ++_mercy; }
 
 void NativeRawDeviceBuffer::copyTo(void *dest) {
   if (!dest)

@@ -79,21 +79,8 @@ size_t RemoteRuntime::getPreferedMemoryAlignment() {
   return 256; // TODO
 }
 
-RawDeviceBuffer *RemoteRuntime::allocateRawMemory(size_t bytes,
-                                                  MemAllocMode mode) {
-  auto wrapped = allocateMemory<char>(bytes, nullptr, mode);
-  return wrapped->getRawBuffer();
-}
-
-void RemoteRuntime::deleteRawMemory(RawDeviceBuffer *ptr) {
-  auto It = std::find_if(_memory.begin(), _memory.end(), [&](const auto &uptr) {
-    return reinterpret_cast<DeviceBuffer<char> *>(uptr.get())->getRawBuffer() ==
-           ptr;
-  });
-  if (It != _memory.end())
-    _memory.erase(It);
-  else
-    __error("ptr to delete not found");
+std::unique_ptr<RawDeviceBuffer> RemoteRuntime::allocateRawMemory(size_t bytes, MemAllocMode mode) {
+  return std::unique_ptr<RawDeviceBuffer>(new RemoteRawDeviceBuffer(bytes, this));
 }
 
 std::string RemoteRuntime::send_message(std::string message) {

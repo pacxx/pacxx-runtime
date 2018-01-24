@@ -13,16 +13,14 @@
 
 namespace pacxx {
 namespace v2 {
-CUDARawDeviceBuffer::CUDARawDeviceBuffer(std::function<void(CUDARawDeviceBuffer&)> deleter, MemAllocMode mode) : _size(0), _mercy(1), _mode(mode), _deleter(deleter) {}
-
-void CUDARawDeviceBuffer::allocate(size_t bytes) {
+CUDARawDeviceBuffer::CUDARawDeviceBuffer(size_t size, MemAllocMode mode) 
+: _size(size), _mode(mode) {
   switch(_mode) {
-  case MemAllocMode::Standard:SEC_CUDA_CALL(cudaMalloc((void **) &_buffer, bytes));
+  case MemAllocMode::Standard:SEC_CUDA_CALL(cudaMalloc((void **) &_buffer, _size));
     break;
-  case MemAllocMode::Unified:SEC_CUDA_CALL(cudaMallocManaged((void **) &_buffer, bytes));
+  case MemAllocMode::Unified:SEC_CUDA_CALL(cudaMallocManaged((void **) &_buffer, _size));
     break;
   }
-  _size = bytes;
 }
 
 CUDARawDeviceBuffer::~CUDARawDeviceBuffer() {
@@ -70,19 +68,9 @@ void CUDARawDeviceBuffer::downloadAsync(void *dest, size_t bytes,
       cudaMemcpyAsync(dest, _buffer + offset, bytes, cudaMemcpyDeviceToHost));
 }
 
-void CUDARawDeviceBuffer::abandon() {
-  --_mercy;
-  if (_mercy == 0) {
-    _deleter(*this);
-    _buffer = nullptr;
-  }
-}
-
-void CUDARawDeviceBuffer::mercy() { ++_mercy; }
-
 void CUDARawDeviceBuffer::copyTo(void *dest) {
   if (!dest)
-    __error(__func__, "nullptr arived, discarding copy");
+    __error(__func__, " nullptr arived, discarding copy");
   if (dest != _buffer)
     SEC_CUDA_CALL(
         cudaMemcpyAsync(dest, _buffer, _size, cudaMemcpyDeviceToDevice));

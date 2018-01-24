@@ -92,15 +92,6 @@ std::string Executor::cleanName(const std::string &name) {
   return cleaned_name;
 }
 
-RawDeviceBuffer &Executor::allocateRaw(size_t bytes, MemAllocMode mode) {
-  __verbose("allocating raw memory: ", bytes);
-  return *_runtime->allocateRawMemory(bytes, mode);
-}
-
-void Executor::freeRaw(RawDeviceBuffer &buffer) {
-  _runtime->deleteRawMemory(&buffer);
-}
-
 Runtime &Executor::rt() { return *_runtime; }
 
 void Executor::synchronize() { _runtime->synchronize(); }

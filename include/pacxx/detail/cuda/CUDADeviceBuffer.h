@@ -17,9 +17,7 @@ namespace pacxx {
 namespace v2 {
 class CUDARawDeviceBuffer : public RawDeviceBuffer {
 public:
-  CUDARawDeviceBuffer(std::function<void(CUDARawDeviceBuffer&)> deleter, MemAllocMode mode = Standard);
-
-  void allocate(size_t bytes);
+  CUDARawDeviceBuffer(size_t size, std::function<void(CUDARawDeviceBuffer&)> deleter, MemAllocMode mode = Standard);
 
   virtual ~CUDARawDeviceBuffer();
 
@@ -46,16 +44,10 @@ public:
 
   virtual void copyTo(void *dest) override;
 
-  virtual void abandon() override;
-
-  virtual void mercy() override;
-
 private:
   [[pacxx::device_memory]] char *_buffer;
   size_t _size;
-  unsigned _mercy;
   MemAllocMode _mode;
-  std::function<void(CUDARawDeviceBuffer&)> _deleter;
 };
 }
 }

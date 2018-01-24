@@ -12,9 +12,7 @@ namespace pacxx {
 namespace v2 {
 class HIPRawDeviceBuffer : public RawDeviceBuffer {
 public:
-  HIPRawDeviceBuffer(std::function<void(HIPRawDeviceBuffer&)> deleter, MemAllocMode mode = Standard);
-
-  void allocate(size_t bytes);
+  HIPRawDeviceBuffer(size_t size);
 
   virtual ~HIPRawDeviceBuffer();
 
@@ -41,16 +39,9 @@ public:
 
   virtual void copyTo(void *dest) override;
 
-  virtual void abandon() override;
-
-  virtual void mercy() override;
-
 private:
   [[pacxx::device_memory]] char *_buffer;
   size_t _size;
-  unsigned _mercy;
-  MemAllocMode _mode;
-  std::function<void(HIPRawDeviceBuffer&)> _deleter;
 };
 }
 }

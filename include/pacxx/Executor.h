@@ -252,9 +252,6 @@ public:
     throw pacxx::common::generic_exception("unreachable code");
   }
 
-  RawDeviceBuffer &allocateRaw(size_t bytes,
-                               MemAllocMode mode = MemAllocMode::Standard);
-
   template <typename T> void free(DeviceBuffer<T> &buffer) {
     switch (_runtime->getKind()) {
 #ifdef PACXX_ENABLE_CUDA
@@ -277,8 +274,6 @@ public:
       llvm_unreachable("this runtime type is not defined!");
     }
   }
-
-  void freeRaw(RawDeviceBuffer &buffer);
 
   bool supportsDoublePrecission() {
     return _runtime->isSupportingDoublePrecission();
