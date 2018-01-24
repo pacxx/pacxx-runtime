@@ -160,10 +160,10 @@ public:
   }
 
   template <typename L, pacxx::v2::Target targ = pacxx::v2::Target::Generic>
-  auto launch(L callable, KernelConfiguration config, std::promise<void> promise) {
+  auto launch(L callable, KernelConfiguration config, std::promise<void>& promise) {
     pacxx::v2::codegenKernel<L, targ>(callable);
     auto future = promise.get_future();
-    run_with_callback(callable, config, [promise = std::move(promise)] ()mutable{ 
+    run_with_callback(callable, config, [&] () mutable{
       promise.set_value();
     });
     return future; 
