@@ -11,6 +11,7 @@
 #include "HIPKernel.h"
 #include "HSACOBackend.h"
 #include "pacxx/detail/common/Exceptions.h"
+#include "pacxx/detail/rocm/HIPErrorDetection.h"
 #include <cstdlib>
 #include <list>
 #include <map>
