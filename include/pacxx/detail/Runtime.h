@@ -13,11 +13,13 @@
 #include "DeviceBuffer.h"
 #include "Kernel.h"
 #include "pacxx/detail/msp/MSPEngine.h"
+#include "pacxx/detail/common/Exceptions.h"
 #include "pacxx/pacxx_config.h"
 #include <list>
 #include <memory>
 #include <string>
 #include <vector>
+#include <algorithm>
 
 namespace llvm {
 class Module;
@@ -58,10 +60,10 @@ public:
 
   virtual bool supportsUnifiedAddressing() = 0;
 
-  virtual RawDeviceBuffer *allocateRawMemory(size_t bytes,
+  virtual std::unique_ptr<RawDeviceBuffer> allocateRawMemory(size_t bytes,
                                              MemAllocMode mode) = 0;
 
-  virtual void deleteRawMemory(RawDeviceBuffer *ptr) = 0;
+  //virtual void deleteRawMemory(RawDeviceBuffer *ptr) = 0;
 
   virtual void initializeMSP(std::unique_ptr<llvm::Module> M);
 
@@ -79,7 +81,6 @@ public:
   DeviceBuffer<T> *allocateMemory(size_t count, T *host_ptr,
                                   MemAllocMode mode = Standard) {
     auto raw = allocateRawMemory(count * sizeof(T), mode);
-    raw->allocate(count * sizeof(T));
     auto wrapped = new DeviceBuffer<T>(std::move(raw));
     _memory.push_back(std::unique_ptr<DeviceBufferBase<void>>(
         reinterpret_cast<DeviceBufferBase<void> *>(wrapped)));

@@ -50,9 +50,9 @@ public:
 
   virtual bool supportsUnifiedAddressing() override;
 
-  virtual RawDeviceBuffer *allocateRawMemory(size_t bytes, MemAllocMode mode = Standard) override;
+  virtual std::unique_ptr<RawDeviceBuffer> allocateRawMemory(size_t bytes, MemAllocMode mode = Standard) override;
 
-  virtual void deleteRawMemory(RawDeviceBuffer *ptr) override;
+  //virtual void deleteRawMemory(RawDeviceBuffer *ptr) override;
 
   virtual void requestIRTransformation(Kernel &K) override;
 
