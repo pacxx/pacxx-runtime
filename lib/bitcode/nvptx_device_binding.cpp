@@ -259,7 +259,7 @@ extern "C" __forceinline__ float logf(float val) {
   return __nv_logf(val);
 }
 extern "C" __forceinline__ float expf(float val) {
-  return __nv_expf(val);
+  return __builtin_exp(val); //__nv_expf(val);
 }
 extern "C" __forceinline__ float sinf(float val) {
   return __nv_sinf(val);

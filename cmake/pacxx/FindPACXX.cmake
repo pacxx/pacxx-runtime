@@ -8,6 +8,10 @@ else ()
     message(STATUS "PACXX - Found")
 endif ()
 
+if (EXISTS /opt/rocm)
+set (ROCM_DIR /opt/rocm)
+endif()
+
 set(PACXX_DIR ${PACXX_DIR} CACHE PATH "Path to PACXX")
 
 include(${PACXX_DIR}/lib/cmake/pacxx/FindPACXXConfig.cmake)
@@ -59,7 +63,6 @@ find_program(PACXX_LLVM_CONFIG llvm-config PATHS
   ${PACXX_DIR} PATH_SUFFIXES bin NO_DEFAULT_PATH)
 if (EXISTS ${PACXX_LLVM_CONFIG})
     mark_as_advanced(PACXX_LLVM_CONFIG)
-    message(STATUS "llvm-config (PACXX) - Found")
 else ()
     message(FATAL_ERROR "llvm-config (PACXX) - Not found! (${PACXX_LLVM_CONFIG})")
 endif ()
@@ -99,7 +102,6 @@ find_program(PACXX_COMPILER clang++ PATHS
 if (EXISTS ${PACXX_COMPILER})
     message(STATUS "clang location: ${PACXX_COMPILER}")
     mark_as_advanced(PACXX_COMPILER)
-    message(STATUS "clang++ (PACXX) - Found")
 else ()
     message(FATAL_ERROR "clang++ (PACXX) - Not found! (${PACXX_COMPILER})")
 endif ()
@@ -108,7 +110,6 @@ find_program(PACXX_LINK llvm-link PATHS
   ${PACXX_DIR} PATH_SUFFIXES bin NO_DEFAULT_PATH)
 if (EXISTS ${PACXX_LINK})
     mark_as_advanced(PACXX_LINK)
-    message(STATUS "llvm-link (PACXX) - Found")
 else ()
     message(FATAL_ERROR "llvm-link (PACXX) - Not found! (${PACXX_LINK})")
 endif ()
@@ -118,7 +119,6 @@ if (EXISTS ${PACXX_OPT})
     message(STATUS "opt location: ${PACXX_OPT}")
     message(STATUS "pacxx: ${PACXX_DIR}")
     mark_as_advanced(PACXX_OPT)
-    message(STATUS "opt (PACXX) - Found")
 else ()
     message(FATAL_ERROR "opt (PACXX) - Not found! (${PACXX_OPT})")
 endif ()
@@ -130,7 +130,6 @@ find_library(PACXX_RUNTIME_LIBRARY pacxxrt2 PATHS ${PACXX_DIR}
 
 if (EXISTS ${PACXX_RUNTIME_LIBRARY})
     mark_as_advanced(PACXX_RUNTIME_LIBRARY)
-    message(STATUS "libpacxxrt2 - Found")
 else ()
     message(FATAL_ERROR "libpacxxrt2 - Not found!")
 endif ()
@@ -141,7 +140,6 @@ find_library(PACXX_RV_LIBRARY RV PATHS ${PACXX_DIR}
 
 if (EXISTS ${PACXX_RV_LIBRARY})
     mark_as_advanced(PACXX_RV_LIBRARY)
-    message(STATUS "libRV - Found")
 else ()
     message(FATAL_ERROR "libRV - Not found!")
 endif ()
@@ -153,7 +151,6 @@ find_file(PACXX_ASM_WRAPPER embed.S PATHS ${PACXX_DIR}
 
 if (EXISTS ${PACXX_ASM_WRAPPER})
     mark_as_advanced(PACXX_ASM_WRAPPER)
-    message(STATUS "embed.S - Found")
 else ()
     message(FATAL_ERROR "embed.S - Not found!")
 endif ()
@@ -162,8 +159,6 @@ endif ()
 set(PACXX_INCLUDE_DIRECTORY ${PACXX_DIR}/include)
 if (NOT EXISTS ${PACXX_INCLUDE_DIRECTORY})
     message(FATAL_ERROR "PACXX includes - Not found!")
-else ()
-    message(STATUS "PACXX includes - Found")
 endif ()
 
 set(PACXX_FOUND 1)
@@ -256,7 +251,7 @@ endfunction()
 function(add_pacxx_libs_to_target targetName)
 set_target_properties(${targetName} PROPERTIES LINK_FLAGS ${PACXX_LD_FLAGS})
 
-target_link_libraries(${targetName} PUBLIC ${PACXX_RUNTIME_LIBRARY} PUBLIC ${PACXX_RV_LIBRARY}
+target_link_libraries(${targetName} PUBLIC ${PACXX_RUNTIME_LIBRARY} PUBLIC PACXXTransforms PUBLIC ${PACXX_RV_LIBRARY}
             PUBLIC ${HIP_LINK_LIBRARIES} PUBLIC ${CUDA_LINK_LIBRARIES} PUBLIC ${PACXX_LLVM_LIBS} PUBLIC ${PACXX_LLVM_SYS_LIBS} PUBLIC ${TBB_LIBRARIES})
 endfunction(add_pacxx_libs_to_target)
 
