@@ -35,7 +35,7 @@ public:
     return rt->getKind() == RuntimeKind::RK_Remote;
   }
 
-  static bool checkSupportedHardware();
+  virtual bool checkSupportedHardware() final { return true; }; 
 
   RemoteRuntime(const std::string& host, const std::string& port, RuntimeKind rkind, unsigned dev_id);
 

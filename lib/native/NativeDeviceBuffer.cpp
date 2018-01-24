@@ -24,9 +24,9 @@ NativeRawDeviceBuffer::NativeRawDeviceBuffer(size_t size, unsigned padding)
     return bytes + vf - remainder; // pad after and before memory
   };
 
-  auto total = padSize(bytes, padding);
+  auto total = padSize(size, padding);
 
-  __verbose("allocating padded: ", bytes, " ", padSize(bytes, padding), " ", padding);
+  __verbose("allocating padded: ", size, " ", padSize(size, padding), " ", padding);
 
   _buffer = (char *) malloc(total);
   if (!_buffer)

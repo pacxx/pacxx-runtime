@@ -33,6 +33,8 @@ public:
     return rt->getKind() == RuntimeKind::RK_Native;
   }
 
+  virtual bool checkSupportedHardware() final { return true; }
+
   NativeRuntime(unsigned dev_id);
   virtual ~NativeRuntime();
 

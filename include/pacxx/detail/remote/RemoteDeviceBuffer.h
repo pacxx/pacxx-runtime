@@ -47,10 +47,6 @@ public:
 
   virtual void copyTo(void *dest) override;
 
-  virtual void abandon() override;
-
-  virtual void mercy() override;
-
 private:
   [[pacxx::device_memory]] char *_buffer;
   size_t _size;

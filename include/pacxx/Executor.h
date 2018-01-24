@@ -96,9 +96,9 @@ private:
     switch (runtime) {
     case 2: // HIP Runtime
 #ifdef PACXX_ENABLE_HIP
-      if (HIPRuntime::checkSupportedHardware()) {
+      try{
         return Create<HIPRuntime>(0);
-      } else {
+      } catch(...) {
         __verbose("No ROCm Device found: Using Fallback to CUDARuntime for "
                   "GPU execution as default Executor");
       }
@@ -107,9 +107,9 @@ private:
 #endif
     case 0: // CUDA Runtime
 #ifdef PACXX_ENABLE_CUDA
-      if (CUDARuntime::checkSupportedHardware()) {
+      try {
         return Create<CUDARuntime>(0);
-      } else {
+      } catch(...) {
         __verbose("No CUDA Device found: Using Fallback to NativeRuntime for "
                   "CPU execution as default Executor");
       }
@@ -128,7 +128,7 @@ public:
   static Executor &Create(Ts... args) {
     std::unique_ptr<Runtime> rt(new T(args...));
     
-    if (!T::checkSupportedHardware())
+    if (!rt->checkSupportedHardware())
       throw common::generic_exception("no supported device available!");
 
     auto &executors = getExecutors();
@@ -163,7 +163,7 @@ public:
   auto launch(L callable, KernelConfiguration config, std::promise<void> promise) {
     pacxx::v2::codegenKernel<L, targ>(callable);
     auto future = promise.get_future();
-    run_with_callback(callable, config, [promise = std::move(promise)]{ 
+    run_with_callback(callable, config, [promise = std::move(promise)] ()mutable{ 
       promise.set_value();
     });
     return future; 
@@ -220,7 +220,7 @@ private:
 
 public:
   template <typename T>
-  DeviceBuffer<T> &allocate(size_t count, T *host_ptr = nullptr,
+  DeviceBuffer<T> &allocate(size_t count, 
                             MemAllocMode mode = MemAllocMode::Standard) {
     __verbose("allocating memory: ", sizeof(T) * count);
 
@@ -228,51 +228,11 @@ public:
       __verbose("Runtime supports unified addressing: ",
                 _runtime->supportsUnifiedAddressing());
 
-    switch (_runtime->getKind()) {
-#ifdef PACXX_ENABLE_CUDA
-    case Runtime::RuntimeKind::RK_CUDA:
-      return *llvm::cast<CUDARuntime>(_runtime.get())
-                  ->template allocateMemory(count, host_ptr, mode);
-#endif
-    case Runtime::RuntimeKind::RK_Native:
-      return *llvm::cast<NativeRuntime>(_runtime.get())
-                  ->template allocateMemory(count, host_ptr, mode);
-#ifdef PACXX_ENABLE_HIP
-    case Runtime::RuntimeKind::RK_HIP:
-      return *llvm::cast<HIPRuntime>(_runtime.get())
-                  ->template allocateMemory(count, host_ptr, mode);
-#endif
-    case Runtime::RuntimeKind::RK_Remote:
-      return *llvm::cast<RemoteRuntime>(_runtime.get())
-                  ->template allocateMemory(count, host_ptr, mode);
-    default:
-      llvm_unreachable("this runtime type is not defined!");
-    }
-
-    throw pacxx::common::generic_exception("unreachable code");
+    return *_runtime->allocateMemory<T>(count, mode);
   }
 
   template <typename T> void free(DeviceBuffer<T> &buffer) {
-    switch (_runtime->getKind()) {
-#ifdef PACXX_ENABLE_CUDA
-    case Runtime::RuntimeKind::RK_CUDA:
-      llvm::cast<CUDARuntime>(_runtime.get())->template deleteMemory(&buffer);
-      break;
-#endif
-    case Runtime::RuntimeKind::RK_Native:
-      llvm::cast<NativeRuntime>(_runtime.get())->template deleteMemory(&buffer);
-      break;
-#ifdef PACXX_ENABLE_HIP
-    case Runtime::RuntimeKind::RK_HIP:
-      llvm::cast<HIPRuntime>(_runtime.get())->template deleteMemory(&buffer);
-      break;
-#endif
-    case Runtime::RuntimeKind::RK_Remote:
-      llvm::cast<RemoteRuntime>(_runtime.get())->template deleteMemory(&buffer);
-      break;
-    default:
-      llvm_unreachable("this runtime type is not defined!");
-    }
+      _runtime->template deleteMemory(&buffer);
   }
 
   bool supportsDoublePrecission() {
@@ -298,6 +258,7 @@ public:
   llvm::LLVMContext &getLLVMContext() { return *_ctx; }
 
   Event &createEvent() {
+    // FIXME
     _events.emplace_back();
     auto &event = _events.back();
     switch (_runtime->getKind()) {

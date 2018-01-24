@@ -44,6 +44,8 @@ public:
 
   Runtime(RuntimeKind kind);
 
+  virtual bool checkSupportedHardware() = 0;
+
   virtual ~Runtime();
 
   virtual void link(std::unique_ptr<llvm::Module> M) = 0;

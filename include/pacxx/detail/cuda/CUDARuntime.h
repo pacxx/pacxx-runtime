@@ -45,7 +45,7 @@ public:
     return rt->getKind() == RuntimeKind::RK_CUDA;
   }
 
-  static bool checkSupportedHardware();
+  virtual bool checkSupportedHardware() override;
 
   CUDARuntime(unsigned dev_id);
 

@@ -84,7 +84,7 @@ set(SOURCE_FILES
         lib/Executor.cpp
         lib/MSPEngine.cpp
         lib/Kernel.cpp
-        lib/IRRuntime.cpp
+        lib/Runtime.cpp
         lib/common/Log.cpp
         lib/common/Common.cpp
         lib/common/TearDown.cpp

@@ -17,7 +17,7 @@ namespace pacxx {
 namespace v2 {
 class CUDARawDeviceBuffer : public RawDeviceBuffer {
 public:
-  CUDARawDeviceBuffer(size_t size, std::function<void(CUDARawDeviceBuffer&)> deleter, MemAllocMode mode = Standard);
+  CUDARawDeviceBuffer(size_t size, MemAllocMode mode = Standard);
 
   virtual ~CUDARawDeviceBuffer();
 

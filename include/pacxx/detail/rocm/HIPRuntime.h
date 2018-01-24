@@ -51,7 +51,7 @@ public:
     return rt->getKind() == RuntimeKind::RK_HIP;
   }
 
-  static bool checkSupportedHardware();
+  virtual bool checkSupportedHardware() override;
 
   HIPRuntime(unsigned dev_id);
 

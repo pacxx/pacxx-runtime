@@ -134,19 +134,6 @@ std::unique_ptr<RawDeviceBuffer> CUDARuntime::allocateRawMemory(size_t bytes, Me
   return std::unique_ptr<RawDeviceBuffer>(new CUDARawDeviceBuffer(bytes, mode));
 }
 
-void CUDARuntime::deleteRawMemory(RawDeviceBuffer *ptr) {
-  auto It = std::find_if(_memory.begin(), _memory.end(), [&](const auto &uptr) {
-    return reinterpret_cast<DeviceBuffer<char> *>(uptr.get())->getRawBuffer() ==
-           ptr;
-  });
-  if (It != _memory.end())
-    _memory.erase(It);
-  else
-    __error("ptr to delete not found");
-}
-
-
-
 void CUDARuntime::requestIRTransformation(Kernel &K) {
   if (_msp_engine.isDisabled())
     return;
