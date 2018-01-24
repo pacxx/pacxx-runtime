@@ -31,7 +31,7 @@ namespace pacxx {
 namespace v2 {
 RemoteRuntime::RemoteRuntime(const std::string &host, const std::string &port,
                              RuntimeKind rkind, unsigned dev_id)
-    : IRRuntime(RuntimeKind::RK_Remote), _kind(rkind) {
+    : Runtime(RuntimeKind::RK_Remote), _kind(rkind) {
   connectToDeamon(host, port);
 }
 
@@ -144,18 +144,18 @@ void RemoteRuntime::disconnectFromDeamon() {
   _service.reset();
 }
 
-void RemoteRuntime::createRemoteBackend(pacxx::v2::IRRuntime::RuntimeKind kind,
+void RemoteRuntime::createRemoteBackend(pacxx::v2::Runtime::RuntimeKind kind,
                                         const char *llvm, size_t size) {
   std::string rtName;
   using namespace pacxx::v2;
   switch (kind) {
-  case IRRuntime::RK_CUDA:
+  case Runtime::RK_CUDA:
     rtName = "CUDA";
     break;
-  case IRRuntime::RK_Native:
+  case Runtime::RK_Native:
     rtName = "NATIVE";
     break;
-  case IRRuntime::RK_HIP:
+  case Runtime::RK_HIP:
     rtName = "HIP";
     break;
   default:

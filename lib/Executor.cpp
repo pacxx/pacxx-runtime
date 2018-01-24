@@ -25,7 +25,7 @@ std::vector<Executor> *getExecutorMemory() {
 
 std::vector<Executor> &Executor::getExecutors() { return *getExecutorMemory(); }
 
-Executor::Executor(std::unique_ptr<IRRuntime> &&rt)
+Executor::Executor(std::unique_ptr<Runtime> &&rt)
     : _ctx(new LLVMContext()), _runtime(std::move(rt)) {
   core::CoreInitializer::initialize();
 }
@@ -54,16 +54,16 @@ unsigned Executor::getID() { return _id; }
 ExecutingDevice Executor::getExecutingDeviceType() {
   switch (_runtime->getKind()) {
 #ifdef PACXX_ENABLE_CUDA
-  case IRRuntime::RuntimeKind::RK_CUDA:
+  case Runtime::RuntimeKind::RK_CUDA:
     return ExecutingDevice::GPUNvidia;
 #endif
-  case IRRuntime::RuntimeKind::RK_Native:
+  case Runtime::RuntimeKind::RK_Native:
     return ExecutingDevice::CPU;
 #ifdef PACXX_ENABLE_HIP
-  case IRRuntime::RuntimeKind::RK_HIP:
+  case Runtime::RuntimeKind::RK_HIP:
     return ExecutingDevice::GPUAMD;
 #endif
-  case IRRuntime::RuntimeKind::RK_Remote:
+  case Runtime::RuntimeKind::RK_Remote:
     return ExecutingDevice::CPU; // FIXME
   default:
     break;
@@ -101,7 +101,7 @@ void Executor::freeRaw(RawDeviceBuffer &buffer) {
   _runtime->deleteRawMemory(&buffer);
 }
 
-IRRuntime &Executor::rt() { return *_runtime; }
+Runtime &Executor::rt() { return *_runtime; }
 
 void Executor::synchronize() { _runtime->synchronize(); }
 

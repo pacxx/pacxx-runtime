@@ -27,7 +27,7 @@ namespace pacxx {
 namespace v2 {
 
 NativeRuntime::NativeRuntime(unsigned)
-    : IRRuntime(RuntimeKind::RK_Native), _compiler(std::make_unique<CompilerT>()), _delayed_compilation(false) {
+    : Runtime(RuntimeKind::RK_Native), _compiler(std::make_unique<CompilerT>()), _delayed_compilation(false) {
 }
 
 NativeRuntime::~NativeRuntime() {}

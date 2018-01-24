@@ -91,7 +91,7 @@ set(SOURCE_FILES
         lib/native/NativeDeviceBuffer.cpp
         lib/Kernel.cpp
         lib/cuda/PTXBackend.cpp
-        lib/IRRuntime.cpp
+        lib/Runtime.cpp
         lib/native/NativeEvent.cpp
         lib/common/TearDown.cpp)
 

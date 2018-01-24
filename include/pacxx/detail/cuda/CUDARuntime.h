@@ -10,7 +10,7 @@
 #ifndef PACXX_V2_CUDARUNTIME_H
 #define PACXX_V2_CUDARUNTIME_H
 
-#include "../IRRuntime.h"
+#include "../Runtime.h"
 #include "../msp/MSPEngine.h"
 #include "CUDADeviceBuffer.h"
 #include "CUDAKernel.h"
@@ -37,11 +37,11 @@
 namespace pacxx {
 namespace v2 {
 
-class CUDARuntime : public IRRuntime {
+class CUDARuntime : public Runtime {
 public:
   using CompilerT = PTXBackend;
 
-  static bool classof(const IRRuntime *rt) {
+  static bool classof(const Runtime *rt) {
     return rt->getKind() == RuntimeKind::RK_CUDA;
   }
 
@@ -64,40 +64,6 @@ public:
   virtual size_t getConcurrentCores() override;
 
   virtual bool supportsUnifiedAddressing() override;
-
-  template <typename T>
-  DeviceBuffer<T> *allocateMemory(size_t count, T *host_ptr, MemAllocMode mode = Standard) {
-    auto raw = std::make_unique<CUDARawDeviceBuffer>([this](CUDARawDeviceBuffer& buffer){ deleteRawMemory(&buffer); }, mode);
-    raw->allocate(count * sizeof(T));
-    auto wrapped = new DeviceBuffer<T>(std::move(raw));
-    _memory.push_back(std::unique_ptr<DeviceBufferBase<void>>(
-        reinterpret_cast<DeviceBufferBase<void> *>(wrapped)));
-    if (host_ptr)
-      wrapped->upload(host_ptr, count);
-    return wrapped;
-  }
-
-  template <typename T> DeviceBuffer<T> *translateMemory(T *ptr) {
-    auto It =
-        std::find_if(_memory.begin(), _memory.end(), [&](const auto &element) {
-          return reinterpret_cast<DeviceBuffer<T> *>(element.get())->get() == ptr;
-        });
-
-    if (It != _memory.end())
-      return reinterpret_cast<DeviceBuffer<T> *>(It->get());
-    else
-      throw common::generic_exception(
-          "supplied pointer not found in translation list");
-  }
-
-  template <typename T> void deleteMemory(DeviceBuffer<T> *ptr) {
-    auto It =
-        std::find_if(_memory.begin(), _memory.end(),
-                     [&](const auto &element) { return element.get() == ptr; });
-
-    if (It != _memory.end())
-      _memory.erase(It);
-  }
 
   virtual RawDeviceBuffer *allocateRawMemory(size_t bytes, MemAllocMode mode = MemAllocMode::Standard) override;
 

@@ -18,11 +18,11 @@
 namespace pacxx {
 namespace v2 {
 
-class IRRuntime;
+class Runtime;
 
 class Kernel {
 public:
-  Kernel(IRRuntime &runtime, std::string name);
+  Kernel(Runtime &runtime, std::string name);
   virtual ~Kernel(){};
   virtual void configurate(KernelConfiguration config) = 0;
   virtual KernelConfiguration getConfiguration() const;
@@ -46,7 +46,7 @@ public:
   virtual const void *getLambdaPtr() { return _lambdaPtr; };
 
 protected:
-  IRRuntime &_runtime_ref;
+  Runtime &_runtime_ref;
   KernelConfiguration _config;
   std::map<int, long long> _staged_values;
   bool _staged_values_changed;

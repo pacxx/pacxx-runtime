@@ -26,7 +26,7 @@ using namespace llvm;
 namespace pacxx {
 namespace v2 {
 HIPRuntime::HIPRuntime(unsigned dev_id)
-    : IRRuntime(RuntimeKind::RK_HIP), _context(nullptr), _compiler(std::make_unique<CompilerT>()),
+    : Runtime(RuntimeKind::RK_HIP), _context(nullptr), _compiler(std::make_unique<CompilerT>()),
       _dev_props(16), _delayed_compilation(false) {
   SEC_HIP_CALL(hipInit(0));
   hipCtx_t old;

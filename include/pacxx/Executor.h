@@ -13,7 +13,7 @@
 #include "Promise.h"
 #include "pacxx/detail/CoreInitializer.h"
 #include "pacxx/detail/DeviceBuffer.h"
-#include "pacxx/detail/IRRuntime.h"
+#include "pacxx/detail/Runtime.h"
 #include "pacxx/detail/KernelArgument.h"
 #include "pacxx/detail/KernelConfiguration.h"
 #include "pacxx/detail/common/Exceptions.h"
@@ -97,8 +97,7 @@ private:
     case 2: // HIP Runtime
 #ifdef PACXX_ENABLE_HIP
       if (HIPRuntime::checkSupportedHardware()) {
-        return Create<HIPRuntime>(
-            0); // TODO: make dynamic for different devices
+        return Create<HIPRuntime>(0);
       } else {
         __verbose("No ROCm Device found: Using Fallback to CUDARuntime for "
                   "GPU execution as default Executor");
@@ -109,8 +108,7 @@ private:
     case 0: // CUDA Runtime
 #ifdef PACXX_ENABLE_CUDA
       if (CUDARuntime::checkSupportedHardware()) {
-        return Create<CUDARuntime>(
-            0); // TODO: make dynamic for different devices
+        return Create<CUDARuntime>(0);
       } else {
         __verbose("No CUDA Device found: Using Fallback to NativeRuntime for "
                   "CPU execution as default Executor");
@@ -128,7 +126,10 @@ private:
 public:
   template <typename T = Runtime, typename... Ts>
   static Executor &Create(Ts... args) {
-    std::unique_ptr<IRRuntime> rt(new T(args...));
+    std::unique_ptr<Runtime> rt(new T(args...));
+    
+    if (!T::checkSupportedHardware())
+      throw common::generic_exception("no supported device available!");
 
     auto &executors = getExecutors();
 
@@ -140,7 +141,7 @@ public:
 	  initializeModule(instance);
     return instance;
   }
-  Executor(std::unique_ptr<IRRuntime> &&rt);
+  Executor(std::unique_ptr<Runtime> &&rt);
 
   Executor(Executor &&other);
 
@@ -156,6 +157,16 @@ public:
   void launch(L callable, KernelConfiguration config) {
     pacxx::v2::codegenKernel<L, targ>(callable);
     run(callable, config);
+  }
+
+  template <typename L, pacxx::v2::Target targ = pacxx::v2::Target::Generic>
+  auto launch(L callable, KernelConfiguration config, std::promise<void> promise) {
+    pacxx::v2::codegenKernel<L, targ>(callable);
+    auto future = promise.get_future();
+    run_with_callback(callable, config, [promise = std::move(promise)]{ 
+      promise.set_value();
+    });
+    return future; 
   }
 
   template <typename L, pacxx::v2::Target targ = pacxx::v2::Target::Generic,
@@ -219,19 +230,19 @@ public:
 
     switch (_runtime->getKind()) {
 #ifdef PACXX_ENABLE_CUDA
-    case IRRuntime::RuntimeKind::RK_CUDA:
+    case Runtime::RuntimeKind::RK_CUDA:
       return *llvm::cast<CUDARuntime>(_runtime.get())
                   ->template allocateMemory(count, host_ptr, mode);
 #endif
-    case IRRuntime::RuntimeKind::RK_Native:
+    case Runtime::RuntimeKind::RK_Native:
       return *llvm::cast<NativeRuntime>(_runtime.get())
                   ->template allocateMemory(count, host_ptr, mode);
 #ifdef PACXX_ENABLE_HIP
-    case IRRuntime::RuntimeKind::RK_HIP:
+    case Runtime::RuntimeKind::RK_HIP:
       return *llvm::cast<HIPRuntime>(_runtime.get())
                   ->template allocateMemory(count, host_ptr, mode);
 #endif
-    case IRRuntime::RuntimeKind::RK_Remote:
+    case Runtime::RuntimeKind::RK_Remote:
       return *llvm::cast<RemoteRuntime>(_runtime.get())
                   ->template allocateMemory(count, host_ptr, mode);
     default:
@@ -247,19 +258,19 @@ public:
   template <typename T> void free(DeviceBuffer<T> &buffer) {
     switch (_runtime->getKind()) {
 #ifdef PACXX_ENABLE_CUDA
-    case IRRuntime::RuntimeKind::RK_CUDA:
+    case Runtime::RuntimeKind::RK_CUDA:
       llvm::cast<CUDARuntime>(_runtime.get())->template deleteMemory(&buffer);
       break;
 #endif
-    case IRRuntime::RuntimeKind::RK_Native:
+    case Runtime::RuntimeKind::RK_Native:
       llvm::cast<NativeRuntime>(_runtime.get())->template deleteMemory(&buffer);
       break;
 #ifdef PACXX_ENABLE_HIP
-    case IRRuntime::RuntimeKind::RK_HIP:
+    case Runtime::RuntimeKind::RK_HIP:
       llvm::cast<HIPRuntime>(_runtime.get())->template deleteMemory(&buffer);
       break;
 #endif
-    case IRRuntime::RuntimeKind::RK_Remote:
+    case Runtime::RuntimeKind::RK_Remote:
       llvm::cast<RemoteRuntime>(_runtime.get())->template deleteMemory(&buffer);
       break;
     default:
@@ -273,7 +284,7 @@ public:
     return _runtime->isSupportingDoublePrecission();
   }
 
-  IRRuntime &rt();
+  Runtime &rt();
 
   void synchronize();
 
@@ -296,19 +307,19 @@ public:
     auto &event = _events.back();
     switch (_runtime->getKind()) {
 #ifdef PACXX_ENABLE_CUDA
-    case IRRuntime::RuntimeKind::RK_CUDA:
+    case Runtime::RuntimeKind::RK_CUDA:
       event.reset(new CUDAEvent());
       break;
 #endif
-    case IRRuntime::RuntimeKind::RK_Native:
+    case Runtime::RuntimeKind::RK_Native:
       event.reset(new NativeEvent());
       break;
 #ifdef PACXX_ENABLE_HIP
-    case IRRuntime::RuntimeKind::RK_HIP:
+    case Runtime::RuntimeKind::RK_HIP:
       event.reset(new HIPEvent());
       break;
 #endif
-    case IRRuntime::RuntimeKind::RK_Remote:
+    case Runtime::RuntimeKind::RK_Remote:
       event.reset(new RemoteEvent());
       break;
     default:
@@ -321,7 +332,7 @@ private:
   std::string getFNameForLambda(std::string name);
 
   std::unique_ptr<llvm::LLVMContext> _ctx;
-  std::unique_ptr<IRRuntime> _runtime;
+  std::unique_ptr<Runtime> _runtime;
   std::map<std::string, std::string> _kernel_translation;
   std::vector<std::unique_ptr<Event>> _events;
   unsigned _id;

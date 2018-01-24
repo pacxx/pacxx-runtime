@@ -10,13 +10,13 @@
 #include "pacxx/detail/common/Log.h"
 #include "pacxx/detail/Kernel.h"
 #include "pacxx/detail/KernelConfiguration.h"
-#include "pacxx/detail/IRRuntime.h"
+#include "pacxx/detail/Runtime.h"
 #include <llvm/IR/Module.h>
 
 namespace pacxx {
 namespace v2 {
 
-Kernel::Kernel(IRRuntime &runtime, std::string name)
+Kernel::Kernel(Runtime &runtime, std::string name)
     : _runtime_ref(runtime), _staged_values_changed(false),
       _name(name),_disable_staging(false) {
   auto &M = _runtime_ref.getModule();
