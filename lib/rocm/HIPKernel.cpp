@@ -71,9 +71,9 @@ void HIPKernel::launch() {
       _fptr, _config.blocks.x, _config.blocks.y, _config.blocks.z,
       _config.threads.x, _config.threads.y, _config.threads.z, _config.sm_size,
       NULL, nullptr, &_launch_args[0]));
- // if (_callback)  FIXME: add callback support in HIP backend
- //   SEC_HIP_CALL(cudaStreamAddCallback(nullptr, HIPRuntime::fireCallback,
- //                                       &_callback, 0));
+  if (_callback)
+    SEC_HIP_CALL(hipStreamAddCallback(nullptr, HIPRuntime::fireCallback,
+                                        &_callback, 0));
 }
 
 

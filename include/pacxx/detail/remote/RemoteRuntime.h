@@ -59,8 +59,6 @@ public:
   allocateRawMemory(size_t bytes,
                     MemAllocMode mode = MemAllocMode::Standard) override;
 
-  //virtual void deleteRawMemory(RawDeviceBuffer *ptr) override;
-
   virtual void requestIRTransformation(Kernel &K) override;
 
   virtual const llvm::Module &getModule() override;
