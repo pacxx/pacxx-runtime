@@ -84,7 +84,7 @@ private:
   void compileAndLink();
 
 public:
-  static void fireCallback(hipStream_t stream, int status,
+  static void fireCallback(hipStream_t stream, hipError_t status,
                            void *userData) {
     (*reinterpret_cast<std::function<void()> *>(userData))();
   }
