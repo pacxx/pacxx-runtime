@@ -23,7 +23,6 @@ struct ihipCtx_t;
 struct ihipModule_t;
 struct ihipStream_t;
 struct hipDeviceProp_t;
-enum hipError_t;
 #ifdef __HIP_PLATFORM_HCC__
 typedef struct ihipCtx_t *hipCtx_t;
 typedef struct ihipModule_t *hipModule_t;
@@ -84,13 +83,6 @@ public:
 private:
   void compileAndLink();
 
-public:
-  static void fireCallback(hipStream_t stream, hipError_t status,
-                           void *userData) {
-    (*reinterpret_cast<std::function<void()> *>(userData))();
-  }
-
-private:
   hipCtx_t _context;
   hipModule_t _mod;
   std::unique_ptr<CompilerT> _compiler;

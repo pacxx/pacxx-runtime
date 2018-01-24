@@ -17,6 +17,10 @@
 
 namespace pacxx {
 namespace v2 {
+  static void fireHIPCallback(hipStream_t stream, hipError_t status,
+                           void *userData) {
+    (*reinterpret_cast<std::function<void()> *>(userData))();
+  }
 
 HIPKernel::HIPKernel(HIPRuntime &runtime, hipFunction_t fptr, std::string name)
     : Kernel(runtime, name), _runtime(runtime), _fptr(fptr), _lambdaStorage(6*4){}
@@ -72,7 +76,7 @@ void HIPKernel::launch() {
       _config.threads.x, _config.threads.y, _config.threads.z, _config.sm_size,
       NULL, nullptr, &_launch_args[0]));
   if (_callback)
-    SEC_HIP_CALL(hipStreamAddCallback(nullptr, HIPRuntime::fireCallback,
+    SEC_HIP_CALL(hipStreamAddCallback(nullptr, fireHIPCallback,
                                         &_callback, 0));
 }
 
