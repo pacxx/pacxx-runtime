@@ -11,7 +11,6 @@
 #include "HIPKernel.h"
 #include "HSACOBackend.h"
 #include "pacxx/detail/common/Exceptions.h"
-#include "pacxx/detail/rocm/HIPErrorDetection.h"
 #include <cstdlib>
 #include <list>
 #include <map>
@@ -24,6 +23,7 @@ struct ihipCtx_t;
 struct ihipModule_t;
 struct ihipStream_t;
 struct hipDeviceProp_t;
+enum hipError_t;
 #ifdef __HIP_PLATFORM_HCC__
 typedef struct ihipCtx_t *hipCtx_t;
 typedef struct ihipModule_t *hipModule_t;
