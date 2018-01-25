@@ -88,6 +88,12 @@ void CUPTIProfiler::dryrun() {
 	Executor::get().restoreArgs();
 	static_cast<CUDAKernel*>(_kernel)->getRuntime().synchronize();
 	SEC_CUPTI_CALL(cuptiActivityFlushAll(0));
+	{
+	  std::stringstream foo;
+	  foo << kernelDuration;
+	  foo << "us";
+	  stats[static_cast<CUDAKernel*>(_kernel)->getName()].back()["kernelDuration"] = foo.str();
+	}
 	__debug("Kernel run time: ", kernelDuration, "us");
 	stage = 4;
 }
