@@ -10,7 +10,7 @@
 #ifndef PACXX_V2_CUPTIPROFILER_H
 #define PACXX_V2_CUPTIPROFILER_H
 
-#include "../IRProfiler.h"
+#include "../Profiler.h"
 #include "CUDAKernel.h"
 #include "CUDAErrorDetection.h"
 #include <list>
@@ -18,7 +18,7 @@
 namespace pacxx {
 namespace v2 {
 
-class CUPTIProfiler : public IRProfiler {
+class CUPTIProfiler : public Profiler {
 public:
   typedef struct MetricData_st {
 	  // the device where metric is being collected

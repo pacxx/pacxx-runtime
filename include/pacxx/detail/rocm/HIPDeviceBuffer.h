@@ -21,9 +21,7 @@ class HIPRuntime;
 
 class HIPRawDeviceBuffer : public RawDeviceBuffer {
 public:
-  HIPRawDeviceBuffer(std::function<void(HIPRawDeviceBuffer&)> deleter, HIPRuntime* runtime, MemAllocMode mode = Standard);
-
-  void allocate(size_t bytes);
+  HIPRawDeviceBuffer(size_t size, HIPRuntime* runtime);
 
   virtual ~HIPRawDeviceBuffer();
 
@@ -52,16 +50,9 @@ public:
 
   virtual void restore() override;
 
-  virtual void abandon() override;
-
-  virtual void mercy() override;
-
 private:
   [[pacxx::device_memory]] char *_buffer;
   size_t _size;
-  unsigned _mercy;
-  MemAllocMode _mode;
-  std::function<void(HIPRawDeviceBuffer&)> _deleter;
   HIPRuntime* _runtime;
 };
 }

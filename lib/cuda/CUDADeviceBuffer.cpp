@@ -14,24 +14,19 @@
 
 namespace pacxx {
 namespace v2 {
-CUDARawDeviceBuffer::CUDARawDeviceBuffer(
-    std::function<void(CUDARawDeviceBuffer&)> deleter,
-    CUDARuntime *runtime, MemAllocMode mode)
-    : _size(0), _mercy(1), _mode(mode), _deleter(deleter), _runtime(runtime) {}
-
-void CUDARawDeviceBuffer::allocate(size_t bytes) {
+CUDARawDeviceBuffer::CUDARawDeviceBuffer(size_t size, CUDARuntime *runtime, MemAllocMode mode)
+: _size(size), _runtime(runtime), _mode(mode) {
   switch(_mode) {
-  case MemAllocMode::Standard:SEC_CUDA_CALL(cudaMalloc((void **) &_buffer, bytes));
+  case MemAllocMode::Standard:SEC_CUDA_CALL(cudaMalloc((void **) &_buffer, _size));
     break;
-  case MemAllocMode::Unified:SEC_CUDA_CALL(cudaMallocManaged((void **) &_buffer, bytes));
+  case MemAllocMode::Unified:SEC_CUDA_CALL(cudaMallocManaged((void **) &_buffer, _size));
     break;
   }
-  __debug("Allocating ", bytes, "b");
-  _size = bytes;
+  __debug("Allocating ", _size, "b");
   if (_runtime->getProfiler()->enabled())
   {
-    count_shadow = bytes;
-    src_shadow = new char[bytes];
+    count_shadow = _size;
+    src_shadow = new char[_size];
   }
 }
 
@@ -54,8 +49,6 @@ CUDARawDeviceBuffer::CUDARawDeviceBuffer(CUDARawDeviceBuffer &&rhs) {
   rhs._buffer = nullptr;
   _size = rhs._size;
   rhs._size = 0;
-  _mercy = rhs._mercy;
-  rhs._mercy = 0;
 
   if (_runtime->getProfiler()->enabled())
   {
@@ -73,8 +66,6 @@ CUDARawDeviceBuffer &CUDARawDeviceBuffer::operator=(CUDARawDeviceBuffer &&rhs) {
   rhs._buffer = nullptr;
   _size = rhs._size;
   rhs._size = 0;
-  _mercy = rhs._mercy;
-  rhs._mercy = 0;
 
   if (_runtime->getProfiler()->enabled())
   {
@@ -149,19 +140,9 @@ void CUDARawDeviceBuffer::restore() {
   }
 }
 
-void CUDARawDeviceBuffer::abandon() {
-  --_mercy;
-  if (_mercy == 0) {
-    _deleter(*this);
-    _buffer = nullptr;
-  }
-}
-
-void CUDARawDeviceBuffer::mercy() { ++_mercy; }
-
 void CUDARawDeviceBuffer::copyTo(void *dest) {
   if (!dest)
-    __error(__func__, "nullptr arrived, discarding copy");
+    __error(__func__, " nullptr arrived, discarding copy");
   if (dest != _buffer)
     SEC_CUDA_CALL(
         cudaMemcpyAsync(dest, _buffer, _size, cudaMemcpyDeviceToDevice));

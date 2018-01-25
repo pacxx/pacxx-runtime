@@ -7,8 +7,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef PACXX_V2_IRPROFILER_H
-#define PACXX_V2_IRPROFILER_H
+#ifndef PACXX_V2_PROFILER_H
+#define PACXX_V2_PROFILER_H
 
 #include <memory>
 #include "Kernel.h"
@@ -16,11 +16,11 @@
 namespace pacxx {
 namespace v2 {
 
-class IRProfiler {
+class Profiler {
 public:
-  IRProfiler();
+  Profiler();
 
-  virtual ~IRProfiler() {};
+  virtual ~Profiler() {};
 
   virtual bool enabled();
 
@@ -45,4 +45,4 @@ protected:
 }
 }
 
-#endif // PACXX_V2_IRPROFILER_H
+#endif // PACXX_V2_PROFILER_H

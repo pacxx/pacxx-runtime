@@ -31,7 +31,7 @@ namespace pacxx {
 namespace v2 {
 RemoteRuntime::RemoteRuntime(const std::string &host, const std::string &port,
                              RuntimeKind rkind, unsigned dev_id)
-    : IRRuntime(RuntimeKind::RK_Remote), _kind(rkind) {
+    : Runtime(RuntimeKind::RK_Remote), _kind(rkind) {
   connectToDeamon(host, port);
 }
 
@@ -79,21 +79,8 @@ size_t RemoteRuntime::getPreferedMemoryAlignment() {
   return 256; // TODO
 }
 
-RawDeviceBuffer *RemoteRuntime::allocateRawMemory(size_t bytes,
-                                                  MemAllocMode mode) {
-  auto wrapped = allocateMemory<char>(bytes, nullptr, mode);
-  return wrapped->getRawBuffer();
-}
-
-void RemoteRuntime::deleteRawMemory(RawDeviceBuffer *ptr) {
-  auto It = std::find_if(_memory.begin(), _memory.end(), [&](const auto &uptr) {
-    return reinterpret_cast<DeviceBuffer<char> *>(uptr.get())->getRawBuffer() ==
-           ptr;
-  });
-  if (It != _memory.end())
-    _memory.erase(It);
-  else
-    __error("ptr to delete not found");
+std::unique_ptr<RawDeviceBuffer> RemoteRuntime::allocateRawMemory(size_t bytes, MemAllocMode mode) {
+  return std::unique_ptr<RawDeviceBuffer>(new RemoteRawDeviceBuffer(bytes, this));
 }
 
 std::string RemoteRuntime::send_message(std::string message) {
@@ -144,18 +131,18 @@ void RemoteRuntime::disconnectFromDeamon() {
   _service.reset();
 }
 
-void RemoteRuntime::createRemoteBackend(pacxx::v2::IRRuntime::RuntimeKind kind,
+void RemoteRuntime::createRemoteBackend(pacxx::v2::Runtime::RuntimeKind kind,
                                         const char *llvm, size_t size) {
   std::string rtName;
   using namespace pacxx::v2;
   switch (kind) {
-  case IRRuntime::RK_CUDA:
+  case Runtime::RK_CUDA:
     rtName = "CUDA";
     break;
-  case IRRuntime::RK_Native:
+  case Runtime::RK_Native:
     rtName = "NATIVE";
     break;
-  case IRRuntime::RK_HIP:
+  case Runtime::RK_HIP:
     rtName = "HIP";
     break;
   default:

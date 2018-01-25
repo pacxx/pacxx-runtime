@@ -12,19 +12,14 @@
 
 namespace pacxx {
 namespace v2 {
-RemoteRawDeviceBuffer::RemoteRawDeviceBuffer(
-    std::function<void(RemoteRawDeviceBuffer &)> deleter,
-    RemoteRuntime *runtime, MemAllocMode mode)
-    : _size(0), _mercy(1), _mode(mode), _deleter(deleter), _runtime(runtime) {}
-
-void RemoteRawDeviceBuffer::allocate(size_t bytes) {
-  _buffer = reinterpret_cast<char*>(_runtime->allocateRemoteMemory(bytes));
-  __debug("Allocating ", bytes, "b");
-  _size = bytes;
+RemoteRawDeviceBuffer::RemoteRawDeviceBuffer( size_t size, RemoteRuntime *runtime)
+    : _size(size), _runtime(runtime) {
+  _buffer = reinterpret_cast<char*>(_runtime->allocateRemoteMemory(_size));
+  __debug("Allocating ", _size, "b");
   if (_runtime->getProfiler()->enabled())
   {
-    count_shadow = bytes;
-    src_shadow = new char[bytes];
+    count_shadow = _size;
+    src_shadow = new char[_size];
   }
 }
 
@@ -46,8 +41,6 @@ RemoteRawDeviceBuffer::RemoteRawDeviceBuffer(RemoteRawDeviceBuffer &&rhs) {
   rhs._buffer = nullptr;
   _size = rhs._size;
   rhs._size = 0;
-  _mercy = rhs._mercy;
-  rhs._mercy = 0;
 
   if (_runtime->getProfiler()->enabled())
   {
@@ -66,8 +59,6 @@ operator=(RemoteRawDeviceBuffer &&rhs) {
   rhs._buffer = nullptr;
   _size = rhs._size;
   rhs._size = 0;
-  _mercy = rhs._mercy;
-  rhs._mercy = 0;
 
   if (_runtime->getProfiler()->enabled())
   {
@@ -125,22 +116,6 @@ void RemoteRawDeviceBuffer::restore() {
     __debug("Restored ", count_shadow, "b");
   }
 }
-
-void RemoteRawDeviceBuffer::abandon() {
-  --_mercy;
-  if (_mercy == 0) {
-    _deleter(*this);
-    _buffer = nullptr;
-    if (_runtime->getProfiler()->enabled())
-    {
-      delete[] src_shadow;
-      offset_shadow = 0;
-      count_shadow = 0;
-    }
-  }
-}
-
-void RemoteRawDeviceBuffer::mercy() { ++_mercy; }
 
 void RemoteRawDeviceBuffer::copyTo(void *dest) {
   // TODO

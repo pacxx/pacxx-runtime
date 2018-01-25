@@ -15,24 +15,14 @@
 
 namespace pacxx {
 namespace v2 {
-HIPRawDeviceBuffer::HIPRawDeviceBuffer(
-    std::function<void(HIPRawDeviceBuffer&)> deleter,
-    HIPRuntime *runtime, MemAllocMode mode)
-    : _size(0), _mercy(1), _mode(mode), _deleter(deleter), _runtime(runtime) {}
-
-void HIPRawDeviceBuffer::allocate(size_t bytes) {
-  switch(_mode) {
-  case MemAllocMode::Standard:SEC_HIP_CALL(hipMalloc((void **) &_buffer, bytes));
-    break;
-  case MemAllocMode::Unified:
-    break;
-  }
-  __debug("Allocating ", bytes, "b");
-  _size = bytes;
+HIPRawDeviceBuffer::HIPRawDeviceBuffer(size_t size, HIPRuntime *runtime)
+: _size(size), _runtime(runtime) {
+  SEC_HIP_CALL(hipMalloc((void **) &_buffer, _size));
+  __debug("Allocating ", _size, "b");
   if (_runtime->getProfiler()->enabled())
   {
-    count_shadow = bytes;
-    src_shadow = new char[bytes];
+    count_shadow = _size;
+    src_shadow = new char[_size];
   }
 }
 
@@ -54,8 +44,6 @@ HIPRawDeviceBuffer::HIPRawDeviceBuffer(HIPRawDeviceBuffer &&rhs) {
   rhs._buffer = nullptr;
   _size = rhs._size;
   rhs._size = 0;
-  _mercy = rhs._mercy;
-  rhs._mercy = 0;
 
   if (_runtime->getProfiler()->enabled())
   {
@@ -73,8 +61,6 @@ HIPRawDeviceBuffer &HIPRawDeviceBuffer::operator=(HIPRawDeviceBuffer &&rhs) {
   rhs._buffer = nullptr;
   _size = rhs._size;
   rhs._size = 0;
-  _mercy = rhs._mercy;
-  rhs._mercy = 0;
 
   if (_runtime->getProfiler()->enabled())
   {
@@ -149,25 +135,9 @@ void HIPRawDeviceBuffer::restore() {
   }
 }
 
-void HIPRawDeviceBuffer::abandon() {
-  --_mercy;
-  if (_mercy == 0) {
-    _deleter(*this);
-    _buffer = nullptr;
-    if (_runtime->getProfiler()->enabled())
-    {
-      delete[] src_shadow;
-      offset_shadow = 0;
-      count_shadow = 0;
-    }
-  }
-}
-
-void HIPRawDeviceBuffer::mercy() { ++_mercy; }
-
 void HIPRawDeviceBuffer::copyTo(void *dest) {
   if (!dest)
-    __error(__func__, "nullptr arrived, discarding copy");
+    __error(__func__, " nullptr arrived, discarding copy");
   if (dest != _buffer)
     SEC_HIP_CALL(
         hipMemcpyAsync(dest, _buffer, _size, hipMemcpyDeviceToDevice));

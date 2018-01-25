@@ -22,11 +22,7 @@ class NativeRuntime;
 
 class NativeRawDeviceBuffer : public RawDeviceBuffer {
 public:
-  NativeRawDeviceBuffer(std::function<void(NativeRawDeviceBuffer&)> deleter, NativeRuntime* runtime);
-
-  void allocate(size_t bytes, unsigned padding = 0);
-
-  void allocate(size_t bytes, char *host_ptr);
+  NativeRawDeviceBuffer(size_t size, unsigned padding, NativeRuntime* runtime);
 
   virtual ~NativeRawDeviceBuffer();
 
@@ -55,16 +51,9 @@ public:
 
   virtual void restore() override;
 
-  virtual void abandon() override;
-
-  virtual void mercy() override;
-
 private:
   [[pacxx::device_memory]] char *_buffer;
   size_t _size;
-  unsigned _mercy;
-  bool _isHost;
-  std::function<void(NativeRawDeviceBuffer&)> _deleter;
   NativeRuntime* _runtime;
 };
 } // v2 namespace

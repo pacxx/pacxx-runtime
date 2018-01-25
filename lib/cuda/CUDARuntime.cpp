@@ -28,8 +28,8 @@ using namespace llvm;
 namespace pacxx {
 namespace v2 {
 CUDARuntime::CUDARuntime(unsigned dev_id)
-    : IRRuntime(RuntimeKind::RK_CUDA), _context(nullptr), _compiler(std::make_unique<CompilerT>()),
-       _dev_props(16), _delayed_compilation(false) {
+    : Runtime(RuntimeKind::RK_CUDA), _context(nullptr), _compiler(std::make_unique<CompilerT>()),
+      _dev_props(16), _delayed_compilation(false) {
   _profiler.reset(new CUPTIProfiler());
   _profiler->preinit(&dev_id);
   SEC_CUDA_CALL(cuInit(0));
@@ -141,23 +141,9 @@ size_t CUDARuntime::getPreferedMemoryAlignment() {
   return 256; // on CUDA devices memory is best aligned at 256 bytes
 }
 
-RawDeviceBuffer *CUDARuntime::allocateRawMemory(size_t bytes, MemAllocMode mode) {
-  auto wrapped = allocateMemory<char>(bytes, nullptr, mode);
-  return wrapped->getRawBuffer();
+std::unique_ptr<RawDeviceBuffer> CUDARuntime::allocateRawMemory(size_t bytes, MemAllocMode mode) {
+  return std::unique_ptr<RawDeviceBuffer>(new CUDARawDeviceBuffer(bytes, this, mode));
 }
-
-void CUDARuntime::deleteRawMemory(RawDeviceBuffer *ptr) {
-  auto It = std::find_if(_memory.begin(), _memory.end(), [&](const auto &uptr) {
-    return reinterpret_cast<DeviceBuffer<char> *>(uptr.get())->getRawBuffer() ==
-           ptr;
-  });
-  if (It != _memory.end())
-    _memory.erase(It);
-  else
-    __error("ptr to delete not found");
-}
-
-
 
 void CUDARuntime::requestIRTransformation(Kernel &K) {
   if (_msp_engine.isDisabled())

@@ -84,8 +84,8 @@ set(SOURCE_FILES
         lib/Executor.cpp
         lib/MSPEngine.cpp
         lib/Kernel.cpp
-        lib/IRProfiler.cpp
-        lib/IRRuntime.cpp
+        lib/Runtime.cpp
+        lib/Profiler.cpp
         lib/common/Log.cpp
         lib/common/Common.cpp
         lib/common/TearDown.cpp
@@ -177,8 +177,6 @@ add_compile_options(-include ${CMAKE_CURRENT_SOURCE_DIR}/include/pacxx/pacxx_con
 add_definitions(${LLVM_DEFINITIONS})
 
 set(PACXX_DEV_FLAGS -std=c++14 -pacxx -emit-llvm -c -O3 -D__device_code__ -isystem ${CMAKE_CURRENT_SOURCE_DIR}/include)
-
-
 
 if (${CMAKE_SIZEOF_VOID_P} EQUAL 8)
     set(PACXX_CUDA_DEV_FLAGS ${PACXX_DEV_FLAGS} -target nvptx64-unknown-unknown)

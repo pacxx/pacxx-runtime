@@ -9,7 +9,7 @@
 
 #pragma once
 
-#include "../IRRuntime.h"
+#include "../Runtime.h"
 #include "../msp/MSPEngine.h"
 #include "RemoteDeviceBuffer.h"
 #include "RemoteKernel.h"
@@ -25,17 +25,17 @@
 namespace pacxx {
 namespace v2 {
 
-class RemoteRuntime : public IRRuntime {
+class RemoteRuntime : public Runtime {
 
   friend class RemoteKernel;
   friend class RemoteRawDeviceBuffer;
 
 public:
-  static bool classof(const IRRuntime *rt) {
+  static bool classof(const Runtime *rt) {
     return rt->getKind() == RuntimeKind::RK_Remote;
   }
 
-  static bool checkSupportedHardware();
+  virtual bool checkSupportedHardware() final { return true; }; 
 
   RemoteRuntime(const std::string& host, const std::string& port, RuntimeKind rkind, unsigned dev_id);
 
@@ -55,49 +55,9 @@ public:
 
   virtual bool supportsUnifiedAddressing() override;
 
-  template <typename T>
-  DeviceBuffer<T> *allocateMemory(size_t count, T *host_ptr,
-                                  MemAllocMode mode = Standard) {
-    auto raw = std::make_unique<RemoteRawDeviceBuffer>(
-        [this](RemoteRawDeviceBuffer &buffer) { deleteRawMemory(&buffer); },
-        this, mode);
-    raw->allocate(count * sizeof(T));
-    auto wrapped = new DeviceBuffer<T>(std::move(raw));
-    _memory.push_back(std::unique_ptr<DeviceBufferBase<void>>(
-        reinterpret_cast<DeviceBufferBase<void> *>(wrapped)));
-    if (host_ptr)
-      wrapped->upload(host_ptr, count);
-    return wrapped;
-  }
-
-  template <typename T> DeviceBuffer<T> *translateMemory(T *ptr) {
-    auto It =
-        std::find_if(_memory.begin(), _memory.end(), [&](const auto &element) {
-          return reinterpret_cast<DeviceBuffer<T> *>(element.get())
-                     ->get() == ptr;
-        });
-
-    if (It != _memory.end())
-      return reinterpret_cast<DeviceBuffer<T> *>(It->get());
-    else
-      throw common::generic_exception(
-          "supplied pointer not found in translation list");
-  }
-
-  template <typename T> void deleteMemory(DeviceBuffer<T> *ptr) {
-    auto It =
-        std::find_if(_memory.begin(), _memory.end(),
-                     [&](const auto &element) { return element.get() == ptr; });
-
-    if (It != _memory.end())
-      _memory.erase(It);
-  }
-
-  virtual RawDeviceBuffer *
+  virtual std::unique_ptr<RawDeviceBuffer>
   allocateRawMemory(size_t bytes,
                     MemAllocMode mode = MemAllocMode::Standard) override;
-
-  virtual void deleteRawMemory(RawDeviceBuffer *ptr) override;
 
   virtual void requestIRTransformation(Kernel &K) override;
 
@@ -116,7 +76,7 @@ private:
 
   void disconnectFromDeamon();
 
-  void createRemoteBackend(IRRuntime::RuntimeKind kind,
+  void createRemoteBackend(Runtime::RuntimeKind kind,
                            const char *llvm, size_t size);
 
   void *allocateRemoteMemory(size_t size);

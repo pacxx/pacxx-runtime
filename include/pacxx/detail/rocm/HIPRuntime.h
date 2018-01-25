@@ -5,7 +5,7 @@
 #ifndef PACXX_V2_HIPRUNTIME_H
 #define PACXX_V2_HIPRUNTIME_H
 
-#include "../IRRuntime.h"
+#include "../Runtime.h"
 #include "../msp/MSPEngine.h"
 #include "HIPDeviceBuffer.h"
 #include "HIPKernel.h"
@@ -43,15 +43,15 @@ typedef cudaStream_t hipStream_t;
 namespace pacxx {
 namespace v2 {
 
-class HIPRuntime : public IRRuntime {
+class HIPRuntime : public Runtime {
 public:
   using CompilerT = HSACOBackend;
 
-  static bool classof(const IRRuntime *rt) {
+  static bool classof(const Runtime *rt) {
     return rt->getKind() == RuntimeKind::RK_HIP;
   }
 
-  static bool checkSupportedHardware();
+  virtual bool checkSupportedHardware() override;
 
   HIPRuntime(unsigned dev_id);
 
@@ -71,44 +71,7 @@ public:
 
   virtual bool supportsUnifiedAddressing() override;
 
-  template <typename T>
-  DeviceBuffer<T> *allocateMemory(size_t count, T *host_ptr, MemAllocMode mode = Standard) {
-    auto raw = std::make_unique<HIPRawDeviceBuffer>([this](HIPRawDeviceBuffer& buffer){ deleteRawMemory(&buffer); }, this, mode);
-    raw->allocate(count * sizeof(T));
-    auto wrapped = new DeviceBuffer<T>(std::move(raw));
-    _memory.push_back(std::unique_ptr<DeviceBufferBase<void>>(
-        reinterpret_cast<DeviceBufferBase<void> *>(wrapped)));
-    if (host_ptr)
-      wrapped->upload(host_ptr, count);
-    return wrapped;
-  }
-
-  template <typename T> DeviceBuffer<T> *translateMemory(T *ptr) {
-    auto It =
-        std::find_if(_memory.begin(), _memory.end(), [&](const auto &element) {
-          return reinterpret_cast<DeviceBuffer<T> *>(element.get())
-                     ->get() == ptr;
-        });
-
-    if (It != _memory.end())
-      return reinterpret_cast<DeviceBuffer<T> *>(It->get());
-    else
-      throw common::generic_exception(
-          "supplied pointer not found in translation list");
-  }
-
-  template <typename T> void deleteMemory(DeviceBuffer<T> *ptr) {
-    auto It =
-        std::find_if(_memory.begin(), _memory.end(),
-                     [&](const auto &element) { return element.get() == ptr; });
-
-    if (It != _memory.end())
-      _memory.erase(It);
-  }
-
-  virtual RawDeviceBuffer *allocateRawMemory(size_t bytes, MemAllocMode mode = MemAllocMode::Standard) override;
-
-  virtual void deleteRawMemory(RawDeviceBuffer *ptr) override;
+  virtual std::unique_ptr<RawDeviceBuffer> allocateRawMemory(size_t bytes, MemAllocMode mode = MemAllocMode::Standard) override;
 
   virtual void requestIRTransformation(Kernel &K) override;
 
@@ -119,13 +82,6 @@ public:
 private:
   void compileAndLink();
 
-public:
-  static void fireCallback(hipStream_t stream, int status,
-                           void *userData) {
-    (*reinterpret_cast<std::function<void()> *>(userData))();
-  }
-
-private:
   hipCtx_t _context;
   hipModule_t _mod;
   std::unique_ptr<CompilerT> _compiler;

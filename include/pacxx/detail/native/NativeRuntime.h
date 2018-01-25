@@ -10,7 +10,7 @@
 #ifndef PACXX_V2_NATIVERUNTIME_H
 #define PACXX_V2_NATIVERUNTIME_H
 
-#include "../IRRuntime.h"
+#include "../Runtime.h"
 #include "NativeBackend.h"
 #include "NativeDeviceBuffer.h"
 #include "NativeKernel.h"
@@ -25,13 +25,15 @@
 namespace pacxx {
 namespace v2 {
 
-class NativeRuntime : public IRRuntime {
+class NativeRuntime : public Runtime {
 public:
   using CompilerT = NativeBackend;
 
-  static bool classof(const IRRuntime *rt) {
+  static bool classof(const Runtime *rt) {
     return rt->getKind() == RuntimeKind::RK_Native;
   }
+
+  virtual bool checkSupportedHardware() final { return true; }
 
   NativeRuntime(unsigned dev_id);
   virtual ~NativeRuntime();
@@ -50,49 +52,7 @@ public:
 
   virtual bool supportsUnifiedAddressing() override;
 
-  template <typename T>
-  DeviceBuffer<T> *allocateMemory(size_t count, T *host_ptr, MemAllocMode mode = Standard) {
-    auto raw = std::make_unique<NativeRawDeviceBuffer>([this](NativeRawDeviceBuffer& buffer){ deleteRawMemory(&buffer); }, this);
-
-    auto bytes = count * sizeof(T);
-
-    if (host_ptr)
-      raw->allocate(bytes, reinterpret_cast<char *>(host_ptr));
-    else
-      raw->allocate(bytes, getPreferedVectorSizeInBytes());
-
-    auto wrapped = new DeviceBuffer<T>(std::move(raw));
-    _memory.push_back(std::unique_ptr<DeviceBufferBase<void>>(
-        reinterpret_cast<DeviceBufferBase<void> *>(wrapped)));
-    return wrapped;
-  }
-
-  template <typename T> DeviceBuffer<T> *translateMemory(T *ptr) {
-    auto It =
-        std::find_if(_memory.begin(), _memory.end(), [&](const auto &element) {
-          return reinterpret_cast<DeviceBuffer<T> *>(element.get())
-                     ->get() == ptr;
-        });
-
-    if (It != _memory.end())
-      return reinterpret_cast<DeviceBuffer<T> *>(It->get());
-    else
-      throw common::generic_exception(
-          "supplied pointer not found in translation list");
-  }
-
-  template <typename T> void deleteMemory(DeviceBuffer<T> *ptr) {
-    auto It =
-        std::find_if(_memory.begin(), _memory.end(),
-                     [&](const auto &element) { return element.get() == ptr; });
-
-    if (It != _memory.end())
-      _memory.erase(It);
-  }
-
-  virtual RawDeviceBuffer *allocateRawMemory(size_t bytes, MemAllocMode mode = Standard) override;
-
-  virtual void deleteRawMemory(RawDeviceBuffer *ptr) override;
+  virtual std::unique_ptr<RawDeviceBuffer> allocateRawMemory(size_t bytes, MemAllocMode mode = Standard) override;
 
   virtual void requestIRTransformation(Kernel &K) override;
 

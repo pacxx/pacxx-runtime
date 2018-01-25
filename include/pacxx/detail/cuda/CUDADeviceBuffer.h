@@ -21,9 +21,7 @@ class CUDARuntime;
 
 class CUDARawDeviceBuffer : public RawDeviceBuffer {
 public:
-  CUDARawDeviceBuffer(std::function<void(CUDARawDeviceBuffer&)> deleter, CUDARuntime* runtime, MemAllocMode mode = Standard);
-
-  void allocate(size_t bytes);
+  CUDARawDeviceBuffer(size_t size, CUDARuntime* runtime, MemAllocMode mode = Standard);
 
   virtual ~CUDARawDeviceBuffer();
 
@@ -52,17 +50,11 @@ public:
 
   virtual void restore() override;
 
-  virtual void abandon() override;
-
-  virtual void mercy() override;
-
 private:
   [[pacxx::device_memory]] char *_buffer;
   size_t _size;
-  unsigned _mercy;
-  MemAllocMode _mode;
-  std::function<void(CUDARawDeviceBuffer&)> _deleter;
   CUDARuntime* _runtime;
+  MemAllocMode _mode;
 };
 }
 }

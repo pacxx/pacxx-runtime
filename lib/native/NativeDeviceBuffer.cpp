@@ -15,13 +15,8 @@
 
 namespace pacxx {
 namespace v2 {
-NativeRawDeviceBuffer::NativeRawDeviceBuffer(
-    std::function<void(NativeRawDeviceBuffer&)> deleter,
-    NativeRuntime *runtime)
-    : _size(0), _mercy(1), _isHost(false), _deleter(deleter), _runtime(runtime) {}
-
-void NativeRawDeviceBuffer::allocate(size_t bytes, unsigned padding) {
-
+NativeRawDeviceBuffer::NativeRawDeviceBuffer(size_t size, unsigned padding, NativeRuntime *runtime)
+    : _size(size), _runtime(runtime) {
   auto padSize = [=](size_t bytes, unsigned vf) {
     if (vf == 0)
       return bytes;
@@ -30,32 +25,24 @@ void NativeRawDeviceBuffer::allocate(size_t bytes, unsigned padding) {
     return bytes + vf - remainder; // pad after and before memory
   };
 
-  auto total = padSize(bytes, padding);
+  auto total = padSize(_size, padding);
 
-  __verbose("allocating padded: ", bytes, " ", padSize(bytes, padding), " ", padding);
+  __verbose("allocating padded: ", _size, " ", padSize(_size, padding), " ", padding);
 
   _buffer = (char *) malloc(total);
   if (!_buffer)
     throw new common::generic_exception("buffer allocation failed");
-  __debug("Allocating ", bytes, "b");
-  _size = bytes;
+  __debug("Allocating ", _size, "b");
   if (_runtime->getProfiler()->enabled())
   {
-    count_shadow = bytes;
-    src_shadow = new char[bytes];
+    count_shadow = _size;
+    src_shadow = new char[_size];
   }
-}
-
-void NativeRawDeviceBuffer::allocate(size_t bytes, char *host_ptr) {
-  __verbose("allocating host buffer");
-  _buffer = host_ptr;
-  _size = bytes;
-  _isHost = true;
 }
 
 NativeRawDeviceBuffer::~NativeRawDeviceBuffer() {
   __verbose("deleting buffer");
-  if (_buffer && !_isHost) {
+  if (_buffer) {
     free(_buffer);
     if (_runtime->getProfiler()->enabled())
     {
@@ -72,8 +59,6 @@ NativeRawDeviceBuffer::NativeRawDeviceBuffer(NativeRawDeviceBuffer &&rhs) {
   rhs._buffer = nullptr;
   _size = rhs._size;
   rhs._size = 0;
-  _mercy = rhs._mercy;
-  rhs._mercy = 0;
 
   if (_runtime->getProfiler()->enabled())
   {
@@ -84,9 +69,6 @@ NativeRawDeviceBuffer::NativeRawDeviceBuffer(NativeRawDeviceBuffer &&rhs) {
     count_shadow = rhs.count_shadow;
     rhs.count_shadow = 0;
   }
-
-  _isHost = rhs._isHost;
-  rhs._isHost = false;
 }
 
 NativeRawDeviceBuffer &NativeRawDeviceBuffer::
@@ -95,8 +77,6 @@ operator=(NativeRawDeviceBuffer &&rhs) {
   rhs._buffer = nullptr;
   _size = rhs._size;
   rhs._size = 0;
-  _mercy = rhs._mercy;
-  rhs._mercy = 0;
 
   if (_runtime->getProfiler()->enabled())
   {
@@ -108,8 +88,6 @@ operator=(NativeRawDeviceBuffer &&rhs) {
     rhs.count_shadow = 0;
   }
 
-  _isHost = rhs._isHost;
-  rhs._isHost = false;
   return *this;
 }
 
@@ -159,25 +137,9 @@ void NativeRawDeviceBuffer::restore() {
   }
 }
 
-void NativeRawDeviceBuffer::abandon() {
-  --_mercy;
-  if (_mercy == 0) {
-    _deleter(*this);
-    _buffer = nullptr;
-    if (_runtime->getProfiler()->enabled())
-    {
-      delete[] src_shadow;
-      offset_shadow = 0;
-      count_shadow = 0;
-    }
-  }
-}
-
-void NativeRawDeviceBuffer::mercy() { ++_mercy; }
-
 void NativeRawDeviceBuffer::copyTo(void *dest) {
   if (!dest)
-    __error(__func__, "nullptr arrived, discarding copy");
+    __error(__func__, " nullptr arrived, discarding copy");
   if (dest != _buffer)
     std::memcpy(dest, _buffer, _size);
 }

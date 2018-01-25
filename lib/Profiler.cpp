@@ -8,14 +8,14 @@
 //===----------------------------------------------------------------------===//
 
 #include "pacxx/detail/Kernel.h"
-#include "pacxx/detail/IRRuntime.h"
+#include "pacxx/detail/Runtime.h"
 
 namespace pacxx {
 namespace v2 {
 
-Kernel* IRProfiler::_kernel = nullptr;
+Kernel* Profiler::_kernel = nullptr;
 
-IRProfiler::IRProfiler() {
+Profiler::Profiler() {
   InFilePath = common::GetEnv("PACXX_PROF_IN");
   if (InFilePath.empty()) InFilePath = "PACXX.prof";
   OutFilePath = common::GetEnv("PACXX_PROF_OUT");
@@ -23,11 +23,11 @@ IRProfiler::IRProfiler() {
   else _enabled = true;
 }
 
-bool IRProfiler::enabled() {
+bool Profiler::enabled() {
 	return _enabled;
 }
 
-void IRProfiler::updateKernel(Kernel *kernel) {
+void Profiler::updateKernel(Kernel *kernel) {
 	_kernel = kernel;
 }
 
