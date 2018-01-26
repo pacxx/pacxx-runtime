@@ -124,6 +124,10 @@ struct AMDGCNPrepair : public ModulePass {
     if (auto F = M.getFunction("__oclc_unsafe_math_opt")){
       replaceOCLConfigCall(F, 0); // disable unsafe math opts
     }
+    
+    if (auto F = M.getFunction("__oclc_correctly_rounded_sqrt32")){
+      replaceOCLConfigCall(F, 1); 
+    }
 
     auto kernels = pacxx::getKernels(&M);
 
