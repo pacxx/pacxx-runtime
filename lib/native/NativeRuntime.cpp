@@ -32,7 +32,9 @@ NativeRuntime::NativeRuntime(unsigned)
       _profiler.reset(new PAPIProfiler());
 }
 
-NativeRuntime::~NativeRuntime() {}
+NativeRuntime::~NativeRuntime() {
+  if (_profiler->enabled()) _profiler->report();
+}
 
 void NativeRuntime::link(std::unique_ptr<llvm::Module> M) {
 

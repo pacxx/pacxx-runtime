@@ -53,7 +53,7 @@ void PAPIProfiler::profileSingle(const std::string& metricName) {
 		Executor::get().restoreArgs();
 	}
   events.stop_counters();
-	stats[static_cast<NativeKernel*>(_kernel)->getName()].back()[metricName] = events.at<0>().counter();
+  stats[static_cast<NativeKernel*>(_kernel)->getName()].back()[metricName] = events.at<0>().counter();
 }
 
 }
