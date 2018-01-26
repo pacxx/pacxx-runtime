@@ -9,6 +9,7 @@
 
 #include "pacxx/detail/cuda/CUDAErrorDetection.h"
 #include "pacxx/detail/cuda/CUDARuntime.h"
+#include "pacxx/detail/cuda/CUPTIProfiler.h"
 #include "pacxx/detail/common/Exceptions.h"
 #include "pacxx/detail/common/Timing.h"
 #include <llvm/IR/Module.h>
@@ -29,6 +30,8 @@ namespace v2 {
 CUDARuntime::CUDARuntime(unsigned dev_id)
     : Runtime(RuntimeKind::RK_CUDA), _context(nullptr), _compiler(std::make_unique<CompilerT>()),
       _dev_props(16), _delayed_compilation(false) {
+  _profiler.reset(new CUPTIProfiler());
+  _profiler->preinit(&dev_id);
   SEC_CUDA_CALL(cuInit(0));
   CUcontext old;
   SEC_CUDA_CALL(cuCtxGetCurrent(&old)); // check if there is already a context
@@ -51,9 +54,12 @@ CUDARuntime::CUDARuntime(unsigned dev_id)
   __verbose("Initializing PTXBackend for ", prop.name, " (dev: ", dev_id,
             ") with compute capability ", prop.major, ".", prop.minor);
   _compiler->initialize(CC);
+  _profiler->postinit(&dev_id);
 }
 
-CUDARuntime::~CUDARuntime() {}
+CUDARuntime::~CUDARuntime() {
+  if (_profiler->enabled()) _profiler->report();
+}
 
 void CUDARuntime::link(std::unique_ptr<llvm::Module> M) {
 
@@ -126,12 +132,17 @@ Kernel &CUDARuntime::getKernel(const std::string &name) {
   }
 }
 
+CUcontext &CUDARuntime::getContext()
+{
+  return _context;
+}
+
 size_t CUDARuntime::getPreferedMemoryAlignment() {
   return 256; // on CUDA devices memory is best aligned at 256 bytes
 }
 
 std::unique_ptr<RawDeviceBuffer> CUDARuntime::allocateRawMemory(size_t bytes, MemAllocMode mode) {
-  return std::unique_ptr<RawDeviceBuffer>(new CUDARawDeviceBuffer(bytes, mode));
+  return std::unique_ptr<RawDeviceBuffer>(new CUDARawDeviceBuffer(bytes, this, mode));
 }
 
 void CUDARuntime::requestIRTransformation(Kernel &K) {

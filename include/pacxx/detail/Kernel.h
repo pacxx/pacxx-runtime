@@ -36,9 +36,13 @@ public:
   virtual const std::string &getName() const;
   virtual void launch() = 0;
 
+  virtual void profile() {
+    return;
+  }
+
   virtual void setCallback(std::function<void()> callback);
 
-  virtual void setLambdaPtr(const void* ptr, size_t size) { 
+  virtual void setLambdaPtr(const void* ptr, size_t size) {
     _lambdaPtr = ptr;
     _lambdaSize = size;
   };

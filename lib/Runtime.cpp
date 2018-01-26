@@ -13,7 +13,9 @@
 namespace pacxx {
 namespace v2 {
 
-Runtime::Runtime(RuntimeKind kind) : _kind(kind), _msp_engine() {}
+Runtime::Runtime(RuntimeKind kind) : _kind(kind), _msp_engine() {
+  _profiler.reset(new Profiler());
+}
 
 Runtime::~Runtime(){}
 
@@ -28,6 +30,15 @@ void Runtime::evaluateStagedFunctions(Kernel &K) {
     if (_msp_engine.isDisabled())
       return;
     _msp_engine.evaluate(*_rawM->getFunction(K.getName()), K);
+  }
+}
+
+void Runtime::restoreMemory() {
+  if (_profiler->enabled())
+  {
+    for (std::unique_ptr<DeviceBufferBase<void>>& entry : _memory) {
+      entry.get()->restore();
+    }
   }
 }
 

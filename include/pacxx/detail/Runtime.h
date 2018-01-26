@@ -7,11 +7,12 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef PACXX_V2_IRRUNTIME_H
-#define PACXX_V2_IRRUNTIME_H
+#ifndef PACXX_V2_RUNTIME_H
+#define PACXX_V2_RUNTIME_H
 
 #include "DeviceBuffer.h"
 #include "Kernel.h"
+#include "Profiler.h"
 #include "pacxx/detail/msp/MSPEngine.h"
 #include "pacxx/detail/common/Exceptions.h"
 #include "pacxx/pacxx_config.h"
@@ -62,6 +63,8 @@ public:
 
   virtual bool supportsUnifiedAddressing() = 0;
 
+  virtual void restoreMemory();
+
   virtual std::unique_ptr<RawDeviceBuffer> allocateRawMemory(size_t bytes,
                                              MemAllocMode mode) = 0;
 
@@ -76,6 +79,8 @@ public:
   virtual const llvm::Module &getModule();
 
   virtual void synchronize() = 0;
+
+  virtual Profiler* getProfiler() {return _profiler.get();}
 
   virtual bool isSupportingDoublePrecission() { return true; }
 
@@ -115,10 +120,11 @@ public:
 
 protected:
   MSPEngine _msp_engine;
+  std::unique_ptr<Profiler> _profiler;
   std::unique_ptr<llvm::Module> _M, _rawM;
   std::list<std::unique_ptr<DeviceBufferBase<void>>> _memory;
 };
 } // namespace v2
 } // namespace pacxx
 
-#endif // PACXX_V2_IRRUNTIME_H
+#endif // PACXX_V2_RUNTIME_H

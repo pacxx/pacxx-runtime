@@ -8,20 +8,34 @@
 //===----------------------------------------------------------------------===//
 
 #include "pacxx/detail/rocm/HIPDeviceBuffer.h"
+#include "pacxx/detail/rocm/HIPRuntime.h"
 #include "pacxx/detail/rocm/HIPErrorDetection.h"
 
 #include <hip/hip_runtime.h>
 
 namespace pacxx {
 namespace v2 {
-HIPRawDeviceBuffer::HIPRawDeviceBuffer(size_t size) 
-: _size(size) {
-  SEC_HIP_CALL(hipMalloc((void **) &_buffer, _size)); 
+HIPRawDeviceBuffer::HIPRawDeviceBuffer(size_t size, HIPRuntime *runtime)
+: _size(size), _runtime(runtime) {
+  SEC_HIP_CALL(hipMalloc((void **) &_buffer, _size));
+  __debug("Allocating ", _size, "b");
+  if (_runtime->getProfiler()->enabled())
+  {
+    count_shadow = _size;
+    src_shadow = new char[_size];
+  }
 }
 
 HIPRawDeviceBuffer::~HIPRawDeviceBuffer() {
   if (_buffer) {
     SEC_HIP_CALL(hipFree(_buffer));
+    if (_runtime->getProfiler()->enabled())
+    {
+      if (src_shadow) delete[] src_shadow;
+      else __warning("(decon)shadow double clean");
+      offset_shadow = 0;
+      count_shadow = 0;
+    }
   }
 }
 
@@ -30,6 +44,16 @@ HIPRawDeviceBuffer::HIPRawDeviceBuffer(HIPRawDeviceBuffer &&rhs) {
   rhs._buffer = nullptr;
   _size = rhs._size;
   rhs._size = 0;
+
+  if (_runtime->getProfiler()->enabled())
+  {
+    src_shadow = rhs.src_shadow;
+    rhs.src_shadow = nullptr;
+    offset_shadow = rhs.offset_shadow;
+    rhs.offset_shadow = 0;
+    count_shadow = rhs.count_shadow;
+    rhs.count_shadow = 0;
+  }
 }
 
 HIPRawDeviceBuffer &HIPRawDeviceBuffer::operator=(HIPRawDeviceBuffer &&rhs) {
@@ -37,14 +61,38 @@ HIPRawDeviceBuffer &HIPRawDeviceBuffer::operator=(HIPRawDeviceBuffer &&rhs) {
   rhs._buffer = nullptr;
   _size = rhs._size;
   rhs._size = 0;
+
+  if (_runtime->getProfiler()->enabled())
+  {
+    src_shadow = rhs.src_shadow;
+    rhs.src_shadow = nullptr;
+    offset_shadow = rhs.offset_shadow;
+    rhs.offset_shadow = 0;
+    count_shadow = rhs.count_shadow;
+    rhs.count_shadow = 0;
+  }
+
   return *this;
 }
 
 void *HIPRawDeviceBuffer::get(size_t offset) const { return _buffer + offset; }
 
 void HIPRawDeviceBuffer::upload(const void *src, size_t bytes, size_t offset) {
+  if (_runtime->getProfiler()->enabled())
+  {
+    __debug("Storing ", bytes, "b");
+    if (count_shadow && count_shadow != bytes) __warning("Double upload");
+    count_shadow = bytes;
+    offset_shadow = offset;
+  }
   SEC_HIP_CALL(
       hipMemcpy(_buffer + offset, src, bytes, hipMemcpyHostToDevice));
+  if (_runtime->getProfiler()->enabled())
+  {
+    SEC_HIP_CALL(
+        hipMemcpy(src_shadow, _buffer + offset, bytes, hipMemcpyDeviceToHost));
+    __debug("Stored ", count_shadow, "b");
+  }
 }
 
 void HIPRawDeviceBuffer::download(void *dest, size_t bytes, size_t offset) {
@@ -54,8 +102,21 @@ void HIPRawDeviceBuffer::download(void *dest, size_t bytes, size_t offset) {
 
 void HIPRawDeviceBuffer::uploadAsync(const void *src, size_t bytes,
                                       size_t offset) {
+  if (_runtime->getProfiler()->enabled())
+  {
+    __debug("Storing ", bytes, "b");
+    if (count_shadow && count_shadow != bytes) __warning("Double upload");
+    count_shadow = bytes;
+    offset_shadow = offset;
+  }
   SEC_HIP_CALL(
       hipMemcpyAsync(_buffer + offset, src, bytes, hipMemcpyHostToDevice));
+  if (_runtime->getProfiler()->enabled())
+  {
+    SEC_HIP_CALL(
+      hipMemcpyAsync(src_shadow, _buffer + offset, bytes, hipMemcpyDeviceToHost));
+    __debug("Stored ", count_shadow, "b");
+  }
 }
 
 void HIPRawDeviceBuffer::downloadAsync(void *dest, size_t bytes,
@@ -64,9 +125,19 @@ void HIPRawDeviceBuffer::downloadAsync(void *dest, size_t bytes,
       hipMemcpyAsync(dest, _buffer + offset, bytes, hipMemcpyDeviceToHost));
 }
 
+void HIPRawDeviceBuffer::restore() {
+  if (_runtime->getProfiler()->enabled())
+  {
+    __debug("Restoring ", count_shadow, "b");
+    if (count_shadow) SEC_HIP_CALL(
+              hipMemcpy(_buffer + offset_shadow, src_shadow, count_shadow, hipMemcpyHostToDevice));
+    __debug("Restored ", count_shadow, "b");
+  }
+}
+
 void HIPRawDeviceBuffer::copyTo(void *dest) {
   if (!dest)
-    __error(__func__, "nullptr arived, discarding copy");
+    __error(__func__, " nullptr arrived, discarding copy");
   if (dest != _buffer)
     SEC_HIP_CALL(
         hipMemcpyAsync(dest, _buffer, _size, hipMemcpyDeviceToDevice));

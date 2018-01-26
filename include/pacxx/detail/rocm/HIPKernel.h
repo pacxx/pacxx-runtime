@@ -17,7 +17,7 @@ typedef struct ihipModuleSymbol_t *hipFunction_t;
 #else
 struct CUfunc_st;
 typedef CUfunc_st * hipFunction_t;
-#endif 
+#endif
 
 namespace pacxx {
 namespace v2 {
@@ -34,6 +34,8 @@ public:
 
   virtual void configurate(KernelConfiguration config) override;
   virtual void launch() override;
+
+  HIPRuntime &getRuntime();
 
   virtual void setLambdaPtr(const void* ptr, size_t size) override;
 
