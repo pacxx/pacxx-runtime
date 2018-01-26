@@ -8,6 +8,7 @@
 //===----------------------------------------------------------------------===//
 
 #include "pacxx/detail/native/NativeRuntime.h"
+#include "pacxx/detail/native/PAPIProfiler.h"
 #include "pacxx/detail/common/Exceptions.h"
 #include "pacxx/detail/common/Timing.h"
 #include <llvm/ExecutionEngine/ExecutionEngine.h>
@@ -28,6 +29,7 @@ namespace v2 {
 
 NativeRuntime::NativeRuntime(unsigned)
     : Runtime(RuntimeKind::RK_Native), _compiler(std::make_unique<CompilerT>()), _delayed_compilation(false) {
+      _profiler.reset(new PAPIProfiler());
 }
 
 NativeRuntime::~NativeRuntime() {}

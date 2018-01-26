@@ -12,6 +12,7 @@
 #include "pacxx/detail/common/Log.h"
 #include "pacxx/detail/common/Timing.h"
 #include "pacxx/detail/native/NativeRuntime.h"
+#include "pacxx/detail/native/PAPIProfiler.h"
 #include <llvm/IR/Module.h>
 
 #ifndef PACXX_DISABLE_TBB
@@ -126,6 +127,13 @@ void NativeKernel::launch() {
 
   if (_callback)
     _callback();
+}
+
+void NativeKernel::profile() {
+  PAPIProfiler* ptr = static_cast<PAPIProfiler*>(_runtime.getProfiler());
+  ptr->updateKernel(this);
+  ptr->dryrun();
+  ptr->profile();
 }
 
 
