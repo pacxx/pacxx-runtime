@@ -341,7 +341,17 @@ struct AddressSpaceTransform : public ModulePass {
         auto F = getParentKernel(kernels, GV);
         string newName = GV.getName().str() + ".sm";
         Type *elemType = GV.getType()->getPointerElementType();
-
+        if (M.getTriple().startswith("amdgcn")){
+          if (GV->getType()->getElementType()->getArrayNumElements() == 0){ // only for external shared memory
+            IRBuilder<> builder(F->front());
+            auto VoidTy = Type::getVoidTy(M.getContext());
+            auto SMFTy = FunctionType::get(VoidTy->getPointerTo(4), false);
+            auto CI = builder.CreateCall(M.getOrInsertFunction("__get_extern_shared_mem_ptr", SMFTy));
+            auto ASC = builder.CreateAddrSpaceCast(CI, GV->getType());
+            replaceAllUsesInKernel(F, GV, ASC);
+            continue;
+          }
+        }
         auto newGV =
             new GlobalVariable(M, elemType, false,
                                llvm::GlobalValue::LinkageTypes::ExternalLinkage,
