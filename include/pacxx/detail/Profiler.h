@@ -24,17 +24,17 @@ public:
 
   virtual bool enabled();
 
-  virtual bool preinit(void* settings) = 0;
+  virtual bool preinit(void* settings) { return true; };
 
-  virtual void postinit(void* settings) = 0;
+  virtual bool postinit(void* settings) { return true; };
 
   virtual void updateKernel(Kernel *kernel);
 
-  virtual void dryrun() = 0;
+  virtual void dryrun() {};
 
-  virtual void profile() = 0;
+  virtual void profile() {};
 
-  virtual void report() = 0;
+  virtual void report() {};
 
 protected:
   static Kernel* _kernel;

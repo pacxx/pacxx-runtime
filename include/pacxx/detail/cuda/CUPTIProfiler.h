@@ -42,7 +42,7 @@ public:
 
   virtual bool preinit(void* settings) override;
 
-  virtual void postinit(void* settings) override;
+  virtual bool postinit(void* settings) override;
 
   virtual void updateKernel(Kernel *kernel) override;
 

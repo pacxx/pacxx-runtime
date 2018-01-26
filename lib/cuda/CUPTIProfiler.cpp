@@ -53,13 +53,13 @@ bool CUPTIProfiler::checkStage(unsigned required, std::string stagename, bool mi
 bool CUPTIProfiler::preinit(void* settings) {
 	if (!checkStage(0, "preinit")) return false;
 	__verbose("CUPTIProfiler preinit");
-	stage = 1;
 	SEC_CUPTI_CALL(cuptiActivityEnable(CUPTI_ACTIVITY_KIND_KERNEL));
+	stage = 1;
 	return true;
 }
 
-void CUPTIProfiler::postinit(void* settings) {
-	if (!checkStage(1, "postinit")) return;
+bool CUPTIProfiler::postinit(void* settings) {
+	if (!checkStage(1, "postinit")) return false;
 	__verbose("CUPTIProfiler postinit");
 	SEC_CUDA_CALL(cuDeviceGet(&_device, *(static_cast<unsigned*>(settings))));/// this is broken in sooo many ways (what happens with "old" context?)
 	SEC_CUPTI_CALL(cuptiActivityRegisterCallbacks(bufferRequested, bufferCompleted));
@@ -69,6 +69,7 @@ void CUPTIProfiler::postinit(void* settings) {
 		profiles.close();
 	}
 	stage = 2;
+	return true;
 }
 void CUPTIProfiler::updateKernel(Kernel *kernel) {
 	if (!checkStage(2, "updateKernel", true)) return;

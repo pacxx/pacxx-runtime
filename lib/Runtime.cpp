@@ -13,7 +13,9 @@
 namespace pacxx {
 namespace v2 {
 
-Runtime::Runtime(RuntimeKind kind) : _kind(kind), _msp_engine() {}
+Runtime::Runtime(RuntimeKind kind) : _kind(kind), _msp_engine() {
+  _profiler.reset(new Profiler());
+}
 
 Runtime::~Runtime(){}
 
