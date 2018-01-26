@@ -224,7 +224,7 @@ add_custom_command(
 
 add_custom_command(
     OUTPUT ${amddbFile}.linked.bc
-    COMMAND ${CMAKE_BINARY_DIR}/bin/llvm-link -suppress-warnings ${amddbFile}.bc ${CMAKE_CURRENT_SOURCE_DIR}/lib/bitcode/amdgcn_libdevice.bc -o ${amddbFile}.linked.bc
+    COMMAND ${CMAKE_BINARY_DIR}/bin/llvm-link -suppress-warnings ${amddbFile}.bc ${ROCM_DIR}/lib/hc.amdgcn.bc ${CMAKE_CURRENT_SOURCE_DIR}/lib/bitcode/amdgcn_libdevice.bc -o ${amddbFile}.linked.bc
     WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/lib    
     DEPENDS ${amddbFile}.bc llvm-link
     COMMENT "Linking AMDGCN libdevice into bitcode")
