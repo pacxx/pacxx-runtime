@@ -1,7 +1,12 @@
 benchmarks/
 spmdTest/
 .idea/
+.cproject
+.project
+.settings/
 cmake/pacxx/FindPACXXConfig.cmake
 include/pacxx/pacxx_config.h
+pacxxrt.cbp
+pacxxrt.layout
 pacxxrt/
 .vscode/

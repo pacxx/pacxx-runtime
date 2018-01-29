@@ -47,6 +47,8 @@ public:
 
   virtual void copyTo(void *dest) override;
 
+  virtual void restore() override;
+
 private:
   [[pacxx::device_memory]] char *_buffer;
   size_t _size;
@@ -54,4 +56,3 @@ private:
 };
 }
 }
-

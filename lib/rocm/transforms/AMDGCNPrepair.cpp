@@ -126,9 +126,24 @@ struct AMDGCNPrepair : public ModulePass {
     }
     
     if (auto F = M.getFunction("__oclc_correctly_rounded_sqrt32")){
-      replaceOCLConfigCall(F, 1); 
+      replaceOCLConfigCall(F, 0); 
     }
 
+    // create a wrapper for quering the SM base pointer 
+    // TODO: outline to a function
+    auto VoidTy = Type::getInt8Ty(M.getContext());
+    auto SMFTy = FunctionType::get(VoidTy->getPointerTo(3), false);
+    Function* SMF = dyn_cast<Function>(M.getOrInsertFunction("__get_extern_shared_mem_ptr", SMFTy));
+    assert(SMF && "something went wrong here!");
+    auto BB = BasicBlock::Create(M.getContext(), "entry", SMF); 
+    IRBuilder<> builder(BB);
+    auto Decl =
+            Intrinsic::getDeclaration(&M,
+                                      Intrinsic::amdgcn_groupstaticsize);
+    auto Addr = builder.CreateCall(Decl); 
+    auto GEP = builder.CreateGEP(ConstantPointerNull::get(VoidTy->getPointerTo(3)), Addr);
+    builder.CreateRet(GEP); 
+    
     auto kernels = pacxx::getKernels(&M);
 
     for (auto &F : kernels)

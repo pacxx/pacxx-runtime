@@ -1,18 +1,27 @@
+//===-----------------------------------------------------------*- C++ -*-===//
 //
-// Created by mhaidl on 02/06/16.
+//                       The LLVM-based PACXX Project
 //
+// This file is distributed under the University of Illinois Open Source
+// License. See LICENSE.TXT for details.
+//
+//===----------------------------------------------------------------------===//
+
+#ifndef PACXX_V2_HIPDEVICEBUFFER_H
+#define PACXX_V2_HIPDEVICEBUFFER_H
 
 #include "pacxx/detail/DeviceBuffer.h"
 #include "pacxx/detail/common/Log.h"
 #include <memory>
 
-#ifndef PACXX_V2_HIPDEVICEBUFFER_H
-#define PACXX_V2_HIPDEVICEBUFFER_H
 namespace pacxx {
 namespace v2 {
+
+class HIPRuntime;
+
 class HIPRawDeviceBuffer : public RawDeviceBuffer {
 public:
-  HIPRawDeviceBuffer(size_t size);
+  HIPRawDeviceBuffer(size_t size, HIPRuntime* runtime);
 
   virtual ~HIPRawDeviceBuffer();
 
@@ -39,10 +48,14 @@ public:
 
   virtual void copyTo(void *dest) override;
 
+  virtual void restore() override;
+
 private:
   [[pacxx::device_memory]] char *_buffer;
   size_t _size;
+  HIPRuntime* _runtime;
 };
 }
 }
+
 #endif // PACXX_V2_HIPDEVICEBUFFER_H

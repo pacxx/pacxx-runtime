@@ -105,7 +105,7 @@ size_t HIPRuntime::getPreferedMemoryAlignment() {
 }
 
 std::unique_ptr<RawDeviceBuffer> HIPRuntime::allocateRawMemory(size_t bytes, MemAllocMode mode) {
-  return std::unique_ptr<RawDeviceBuffer>(new HIPRawDeviceBuffer(bytes));
+  return std::unique_ptr<RawDeviceBuffer>(new HIPRawDeviceBuffer(bytes, this));
 }
 
 

@@ -18,9 +18,11 @@
 namespace pacxx {
 namespace v2 {
 
+class NativeRuntime;
+
 class NativeRawDeviceBuffer : public RawDeviceBuffer {
 public:
-  NativeRawDeviceBuffer(size_t size, unsigned padding);
+  NativeRawDeviceBuffer(size_t size, unsigned padding, NativeRuntime* runtime);
 
   virtual ~NativeRawDeviceBuffer();
 
@@ -47,9 +49,12 @@ public:
 
   virtual void copyTo(void *dest) override;
 
+  virtual void restore() override;
+
 private:
-  char *[[pacxx::device_memory]] _buffer;
+  [[pacxx::device_memory]] char *_buffer;
   size_t _size;
+  NativeRuntime* _runtime;
 };
 } // v2 namespace
 } // pacxx namespace

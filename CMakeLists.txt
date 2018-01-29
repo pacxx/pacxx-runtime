@@ -54,7 +54,7 @@ endif(PACXX_USE_OpenMP)
 #option(BUILD_SHARED "Build PACXX Runtime as shared object" OFF)
 set(PACXX_RV_LIB RV)
 
-set(TRANSFORMS_SOURCE_FILES         
+set(TRANSFORMS_SOURCE_FILES
 lib/common/transforms/MemoryCoalescing.cpp
 lib/common/transforms/IntrinsicMapper.cpp
 lib/common/transforms/MSPRemover.cpp
@@ -85,6 +85,7 @@ set(SOURCE_FILES
         lib/MSPEngine.cpp
         lib/Kernel.cpp
         lib/Runtime.cpp
+        lib/Profiler.cpp
         lib/common/Log.cpp
         lib/common/Common.cpp
         lib/common/TearDown.cpp
@@ -98,16 +99,18 @@ if (PACXX_USE_CUDA)
     find_package(CUDA REQUIRED)
     set(PACXX_CUDA_BACKEND 1)
     include_directories(${CUDA_TOOLKIT_INCLUDE})
+    include_directories(${CUDA_TOOLKIT_ROOT_DIR}/extras/CUPTI/include)
     set(CUDA_SOURCE_FILES
             lib/cuda/CUDARuntime.cpp
             lib/cuda/CUDAErrorDetection.cpp
+            lib/cuda/CUPTIProfiler.cpp
             lib/cuda/CUDAKernel.cpp
             lib/cuda/CUDADeviceBuffer.cpp
             lib/cuda/CUDAEvent.cpp
             lib/cuda/PTXBackend.cpp)
     set(CUDA_REQUIRED ON)
 
-    set (CUDA_LINK_LIBRARIES ${CUDA_LIBRARIES})
+    set (CUDA_LINK_LIBRARIES ${CUDA_LIBRARIES} ${CUDA_cupti_LIBRARY})
     #   set(CUDA_LINK_LIBRARIES "-lcuda -lcudart")
 
     if (BUILD_SHARED)
@@ -135,6 +138,7 @@ if (PACXX_USE_HIP)
             lib/rocm/HIPRuntime.cpp
             lib/rocm/HSACOBackend.cpp
             lib/rocm/HIPErrorDetection.cpp
+            #lib/rocm/GPAProfiler.cpp
             lib/rocm/HIPKernel.cpp
             lib/rocm/HIPDeviceBuffer.cpp
             lib/rocm/HIPEvent.cpp)
@@ -167,25 +171,19 @@ configure_file(cmake/config/FindPACXXConfig.cmake.in ${CMAKE_CURRENT_SOURCE_DIR}
 
 set(CMAKE_CXX_STANDARD 14)
 
-add_compile_options(-include ${CMAKE_CURRENT_SOURCE_DIR}/include/pacxx/pacxx_config.h -Wno-attributes)
+add_compile_options(-include ${CMAKE_CURRENT_SOURCE_DIR}/include/pacxx/pacxx_config.h -Wno-ignored-attributes -Wno-attributes)
 
 #add_definitions(${LLVM_DEFINITIONS} -D__PACXX_RUNTIME_LINKING)
 add_definitions(${LLVM_DEFINITIONS})
 
 set(PACXX_DEV_FLAGS -std=c++14 -pacxx -emit-llvm -c -O3 -D__device_code__ -isystem ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
-if (${CMAKE_SIZEOF_VOID_P} EQUAL 8)
-    set(PACXX_CUDA_DEV_FLAGS ${PACXX_DEV_FLAGS} -target nvptx64-unknown-unknown)
-else ()
-    set(PACXX_CUDA_DEV_FLAGS ${PACXX_DEV_FLAGS} -target nvptx-unknown-unknown)
-endif ()
-
 # generate the nvptx device binding
 set(nvdbFile nvptx_device_binding)
 
 add_custom_command(
         OUTPUT ${nvdbFile}.bc
-        COMMAND ${CMAKE_BINARY_DIR}/bin/clang ${PACXX_DEV_FLAGS}  -isystem ${CUDA_TOOLKIT_INCLUDE} -I ${CMAKE_CURRENT_SOURCE_DIR}/include ${CMAKE_CURRENT_SOURCE_DIR}/lib/bitcode/${nvdbFile}.cpp -o ${nvdbFile}.bc
+        COMMAND ${CMAKE_BINARY_DIR}/bin/clang ${PACXX_DEV_FLAGS}  -target nvptx64-unknown-unknown -isystem ${CUDA_TOOLKIT_INCLUDE} -I ${CMAKE_CURRENT_SOURCE_DIR}/include ${CMAKE_CURRENT_SOURCE_DIR}/lib/bitcode/${nvdbFile}.cpp -o ${nvdbFile}.bc
         WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/lib
         DEPENDS clang
         COMMENT "Generating NVPTX Device Binding")
@@ -193,7 +191,7 @@ add_custom_command(
         add_custom_command(
             OUTPUT ${nvdbFile}.linked.bc
             COMMAND ${CMAKE_BINARY_DIR}/bin/llvm-link -suppress-warnings ${nvdbFile}.bc ${CMAKE_CURRENT_SOURCE_DIR}/lib/bitcode/syscalls.ll ${CMAKE_CURRENT_SOURCE_DIR}/lib/bitcode/nvptx_libdevice.bc -o ${nvdbFile}.linked.bc
-            WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/lib    
+            WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/lib
             DEPENDS ${nvdbFile}.bc llvm-link
             COMMENT "Linking NVPTX libdevice into bitcode")
 
@@ -217,7 +215,7 @@ set(amddbFile amdgcn_device_binding)
 
 add_custom_command(
         OUTPUT ${amddbFile}.bc
-        COMMAND ${CMAKE_BINARY_DIR}/bin/clang ${PACXX_DEV_FLAGS} -isystem ${CUDA_TOOLKIT_INCLUDE} -I ${CMAKE_CURRENT_SOURCE_DIR}/include ${CMAKE_CURRENT_SOURCE_DIR}/lib/bitcode/${amddbFile}.cpp -o ${amddbFile}.bc
+        COMMAND ${CMAKE_BINARY_DIR}/bin/clang ${PACXX_DEV_FLAGS} -target amdgcn--amdhsa-amdgiz -isystem ${CUDA_TOOLKIT_INCLUDE} -I ${CMAKE_CURRENT_SOURCE_DIR}/include ${CMAKE_CURRENT_SOURCE_DIR}/lib/bitcode/${amddbFile}.cpp -o ${amddbFile}.bc
         WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/lib
         DEPENDS clang
         COMMENT "Generating AMDGCN Device Binding")
@@ -225,7 +223,7 @@ add_custom_command(
 add_custom_command(
     OUTPUT ${amddbFile}.linked.bc
     COMMAND ${CMAKE_BINARY_DIR}/bin/llvm-link -suppress-warnings ${amddbFile}.bc ${ROCM_DIR}/lib/hc.amdgcn.bc ${CMAKE_CURRENT_SOURCE_DIR}/lib/bitcode/amdgcn_libdevice.bc -o ${amddbFile}.linked.bc
-    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/lib    
+    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/lib
     DEPENDS ${amddbFile}.bc llvm-link
     COMMENT "Linking AMDGCN libdevice into bitcode")
 
@@ -331,4 +329,3 @@ install(TARGETS pacxx_main DESTINATION lib)
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/lib/asm/ DESTINATION lib)
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/ DESTINATION include)
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/cmake/pacxx/ DESTINATION lib/cmake/pacxx)
-

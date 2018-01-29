@@ -32,7 +32,9 @@ public:
 
   virtual void configurate(KernelConfiguration config) override;
   virtual void launch() override;
+  virtual void profile() override;
 
+  CUDARuntime &getRuntime();
 
 private:
   void overrideFptr(CUfunction fptr) { _fptr = fptr; }

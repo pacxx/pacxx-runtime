@@ -342,6 +342,22 @@ struct AddressSpaceTransform : public ModulePass {
         string newName = GV.getName().str() + ".sm";
         Type *elemType = GV.getType()->getPointerElementType();
 
+        if (M.getTargetTriple().find("amdgcn") != std::string::npos){
+          // For external shared memory on AMDGCN devices use the special function 
+          // created by AMDGCNPrepair and replace the GV with the base pointer 
+          // to SM
+          if (GV.getType()->getElementType()->getArrayNumElements() == 0){ 
+            IRBuilder<> builder(&F->front().front());
+            auto VoidTy = Type::getInt8Ty(M.getContext());
+            auto SMFTy = FunctionType::get(VoidTy->getPointerTo(3), false);
+            auto CI = builder.CreateCall(M.getOrInsertFunction("__get_extern_shared_mem_ptr", SMFTy));
+            auto BC = builder.CreateBitCast(CI, elemType->getPointerTo(3));
+            auto ASC = builder.CreateAddrSpaceCast(BC, GV.getType());
+            GV.replaceAllUsesWith(ASC);
+            continue;
+          }
+        }
+
         auto newGV =
             new GlobalVariable(M, elemType, false,
                                llvm::GlobalValue::LinkageTypes::ExternalLinkage,
@@ -440,7 +456,7 @@ struct AddressSpaceTransform : public ModulePass {
       }
     } allocaRewriter;
 
-    for (auto &F : M.getFunctionList())
+    for (auto &F : kernels)
       allocaRewriter.visit(F);
 
     // delete old kernel functions

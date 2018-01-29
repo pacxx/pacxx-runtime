@@ -86,7 +86,7 @@ size_t NativeRuntime::getPreferedMemoryAlignment() {
 }
 
 std::unique_ptr<RawDeviceBuffer> NativeRuntime::allocateRawMemory(size_t bytes, MemAllocMode mode) {
-  return std::unique_ptr<RawDeviceBuffer>(new NativeRawDeviceBuffer(bytes, getPreferedVectorSizeInBytes()));
+  return std::unique_ptr<RawDeviceBuffer>(new NativeRawDeviceBuffer(bytes, getPreferedVectorSizeInBytes(), this));
 }
 
 void NativeRuntime::requestIRTransformation(Kernel &K) {

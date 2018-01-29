@@ -74,7 +74,7 @@ class Executor {
 public:
   friend void initializeModule(Executor &exec);
   friend void initializeModule(Executor &exec, const char* ptr, size_t size);
-  
+
   static std::vector<Executor> &getExecutors();
 
   static Executor &get(unsigned id = 0) {
@@ -127,7 +127,6 @@ public:
   template <typename T = Runtime, typename... Ts>
   static Executor &Create(Ts... args) {
     std::unique_ptr<Runtime> rt(new T(args...));
-    
     if (!rt->checkSupportedHardware())
       throw common::generic_exception("no supported device available!");
 
@@ -166,7 +165,7 @@ public:
     run_with_callback(callable, config, [&] () mutable{
       promise.set_value();
     });
-    return future; 
+    return future;
   }
 
   template <typename L, pacxx::v2::Target targ = pacxx::v2::Target::Generic,
@@ -194,9 +193,15 @@ public:
 private:
   void setModule(std::unique_ptr<llvm::Module> M);
 
+  void profile(Kernel &kernel) {
+    kernel.profile();
+    restoreArgs();
+  }
+
   template <typename L> void run(const L &lambda, KernelConfiguration config) {
     // auto& dev_lambda = _mem_manager.getTemporaryLambda(lambda);
     auto &K = get_kernel_by_name(typeid(L).name(), config, lambda);
+    profile(std::ref(K));
     K.launch();
   }
 
@@ -205,6 +210,7 @@ private:
                          CallbackFunc &&cb, Args &&... args) {
     auto &K = get_kernel_by_name(typeid(L).name(), config, lambda,
                                  std::forward<Args>(args)...);
+    profile(std::ref(K));
     K.setCallback(std::move(cb));
     K.launch();
   }
@@ -220,8 +226,7 @@ private:
 
 public:
   template <typename T>
-  DeviceBuffer<T> &allocate(size_t count, 
-                            MemAllocMode mode = MemAllocMode::Standard) {
+  DeviceBuffer<T> &allocate(size_t count, MemAllocMode mode = MemAllocMode::Standard) {
     __verbose("allocating memory: ", sizeof(T) * count);
 
     if (mode == MemAllocMode::Unified)
@@ -256,6 +261,11 @@ public:
   }
 
   llvm::LLVMContext &getLLVMContext() { return *_ctx; }
+
+  void restoreArgs() {
+    _runtime->restoreMemory();
+    __verbose("Args restored");
+  }
 
   Event &createEvent() {
     // FIXME

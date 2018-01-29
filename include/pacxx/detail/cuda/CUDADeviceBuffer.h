@@ -7,17 +7,21 @@
 //
 //===----------------------------------------------------------------------===//
 
+#ifndef PACXX_V2_CUDADEVICEBUFFER_H
+#define PACXX_V2_CUDADEVICEBUFFER_H
+
 #include "pacxx/detail/DeviceBuffer.h"
 #include "pacxx/detail/common/Log.h"
 #include <memory>
 
-#ifndef PACXX_V2_CUDADEVICEBUFFER_H
-#define PACXX_V2_CUDADEVICEBUFFER_H
 namespace pacxx {
 namespace v2 {
+
+class CUDARuntime;
+
 class CUDARawDeviceBuffer : public RawDeviceBuffer {
 public:
-  CUDARawDeviceBuffer(size_t size, MemAllocMode mode = Standard);
+  CUDARawDeviceBuffer(size_t size, CUDARuntime* runtime, MemAllocMode mode = Standard);
 
   virtual ~CUDARawDeviceBuffer();
 
@@ -44,11 +48,15 @@ public:
 
   virtual void copyTo(void *dest) override;
 
+  virtual void restore() override;
+
 private:
   [[pacxx::device_memory]] char *_buffer;
   size_t _size;
+  CUDARuntime* _runtime;
   MemAllocMode _mode;
 };
 }
 }
+
 #endif // PACXX_V2_CUDADEVICEBUFFER_H

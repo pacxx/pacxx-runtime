@@ -27,7 +27,7 @@ struct hipDeviceProp_t;
 typedef struct ihipCtx_t *hipCtx_t;
 typedef struct ihipModule_t *hipModule_t;
 typedef struct ihipStream_t *hipStream_t;
-#else 
+#else
 struct CUctx_st;
 typedef struct CUctx_st *CUcontext;
 struct CUmod_st;
@@ -36,9 +36,9 @@ struct CUstream_st;
 typedef struct CUstream_st *cudaStream_t;
 
 typedef CUcontext hipCtx_t;
-typedef CUmodule hipModule_t; 
-typedef cudaStream_t hipStream_t; 
-#endif 
+typedef CUmodule hipModule_t;
+typedef cudaStream_t hipStream_t;
+#endif
 
 namespace pacxx {
 namespace v2 {
@@ -78,7 +78,6 @@ public:
   virtual const llvm::Module &getModule() override;
 
   virtual void synchronize() override;
-
 
 private:
   void compileAndLink();
