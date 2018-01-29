@@ -23,6 +23,10 @@ public:
 
   virtual ~PAPIProfiler() {};
 
+  virtual bool preinit(void* settings) override;
+
+  virtual bool postinit(void* settings) override;
+
   virtual void updateKernel(Kernel *kernel) override;
 
   virtual void profile() override;
@@ -35,7 +39,7 @@ private:
   std::list<std::string> profilingMetrics;
 
   ///      Kernel name, run count,           metric name, value
-  std::map<std::string, std::vector<std::map<std::string, long long>>> stats;
+  std::map<std::string, std::vector<std::map<std::string, std::string>>> stats;
 };
 }
 }

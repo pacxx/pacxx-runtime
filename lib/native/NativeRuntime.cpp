@@ -30,6 +30,8 @@ namespace v2 {
 NativeRuntime::NativeRuntime(unsigned)
     : Runtime(RuntimeKind::RK_Native), _compiler(std::make_unique<CompilerT>()), _delayed_compilation(false) {
       _profiler.reset(new PAPIProfiler());
+      _profiler->preinit(nullptr);
+      _profiler->postinit(nullptr);
 }
 
 NativeRuntime::~NativeRuntime() {
