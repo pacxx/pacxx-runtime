@@ -156,7 +156,11 @@ struct AMDGCNPrepair : public ModulePass {
       F->setCallingConv(CallingConv::AMDGPU_KERNEL);
       F->setLinkage(GlobalValue::LinkageTypes::ExternalLinkage);
       F->setVisibility(GlobalValue::VisibilityTypes::DefaultVisibility);
-      F->setAttributes(AttributeList());
+    }
+
+    for (auto &F : M){ 
+      if (!F.isIntrinsic())
+        F.setAttributes(AttributeList());
     }
 
     return modified;

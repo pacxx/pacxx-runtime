@@ -428,8 +428,10 @@ struct AddressSpaceTransform : public ModulePass {
         Type *oldType = GV.getType();
         if (GV.getType()->getPointerAddressSpace() == 0) {
           std::map<Instruction *, std::pair<Value *, Instruction *>> GVtoASC;
-
-          GV.mutateType(GV.getType()->getPointerElementType()->getPointerTo(4));
+          unsigned AS = 4; 
+          if (M.getTargetTriple().find("amdgcn") != std::string::npos)
+            AS = 2;
+          GV.mutateType(GV.getType()->getPointerElementType()->getPointerTo(AS));
           for (auto U : GV.users()) {
             auto ASC = new AddrSpaceCastInst(cast<Value>(&GV), oldType, "",
                                              cast<Instruction>(U));
