@@ -5,6 +5,7 @@ find_package(CUDA)
 
 if (NOT WIN32)
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/pacxx/FindTBB.cmake)
+include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/pacxx/FindPAPI.cmake)
 endif()
 
 if (EXISTS /opt/rocm)
@@ -36,7 +37,6 @@ set(ENABLE_OPENMP ON)
 if (TBB_FOUND)
     set(ENABLE_OPENMP OFF)
 endif ()
-
 
 option(PACXX_USE_OpenMP "use OpenMP instead of TBB" ${ENABLE_OPENMP})
 option(PACXX_USE_CUDA "Build the CUDA backend" ${CUDA_FOUND})
@@ -77,7 +77,9 @@ lib/common/transforms/AddressSpaceTransform.cpp
 lib/cuda/transforms/NVPTXPrepair.cpp
 lib/rocm/transforms/AMDGCNPrepair.cpp)
 
-set(SOURCE_FILES 
+include_directories(${PAPI_INCLUDE_DIRS})
+
+set(SOURCE_FILES
         lib/CoreInitializer.cpp
         lib/ModuleLoader.cpp
         lib/KernelConfiguration.cpp
@@ -93,6 +95,7 @@ set(SOURCE_FILES
         lib/native/NativeDeviceBuffer.cpp
         lib/native/NativeBackend.cpp
         lib/native/NativeRuntime.cpp
+        lib/native/PAPIProfiler.cpp
         lib/native/NativeEvent.cpp)
 
 if (PACXX_USE_CUDA)
@@ -110,7 +113,7 @@ if (PACXX_USE_CUDA)
             lib/cuda/PTXBackend.cpp)
     set(CUDA_REQUIRED ON)
 
-    set (CUDA_LINK_LIBRARIES ${CUDA_LIBRARIES} ${CUDA_cupti_LIBRARY})
+    set(CUDA_LINK_LIBRARIES ${CUDA_LIBRARIES} ${CUDA_cupti_LIBRARY})
     #   set(CUDA_LINK_LIBRARIES "-lcuda -lcudart")
 
     if (BUILD_SHARED)
@@ -284,7 +287,7 @@ set(CMAKE_SHARED_LINKER_FLAGS "-Wl,--allow-shlib-undefined")
 
 # main runtime lib
 add_library(${PROJECT_NAME} ${SOURCE_FILES} ${REMOTE_SOURCE_FILES})
-target_link_libraries(${PROJECT_NAME} PUBLIC PACXXTransforms PUBLIC ${PACXX_LLVM_LIBS} PUBLIC ${PACXX_LLVM_SYS_LIBS} PUBLIC ${TBB_LIBRARIES} PUBLIC ${nadbFile})
+target_link_libraries(${PROJECT_NAME} PUBLIC PACXXTransforms PUBLIC ${PACXX_LLVM_LIBS} PUBLIC ${PACXX_LLVM_SYS_LIBS} PUBLIC ${PAPI_LIBRARIES} PUBLIC ${TBB_LIBRARIES} PUBLIC ${nadbFile})
 
 #cuda device back end
 if (PACXX_USE_CUDA)

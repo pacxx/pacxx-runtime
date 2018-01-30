@@ -19,8 +19,8 @@ Profiler::Profiler() {
   InFilePath = common::GetEnv("PACXX_PROF_IN");
   if (InFilePath.empty()) InFilePath = "PACXX.prof";
   OutFilePath = common::GetEnv("PACXX_PROF_OUT");
-  if (std::getenv("PACXX_NO_PROF")) _enabled = false;
-  else _enabled = true;
+  if (common::GetEnv("PACXX_PROF_ENABLE").length() > 0) _enabled = true;
+  else _enabled = false;
 }
 
 bool Profiler::enabled() {

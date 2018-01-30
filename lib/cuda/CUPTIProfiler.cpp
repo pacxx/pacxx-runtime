@@ -267,14 +267,22 @@ void CUPTIAPI CUPTIProfiler::getMetricValueCallback(void *userdata, CUpti_Callba
 }
 
 void CUPTIProfiler::profileSingle(const std::string& metricName) {
+	try
+	{
+	  SEC_CUPTI_CALL(cuptiMetricGetIdFromName(_device, metricName.c_str(), &metricId));
+	}
+	catch (common::generic_exception ex)
+	{
+	  __debug("Metric name ", metricName, " is invalid.");
+	  return;
+	}
+	__verbose("Metric id is ", metricId);
 	// setup launch callback for event collection
 	SEC_CUPTI_CALL(cuptiSubscribe(&subscriber, (CUpti_CallbackFunc)CUPTIProfiler::getMetricValueCallback, &metricData));
 
 	SEC_CUPTI_CALL(cuptiEnableCallback(1, subscriber, CUPTI_CB_DOMAIN_DRIVER_API, CUPTI_DRIVER_TRACE_CBID_cuLaunchKernel));
 
 	// allocate space to hold all the events needed for the metric
-	SEC_CUPTI_CALL(cuptiMetricGetIdFromName(_device, metricName.c_str(), &metricId));
-	__verbose("Metric id is ", metricId);
 	SEC_CUPTI_CALL(cuptiMetricGetNumEvents(metricId, &metricData.numEvents));
 	metricData.device = _device;
 	metricData.eventIdArray = (CUpti_EventID *)malloc(metricData.numEvents * sizeof(CUpti_EventID));

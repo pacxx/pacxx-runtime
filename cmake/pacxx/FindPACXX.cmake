@@ -59,6 +59,8 @@ if (TBB_REQUIRED)
     include(${PACXX_DIR}/lib/cmake/pacxx/FindTBB.cmake)
 endif ()
 
+include(${PACXX_DIR}/lib/cmake/pacxx/FindPAPI.cmake)
+
 # Set the path to llvm-config
 find_program(PACXX_LLVM_CONFIG llvm-config PATHS
   ${PACXX_DIR} PATH_SUFFIXES bin NO_DEFAULT_PATH)
@@ -253,7 +255,7 @@ function(add_pacxx_libs_to_target targetName)
 set_target_properties(${targetName} PROPERTIES LINK_FLAGS ${PACXX_LD_FLAGS})
 
 target_link_libraries(${targetName} PUBLIC ${PACXX_RUNTIME_LIBRARY} PUBLIC PACXXTransforms PUBLIC ${PACXX_RV_LIBRARY}
-            PUBLIC ${HIP_LINK_LIBRARIES} PUBLIC ${CUDA_LINK_LIBRARIES} PUBLIC ${PACXX_LLVM_LIBS} PUBLIC ${PACXX_LLVM_SYS_LIBS} PUBLIC ${TBB_LIBRARIES})
+            PUBLIC ${HIP_LINK_LIBRARIES} PUBLIC ${CUDA_LINK_LIBRARIES} PUBLIC ${PACXX_LLVM_LIBS} PUBLIC ${PACXX_LLVM_SYS_LIBS} PUBLIC ${TBB_LIBRARIES} PUBLIC ${PAPI_LIBRARIES})
 endfunction(add_pacxx_libs_to_target)
 
 function(add_pacxx_to_target targetName binDir srcFiles)
