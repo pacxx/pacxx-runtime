@@ -99,32 +99,6 @@ void NativeKernel::launch() {
   }
 #endif
 
-  auto first = times.begin() + (_runs == 1 ? 0 : 1); // ignore the first run as warmup
-  auto last = times.end();
-
-  auto med_v = median(first, last);
-  auto min_v = *std::min_element(first, last);
-  auto max_v = *std::max_element(first, last);
-  auto avg_v = average(first, last);
-  auto dev_v = deviation(first, last);
-
-  __verbose("Time measured in runtime : ",
-            med_v,
-            " (",
-            min_v,
-            " ",
-            max_v,
-            " ",
-            avg_v,
-            " ",
-            dev_v,
-            ") us (",
-            (last - first),
-            " iterations)");
-  std::ofstream f(std::string(program_invocation_name) + "-timing");
-  std::ostream_iterator<unsigned> output_iterator(f, "\n");
-  std::copy(times.begin(), times.end(), output_iterator);
-
   if (_callback)
     _callback();
 }
