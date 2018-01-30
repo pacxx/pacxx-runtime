@@ -26,7 +26,6 @@ bool SMGeneration::runOnModule(Module &M) {
 
     __verbose("Generating shared memory \n");
     auto kernels = pacxx::getKernels(&M);
-    __message(kernels.size());
     for(auto &kernel : kernels) {
         runOnKernel(kernel);
     }
