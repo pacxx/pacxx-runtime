@@ -155,6 +155,22 @@ void PAPIProfiler::updateKernel(Kernel *kernel) {
 	__verbose("Current kernel run count: ", stats[static_cast<NativeKernel*>(_kernel)->getName()].size());
 }
 
+void PAPIProfiler::dryrun() {
+	__verbose("PAPIProfiler dryrun");
+	std::chrono::high_resolution_clock::time_point start, end;
+  start = std::chrono::high_resolution_clock::now();
+  static_cast<NativeKernel*>(_kernel)->launch();
+  end = std::chrono::high_resolution_clock::now();
+	Executor::get().restoreArgs();
+	{
+	  std::stringstream foo;
+	  foo << std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
+	  foo << "us";
+	  stats[static_cast<NativeKernel*>(_kernel)->getName()].back()["kernelDuration"] = foo.str();
+	}
+	__debug("Kernel run time: ", std::chrono::duration_cast<std::chrono::microseconds>(end - start).count(), "us");
+}
+
 void PAPIProfiler::profile() {
 	__verbose("PAPIProfiler profile");
 	for (const std::string& metricString : profilingMetrics) profileSingle(metricString);
