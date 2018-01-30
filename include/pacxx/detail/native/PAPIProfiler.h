@@ -29,6 +29,8 @@ public:
 
   virtual void updateKernel(Kernel *kernel) override;
 
+  virtual void dryrun() override;
+
   virtual void profile() override;
 
   virtual void report() override;
