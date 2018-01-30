@@ -182,6 +182,7 @@ add_definitions(${LLVM_DEFINITIONS})
 set(PACXX_DEV_FLAGS -std=c++14 -pacxx -emit-llvm -c -O3 -D__device_code__ -isystem ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 # generate the nvptx device binding
+if (PACXX_USE_CUDA)
 set(nvdbFile nvptx_device_binding)
 
 add_custom_command(
@@ -209,11 +210,12 @@ add_custom_target(${nvdbFile}_target DEPENDS ${nvdbFile}.bc ${CMAKE_BINARY_DIR}/
 
 add_library(${nvdbFile} STATIC ${CMAKE_BINARY_DIR}/lib/${nvdbFile}.o)
 
-
 set_source_files_properties(${CMAKE_BINARY_DIR}/lib/${nvdbFile}.o PROPERTIES EXTERNAL_OBJECT true GENERATED true)
 set_target_properties(${nvdbFile} PROPERTIES LINKER_LANGUAGE C)
+endif()
 
 # generate the amdgcn device binding
+if (PACXX_USE_HIP)
 set(amddbFile amdgcn_device_binding)
 
 add_custom_command(
@@ -244,7 +246,7 @@ add_library(${amddbFile} STATIC ${CMAKE_BINARY_DIR}/lib/${amddbFile}.o)
 
 set_source_files_properties(${CMAKE_BINARY_DIR}/lib/${amddbFile}.o PROPERTIES EXTERNAL_OBJECT true GENERATED true)
 set_target_properties(${amddbFile} PROPERTIES LINKER_LANGUAGE C)
-
+endif()
 
 # generate the native device binding
 set(nadbFile native_device_binding)
