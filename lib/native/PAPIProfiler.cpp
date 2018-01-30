@@ -183,10 +183,6 @@ void PAPIProfiler::profileSingle(const std::string& metricName) {
     stats[static_cast<NativeKernel*>(_kernel)->getName()].back()[events.at(0).name()] = std::to_string(events.at(0).counter());
     Executor::get().restoreArgs();
   }
-  else
-  {
-    stats[static_cast<NativeKernel*>(_kernel)->getName()].back()[metricName] = "NAN";
-  }
 }
 
 }
