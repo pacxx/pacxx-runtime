@@ -126,11 +126,11 @@ std::unique_ptr<llvm::Module> HSACOBackend::prepareModule(llvm::Module &M) {
   PM.add(createIntrinsicSchedulerPass());
 
   PM.add(createTargetSelectionPass({"GPU", "Generic"}));
+  PM.add(createAMDGCNPrepairPass(_gcnArch));
   PM.add(createAddressSpaceTransformPass());
   // PM.add(createLoadMotionPass());
   PM.add(createMSPRemoverPass());
 
-  PM.add(createAMDGCNPrepairPass(_gcnArch));
 
   PM.add(createIntrinsicMapperPass());
   PM.add(createMemoryCoalescingPass(false));
@@ -146,8 +146,15 @@ std::unique_ptr<llvm::Module> HSACOBackend::prepareModule(llvm::Module &M) {
   PM.add(createSROAPass());
   PM.add(createPromoteMemoryToRegisterPass());
   PM.add(createInstructionCombiningPass());
-
   PM.run(M);
+
+  llvm::legacy::PassManager PMR;
+  PMR.add(new TargetLibraryInfoWrapperPass(TLII));
+  PMR.add(createPACXXCodeGenPrepare());
+  PMR.add(createAlwaysInlinerLegacyPass());
+  PMR.add(createPACXXCodeGenPrepare());
+  
+  PMR.run(M);
 
   auto RM = reinterpret_cast<MSPGeneration *>(PRP)->getReflectionModule();
 
@@ -169,11 +176,17 @@ std::string HSACOBackend::compile(llvm::Module &M) {
   options.NoNaNsFPMath = false;
   options.HonorSignDependentRoundingFPMathOption = false;
   options.AllowFPOpFusion = FPOpFusion::Fast;
-  
+ 
+  M.setTargetTriple("amdgcn--amdhsa-amdgiz");
+
+  M.setDataLayout("e-p:64:64-p1:64:64-p2:64:64-p3:32:32-p4:32:32-p5:32:32-"
+                    "i64:64-v16:16-v24:32-v32:32-v48:64-v96:128-v192:256-v256:"
+                    "256-v512:512-v1024:1024-v2048:2048-n32:64-A5");
+
   Triple TheTriple = Triple(M.getTargetTriple());
   std::string Error;
   SmallString<128> hsaString;
-  llvm::raw_svector_ostream _ptxOS(hsaString);
+  llvm::raw_svector_ostream OS(hsaString);
   if (!_target)
     _target = TargetRegistry::lookupTarget("amdgcn", TheTriple, Error);
   if (!_target) {
@@ -183,6 +196,7 @@ std::string HSACOBackend::compile(llvm::Module &M) {
   llvm::legacy::PassManager PM;
   PassManagerBuilder builder;
   builder.OptLevel = 3;
+//  PM.add(createAMDGCNPrepairPass(_gcnArch));
   builder.populateModulePassManager(PM);
   PM.run(M);
 
@@ -196,17 +210,13 @@ std::string HSACOBackend::compile(llvm::Module &M) {
       TheTriple.getTriple(), _cpu, _features, options, Reloc::Model::Static,
       CodeModel::Model::Medium, CodeGenOpt::Aggressive));
 
-  if (_machine->addPassesToEmitFile(lowerPM, _ptxOS,
+  if (_machine->addPassesToEmitFile(lowerPM, OS,
                                     TargetMachine::CGFT_ObjectFile, false)) {
     throw std::logic_error(
         "target does not support generation of this file type!\n");
   }
 
   lowerPM.run(M);
-
-  if (common::GetEnv("PACXX_DUMP_FINAL_IR") != "") {
-    M.dump();
-  }
 
   auto hsa = hsaString.str().str();
   std::ofstream out(".pacxx.isabin");

@@ -181,18 +181,12 @@ add_definitions(${LLVM_DEFINITIONS})
 
 set(PACXX_DEV_FLAGS -std=c++14 -pacxx -emit-llvm -c -O3 -D__device_code__ -isystem ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
-if (${CMAKE_SIZEOF_VOID_P} EQUAL 8)
-    set(PACXX_CUDA_DEV_FLAGS ${PACXX_DEV_FLAGS} -target nvptx64-unknown-unknown)
-else ()
-    set(PACXX_CUDA_DEV_FLAGS ${PACXX_DEV_FLAGS} -target nvptx-unknown-unknown)
-endif ()
-
 # generate the nvptx device binding
 set(nvdbFile nvptx_device_binding)
 
 add_custom_command(
         OUTPUT ${nvdbFile}.bc
-        COMMAND ${CMAKE_BINARY_DIR}/bin/clang ${PACXX_DEV_FLAGS}  -isystem ${CUDA_TOOLKIT_INCLUDE} -I ${CMAKE_CURRENT_SOURCE_DIR}/include ${CMAKE_CURRENT_SOURCE_DIR}/lib/bitcode/${nvdbFile}.cpp -o ${nvdbFile}.bc
+        COMMAND ${CMAKE_BINARY_DIR}/bin/clang ${PACXX_DEV_FLAGS}  -target nvptx64-unknown-unknown -isystem ${CUDA_TOOLKIT_INCLUDE} -I ${CMAKE_CURRENT_SOURCE_DIR}/include ${CMAKE_CURRENT_SOURCE_DIR}/lib/bitcode/${nvdbFile}.cpp -o ${nvdbFile}.bc
         WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/lib
         DEPENDS clang
         COMMENT "Generating NVPTX Device Binding")
@@ -224,14 +218,14 @@ set(amddbFile amdgcn_device_binding)
 
 add_custom_command(
         OUTPUT ${amddbFile}.bc
-        COMMAND ${CMAKE_BINARY_DIR}/bin/clang ${PACXX_DEV_FLAGS} -isystem ${CUDA_TOOLKIT_INCLUDE} -I ${CMAKE_CURRENT_SOURCE_DIR}/include ${CMAKE_CURRENT_SOURCE_DIR}/lib/bitcode/${amddbFile}.cpp -o ${amddbFile}.bc
+        COMMAND ${CMAKE_BINARY_DIR}/bin/clang ${PACXX_DEV_FLAGS} -target amdgcn--amdhsa-amdgiz -isystem ${CUDA_TOOLKIT_INCLUDE} -I ${CMAKE_CURRENT_SOURCE_DIR}/include ${CMAKE_CURRENT_SOURCE_DIR}/lib/bitcode/${amddbFile}.cpp -o ${amddbFile}.bc
         WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/lib
         DEPENDS clang
         COMMENT "Generating AMDGCN Device Binding")
 
 add_custom_command(
     OUTPUT ${amddbFile}.linked.bc
-    COMMAND ${CMAKE_BINARY_DIR}/bin/llvm-link -suppress-warnings ${amddbFile}.bc ${CMAKE_CURRENT_SOURCE_DIR}/lib/bitcode/amdgcn_libdevice.bc -o ${amddbFile}.linked.bc
+    COMMAND ${CMAKE_BINARY_DIR}/bin/llvm-link -suppress-warnings ${amddbFile}.bc ${ROCM_DIR}/lib/hc.amdgcn.bc ${CMAKE_CURRENT_SOURCE_DIR}/lib/bitcode/amdgcn_libdevice.bc -o ${amddbFile}.linked.bc
     WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/lib
     DEPENDS ${amddbFile}.bc llvm-link
     COMMENT "Linking AMDGCN libdevice into bitcode")

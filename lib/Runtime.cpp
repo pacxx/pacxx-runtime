@@ -37,7 +37,8 @@ void Runtime::restoreMemory() {
   if (_profiler->enabled())
   {
     for (std::unique_ptr<DeviceBufferBase<void>>& entry : _memory) {
-      entry.get()->restore();
+      if (entry)
+        entry->restore();
     }
   }
 }

@@ -241,7 +241,7 @@ struct IntrinsicMapper : public ModulePass {
 
 bool IntrinsicMapper::runOnModule(Module &M) {
   bool modified = true;
-
+  
   struct IntrinsicVisitor : public InstVisitor<IntrinsicVisitor> {
 
     void visitCallInst(CallInst &CI) {
