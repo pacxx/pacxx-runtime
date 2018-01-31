@@ -79,19 +79,7 @@ void *RemoteRawDeviceBuffer::get(size_t offset) const {
 
 void RemoteRawDeviceBuffer::upload(const void *src, size_t bytes,
                                    size_t offset) {
-  if (_runtime->getProfiler()->enabled())
-  {
-    __debug("Storing ", bytes, "b");
-    if (count_shadow && count_shadow != bytes) __warning("Double upload");
-    count_shadow = bytes;
-    offset_shadow = offset;
-  }
   _runtime->uploadToRemoteMemory(_buffer + offset, src, bytes);
-  if (_runtime->getProfiler()->enabled())
-  {
-    _runtime->downloadFromRemoteMemory(src_shadow, _buffer + offset, bytes);
-    __debug("Stored ", count_shadow, "b");
-  }
 }
 
 void RemoteRawDeviceBuffer::download(void *dest, size_t bytes, size_t offset) {
@@ -108,8 +96,17 @@ void RemoteRawDeviceBuffer::downloadAsync(void *dest, size_t bytes,
   download(dest, bytes, offset);
 }
 
+void RemoteRawDeviceBuffer::enshadow() {
+  if (_runtime->getProfiler()->enabled())
+  {
+    __debug("Storing ", count_shadow, "b");
+    if (count_shadow) _runtime->downloadFromRemoteMemory(src_shadow, _buffer + offset_shadow, count_shadow);
+    __debug("Stored ", count_shadow, "b");
+  }
+}
+
 void RemoteRawDeviceBuffer::restore() {
-  if (_runtime->getProfiler()->enabled() && src_shadow)
+  if (_runtime->getProfiler()->enabled())
   {
     __debug("Restoring ", count_shadow, "b");
     if (count_shadow) _runtime->uploadToRemoteMemory(_buffer + offset_shadow, src_shadow, count_shadow);

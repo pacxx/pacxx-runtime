@@ -33,6 +33,16 @@ void Runtime::evaluateStagedFunctions(Kernel &K) {
   }
 }
 
+void Runtime::enshadowMemory() {
+  if (_profiler->enabled())
+  {
+    for (std::unique_ptr<DeviceBufferBase<void>>& entry : _memory) {
+      if (entry)
+        entry->enshadow();
+    }
+  }
+}
+
 void Runtime::restoreMemory() {
   if (_profiler->enabled())
   {

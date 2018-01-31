@@ -83,21 +83,8 @@ CUDARawDeviceBuffer &CUDARawDeviceBuffer::operator=(CUDARawDeviceBuffer &&rhs) {
 void *CUDARawDeviceBuffer::get(size_t offset) const { return _buffer + offset; }
 
 void CUDARawDeviceBuffer::upload(const void *src, size_t bytes, size_t offset) {
-  if (_runtime->getProfiler()->enabled())
-  {
-    __debug("Storing ", bytes, "b");
-    if (count_shadow && count_shadow != bytes) __warning("Double upload");
-    count_shadow = bytes;
-    offset_shadow = offset;
-  }
   SEC_CUDA_CALL(
        cudaMemcpy(_buffer + offset, src, bytes, cudaMemcpyHostToDevice));
-  if (_runtime->getProfiler()->enabled())
-  {
-    SEC_CUDA_CALL(
-        cudaMemcpy(src_shadow, _buffer + offset, bytes, cudaMemcpyDeviceToHost));
-    __debug("Stored ", count_shadow, "b");
-  }
 }
 
 void CUDARawDeviceBuffer::download(void *dest, size_t bytes, size_t offset) {
@@ -107,21 +94,8 @@ void CUDARawDeviceBuffer::download(void *dest, size_t bytes, size_t offset) {
 
 void CUDARawDeviceBuffer::uploadAsync(const void *src, size_t bytes,
                                       size_t offset) {
-  if (_runtime->getProfiler()->enabled())
-  {
-    __debug("Storing ", bytes, "b");
-    if (count_shadow && count_shadow != bytes) __warning("Double upload");
-    count_shadow = bytes;
-    offset_shadow = offset;
-  }
   SEC_CUDA_CALL(
       cudaMemcpyAsync(_buffer + offset, src, bytes, cudaMemcpyHostToDevice));
-  if (_runtime->getProfiler()->enabled())
-  {
-    SEC_CUDA_CALL(
-        cudaMemcpyAsync(src_shadow, _buffer + offset, bytes, cudaMemcpyDeviceToHost));
-    __debug("Stored ", count_shadow, "b");
-  }
 }
 
 void CUDARawDeviceBuffer::downloadAsync(void *dest, size_t bytes,
@@ -130,8 +104,17 @@ void CUDARawDeviceBuffer::downloadAsync(void *dest, size_t bytes,
       cudaMemcpyAsync(dest, _buffer + offset, bytes, cudaMemcpyDeviceToHost));
 }
 
+void CUDARawDeviceBuffer::enshadow() {
+  if (_runtime->getProfiler()->enabled())
+  {
+    __debug("Storing ", count_shadow, "b");
+    if (count_shadow) SEC_CUDA_CALL(cudaMemcpy(src_shadow, _buffer + offset_shadow, count_shadow, cudaMemcpyDeviceToHost));
+    __debug("Stored ", count_shadow, "b");
+  }
+}
+
 void CUDARawDeviceBuffer::restore() {
-  if (_runtime->getProfiler()->enabled() && src_shadow)
+  if (_runtime->getProfiler()->enabled())
   {
     __debug("Restoring ", count_shadow, "b");
     if (count_shadow) SEC_CUDA_CALL(

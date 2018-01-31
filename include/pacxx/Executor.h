@@ -193,15 +193,11 @@ public:
 private:
   void setModule(std::unique_ptr<llvm::Module> M);
 
-  void profile(Kernel &kernel) {
-    kernel.profile();
-    restoreArgs();
-  }
-
   template <typename L> void run(const L &lambda, KernelConfiguration config) {
     // auto& dev_lambda = _mem_manager.getTemporaryLambda(lambda);
     auto &K = get_kernel_by_name(typeid(L).name(), config, lambda);
-    profile(std::ref(K));
+    enshadowArgs();
+    K.profile();
     K.launch();
   }
 
@@ -210,7 +206,8 @@ private:
                          CallbackFunc &&cb, Args &&... args) {
     auto &K = get_kernel_by_name(typeid(L).name(), config, lambda,
                                  std::forward<Args>(args)...);
-    profile(std::ref(K));
+    enshadowArgs();
+    K.profile();
     K.setCallback(std::move(cb));
     K.launch();
   }
@@ -231,7 +228,7 @@ public:
 
     if (mode == MemAllocMode::Unified)
       if(!_runtime->supportsUnifiedAddressing())
-        throw std::bad_alloc(); 
+        throw std::bad_alloc();
 
     return *_runtime->allocateMemory<T>(count, mode);
   }
@@ -265,6 +262,11 @@ public:
   }
 
   llvm::LLVMContext &getLLVMContext() { return *_ctx; }
+
+  void enshadowArgs() {
+    _runtime->enshadowMemory();
+    __verbose("Args enshadowed");
+  }
 
   void restoreArgs() {
     _runtime->restoreMemory();
