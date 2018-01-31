@@ -131,7 +131,7 @@ void CUDARawDeviceBuffer::downloadAsync(void *dest, size_t bytes,
 }
 
 void CUDARawDeviceBuffer::restore() {
-  if (_runtime->getProfiler()->enabled())
+  if (_runtime->getProfiler()->enabled() && src_shadow)
   {
     __debug("Restoring ", count_shadow, "b");
     if (count_shadow) SEC_CUDA_CALL(

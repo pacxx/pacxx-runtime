@@ -109,7 +109,7 @@ void RemoteRawDeviceBuffer::downloadAsync(void *dest, size_t bytes,
 }
 
 void RemoteRawDeviceBuffer::restore() {
-  if (_runtime->getProfiler()->enabled())
+  if (_runtime->getProfiler()->enabled() && src_shadow)
   {
     __debug("Restoring ", count_shadow, "b");
     if (count_shadow) _runtime->uploadToRemoteMemory(_buffer + offset_shadow, src_shadow, count_shadow);

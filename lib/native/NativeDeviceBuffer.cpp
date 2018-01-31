@@ -129,7 +129,7 @@ void NativeRawDeviceBuffer::downloadAsync(void *dest, size_t bytes,
 }
 
 void NativeRawDeviceBuffer::restore() {
-  if (_runtime->getProfiler()->enabled())
+  if (_runtime->getProfiler()->enabled() && src_shadow)
   {
     __debug("Restoring ", count_shadow, "b");
     if (count_shadow) std::memcpy(_buffer + offset_shadow, src_shadow, count_shadow);
