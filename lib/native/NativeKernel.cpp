@@ -105,6 +105,7 @@ void NativeKernel::launch() {
 
 void NativeKernel::profile() {
   PAPIProfiler* ptr = static_cast<PAPIProfiler*>(_runtime.getProfiler());
+  if (!ptr->enabled()) return;
   ptr->updateKernel(this);
   ptr->dryrun();
   ptr->profile();
