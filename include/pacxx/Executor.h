@@ -230,10 +230,14 @@ public:
     __verbose("allocating memory: ", sizeof(T) * count);
 
     if (mode == MemAllocMode::Unified)
-      __verbose("Runtime supports unified addressing: ",
-                _runtime->supportsUnifiedAddressing());
+      if(!_runtime->supportsUnifiedAddressing())
+        throw std::bad_alloc(); 
 
     return *_runtime->allocateMemory<T>(count, mode);
+  }
+
+  template <typename T> void free(T* ptr) {
+      _runtime->template deleteMemory(_runtime->template translateMemory(ptr));
   }
 
   template <typename T> void free(DeviceBuffer<T> &buffer) {
