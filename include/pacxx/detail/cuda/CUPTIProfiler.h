@@ -70,10 +70,8 @@ private:
   CUpti_MetricValue metricValue;
   std::list<std::string> profilingMetrics;
 
-  ///      Kernel name, run count,           metric name,                metric value, metric value kind
-  //std::map<std::string, std::vector<std::map<std::string, std::pair<CUpti_MetricValue, CUpti_MetricValueKind>>>> stats;
-  ///      Kernel name, run count,           metric name, stringified value
-  std::map<std::string, std::vector<std::map<std::string, std::string>>> stats;
+  ///      Kernel name, run count,                     "KernelConfiguration", Kerner config                                                                                  ,          metric name, value
+  std::map<std::string, std::vector<std::pair<std::map<std::string, std::pair<std::map<std::string, std::map<std::string, std::size_t>>, std::map<std::string, std::size_t>>>, std::map<std::string, std::string>>>> stats;
 };
 }
 }
