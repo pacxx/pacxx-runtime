@@ -11,7 +11,7 @@
 #include "pacxx/detail/cuda/CUDARuntime.h"
 #include "pacxx/Executor.h"
 #include <fstream>
-#include "pacxx/detail/common/json.hpp"
+#include "pacxx/detail/common/jsonHelper.h"
 
 namespace pacxx {
 namespace v2 {
@@ -77,7 +77,7 @@ void CUPTIProfiler::updateKernel(Kernel *kernel) {
 	__verbose("CUPTIProfiler updateKernel");
 	_kernel = kernel;
 	stats[static_cast<CUDAKernel*>(_kernel)->getName()].emplace_back();
-	stats[static_cast<CUDAKernel*>(_kernel)->getName()].back().first = {{"KernelConfiguration", _kernel->getConfiguration().ToStdContainer()}};
+	stats[static_cast<CUDAKernel*>(_kernel)->getName()].back().first = _kernel->getConfiguration();
 	__verbose("Current kernel run count: ", stats[static_cast<CUDAKernel*>(_kernel)->getName()].size());
 	SEC_CUPTI_CALL(cuptiActivityRegisterCallbacks(bufferRequested, bufferCompleted));
 	stage = 3;

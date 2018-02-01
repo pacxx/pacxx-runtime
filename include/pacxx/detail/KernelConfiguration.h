@@ -11,7 +11,6 @@
 #define PACXX_V2_KERNELCONFIGURATION_H
 
 #include <cstddef>
-#include <map>
 
 #define DIV_UP(a, b) (((a) + (b)-1) / (b))
 #define NTHREADS 128
@@ -30,14 +29,6 @@ struct Dimension3 {
     return x != rhs.x || y != rhs.y || z != rhs.z;
   }
 
-  std::map<std::string, std::size_t> ToStdContainer() const {
-    return {
-      {"x", x},
-      {"y", y},
-      {"z", z}
-    };
-  }
-
   size_t x, y, z;
 };
 
@@ -53,18 +44,6 @@ struct KernelConfiguration {
 
   bool operator!=(const KernelConfiguration &rhs) {
     return blocks != rhs.blocks || threads != rhs.threads;
-  }
-
-  std::pair<std::map<std::string, std::map<std::string, std::size_t>>, std::map<std::string, std::size_t>> ToStdContainer() const {
-    return std::pair<std::map<std::string, std::map<std::string, std::size_t>>, std::map<std::string, std::size_t>> (
-      {
-        {"blocks", blocks.ToStdContainer()},
-        {"threads", threads.ToStdContainer()}
-      },
-      {
-        {"shmem", sm_size}
-      }
-    );
   }
 
   Dimension3 blocks;
