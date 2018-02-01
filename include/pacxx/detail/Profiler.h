@@ -11,6 +11,7 @@
 #define PACXX_V2_PROFILER_H
 
 #include <memory>
+#include <string>
 #include "Kernel.h"
 #include "KernelConfiguration.h"
 

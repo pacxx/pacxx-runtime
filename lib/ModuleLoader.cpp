@@ -63,7 +63,7 @@ ModuleLoader::link(std::unique_ptr<llvm::Module> m1,
   Linker linker(*composite);
   linker.linkInModule(std::move(m2));
 
-  return std::move(composite);
+  return composite;
 }
 }
 }

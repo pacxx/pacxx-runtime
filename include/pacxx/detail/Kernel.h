@@ -14,6 +14,7 @@
 #include <vector>
 #include <map>
 #include <functional>
+#include <string> 
 
 namespace pacxx {
 namespace v2 {
