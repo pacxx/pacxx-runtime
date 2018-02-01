@@ -13,6 +13,7 @@
 #include <memory>
 #include <string>
 #include "Kernel.h"
+#include "KernelConfiguration.h"
 
 namespace pacxx {
 namespace v2 {

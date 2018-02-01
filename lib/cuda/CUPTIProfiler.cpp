@@ -11,7 +11,7 @@
 #include "pacxx/detail/cuda/CUDARuntime.h"
 #include "pacxx/Executor.h"
 #include <fstream>
-#include "pacxx/detail/common/json.hpp"
+#include "pacxx/detail/common/jsonHelper.h"
 
 namespace pacxx {
 namespace v2 {
@@ -71,15 +71,18 @@ bool CUPTIProfiler::postinit(void* settings) {
 	stage = 2;
 	return true;
 }
+
 void CUPTIProfiler::updateKernel(Kernel *kernel) {
 	if (!checkStage(2, "updateKernel", true)) return;
 	__verbose("CUPTIProfiler updateKernel");
 	_kernel = kernel;
 	stats[static_cast<CUDAKernel*>(_kernel)->getName()].emplace_back();
+	stats[static_cast<CUDAKernel*>(_kernel)->getName()].back().first = _kernel->getConfiguration();
 	__verbose("Current kernel run count: ", stats[static_cast<CUDAKernel*>(_kernel)->getName()].size());
 	SEC_CUPTI_CALL(cuptiActivityRegisterCallbacks(bufferRequested, bufferCompleted));
 	stage = 3;
 }
+
 void CUPTIProfiler::dryrun() {
 	if (!checkStage(3, "dryrun")) return;
 	__verbose("CUPTIProfiler dryrun");
@@ -93,7 +96,7 @@ void CUPTIProfiler::dryrun() {
 	  std::stringstream foo;
 	  foo << kernelDuration;
 	  foo << "us";
-	  stats[static_cast<CUDAKernel*>(_kernel)->getName()].back()["kernelDuration"] = foo.str();
+	  stats[static_cast<CUDAKernel*>(_kernel)->getName()].back().second["kernelDuration"] = foo.str();
 	}
 	__debug("Kernel run time: ", kernelDuration, "us");
 	stage = 4;
@@ -106,20 +109,6 @@ void CUPTIProfiler::profile() {
 }
 
 void CUPTIProfiler::report() {
-	/*for (std::pair<std::string, std::vector<std::map<std::string, std::string>>> kernelStat : stats) {
-		__message("Summary on kernel ", kernelStat.first, ":");
-		{
-			std::stringstream line;
-		for (const std::string& metricString : profilingMetrics) {
-				line.str("");
-				for (size_t i = 0; i < kernelStat.second.size(); i++) {
-					if (i) line << " -> ";
-					line << (kernelStat.second[i])[metricString];
-				}
-				__message("\tMetric ", metricString, ": ", line.str());
-			}
-		}
-	}*/
 	nlohmann::json rprt(stats);
 	if (OutFilePath.empty()) __message(rprt.dump(4));
 	else
@@ -312,7 +301,7 @@ void CUPTIProfiler::profileSingle(const std::string& metricName) {
 			CUpti_MetricValueKind valueKind;
 			size_t valueKindSize = sizeof(valueKind);
 			SEC_CUPTI_CALL(cuptiMetricGetAttribute(metricId, CUPTI_METRIC_ATTR_VALUE_KIND, &valueKindSize, &valueKind));
-			stats[static_cast<CUDAKernel*>(_kernel)->getName()].back()[metricName] = stringSingleMetric(std::make_pair(metricValue, valueKind));
+			stats[static_cast<CUDAKernel*>(_kernel)->getName()].back().second[metricName] = stringSingleMetric(std::make_pair(metricValue, valueKind));
 			//__message("Metric ", metricName, " recorded.");
 		}
 	}

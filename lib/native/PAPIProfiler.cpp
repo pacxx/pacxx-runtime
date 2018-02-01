@@ -16,7 +16,7 @@ extern "C"
 #include "pacxx/detail/native/NativeRuntime.h"
 #include "pacxx/Executor.h"
 #include <fstream>
-#include "pacxx/detail/common/json.hpp"
+#include "pacxx/detail/common/jsonHelper.h"
 
 #define event_code int
 #define papi_counter long long
@@ -152,6 +152,7 @@ void PAPIProfiler::updateKernel(Kernel *kernel) {
 	__verbose("PAPIProfiler updateKernel");
 	_kernel = kernel;
 	stats[static_cast<NativeKernel*>(_kernel)->getName()].emplace_back();
+	stats[static_cast<NativeKernel*>(_kernel)->getName()].back().first = _kernel->getConfiguration();
 	__verbose("Current kernel run count: ", stats[static_cast<NativeKernel*>(_kernel)->getName()].size());
 }
 
@@ -166,7 +167,7 @@ void PAPIProfiler::dryrun() {
 	  std::stringstream foo;
 	  foo << std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
 	  foo << "us";
-	  stats[static_cast<NativeKernel*>(_kernel)->getName()].back()["kernelDuration"] = foo.str();
+	  stats[static_cast<NativeKernel*>(_kernel)->getName()].back().second["kernelDuration"] = foo.str();
 	}
 	__debug("Kernel run time: ", std::chrono::duration_cast<std::chrono::microseconds>(end - start).count(), "us");
 }
@@ -196,7 +197,7 @@ void PAPIProfiler::profileSingle(const std::string& metricName) {
     events.start_counters();
     static_cast<NativeKernel*>(_kernel)->launch();
     events.stop_counters();
-    stats[static_cast<NativeKernel*>(_kernel)->getName()].back()[events.at(0).name()] = std::to_string(events.at(0).counter());
+    stats[static_cast<NativeKernel*>(_kernel)->getName()].back().second[events.at(0).name()] = std::to_string(events.at(0).counter());
     Executor::get().restoreArgs();
   }
 }
