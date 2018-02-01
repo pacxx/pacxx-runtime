@@ -63,6 +63,8 @@ public:
 
   virtual bool supportsUnifiedAddressing() = 0;
 
+  virtual void enshadowMemory();
+
   virtual void restoreMemory();
 
   virtual std::unique_ptr<RawDeviceBuffer> allocateRawMemory(size_t bytes,

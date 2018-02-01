@@ -78,6 +78,7 @@ void CUDAKernel::launch() {
 
 void CUDAKernel::profile() {
   CUPTIProfiler* ptr = static_cast<CUPTIProfiler*>(_runtime.getProfiler());
+  if (!ptr->enabled()) return;
   ptr->updateKernel(this);
   ptr->dryrun();
   ptr->profile();

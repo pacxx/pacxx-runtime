@@ -35,6 +35,7 @@ public:
   virtual void uploadAsync(const T *src, size_t count, size_t offset = 0) = 0;
   virtual void downloadAsync(T *dest, size_t count, size_t offset = 0) = 0;
   virtual void copyTo(T *dest) = 0;
+  virtual void enshadow() = 0;
   virtual void restore() = 0;
 protected:
   char *src_shadow;
@@ -86,6 +87,8 @@ public:
   }
 
   virtual void copyTo(T *dest) override { _buffer->copyTo(dest); }
+
+  virtual void enshadow() override { _buffer->enshadow(); }
 
   virtual void restore() override { _buffer->restore(); }
 

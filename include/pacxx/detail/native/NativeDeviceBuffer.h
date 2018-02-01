@@ -49,6 +49,8 @@ public:
 
   virtual void copyTo(void *dest) override;
 
+  virtual void enshadow() override;
+
   virtual void restore() override;
 
 private:

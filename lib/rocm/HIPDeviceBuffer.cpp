@@ -78,21 +78,8 @@ HIPRawDeviceBuffer &HIPRawDeviceBuffer::operator=(HIPRawDeviceBuffer &&rhs) {
 void *HIPRawDeviceBuffer::get(size_t offset) const { return _buffer + offset; }
 
 void HIPRawDeviceBuffer::upload(const void *src, size_t bytes, size_t offset) {
-  if (_runtime->getProfiler()->enabled())
-  {
-    __debug("Storing ", bytes, "b");
-    if (count_shadow && count_shadow != bytes) __warning("Double upload");
-    count_shadow = bytes;
-    offset_shadow = offset;
-  }
   SEC_HIP_CALL(
       hipMemcpy(_buffer + offset, src, bytes, hipMemcpyHostToDevice));
-  if (_runtime->getProfiler()->enabled())
-  {
-    SEC_HIP_CALL(
-        hipMemcpy(src_shadow, _buffer + offset, bytes, hipMemcpyDeviceToHost));
-    __debug("Stored ", count_shadow, "b");
-  }
 }
 
 void HIPRawDeviceBuffer::download(void *dest, size_t bytes, size_t offset) {
@@ -102,27 +89,24 @@ void HIPRawDeviceBuffer::download(void *dest, size_t bytes, size_t offset) {
 
 void HIPRawDeviceBuffer::uploadAsync(const void *src, size_t bytes,
                                       size_t offset) {
-  if (_runtime->getProfiler()->enabled())
-  {
-    __debug("Storing ", bytes, "b");
-    if (count_shadow && count_shadow != bytes) __warning("Double upload");
-    count_shadow = bytes;
-    offset_shadow = offset;
-  }
   SEC_HIP_CALL(
       hipMemcpyAsync(_buffer + offset, src, bytes, hipMemcpyHostToDevice));
-  if (_runtime->getProfiler()->enabled())
-  {
-    SEC_HIP_CALL(
-      hipMemcpyAsync(src_shadow, _buffer + offset, bytes, hipMemcpyDeviceToHost));
-    __debug("Stored ", count_shadow, "b");
-  }
 }
 
 void HIPRawDeviceBuffer::downloadAsync(void *dest, size_t bytes,
                                         size_t offset) {
   SEC_HIP_CALL(
       hipMemcpyAsync(dest, _buffer + offset, bytes, hipMemcpyDeviceToHost));
+}
+
+void HIPRawDeviceBuffer::enshadow() {
+  if (_runtime->getProfiler()->enabled())
+  {
+    __debug("Storing ", count_shadow, "b");
+    if (count_shadow) SEC_HIP_CALL(
+      hipMemcpyAsync(src_shadow, _buffer + offset_shadow, count_shadow, hipMemcpyDeviceToHost));
+    __debug("Stored ", count_shadow, "b");
+  }
 }
 
 void HIPRawDeviceBuffer::restore() {

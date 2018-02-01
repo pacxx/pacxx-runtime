@@ -98,19 +98,7 @@ void *NativeRawDeviceBuffer::get(size_t offset) const {
 void NativeRawDeviceBuffer::upload(const void *src, size_t bytes,
                                    size_t offset) {
   __verbose("uploading ", bytes, " bytes");
-  if (_runtime->getProfiler()->enabled())
-  {
-    __debug("Storing ", bytes, "b");
-    if (count_shadow && count_shadow != bytes) __warning("Double upload");
-    count_shadow = bytes;
-    offset_shadow = offset;
-  }
   std::memcpy(_buffer + offset, src, bytes);
-  if (_runtime->getProfiler()->enabled())
-  {
-    std::memcpy(src_shadow, _buffer + offset, bytes);
-    __debug("Stored ", count_shadow, "b");
-  }
 }
 
 void NativeRawDeviceBuffer::download(void *dest, size_t bytes, size_t offset) {
@@ -126,6 +114,15 @@ void NativeRawDeviceBuffer::uploadAsync(const void *src, size_t bytes,
 void NativeRawDeviceBuffer::downloadAsync(void *dest, size_t bytes,
                                           size_t offset) {
   download(dest, bytes, offset);
+}
+
+void NativeRawDeviceBuffer::enshadow() {
+  if (_runtime->getProfiler()->enabled())
+  {
+    __debug("Storing ", count_shadow, "b");
+    if (count_shadow) std::memcpy(src_shadow, _buffer + offset_shadow, count_shadow);
+    __debug("Stored ", count_shadow, "b");
+  }
 }
 
 void NativeRawDeviceBuffer::restore() {
