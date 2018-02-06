@@ -111,7 +111,7 @@ bool SPMDVectorizer::runOnModule(Module &M) {
   Function *dummyFunction = M.getFunction("__dummy_kernel");
 
   for (auto kernel : kernels) {
-
+    if (!kernel) continue; 
     bool vectorized = false;
 
     Function *scalarCopy = createScalarCopy(&M, kernel);

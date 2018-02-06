@@ -21,13 +21,9 @@
 #include "pacxx/detail/common/transforms/Passes.h"
 #include "pacxx/detail/rocm/transforms/Passes.h"
 
+#include "pacxx/ModuleLoader.h"
 #include "pacxx/detail/common/Exceptions.h"
 #include "pacxx/detail/rocm/HSACOBackend.h"
-
-// FIXME: this looks awkward
-#include "pacxx/../../../lld/include/lld/Common/Driver.h"
-
-#include "pacxx/ModuleLoader.h"
 #include <fstream>
 #include <llvm/Analysis/BasicAliasAnalysis.h>
 #include <llvm/Analysis/Passes.h>
@@ -57,7 +53,7 @@ namespace v2 {
 HSACOBackend::HSACOBackend()
     : _target(nullptr), _cpu("gfx803"), _features("") {}
 
-HSACOBackend::~HSACOBackend(){}
+HSACOBackend::~HSACOBackend() {}
 
 void HSACOBackend::initialize(unsigned gfx) {
   _gcnArch = gfx;
@@ -131,7 +127,6 @@ std::unique_ptr<llvm::Module> HSACOBackend::prepareModule(llvm::Module &M) {
   // PM.add(createLoadMotionPass());
   PM.add(createMSPRemoverPass());
 
-
   PM.add(createIntrinsicMapperPass());
   PM.add(createMemoryCoalescingPass(false));
   PM.add(createAlwaysInlinerLegacyPass());
@@ -153,7 +148,7 @@ std::unique_ptr<llvm::Module> HSACOBackend::prepareModule(llvm::Module &M) {
   PMR.add(createPACXXCodeGenPrepare());
   PMR.add(createAlwaysInlinerLegacyPass());
   PMR.add(createPACXXCodeGenPrepare());
-  
+
   PMR.run(M);
 
   auto RM = reinterpret_cast<MSPGeneration *>(PRP)->getReflectionModule();
@@ -176,12 +171,12 @@ std::string HSACOBackend::compile(llvm::Module &M) {
   options.NoNaNsFPMath = false;
   options.HonorSignDependentRoundingFPMathOption = false;
   options.AllowFPOpFusion = FPOpFusion::Fast;
- 
+
   M.setTargetTriple("amdgcn--amdhsa-amdgiz");
 
   M.setDataLayout("e-p:64:64-p1:64:64-p2:64:64-p3:32:32-p4:32:32-p5:32:32-"
-                    "i64:64-v16:16-v24:32-v32:32-v48:64-v96:128-v192:256-v256:"
-                    "256-v512:512-v1024:1024-v2048:2048-n32:64-A5");
+                  "i64:64-v16:16-v24:32-v32:32-v48:64-v96:128-v192:256-v256:"
+                  "256-v512:512-v1024:1024-v2048:2048-n32:64-A5");
 
   Triple TheTriple = Triple(M.getTargetTriple());
   std::string Error;
@@ -196,7 +191,7 @@ std::string HSACOBackend::compile(llvm::Module &M) {
   llvm::legacy::PassManager PM;
   PassManagerBuilder builder;
   builder.OptLevel = 3;
-//  PM.add(createAMDGCNPrepairPass(_gcnArch));
+  //  PM.add(createAMDGCNPrepairPass(_gcnArch));
   builder.populateModulePassManager(PM);
   PM.run(M);
 
@@ -204,14 +199,13 @@ std::string HSACOBackend::compile(llvm::Module &M) {
     M.dump();
   }
 
-
   llvm::legacy::PassManager lowerPM;
   _machine.reset(_target->createTargetMachine(
       TheTriple.getTriple(), _cpu, _features, options, Reloc::Model::Static,
       CodeModel::Model::Medium, CodeGenOpt::Aggressive));
 
-  if (_machine->addPassesToEmitFile(lowerPM, OS,
-                                    TargetMachine::CGFT_ObjectFile, false)) {
+  if (_machine->addPassesToEmitFile(lowerPM, OS, TargetMachine::CGFT_ObjectFile,
+                                    false)) {
     throw std::logic_error(
         "target does not support generation of this file type!\n");
   }
@@ -226,14 +220,25 @@ std::string HSACOBackend::compile(llvm::Module &M) {
 
   std::string outfile = ".pacxx.hsaco";
 
-  args.push_back("ld.ldd");
-  args.push_back("-shared");
-  args.push_back(".pacxx.isabin");
-  args.push_back("-o");
-  args.push_back(outfile.c_str());
-
-  lld::elf::link(args, false);
-
+  auto result =
+      std::system(("ld.lld -shared .pacxx.isabin -o " + outfile).c_str());
+  if (result < 0)
+    __error("Error: ", strerror(errno));
+  else {
+    if (WIFEXITED(result)) {
+      __verbose("ld.lld returned normally, exit code ", WEXITSTATUS(result));
+      switch(WEXITSTATUS(result)){
+      case 127:
+        throw common::generic_exception("ld.lld not found in PATH!");
+      case 0: 
+        break; 
+      default:
+        throw common::generic_exception(
+            "Unable to execute ld.lld! Check log for error code!"); 
+      }
+    } else
+      __error("ld.lld exited abnormaly\n");
+  }
   return outfile;
 }
 

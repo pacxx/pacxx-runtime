@@ -63,7 +63,7 @@ static Function *cloneKernelForLaunchConfig(Function *F) {
   }
   SmallVector<ReturnInst *, 8> returns;
   CloneFunctionInto(NF, F, VMap, true, returns);
-  if (auto MD = F->getParent()->getNamedMetadata("nvvm.annotations")) {
+  if (auto MD = F->getParent()->getNamedMetadata("pacxx.kernel")) {
     for (unsigned i = 0; i != MD->getNumOperands(); ++i) {
       auto Op = MD->getOperand(i);
       if (Op->getOperand(0)) {
@@ -169,7 +169,7 @@ struct AMDGCNPrepair : public ModulePass {
 
 char AMDGCNPrepair::ID = 0;
 static RegisterPass<AMDGCNPrepair>
-    X("pacxx-amdgcn-prepair", "Prepairs module for AMDGCN ISA generation",
+    X("pacxx-amdgcn-prepare", "Prepairs module for AMDGCN ISA generation",
       false, false);
 } // namespace
 

@@ -149,8 +149,6 @@ set(HIP_REQUIRED ON)
 
 set(HIP_LINK_LIBRARIES hsa-runtime64 hip_hcc hc_am)
 
-set(LLD_LIBS lldCOFF lldDriver lldELF lldMinGW)
-
 else (PACXX_USE_HIP)
 set(HIP_REQUIRED OFF)
 set(PACXX_HIP_BACKEND 0)
@@ -302,7 +300,7 @@ endif()
 #rocm device back end
 if (PACXX_USE_HIP)
 add_library(PACXXBeROCm ${HIP_SOURCE_FILES})
-target_link_libraries(PACXXBeROCm PUBLIC ${HIP_LINK_LIBRARIES} PUBLIC ${LLD_LIBS} PUBLIC ${PACXX_LLVM_LIBS} PUBLIC ${PACXX_LLVM_SYS_LIBS} PUBLIC ${amddbFile})
+target_link_libraries(PACXXBeROCm PUBLIC ${HIP_LINK_LIBRARIES} PUBLIC ${PACXX_LLVM_LIBS} PUBLIC ${PACXX_LLVM_SYS_LIBS} PUBLIC ${amddbFile})
 target_compile_definitions(PACXXBeROCm PUBLIC -D__HIP_PLATFORM_HCC__)
 install(TARGETS PACXXBeROCm DESTINATION lib)
 target_link_libraries(${PROJECT_NAME} PUBLIC PACXXBeROCm)

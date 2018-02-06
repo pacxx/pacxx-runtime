@@ -482,8 +482,6 @@ bool KernelLinker::isCorrectId(Instruction *inst, IdType id) {
   case X:return inst->getMetadata("pacxx_read_tid_x") != nullptr;
   case Y:return inst->getMetadata("pacxx_read_tid_y") != nullptr;
   case Z:return inst->getMetadata("pacxx_read_tid_z") != nullptr;
-  default:__verbose("unsupported id specified. doing nothing");
-    return false;
   }
 }
 

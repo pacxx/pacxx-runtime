@@ -32,7 +32,6 @@
 #include "pacxx/detail/native/NativeEvent.h"
 #include "pacxx/detail/native/NativeRuntime.h"
 #include "pacxx/detail/remote/RemoteEvent.h"
-#include "pacxx/detail/remote/RemoteRuntime.h"
 #include "pacxx/detail/rocm/HIPEvent.h" // TODO: move event create to the runtimes
 #include <algorithm>
 #include <cstdlib>
@@ -137,7 +136,13 @@ public:
 
     instance._id = executors.size() - 1;
     __verbose("Created new Executor with id: ", instance.getID());
+    try{
 	  initializeModule(instance);
+    }
+    catch(common::generic_exception ex){
+      __exception(ex.what());
+      __error("Module initialization failed!"); 
+    }
     return instance;
   }
   Executor(std::unique_ptr<Runtime> &&rt);
@@ -294,8 +299,6 @@ public:
     case Runtime::RuntimeKind::RK_Remote:
       event.reset(new RemoteEvent());
       break;
-    default:
-      llvm_unreachable("this runtime type is not defined!");
     }
     return *event;
   }

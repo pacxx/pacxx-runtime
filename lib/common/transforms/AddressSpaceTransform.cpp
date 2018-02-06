@@ -303,7 +303,7 @@ struct AddressSpaceTransform : public ModulePass {
         }
         SmallVector<ReturnInst *, 8> returns;
         CloneFunctionInto(NF, F, VMap, true, returns);
-        if (auto MD = M.getNamedMetadata("nvvm.annotations")) {
+        if (auto MD = M.getNamedMetadata("pacxx.kernel")) {
           for (unsigned i = 0; i != MD->getNumOperands(); ++i) {
             auto Op = MD->getOperand(i);
             if (Op->getOperand(0)) {

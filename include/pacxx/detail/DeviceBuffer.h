@@ -12,6 +12,7 @@
 
 #include <cstddef>
 #include <memory>
+#include <vector>
 
 namespace pacxx {
 namespace v2 {
@@ -68,12 +69,20 @@ public:
     return reinterpret_cast<T *>(_buffer->get(sizeof(T) * offset));
   }
 
+  virtual void upload(const std::vector<T>& vec){
+    upload(vec.data(), vec.size()); 
+  }
+
   virtual void upload(const T *src, size_t count, size_t offset = 0) override {
     _buffer->upload(src, count * sizeof(T), offset);
   }
 
   virtual void download(T *dest, size_t count, size_t offset = 0) override {
     _buffer->download(dest, count * sizeof(T), offset);
+  }
+
+  virtual void download(std::vector<T>& vec){
+    download(vec.data(), vec.size()); 
   }
 
   virtual void uploadAsync(const T *src, size_t count,

@@ -65,8 +65,6 @@ ExecutingDevice Executor::getExecutingDeviceType() {
 #endif
   case Runtime::RuntimeKind::RK_Remote:
     return ExecutingDevice::CPU; // FIXME
-  default:
-    break;
   }
   llvm_unreachable("unknown runtime kind maybe the runtime is not linked in");
 }

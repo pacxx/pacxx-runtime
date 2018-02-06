@@ -147,7 +147,7 @@ static SmallVector<std::string, 10> getTargetFeatures() {
 namespace pacxx {
 namespace v2 {
 NativeBackend::NativeBackend()
-    : _pmInitialized(false), _disableVectorizer(false),
+    : _disableVectorizer(false),
       _disableSelectEmitter(false), _disableExpPasses(false) {
   if (common::GetEnv("PACXX_DISABLE_RV") != "")
     _disableVectorizer = true;

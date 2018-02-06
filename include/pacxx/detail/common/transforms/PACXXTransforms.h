@@ -9,16 +9,16 @@
 
 #pragma once
 
-#include "llvm/Pass.h"
-#include "llvm/IR/InstVisitor.h"
-#include "llvm/IR/Function.h"
-#include "llvm/IR/Module.h"
 #include "llvm/IR/Constants.h"
-#include <vector>
-#include <set>
-#include <map>
+#include "llvm/IR/Function.h"
+#include "llvm/IR/InstVisitor.h"
+#include "llvm/IR/Module.h"
+#include "llvm/Pass.h"
 #include <llvm/IR/InstVisitor.h>
 #include <llvm/IR/Module.h>
+#include <map>
+#include <set>
+#include <vector>
 
 #include <memory>
 using namespace llvm;
@@ -31,7 +31,7 @@ struct MSPGeneration : public ModulePass {
   MSPGeneration();
   virtual ~MSPGeneration();
   virtual bool runOnModule(Module &M);
-  std::unique_ptr <Module> getReflectionModule();
+  std::unique_ptr<Module> getReflectionModule();
 
 private:
   bool runOnModuleAtCompileTime(Module &M);
@@ -56,7 +56,7 @@ private:
   private:
     Module *M;
     set<Function *> reflects;
-    vector <pair<CallInst *, int>> stubs;
+    vector<pair<CallInst *, int>> stubs;
     map<CallInst *, CallInst *> replacements;
     int count;
   };
@@ -128,23 +128,29 @@ private:
     map<Instruction *, Instruction *> IMap;
   };
 
-  std::unique_ptr <Module> RM;
+  std::unique_ptr<Module> RM;
 };
 
 template <typename PTy = std::pair<Function *, int>>
 PTy getTagedFunction(MDNode *MD, StringRef desc) {
-
-  if (MD->getNumOperands() == 3) // Function*, "descriptor", i32 value
-    if (auto *str = dyn_cast<MDString>(MD->getOperand(1)))
-      if (MD->getOperand(0) != nullptr &&
-          ((desc == "") || (str->getString() == desc)))
-        if (auto *F = dyn_cast<Function>( dyn_cast<ValueAsMetadata>(MD->getOperand(0).get())->getValue()) ) {
-          if (auto *Val = dyn_cast<ConstantInt>( dyn_cast<ValueAsMetadata>(MD->getOperand(2).get())->getValue()) )
+  if (MD->getOperand(0) != nullptr) {
+    auto *F = dyn_cast<Function>(
+        dyn_cast<ValueAsMetadata>(MD->getOperand(0).get())->getValue());
+    if (desc == "")
+      return PTy(F, 0);
+    else {
+      if (auto *str = dyn_cast<MDString>(MD->getOperand(1))){
+        if (str->getString() == desc) {
+          if (auto *Val = dyn_cast<ConstantInt>(
+                  dyn_cast<ValueAsMetadata>(MD->getOperand(2).get())
+                      ->getValue()))
             return PTy(F, *(Val->getValue().getRawData()));
 
           assert(false && "third operand on MDNode is not i32Ty");
         }
-
+      }
+    }
+  }
   return PTy(nullptr, -1);
 }
 
@@ -174,13 +180,9 @@ CTy getTagedFunctionsWithTag(Module *M, StringRef twine, StringRef desc) {
   return functions;
 }
 
-template <typename CTy = std::set<Function *>>
-CTy getKernels(Module *M) {
-  auto functions = getTagedFunctions(M, "nvvm.anntations", "kernel");
-  for (auto& F : *M)
-    if (F.getMetadata("kernel_arg_addr_space") != nullptr)
-      functions.insert(&F);
+template <typename CTy = std::set<Function *>> CTy getKernels(Module *M) {
+  auto functions = getTagedFunctions(M, "pacxx.kernel", "");
   return functions;
 }
 
-}
+} // namespace pacxx

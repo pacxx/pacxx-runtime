@@ -194,7 +194,7 @@ bool checkForMergeableMemOp(T &vec) {
 
 struct MemoryCoalecing : public ModulePass {
   static char ID;
-  MemoryCoalecing(bool runtime = false) : ModulePass(ID), runtime(runtime) {}
+  MemoryCoalecing() : ModulePass(ID) {}
   virtual ~MemoryCoalecing() {}
 
   virtual bool runOnModule(Module &M) {
@@ -394,7 +394,6 @@ private:
     vector<Instruction *> dead;
   };
 
-  bool runtime;
 };
 
 char MemoryCoalecing::ID = 0;
@@ -403,5 +402,5 @@ static RegisterPass<MemoryCoalecing>
 }
 
 namespace pacxx {
-Pass *createMemoryCoalescingPass(bool runtime) { return new MemoryCoalecing(runtime); }
+Pass *createMemoryCoalescingPass(bool) { return new MemoryCoalecing(); }
 }

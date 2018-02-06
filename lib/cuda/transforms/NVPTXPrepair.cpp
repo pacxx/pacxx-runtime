@@ -91,7 +91,7 @@ struct NVPTXPrepair : public ModulePass {
 };
 
 char NVPTXPrepair::ID = 0;
-static RegisterPass<NVPTXPrepair> X("pacxx-nvptx-prepair", "Prepairs module for PTX generation", false, false);
+static RegisterPass<NVPTXPrepair> X("pacxx-nvptx-prepare", "Prepairs module for PTX generation", false, false);
 }
 
 namespace pacxx {
