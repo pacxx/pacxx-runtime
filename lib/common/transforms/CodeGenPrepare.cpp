@@ -115,8 +115,11 @@ struct PACXXCodeGenPrepare : public ModulePass {
     });
 
     auto kernels = pacxx::getKernels(&M);
-    for (auto &F : kernels)
+    for (auto &F : kernels){
       visitor.visit(F);
+      if (F->hasFnAttribute(llvm::Attribute::OptimizeNone))
+        F->removeFnAttr(llvm::Attribute::OptimizeNone);
+    }
 
     cleanupDeadCode(&M);
 

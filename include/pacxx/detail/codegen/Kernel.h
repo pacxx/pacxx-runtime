@@ -146,20 +146,19 @@ void kernelBody(L &&callable) {
 #endif
 }
 
+#ifdef __PACXX__
+#define PACXX_KERNEL __attribute__((global))
+#define PACXX_SHARED __attribute__((shared))
+#define PACXX_CONSTANT __attribute__((constant))
+#else 
+#define PACXX_KERNEL 
+#define PACXX_SHARED 
+#define PACXX_CONSTANT
+#endif
 
 
 template<typename L>
-[[pacxx::kernel]] [[pacxx::target("Generic")]] void genericKernel(L callable) noexcept {
-  kernelBody(callable);
-}
-
-template<typename L>
-[[pacxx::kernel]] [[pacxx::target("GPU")]] void genericKernelGPU(L callable) noexcept {
-  kernelBody(callable);
-}
-
-template<typename L>
-[[pacxx::kernel]] [[pacxx::target("CPU")]] void genericKernelCPU(L callable) noexcept {
+PACXX_KERNEL void genericKernel(L callable) noexcept {
   kernelBody(callable);
 }
 
@@ -170,14 +169,7 @@ public:
 
   _kernel(L lambda)
       : _function(std::forward<L>(lambda)) {
-    switch (targ) {
-    case Target::Generic:genericKernel(_function);
-      break;
-    case Target::CPU:genericKernelCPU(_function);
-      break;
-    case Target::GPU:genericKernelGPU(_function);
-      break;
-    }
+      genericKernel(_function);
   }
 
   L _function;

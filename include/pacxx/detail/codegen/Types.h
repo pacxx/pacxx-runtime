@@ -27,7 +27,7 @@ public:
           __sm_size == 0>::type * = nullptr>
   shared_memory() {
 #ifdef __device_code__
-    [[pacxx::shared]] extern T ptr[];
+    __attribute__((shared)) extern T ptr[];
 #else
     T *ptr = nullptr;
 #endif
@@ -38,7 +38,7 @@ public:
       typename std::enable_if<!std::is_void<U>::value &&
           __sm_size != 0>::type * = nullptr>
   shared_memory() {
-    [[pacxx::shared]] T ptr[__sm_size];
+    __attribute__((shared)) T ptr[__sm_size];
     sm_ptr = reinterpret_cast<decltype(sm_ptr)>(ptr);
   }
 

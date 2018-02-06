@@ -227,6 +227,7 @@ function(pacxx_embed_ir targetName bcFiles binDir)
     add_custom_command(
             OUTPUT ${outFile}
             COMMAND ${PACXX_LINK} ${PACXX_LINK_FLAGS} ${bcFiles} -o ${outFile}
+            COMMAND ${PACXX_OPT} -load=libPACXXTransforms.so -pacxx-codegen-prepare -inline ${outFile} -o ${outFile}
             WORKING_DIRECTORY ${binDir}
             DEPENDS ${bcFiles}
             COMMENT "Generating Kernel IR")

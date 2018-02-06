@@ -8,8 +8,8 @@
 //===----------------------------------------------------------------------===//
 
 #include "pacxx/Executor.h"
-#include "pacxx/detail/common/ExecutorHelper.h"
 #include "pacxx/ModuleLoader.h"
+#include "pacxx/detail/common/ExecutorHelper.h"
 #include <llvm/IR/Module.h>
 #include <llvm/Target/TargetMachine.h>
 
@@ -116,52 +116,59 @@ std::string Executor::getFNameForLambda(std::string name) {
   return FName;
 }
 
-const char *__moduleStart(const char *start) {
-  static const char *ptr = nullptr;
-  if (!ptr)
-    ptr = start;
-  return ptr;
-}
-
-const char *__moduleEnd(const char *end) {
-  static const char *ptr = nullptr;
-  if (!ptr)
-    ptr = end;
-  return ptr;
+const auto& __modules(const char *start, const char *end) {
+  static std::vector<std::pair<const char *, const char*>> ptrs;
+  if (start && end)
+    ptrs.push_back(std::make_pair(start, end));
+  return ptrs;
 }
 
 void registerModule(const char *start, const char *end) {
-  __moduleStart(start);
-  __moduleEnd(end);
+  __modules(start, end);
 }
+
 void initializeModule(Executor &exec) {
   ModuleLoader loader(exec.getLLVMContext());
-	auto M =
-      loader.loadInternal(__moduleStart(), __moduleEnd() - __moduleStart());
-  exec.setModule(std::move(M));
-}
+  
+  auto ptrs = __modules(nullptr, nullptr);
+  std::unique_ptr<llvm::Module> M;
 
-void initializeModule(Executor &exec, const char* ptr, size_t size) {
-  ModuleLoader loader(exec.getLLVMContext());
-	auto M =
-      loader.loadInternal(ptr, size);
-  exec.setModule(std::move(M));
-}
-
-    Kernel &Executor::get_kernel_by_name(std::string name, KernelConfiguration config,
-                           const void* args, size_t size, bool force_name) {
-    if (!force_name)
-      name = getFNameForLambda(name);
-
-    Kernel &K = _runtime->getKernel(name);
-
-    K.configurate(config);
-    K.setLambdaPtr(args, size);
-
-    _runtime->evaluateStagedFunctions(K);
-
-    return K;
+  for (auto p : ptrs){  
+    if (!M)
+      M = loader.loadInternal(p.first, p.second - p.first);
+    else {
+      auto M2 = loader.loadInternal(p.first, p.second - p.first);
+      M = loader.link(std::move(M), std::move(M2));
+    }
   }
+
+  M->dump();
+
+  exec.setModule(std::move(M));
+}
+
+void initializeModule(Executor &exec, const char *ptr, size_t size) {
+  ModuleLoader loader(exec.getLLVMContext());
+  auto M = loader.loadInternal(ptr, size);
+  exec.setModule(std::move(M));
+}
+
+Kernel &Executor::get_kernel_by_name(std::string name,
+                                     KernelConfiguration config,
+                                     const void *args, size_t size,
+                                     bool force_name) {
+  if (!force_name)
+    name = getFNameForLambda(name);
+
+  Kernel &K = _runtime->getKernel(name);
+
+  K.configurate(config);
+  K.setLambdaPtr(args, size);
+
+  _runtime->evaluateStagedFunctions(K);
+
+  return K;
+}
 
 } // namespace v2
 } // namespace pacxx
