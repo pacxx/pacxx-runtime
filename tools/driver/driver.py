@@ -32,29 +32,44 @@ def main(argv):
     insert_include(includes, lookup_include(llvm_dir))
     insert_include(includes, lookup_include("/usr/local/cuda"))
     insert_include(includes, lookup_include("/opt/rocm"))
-    input_files = [s for s in argv if ".cpp" in s];
-    dev_args = ["-std=c++17", "-pacxx", "-emit-llvm", "-c", "-o", workingdir+"/kernel.bc"]
-    host_args = ["--include", workingdir+"/pacxx_integration.h"]
+    input_files = [];
+    for s in argv:
+        if s.endswith(".cpp"):
+            input_files.append(s);
+        if s.endswith(".cxx"):
+            input_files.append(s);
+        if s.endswith(".cc"):
+            input_files.append(s);
 
+    dev_args = ["-std=c++17", "-pacxx", "-emit-llvm", "-c", "-o", workingdir+"/kernel.bc"]
+    host_args = []
+    print(input_files)
     if not "-c" in argv:
         host_args = host_args + ["-lpacxxrt2", "-lPACXXBeCUDA", "-lcuda"]
+    if len(input_files) > 0:
+        args = argv[:]; 
+        if "-o" in args:
+            index = args.index("-o")
+            del args[index + 1]
+            args.remove("-o")
 
-    command = [ clang ] + dev_args + includes + argv[1:]
+        host_args = ["--include", workingdir+"/pacxx_integration.h"]
+        command = [ clang ] + dev_args + includes + args[1:]
 
-    #compile the device code to llvm bitcode
-    print(" ".join(command))
-    call(command)
-    command = [ opt ] + ["-load=libPACXXTransforms.so", "-pacxx-codegen-prepare", "-inline", workingdir+"/kernel.bc", "-o", workingdir+"/kernel.bc"]
-    call(command)
-    #encode the kernel.bc file to a char array and include it into the integration header
-    current_dir = os.getcwd(); 
-    os.chdir(workingdir)
-    encoded = check_output(["xxd", "-i", "kernel.bc"]).rstrip();
-    with open(llvm_dir + "/include/pacxx/detail/ModuleIntegration.h", 'r') as include_header:
-        data = include_header.read().replace('##FILECONTENT##', encoded)
-        with open(workingdir+"/pacxx_integration.h", "w") as integration_header:
-            integration_header.write(data)
-    os.chdir(current_dir)
+        #compile the device code to llvm bitcode
+        print(" ".join(command))
+        call(command)
+        command = [ opt ] + ["-load=libPACXXTransforms.so", "-pacxx-codegen-prepare", "-inline", workingdir+"/kernel.bc", "-o", workingdir+"/kernel.bc"]
+        call(command)
+        #encode the kernel.bc file to a char array and include it into the integration header
+        current_dir = os.getcwd(); 
+        os.chdir(workingdir)
+        encoded = check_output(["xxd", "-i", "kernel.bc"]).rstrip();
+        with open(llvm_dir + "/include/pacxx/detail/ModuleIntegration.h", 'r') as include_header:
+            data = include_header.read().replace('##FILECONTENT##', encoded)
+            with open(workingdir+"/pacxx_integration.h", "w") as integration_header:
+                integration_header.write(data)
+        os.chdir(current_dir)
 
     #compile the host code with the integration header 
     command = [ clang ] + host_args + includes + argv[1:]
@@ -62,7 +77,7 @@ def main(argv):
     print(" ".join(command))   
 
     #cleanup 
-    shutil.rmtree(workingdir)
+    #shutil.rmtree(workingdir)
 
 if __name__ == "__main__":
     main(sys.argv)
