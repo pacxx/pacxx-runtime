@@ -124,7 +124,6 @@ const auto& __modules(const char *start, const char *end) {
 }
 
 void registerModule(const char *start, const char *end) {
-  __verbose("registered module from ", (void*) start);
   __modules(start, end);
 }
 
@@ -142,8 +141,6 @@ void initializeModule(Executor &exec) {
       M = loader.link(std::move(M), std::move(M2));
     }
   }
-
-  M->dump();
 
   exec.setModule(std::move(M));
 }

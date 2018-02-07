@@ -146,16 +146,15 @@ void kernelBody(L &&callable) {
 #endif
 }
 
-#ifdef __PACXX__
-#define PACXX_KERNEL __attribute__((global))
-#define PACXX_SHARED __attribute__((shared))
-#define PACXX_CONSTANT __attribute__((constant))
+#ifdef __device_code__
+#define PACXX_KERNEL [[pacxx::kernel]]
+#define PACXX_SHARED [[pacxx::shared]]
+#define PACXX_CONSTANT [[pacxx::constant]]
 #else 
 #define PACXX_KERNEL 
 #define PACXX_SHARED 
 #define PACXX_CONSTANT
 #endif
-
 
 template<typename L>
 PACXX_KERNEL void genericKernel(L callable) noexcept {
