@@ -64,8 +64,8 @@ def main(argv):
         includes = []
         libs = []
         workingdir = tempfile.mkdtemp()
-
-        llvm_dir = check_output(["llvm-config", "--prefix"]).rstrip();
+        pacxx_dir = os.path.dirname(os.path.realpath(__file__))
+        llvm_dir = check_output([pacxx_dir + "/llvm-config", "--prefix"]).rstrip();
 
         clang = llvm_dir + "/bin/clang++"
         opt = llvm_dir + "/bin/opt"
