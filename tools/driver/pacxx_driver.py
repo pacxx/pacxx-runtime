@@ -66,7 +66,8 @@ def main(argv):
         workingdir = tempfile.mkdtemp()
         pacxx_dir = os.path.dirname(os.path.realpath(__file__))
         llvm_dir = check_output([pacxx_dir + "/llvm-config", "--prefix"]).rstrip();
-
+        llvm_libs= check_output([pacxx_dir + "/llvm-config", "--libs"]).rstrip().split(" ");
+        sys_libs = check_output([pacxx_dir + "/llvm-config", "--system-libs"]).rstrip().split(" ");
         clang = llvm_dir + "/bin/clang++"
         opt = llvm_dir + "/bin/opt"
         nm = llvm_dir + "/bin/llvm-nm"
@@ -90,7 +91,7 @@ def main(argv):
         mode = 0 # 0 = compile and link | 1 = compile only
         
         if not "-c" in flags:
-            libs = libs + ["-Wl,--start-group", "-lpacxxrt2"]
+            libs = libs + ["-Wl,--start-group", "-lpacxxrt2"] + llvm_libs + sys_libs; 
             if os.path.exists(llvm_dir + "/lib/libPACXXBeROCm.so"):
                 libs = libs + ["-lPACXXBeROCm", "-lhsa-runtime64"]
             if os.path.exists(llvm_dir + "/lib/libPACXXBeCUDA.so"):
