@@ -69,6 +69,7 @@ def main(argv):
 
         clang = llvm_dir + "/bin/clang++"
         opt = llvm_dir + "/bin/opt"
+        nm = llvm_dir + "/bin/llvm-nm"
 
         includes, libs = lookup_dependency(llvm_dir, includes, libs)
         includes, libs = lookup_dependency("/usr/local/cuda", includes, libs, "64")
@@ -109,22 +110,26 @@ def main(argv):
                 header_name = workingdir+ "/" + filename_only + "_integration.h"
                 kernel_name = workingdir+ "/" + filename_only + "_kernel.bc"
                 object_name = workingdir+ "/" + filename_only + ".o"
-                dev_args = ["-std=c++17", "-pacxx", "-emit-llvm", "-c"]
+                dev_args = ["-pacxx", "-emit-llvm", "-c"]
 
                 #compile the device code to llvm bitcode
                 execute([ clang ] + dev_args + includes + args + [file] + ["-o", kernel_name])
                 execute([ opt ] + ["-load=libPACXXTransforms.so", "-pacxx-codegen-prepare", "-inline", kernel_name, "-o", kernel_name])
-
+                output = check_output([nm, kernel_name])
+                num_kernels = len(output.split('\n')) - 1
+                integration_header = []
+                if num_kernels:
                 #encode the kernel.bc file to a char array and include it into the integration header
-                encoded = xxd(kernel_name, "kernel");
-                with open(llvm_dir + "/include/pacxx/detail/ModuleIntegration.h", 'r') as include_header:
-                    data = include_header.read().replace('##FILECONTENT##', encoded)
-                    with open(header_name, "w") as integration_header:
-                        integration_header.write(data)
+                    encoded = xxd(kernel_name, "kernel");
+                    with open(llvm_dir + "/include/pacxx/detail/ModuleIntegration.h", 'r') as include_header:
+                        data = include_header.read().replace('##FILECONTENT##', encoded)
+                        with open(header_name, "w") as integration_header_file:
+                            integration_header_file.write(data)
+                    integration_header = ["--include", header_name]
 
                 #compile the host code with the integration header to an object file 
                 object_files.append(object_name)   
-                execute([ clang ] + ["--include", header_name] + includes + flags + [file, "-c", "-o", object_name])
+                execute([ clang ] + integration_header + includes + flags + [file, "-c", "-o", object_name])
     
             #compile objects to the desired output
             if mode == 0: 
