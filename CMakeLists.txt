@@ -336,9 +336,14 @@ install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/cmake/pacxx/ DESTINATION lib/cmake
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tools/driver/ DESTINATION bin)
 
 macro(install_symlink filepath sympath)
-    install(CODE "execute_process(COMMAND chmod +x ${filepath})")
     install(CODE "execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink ${filepath} ${sympath})")
     install(CODE "message(\"-- Created symlink: ${sympath} -> ${filepath}\")")
 endmacro(install_symlink)
 
-install_symlink(${CMAKE_INSTALL_PREFIX}/bin/pacxx_driver.py ${CMAKE_INSTALL_PREFIX}/bin/pacxx++)
+macro(install_symlink_exec filepath sympath)
+    install(CODE "execute_process(COMMAND chmod +x ${filepath})")
+    install_symlink(filepath sympath)
+endmacro(install_symlink_exec)
+
+install_symlink_exec(${CMAKE_INSTALL_PREFIX}/bin/pacxx_driver.py ${CMAKE_INSTALL_PREFIX}/bin/pacxx++)
+install_symlink(${CMAKE_INSTALL_PREFIX}/include/pacxx/PACXX.h ${CMAKE_INSTALL_PREFIX}/include/PACXX.h)

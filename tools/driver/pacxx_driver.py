@@ -122,7 +122,7 @@ def main(argv):
                 #encode the kernel.bc file to a char array and include it into the integration header
                     encoded = xxd(kernel_name, "kernel");
                     with open(llvm_dir + "/include/pacxx/detail/ModuleIntegration.h", 'r') as include_header:
-                        data = include_header.read().replace('##FILECONTENT##', encoded)
+                        data = include_header.read().replace('/*FILECONTENT*/', encoded)
                         with open(header_name, "w") as integration_header_file:
                             integration_header_file.write(data)
                     integration_header = ["--include", header_name]

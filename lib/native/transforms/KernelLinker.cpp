@@ -483,6 +483,7 @@ bool KernelLinker::isCorrectId(Instruction *inst, IdType id) {
   case Y:return inst->getMetadata("pacxx_read_tid_y") != nullptr;
   case Z:return inst->getMetadata("pacxx_read_tid_z") != nullptr;
   }
+  return false; 
 }
 
 void KernelLinker::markWrapperAsKernel(Module &M, Function *wrapper, bool vectorized) {

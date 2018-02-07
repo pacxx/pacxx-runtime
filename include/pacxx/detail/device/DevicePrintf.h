@@ -46,7 +46,8 @@ namespace nvidia {
 template <typename... Args> void printf(const char *str, Args... args) {
 #ifdef __device_code__
   std::tuple<typename extend_type<Args>::type..., int> tpl(args..., 0);
-  _printf(str, reinterpret_cast<void *>(&meta::reverse(tpl)));
+  auto rev = meta::reverse(tpl);
+  _printf(str, reinterpret_cast<void *>(&rev));
 #endif
 }
 } // namespace nvidia
