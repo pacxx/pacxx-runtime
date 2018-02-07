@@ -1,6 +1,6 @@
 #pragma once
 #include <vector>
-#include <memory>
+#include <cstddef>
 
 namespace llvm {
 	class Module;
@@ -13,6 +13,6 @@ namespace pacxx {
 		void registerModule(const char *start, const char *end);
 
 		void initializeModule(Executor& exec);
-		void initializeModule(Executor &exec, const char* ptr, size_t size);
+		void initializeModule(Executor &exec, const char* ptr, std::size_t size);
 	}
 }

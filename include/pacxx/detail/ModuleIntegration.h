@@ -12,5 +12,5 @@ namespace {
         }
     };
 
-    static __module_registrator __reger(kernel_bc, kernel_bc_len);
+    static __module_registrator __reger(kernel, kernel_len);
 }

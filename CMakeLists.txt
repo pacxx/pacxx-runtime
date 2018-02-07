@@ -333,3 +333,16 @@ install(TARGETS pacxx_main DESTINATION lib)
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/lib/asm/ DESTINATION lib)
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/ DESTINATION include)
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/cmake/pacxx/ DESTINATION lib/cmake/pacxx)
+#install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tools/driver/ DESTINATION bin)
+
+file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/tools/driver/pacxx_driver.py
+  DESTINATION ${CMAKE_INSTALL_PREFIX}/bin
+  FILE_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ
+  GROUP_EXECUTE WORLD_READ WORLD_EXECUTE) 
+
+macro(install_symlink filepath sympath)
+    install(CODE "execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink ${filepath} ${sympath})")
+    install(CODE "message(\"-- Created symlink: ${sympath} -> ${filepath}\")")
+endmacro(install_symlink)
+
+install_symlink(${CMAKE_INSTALL_PREFIX}/bin/pacxx_driver.py ${CMAKE_INSTALL_PREFIX}/bin/pacxx++)
