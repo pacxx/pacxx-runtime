@@ -342,7 +342,7 @@ endmacro(install_symlink)
 
 macro(install_symlink_exec filepath sympath)
     install(CODE "execute_process(COMMAND chmod +x ${filepath})")
-    install_symlink(filepath sympath)
+    install_symlink(${filepath} ${sympath})
 endmacro(install_symlink_exec)
 
 install_symlink_exec(${CMAKE_INSTALL_PREFIX}/bin/pacxx_driver.py ${CMAKE_INSTALL_PREFIX}/bin/pacxx++)

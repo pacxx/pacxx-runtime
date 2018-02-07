@@ -73,9 +73,9 @@ def main(argv):
 
         includes, libs = lookup_dependency(llvm_dir, includes, libs)
         includes, libs = lookup_dependency("/usr/local/cuda", includes, libs, "64")
+        includes, libs = lookup_dependency("/usr/local/cuda/extras/CUPTI", includes, libs, "64")
         includes, libs = lookup_dependency("/opt/rocm", includes, libs)
-
-
+        
         input_files = [];
         for s in argv:
             if s.endswith(".cpp"):
@@ -90,7 +90,12 @@ def main(argv):
         mode = 0 # 0 = compile and link | 1 = compile only
         
         if not "-c" in flags:
-            libs = libs + ["-Wl,--start-group", "-lcudart", "-lpacxxrt2", "-lPACXXBeROCm", "-lhsa-runtime64", "-lPACXXBeCUDA", "-lcuda",  "-Wl,--end-group"]
+            libs = libs + ["-Wl,--start-group", "-lpacxxrt2"]
+            if os.path.exists(llvm_dir + "/lib/libPACXXBeROCm.so"):
+                libs = libs + ["-lPACXXBeROCm", "-lhsa-runtime64"]
+            if os.path.exists(llvm_dir + "/lib/libPACXXBeCUDA.so"):
+                libs = libs + ["-lPACXXBeCUDA","-lcudart", "-lcuda", "-lcupti"]
+            libs = libs + ["-Wl,--end-group"]
         else:
             mode = 1 # compile only
 
