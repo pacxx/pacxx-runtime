@@ -91,7 +91,7 @@ def main(argv):
         mode = 0 # 0 = compile and link | 1 = compile only
         
         if not "-c" in flags:
-            libs = libs + ["-Wl,--start-group", "-lpacxxrt2"] + llvm_libs + sys_libs; 
+            libs = libs + ["-Wl,--start-group", "-lpacxxrt2", "-lPACXXTransforms", "-lRV"] + llvm_libs + sys_libs; 
             if os.path.exists(llvm_dir + "/lib/libPACXXBeROCm.so"):
                 libs = libs + ["-lPACXXBeROCm", "-lhsa-runtime64"]
             if os.path.exists(llvm_dir + "/lib/libPACXXBeCUDA.so"):
