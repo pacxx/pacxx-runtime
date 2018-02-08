@@ -12,6 +12,8 @@ if (EXISTS /opt/rocm)
 set (ROCM_DIR /opt/rocm)
 endif()
 
+find_file(ASIO_HEADER asio.hpp PATHS /usr/include)
+
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 include_directories(${LLVM_INCLUDE_DIRS})
@@ -41,6 +43,7 @@ endif ()
 option(PACXX_USE_OpenMP "use OpenMP instead of TBB" ${ENABLE_OPENMP})
 option(PACXX_USE_CUDA "Build the CUDA backend" ${CUDA_FOUND})
 option(PACXX_USE_HIP "Build the ROCM/HIP backend" ${HIP_FOUND})
+option(PACXX_USE_REMOTE "Build the remote backend" OFF)
 
 if(PACXX_USE_OpenMP)
     add_compile_options(-fopenmp)
@@ -155,16 +158,20 @@ set(HIP_REQUIRED OFF)
 set(PACXX_HIP_BACKEND 0)
 endif (PACXX_USE_HIP)
 
-find_file(ASIO_HEADER asio.hpp PATHS /usr/include)
 
-if (EXISTS ${ASIO_HEADER})
-    set(REMOTE_SOURCE_FILES
-        lib/remote/RemoteRuntime.cpp
-        lib/remote/RemoteKernel.cpp
-        lib/remote/RemoteDeviceBuffer.cpp
-        lib/remote/RemoteEvent.cpp)
+if (PACXX_USE_REMOTE)
+    set(PACXX_REMOTE_BACKEND 1)
+    if (EXISTS ${ASIO_HEADER})
+        set(REMOTE_SOURCE_FILES
+            lib/remote/RemoteRuntime.cpp
+            lib/remote/RemoteKernel.cpp
+            lib/remote/RemoteDeviceBuffer.cpp
+            lib/remote/RemoteEvent.cpp)
+    else()
+        message(FATAL_ERROR "ASIO not found")
+    endif()
 else()
-    message(FATAL_ERROR "ASIO not found")
+    set(PACXX_REMOTE_BACKEND 0)
 endif()
 
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config/config.h.in ${CMAKE_CURRENT_SOURCE_DIR}/include/pacxx/pacxx_config.h)

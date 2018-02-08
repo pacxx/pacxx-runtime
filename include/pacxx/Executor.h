@@ -28,11 +28,7 @@
 #endif
 #include "pacxx/detail/Event.h"
 #include "pacxx/detail/codegen/Kernel.h"
-#include "pacxx/detail/cuda/CUDAEvent.h" // TODO: move event create to the runtimes
-#include "pacxx/detail/native/NativeEvent.h"
 #include "pacxx/detail/native/NativeRuntime.h"
-#include "pacxx/detail/remote/RemoteEvent.h"
-#include "pacxx/detail/rocm/HIPEvent.h" // TODO: move event create to the runtimes
 #include <algorithm>
 #include <cstdlib>
 #include <memory>
@@ -57,10 +53,6 @@ using Runtime = pacxx::v2::CUDARuntime;
 namespace pacxx {
 namespace v2 {
 
-const char *__moduleStart(const char *start = nullptr);
-
-const char *__moduleEnd(const char *end = nullptr);
-
 class Executor;
 
 enum ExecutingDevice { GPUNvidia, CPU, GPUAMD };
@@ -79,13 +71,13 @@ public:
   static Executor &get(unsigned id = 0) {
     auto &executors = getExecutors();
     if (executors.empty()) {
-      CreateDefalt();
+      CreateDefault();
     }
     return executors[id];
   }
 
 private:
-  static Executor &CreateDefalt() {
+  static Executor &CreateDefault() {
     int runtime = 0;
     auto str = common::GetEnv("PACXX_DEFAULT_RT");
     if (str != "") {
@@ -159,15 +151,15 @@ public:
 
   template <typename L, pacxx::v2::Target targ = pacxx::v2::Target::Generic>
   void launch(L callable, KernelConfiguration config) {
-    pacxx::v2::codegenKernel<L, targ>(callable);
-    run(callable, config);
+    auto kern = pacxx::v2::codegenKernel<L, targ>(callable);
+    run(kern.name, callable, config);
   }
 
   template <typename L, pacxx::v2::Target targ = pacxx::v2::Target::Generic>
   auto launch(L callable, KernelConfiguration config, std::promise<void>& promise) {
-    pacxx::v2::codegenKernel<L, targ>(callable);
+    auto kern = pacxx::v2::codegenKernel<L, targ>(callable);
     auto future = promise.get_future();
-    run_with_callback(callable, config, [&] () mutable{
+    run_with_callback(kern.name, callable, config, [&] () mutable{
       promise.set_value();
     });
     return future;
@@ -177,8 +169,8 @@ public:
             typename CB>
   void launch_with_callback(L callable, KernelConfiguration config,
                             CB &&callback) {
-    pacxx::v2::codegenKernel<L, targ>(callable);
-    run_with_callback(callable, config, callback);
+    auto kern = pacxx::v2::codegenKernel<L, targ>(callable);
+    run_with_callback(kern.name, callable, config, callback);
   }
 
   template <typename T> auto getVectorizationWidth() {
@@ -198,18 +190,18 @@ public:
 private:
   void setModule(std::unique_ptr<llvm::Module> M);
 
-  template <typename L> void run(const L &lambda, KernelConfiguration config) {
+  template <typename L> void run(std::string name, const L &lambda, KernelConfiguration config) {
     // auto& dev_lambda = _mem_manager.getTemporaryLambda(lambda);
-    auto &K = get_kernel_by_name(typeid(L).name(), config, lambda);
+    auto &K = get_kernel_by_name(name, config, lambda);
     enshadowArgs();
     K.profile();
     K.launch();
   }
 
   template <typename L, typename CallbackFunc, typename... Args>
-  void run_with_callback(const L &lambda, KernelConfiguration config,
+  void run_with_callback(std::string name, const L &lambda, KernelConfiguration config,
                          CallbackFunc &&cb, Args &&... args) {
-    auto &K = get_kernel_by_name(typeid(L).name(), config, lambda,
+    auto &K = get_kernel_by_name(name, config, lambda,
                                  std::forward<Args>(args)...);
     enshadowArgs();
     K.profile();
@@ -224,7 +216,7 @@ private:
   }
 
   Kernel &get_kernel_by_name(std::string name, KernelConfiguration config,
-                          const void* args, size_t size, bool force_name = false);
+                          const void* args, size_t size);
 
 public:
   template <typename T>
@@ -262,7 +254,6 @@ public:
 
   template <typename PromisedTy>
   void forgetPromise(BindingPromise<PromisedTy> &instance) {
-
     delete &instance;
   }
 
@@ -278,38 +269,13 @@ public:
     __verbose("Args restored");
   }
 
-  Event &createEvent() {
-    // FIXME
-    _events.emplace_back();
-    auto &event = _events.back();
-    switch (_runtime->getKind()) {
-#ifdef PACXX_ENABLE_CUDA
-    case Runtime::RuntimeKind::RK_CUDA:
-      event.reset(new CUDAEvent());
-      break;
-#endif
-    case Runtime::RuntimeKind::RK_Native:
-      event.reset(new NativeEvent());
-      break;
-#ifdef PACXX_ENABLE_HIP
-    case Runtime::RuntimeKind::RK_HIP:
-      event.reset(new HIPEvent());
-      break;
-#endif
-    case Runtime::RuntimeKind::RK_Remote:
-      event.reset(new RemoteEvent());
-      break;
-    }
-    return *event;
+  std::unique_ptr<Event> createEvent() {
+    return _runtime->createEvent();
   }
 
 private:
-  std::string getFNameForLambda(std::string name);
-
   std::unique_ptr<llvm::LLVMContext> _ctx;
   std::unique_ptr<Runtime> _runtime;
-  std::map<std::string, std::string> _kernel_translation;
-  std::vector<std::unique_ptr<Event>> _events;
   unsigned _id;
 };
 

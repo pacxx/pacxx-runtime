@@ -9,7 +9,10 @@
 
 #include "pacxx/detail/Kernel.h"
 #include "pacxx/detail/Runtime.h"
+#include "pacxx/detail/native/NativeEvent.h"
+#include <memory>
 #include <llvm/IR/Module.h>
+
 namespace pacxx {
 namespace v2 {
 
@@ -54,5 +57,11 @@ void Runtime::restoreMemory() {
 }
 
 const llvm::Module &Runtime::getModule() { return *_rawM; }
+
+std::unique_ptr<Event> Runtime::createEvent(){
+  __verbose("Runtime does not override Event creation using NativeEvent with host side timers!");
+  return std::unique_ptr<Event>(new NativeEvent());
+}
+
 }
 }

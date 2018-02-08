@@ -140,10 +140,8 @@ public:
 
 template<typename L>
 void kernelBody(L &&callable) {
-#ifdef __device_code__
   pacxx::v2::range thread;
   callable(thread);
-#endif
 }
 
 #ifdef __device_code__
@@ -157,8 +155,14 @@ void kernelBody(L &&callable) {
 #endif
 
 template<typename L>
-PACXX_KERNEL void genericKernel(L callable) noexcept {
-  kernelBody(callable);
+PACXX_KERNEL void genericKernel(L callable, const char** name) noexcept {
+  #ifdef __device_code__
+    kernelBody(callable);
+  #else
+    #ifdef __PACXX__
+      *name = __PACXX_FUNCTION__;
+    #endif
+  #endif
 }
 
 
@@ -168,10 +172,11 @@ public:
 
   _kernel(L lambda)
       : _function(std::forward<L>(lambda)) {
-      genericKernel(_function);
+      genericKernel(_function, &name);
   }
 
   L _function;
+  const char* name;
 };
 
 

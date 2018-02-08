@@ -488,11 +488,9 @@ bool KernelLinker::isCorrectId(Instruction *inst, IdType id) {
 
 void KernelLinker::markWrapperAsKernel(Module &M, Function *wrapper, bool vectorized) {
   LLVMContext &ctx = M.getContext();
-  NamedMDNode *MD = M.getOrInsertNamedMetadata("nvvm.anntations");
-  SmallVector < Metadata * , 3 > MDVals;
+  NamedMDNode *MD = M.getOrInsertNamedMetadata("pacxx.kernel");
+  SmallVector < Metadata * , 1 > MDVals;
   MDVals.push_back(ConstantAsMetadata::get(wrapper));
-  MDVals.push_back(MDString::get(ctx, "kernel"));
-  MDVals.push_back(ConstantAsMetadata::get(ConstantInt::get(Type::getInt32Ty(ctx), 1)));
 
   if (vectorized)
     wrapper->addFnAttr("simd-size", to_string(_vectorWidth));

@@ -13,6 +13,7 @@
 #include "DeviceBuffer.h"
 #include "Kernel.h"
 #include "Profiler.h"
+#include "Event.h"
 #include "pacxx/detail/msp/MSPEngine.h"
 #include "pacxx/detail/common/Exceptions.h"
 #include "pacxx/pacxx_config.h"
@@ -77,6 +78,8 @@ public:
   virtual void evaluateStagedFunctions(Kernel &K);
 
   virtual void requestIRTransformation(Kernel &K) = 0;
+
+  virtual std::unique_ptr<Event> createEvent();
 
   virtual const llvm::Module &getModule();
 

@@ -12,6 +12,7 @@
 #include "pacxx/detail/common/ExecutorHelper.h"
 #include <llvm/IR/Module.h>
 #include <llvm/Target/TargetMachine.h>
+#include <llvm/Demangle/Demangle.h>
 
 using namespace llvm;
 
@@ -34,17 +35,12 @@ Executor::Executor(Executor &&other) {
   _ctx = std::move(other._ctx);
   _runtime = std::move(other._runtime);
   _id = other._id;
-  _kernel_translation = std::move(other._kernel_translation);
 }
 
 Executor::~Executor() { __verbose("destroying executor ", _id); }
 
 void Executor::setModule(std::unique_ptr<llvm::Module> M) {
   _runtime->link(std::move(M));
-
-  auto &nM = _runtime->getModule();
-  for (auto &F : nM.getFunctionList())
-    _kernel_translation[cleanName(F.getName().str())] = F.getName().str();
 }
 
 Executor &get_executor(unsigned id) { return Executor::get(id); }
@@ -94,28 +90,6 @@ Runtime &Executor::rt() { return *_runtime; }
 
 void Executor::synchronize() { _runtime->synchronize(); }
 
-std::string Executor::getFNameForLambda(std::string name) {
-  std::string FName;
-  const llvm::Module &M = _runtime->getModule();
-  auto it = _kernel_translation.find(name);
-  if (it == _kernel_translation.end()) {
-    auto clean_name = cleanName(name);
-    for (auto &p : _kernel_translation)
-      if (p.first.find(clean_name) != std::string::npos) {
-        FName = p.second;
-        //_kernel_translation[name] = F.getName().str();
-      }
-  } else
-    FName = it->second;
-
-  auto F = M.getFunction(FName);
-  if (!F) {
-    throw common::generic_exception("Kernel function not found in module! " +
-                                    cleanName(name));
-  }
-  return FName;
-}
-
 const auto& __modules(const char *start, const char *end) {
   static std::vector<std::pair<const char *, const char*>> ptrs;
   if (start && end)
@@ -151,12 +125,24 @@ void initializeModule(Executor &exec, const char *ptr, size_t size) {
   exec.setModule(std::move(M));
 }
 
+static std::string demangle(llvm::StringRef Name) {
+  int Status;
+  char *Undecorated =
+      itaniumDemangle(Name.str().c_str(), nullptr, nullptr, &Status);
+  if (Status != 0)
+    return "not demangled";
+
+  std::string S(Undecorated);
+  free(Undecorated);
+  return S;
+}
+
+
 Kernel &Executor::get_kernel_by_name(std::string name,
                                      KernelConfiguration config,
-                                     const void *args, size_t size,
-                                     bool force_name) {
-  if (!force_name)
-    name = getFNameForLambda(name);
+                                     const void *args, size_t size) {
+  __verbose("launching: ", name, "\n", 
+            "   a.k.a.: ", demangle(name));
 
   Kernel &K = _runtime->getKernel(name);
 
