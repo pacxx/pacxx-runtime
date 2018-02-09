@@ -70,9 +70,9 @@ class Context:
     def llvm_config(self):
         self.workingdir = tempfile.mkdtemp()
         self.pacxx_dir = os.path.dirname(os.path.realpath(__file__))
-        self.llvm_dir = check_output([self.pacxx_dir + "/llvm-config", "--prefix"]).rstrip()
-        self.llvm_libs= check_output([self.pacxx_dir + "/llvm-config", "--libs"]).rstrip().split(" ")
-        self.sys_libs = check_output([self.pacxx_dir + "/llvm-config", "--system-libs"]).rstrip().split(" ")
+        self.llvm_dir = check_output([self.pacxx_dir + "/llvm-config", "--prefix"]).decode("utf-8").rstrip()
+        self.llvm_libs= check_output([self.pacxx_dir + "/llvm-config", "--libs"]).decode("utf-8").rstrip().split(" ")
+        self.sys_libs = check_output([self.pacxx_dir + "/llvm-config", "--system-libs"]).decode("utf-8").rstrip().split(" ")
         self.clang = self.llvm_dir + "/bin/clang++"
         self.opt = self.llvm_dir + "/bin/opt"
         self.nm = self.llvm_dir + "/bin/llvm-nm"
@@ -161,13 +161,18 @@ class Context:
             elif self.mode == 1: 
                 shutil.copyfile(object_files[0], original_output)
         else:
-            execute([ self.clang ] + self.includes + self.flags + self.libs)
+            if len(self.flags) > 0:
+                execute([ self.clang ] + self.includes + self.flags + self.libs)
+            else:
+                execute([ self.clang ])
 
 def main(argv):
     ctx = Context()
     try:
         ctx.parse_args(argv)
         ctx.compile()
+    except KeyboardInterrupt:
+        pass
     finally:
         del ctx
 
