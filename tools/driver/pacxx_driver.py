@@ -98,7 +98,7 @@ class Context:
             self.libs.append("-L")
             self.libs.append(path + "/lib" + (suffix or ''))
             self.libs.append("-Wl,-rpath")
-            self.libs.append("-Wl," + path + "/lib")
+            self.libs.append("-Wl," + path + "/lib" + (suffix or ''))
     
     def parse_args(self, args):
         for s in args:
