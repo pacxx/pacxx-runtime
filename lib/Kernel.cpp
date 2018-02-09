@@ -63,7 +63,7 @@ bool Kernel::requireStaging() { return !_disable_staging; }
 
 void Kernel::profile() {
   if (auto ptr = _runtime.getProfiler()) {
-    auto profiler = *ptr;
+    auto& profiler = *ptr;
     if (!profiler.enabled())
       return;
     profiler.updateKernel(this);

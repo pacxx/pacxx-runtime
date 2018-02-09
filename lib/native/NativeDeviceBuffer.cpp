@@ -33,24 +33,24 @@ NativeRawDeviceBuffer::NativeRawDeviceBuffer(size_t size, unsigned padding, Nati
   if (!_buffer)
     throw new common::generic_exception("buffer allocation failed");
   __debug("Allocating ", _size, "b");
-  if (_runtime->getProfiler()->enabled())
-  {
-    count_shadow = _size;
-    src_shadow = new char[_size];
-  }
+  if (auto profiler = _runtime->getProfiler())
+    if (profiler->enabled()) {
+      count_shadow = _size;
+      src_shadow = new char[_size];
+    }
 }
 
 NativeRawDeviceBuffer::~NativeRawDeviceBuffer() {
   __verbose("deleting buffer");
   if (_buffer) {
     free(_buffer);
-    if (_runtime->getProfiler()->enabled())
-    {
-      if (src_shadow) delete[] src_shadow;
-      else __warning("(decon)shadow double clean");
-      offset_shadow = 0;
-      count_shadow = 0;
-    }
+    if (auto profiler = _runtime->getProfiler())
+      if (profiler->enabled()) {
+        if (src_shadow) delete[] src_shadow;
+        else __warning("(decon)shadow double clean");
+        offset_shadow = 0;
+        count_shadow = 0;
+      }
   }
 }
 

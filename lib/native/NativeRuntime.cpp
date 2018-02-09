@@ -31,15 +31,16 @@ NativeRuntime::NativeRuntime(unsigned)
     : Runtime(RuntimeKind::RK_Native), _compiler(std::make_unique<CompilerT>()), _delayed_compilation(false) {
       #ifdef PACXX_ENABLE_PAPI
       _profiler.reset(new PAPIProfiler());
-      #else 
-      _profiler.reset(new Profiler());
       #endif
-      _profiler->preinit(nullptr);
-      _profiler->postinit(nullptr);
+      if (_profiler){
+        _profiler->preinit(nullptr);
+        _profiler->postinit(nullptr);
+      }
 }
 
 NativeRuntime::~NativeRuntime() {
-  if (_profiler->enabled()) _profiler->report();
+  if (_profiler && _profiler->enabled()) 
+    _profiler->report();
 }
 
 void NativeRuntime::link(std::unique_ptr<llvm::Module> M) {

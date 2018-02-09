@@ -17,7 +17,6 @@ namespace pacxx {
 namespace v2 {
 
 Runtime::Runtime(RuntimeKind kind) : _kind(kind), _msp_engine() {
-  _profiler.reset(new Profiler());
 }
 
 Runtime::~Runtime(){}
@@ -37,7 +36,7 @@ void Runtime::evaluateStagedFunctions(Kernel &K) {
 }
 
 void Runtime::enshadowMemory() {
-  if (_profiler->enabled())
+  if (_profiler && _profiler->enabled())
   {
     for (std::unique_ptr<DeviceBufferBase<void>>& entry : _memory) {
       if (entry)
@@ -47,7 +46,7 @@ void Runtime::enshadowMemory() {
 }
 
 void Runtime::restoreMemory() {
-  if (_profiler->enabled())
+  if (_profiler && _profiler->enabled())
   {
     for (std::unique_ptr<DeviceBufferBase<void>>& entry : _memory) {
       if (entry)
