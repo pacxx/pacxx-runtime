@@ -10,9 +10,9 @@
 #include "pacxx/Executor.h"
 #include "pacxx/ModuleLoader.h"
 #include "pacxx/detail/common/ExecutorHelper.h"
+#include <llvm/Demangle/Demangle.h>
 #include <llvm/IR/Module.h>
 #include <llvm/Target/TargetMachine.h>
-#include <llvm/Demangle/Demangle.h>
 
 using namespace llvm;
 
@@ -90,8 +90,8 @@ Runtime &Executor::rt() { return *_runtime; }
 
 void Executor::synchronize() { _runtime->synchronize(); }
 
-const auto& __modules(const char *start, const char *end) {
-  static std::vector<std::pair<const char *, const char*>> ptrs;
+const auto &__modules(const char *start, const char *end) {
+  static std::vector<std::pair<const char *, const char *>> ptrs;
   if (start && end)
     ptrs.push_back(std::make_pair(start, end));
   return ptrs;
@@ -103,11 +103,11 @@ void registerModule(const char *start, const char *end) {
 
 void initializeModule(Executor &exec) {
   ModuleLoader loader(exec.getLLVMContext());
-  
+
   auto ptrs = __modules(nullptr, nullptr);
   std::unique_ptr<llvm::Module> M;
 
-  for (auto p : ptrs){  
+  for (auto p : ptrs) {
     if (!M)
       M = loader.loadInternal(p.first, p.second - p.first);
     else {
@@ -137,12 +137,10 @@ static std::string demangle(llvm::StringRef Name) {
   return S;
 }
 
-
 Kernel &Executor::get_kernel_by_name(std::string name,
                                      KernelConfiguration config,
                                      const void *args, size_t size) {
-  __verbose("launching: ", name, "\n", 
-            "   a.k.a.: ", demangle(name));
+  __verbose("launching: ", name, "\n", "   a.k.a.: ", demangle(name));
 
   Kernel &K = _runtime->getKernel(name);
 

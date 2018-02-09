@@ -12,15 +12,15 @@
 #include "pacxx/detail/cuda/CUDAErrorDetection.h"
 #include "pacxx/detail/cuda/CUDARuntime.h"
 #include "pacxx/detail/cuda/CUPTIProfiler.h"
+#include <cuda.h>
 #include <llvm/IR/Module.h>
 #include <llvm/Target/TargetMachine.h>
-#include <cuda.h>
 
 namespace pacxx {
 namespace v2 {
 
 CUDAKernel::CUDAKernel(CUDARuntime &runtime, CUfunction fptr, std::string name)
-    : Kernel(runtime, name), _runtime(runtime), _fptr(fptr) {}
+    : Kernel(runtime, name), _fptr(fptr) {}
 
 CUDAKernel::~CUDAKernel() {}
 
@@ -41,10 +41,6 @@ void CUDAKernel::configurate(KernelConfiguration config) {
   }
 }
 
-CUDARuntime &CUDAKernel::getRuntime() {
-	return _runtime;
-}
-
 void CUDAKernel::launch() {
   if (!_fptr || _staged_values_changed) { // kernel has no function ptr yet.
                                           // request kernel transformation and
@@ -56,7 +52,7 @@ void CUDAKernel::launch() {
   __verbose("setting kernel arguments");
   _launch_args.clear(); // remove old args first
   _launch_args.push_back(CU_LAUNCH_PARAM_BUFFER_POINTER);
-  _launch_args.push_back(const_cast<void*>(_lambdaPtr));
+  _launch_args.push_back(const_cast<void *>(_lambdaPtr));
   _launch_args.push_back(CU_LAUNCH_PARAM_BUFFER_SIZE);
   _launch_args.push_back(reinterpret_cast<void *>(&_argBufferSize));
   _launch_args.push_back(CU_LAUNCH_PARAM_END);
@@ -76,13 +72,5 @@ void CUDAKernel::launch() {
                                         &_callback, 0));
 }
 
-void CUDAKernel::profile() {
-  CUPTIProfiler* ptr = static_cast<CUPTIProfiler*>(_runtime.getProfiler());
-  if (!ptr->enabled()) return;
-  ptr->updateKernel(this);
-  ptr->dryrun();
-  ptr->profile();
-}
-
-}
-}
+} // namespace v2
+} // namespace pacxx

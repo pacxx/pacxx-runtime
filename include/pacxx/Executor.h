@@ -13,9 +13,9 @@
 #include "Promise.h"
 #include "pacxx/detail/CoreInitializer.h"
 #include "pacxx/detail/DeviceBuffer.h"
-#include "pacxx/detail/Runtime.h"
 #include "pacxx/detail/KernelArgument.h"
 #include "pacxx/detail/KernelConfiguration.h"
+#include "pacxx/detail/Runtime.h"
 #include "pacxx/detail/common/Exceptions.h"
 #include "pacxx/detail/common/Log.h"
 #include "pacxx/detail/common/TearDown.h"
@@ -64,7 +64,7 @@ Executor &get_executor(Ts... args);
 class Executor {
 public:
   friend void initializeModule(Executor &exec);
-  friend void initializeModule(Executor &exec, const char* ptr, size_t size);
+  friend void initializeModule(Executor &exec, const char *ptr, size_t size);
 
   static std::vector<Executor> &getExecutors();
 
@@ -87,9 +87,9 @@ private:
     switch (runtime) {
     case 2: // HIP Runtime
 #ifdef PACXX_ENABLE_HIP
-      try{
+      try {
         return Create<HIPRuntime>(0);
-      } catch(...) {
+      } catch (...) {
         __verbose("No ROCm Device found: Using Fallback to CUDARuntime for "
                   "GPU execution as default Executor");
       }
@@ -100,7 +100,7 @@ private:
 #ifdef PACXX_ENABLE_CUDA
       try {
         return Create<CUDARuntime>(0);
-      } catch(...) {
+      } catch (...) {
         __verbose("No CUDA Device found: Using Fallback to NativeRuntime for "
                   "CPU execution as default Executor");
       }
@@ -128,12 +128,11 @@ public:
 
     instance._id = executors.size() - 1;
     __verbose("Created new Executor with id: ", instance.getID());
-    try{
-	  initializeModule(instance);
-    }
-    catch(common::generic_exception ex){
+    try {
+      initializeModule(instance);
+    } catch (common::generic_exception ex) {
       __exception(ex.what());
-      __error("Module initialization failed!"); 
+      __error("Module initialization failed!");
     }
     return instance;
   }
@@ -156,12 +155,12 @@ public:
   }
 
   template <typename L, pacxx::v2::Target targ = pacxx::v2::Target::Generic>
-  auto launch(L callable, KernelConfiguration config, std::promise<void>& promise) {
+  auto launch(L callable, KernelConfiguration config,
+              std::promise<void> &promise) {
     auto kern = pacxx::v2::codegenKernel<L, targ>(callable);
     auto future = promise.get_future();
-    run_with_callback(kern.name, callable, config, [&] () mutable{
-      promise.set_value();
-    });
+    run_with_callback(kern.name, callable, config,
+                      [&]() mutable { promise.set_value(); });
     return future;
   }
 
@@ -181,7 +180,8 @@ public:
 
   ExecutingDevice getExecutingDeviceType();
 
-  void run_by_name(std::string name, const void* args, size_t size, KernelConfiguration config) {
+  void run_by_name(std::string name, const void *args, size_t size,
+                   KernelConfiguration config) {
     // auto& dev_lambda = _mem_manager.getTemporaryLambda(lambda);
     auto &K = get_kernel_by_name(name, config, args, size);
     K.launch();
@@ -190,7 +190,8 @@ public:
 private:
   void setModule(std::unique_ptr<llvm::Module> M);
 
-  template <typename L> void run(std::string name, const L &lambda, KernelConfiguration config) {
+  template <typename L>
+  void run(std::string name, const L &lambda, KernelConfiguration config) {
     // auto& dev_lambda = _mem_manager.getTemporaryLambda(lambda);
     auto &K = get_kernel_by_name(name, config, lambda);
     enshadowArgs();
@@ -199,10 +200,11 @@ private:
   }
 
   template <typename L, typename CallbackFunc, typename... Args>
-  void run_with_callback(std::string name, const L &lambda, KernelConfiguration config,
-                         CallbackFunc &&cb, Args &&... args) {
-    auto &K = get_kernel_by_name(name, config, lambda,
-                                 std::forward<Args>(args)...);
+  void run_with_callback(std::string name, const L &lambda,
+                         KernelConfiguration config, CallbackFunc &&cb,
+                         Args &&... args) {
+    auto &K =
+        get_kernel_by_name(name, config, lambda, std::forward<Args>(args)...);
     enshadowArgs();
     K.profile();
     K.setCallback(std::move(cb));
@@ -211,31 +213,32 @@ private:
 
   template <typename L>
   Kernel &get_kernel_by_name(std::string name, KernelConfiguration config,
-                           const L &lambda) {
+                             const L &lambda) {
     return get_kernel_by_name(name, config, &lambda, sizeof(L));
   }
 
   Kernel &get_kernel_by_name(std::string name, KernelConfiguration config,
-                          const void* args, size_t size);
+                             const void *args, size_t size);
 
 public:
   template <typename T>
-  DeviceBuffer<T> &allocate(size_t count, MemAllocMode mode = MemAllocMode::Standard) {
+  DeviceBuffer<T> &allocate(size_t count,
+                            MemAllocMode mode = MemAllocMode::Standard) {
     __verbose("allocating memory: ", sizeof(T) * count);
 
     if (mode == MemAllocMode::Unified)
-      if(!_runtime->supportsUnifiedAddressing())
+      if (!_runtime->supportsUnifiedAddressing())
         throw std::bad_alloc();
 
     return *_runtime->allocateMemory<T>(count, mode);
   }
 
-  template <typename T> void free(T* ptr) {
-      _runtime->template deleteMemory(_runtime->template translateMemory(ptr));
+  template <typename T> void free(T *ptr) {
+    _runtime->template deleteMemory(_runtime->template translateMemory(ptr));
   }
 
   template <typename T> void free(DeviceBuffer<T> &buffer) {
-      _runtime->template deleteMemory(&buffer);
+    _runtime->template deleteMemory(&buffer);
   }
 
   bool supportsDoublePrecission() {
@@ -269,9 +272,7 @@ public:
     __verbose("Args restored");
   }
 
-  std::unique_ptr<Event> createEvent() {
-    return _runtime->createEvent();
-  }
+  std::unique_ptr<Event> createEvent() { return _runtime->createEvent(); }
 
 private:
   std::unique_ptr<llvm::LLVMContext> _ctx;

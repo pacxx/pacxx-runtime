@@ -7,36 +7,31 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "pacxx/detail/common/Log.h"
 #include "pacxx/detail/Kernel.h"
 #include "pacxx/detail/KernelConfiguration.h"
 #include "pacxx/detail/Runtime.h"
+#include "pacxx/detail/common/Log.h"
 #include <llvm/IR/Module.h>
 
 namespace pacxx {
 namespace v2 {
 
 Kernel::Kernel(Runtime &runtime, std::string name)
-    : _runtime_ref(runtime), _staged_values_changed(false),
-      _name(name),_disable_staging(false) {
-  auto &M = _runtime_ref.getModule();
+    : _runtime(runtime), _staged_values_changed(false), _name(name),
+      _disable_staging(false) {
+  auto &M = _runtime.getModule();
   auto F = M.getFunction(_name);
   size_t offset = 0;
-  std::for_each(F->arg_begin(), F->arg_end(),
-                [&](const auto &arg) {
-                  auto arg_size =
-                      M.getDataLayout().getTypeAllocSize(arg.getType());
-                  auto arg_alignment =
-                      M.getDataLayout().getPrefTypeAlignment(arg.getType());
+  std::for_each(F->arg_begin(), F->arg_end(), [&](const auto &arg) {
+    auto arg_size = M.getDataLayout().getTypeAllocSize(arg.getType());
+    auto arg_alignment = M.getDataLayout().getPrefTypeAlignment(arg.getType());
 
-                  auto arg_offset =
-                      (offset + arg_alignment - 1) & ~(arg_alignment - 1);
+    auto arg_offset = (offset + arg_alignment - 1) & ~(arg_alignment - 1);
 
-                  offset = arg_offset + arg_size;
-                  _argBufferSize = offset;
-                  return arg_offset;
-                });
-
+    offset = arg_offset + arg_size;
+    _argBufferSize = offset;
+    return arg_offset;
+  });
 }
 
 KernelConfiguration Kernel::getConfiguration() const { return _config; }
@@ -66,5 +61,16 @@ void Kernel::disableStaging() { _disable_staging = true; }
 
 bool Kernel::requireStaging() { return !_disable_staging; }
 
+void Kernel::profile() {
+  if (auto ptr = _runtime.getProfiler()) {
+    auto profiler = *ptr;
+    if (!profiler.enabled())
+      return;
+    profiler.updateKernel(this);
+    profiler.dryrun();
+    profiler.profile();
+  }
 }
-}
+
+} // namespace v2
+} // namespace pacxx

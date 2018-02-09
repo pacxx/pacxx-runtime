@@ -9,10 +9,10 @@
 
 #define PACXX_PASS_NAME "KernelLinker"
 
-#include <llvm/IR/CFG.h>
-#include <llvm/ADT/SmallSet.h>
 #include "pacxx/detail/common/Log.h"
 #include "pacxx/detail/common/transforms/ModuleHelper.h"
+#include <llvm/ADT/SmallSet.h>
+#include <llvm/IR/CFG.h>
 
 using namespace llvm;
 using namespace std;
@@ -40,20 +40,22 @@ struct KernelLinker : public ModulePass {
     Value *_x;
     Value *_y;
     Value *_z;
-
   };
 
 private:
-
   enum IdType { X, Y, Z };
 
   Function *getFooFunction(Function *kernel, bool vectorized, bool barrier);
-  Function *createWrapper(Function *kernel, TerminatorInst **term, SmallVector<Value *, 8> &wrapperArgs);
+  Function *createWrapper(Function *kernel, TerminatorInst **term,
+                          SmallVector<Value *, 8> &wrapperArgs);
   SmallVector<Value *, 8> createKernelArgs(Function *wrapper, Function *kernel,
-                                           Value3 &blockId, Value3 &maxBlock, Value3 &maxId);
-  void replaceDummyWithKernelIfNeeded(Function *wrapper, Function *kernel, SmallVector<Value *, 8> &kernelArgs,
+                                           Value3 &blockId, Value3 &maxBlock,
+                                           Value3 &maxId);
+  void replaceDummyWithKernelIfNeeded(Function *wrapper, Function *kernel,
+                                      SmallVector<Value *, 8> &kernelArgs,
                                       bool vectorized, bool barrier);
-  void removeDeadCalls(Function *wrapper, Value3 &blockId, Value3 &maxBlock, Value3 &maxId);
+  void removeDeadCalls(Function *wrapper, Value3 &blockId, Value3 &maxBlock,
+                       Value3 &maxId);
 
   AllocaInst *getCorrectAlloca(Instruction *intrinsic, IdType id);
 
@@ -65,7 +67,6 @@ private:
   void markWrapperAsKernel(Module &M, Function *wrapper, bool vectorized);
 
   unsigned _vectorWidth;
-
 };
 
 bool KernelLinker::runOnModule(Module &M) {
@@ -76,7 +77,7 @@ bool KernelLinker::runOnModule(Module &M) {
     bool vectorized = F->hasFnAttribute("vectorized") ? true : false;
     bool barrier = F->hasFnAttribute("barrier") ? true : false;
 
-    SmallVector < Value * , 8 > wrapperArgs;
+    SmallVector<Value *, 8> wrapperArgs;
     Value3 blockId;
     Value3 maxBlock;
     Value3 maxId;
@@ -87,9 +88,10 @@ bool KernelLinker::runOnModule(Module &M) {
 
     Function *wrapper = createWrapper(F, &term, wrapperArgs);
 
-    SmallVector < Value * , 8 > kernelArgs = createKernelArgs(wrapper, F, blockId, maxBlock, maxId);
+    SmallVector<Value *, 8> kernelArgs =
+        createKernelArgs(wrapper, F, blockId, maxBlock, maxId);
 
-    SmallVector < Value * , 8 > blockArgs;
+    SmallVector<Value *, 8> blockArgs;
     blockArgs.insert(blockArgs.end(), wrapperArgs.begin(), wrapperArgs.end());
     blockArgs.insert(blockArgs.end(), kernelArgs.begin(), kernelArgs.end());
 
@@ -105,13 +107,17 @@ bool KernelLinker::runOnModule(Module &M) {
     __verbose("Cleaning up");
     if (vectorized) {
       Function *vec_F = M.getFunction("__vectorized__" + F->getName().str());
-      _vectorWidth = stoi(vec_F->getFnAttribute("simd-size").getValueAsString().str());
+      _vectorWidth =
+          stoi(vec_F->getFnAttribute("simd-size").getValueAsString().str());
       vec_F->eraseFromParent();
-      // if the kernel has been vectorized and has a barrier, we neeed to remove the vectorized wrapper because we
-      // will use the barrier version of the wrapper
+      // if the kernel has been vectorized and has a barrier, we neeed to remove
+      // the vectorized wrapper because we will use the barrier version of the
+      // wrapper
       if (barrier) {
-        Function *vecFoo = M.getFunction("__vectorized__pacxx_block__" + F->getName().str());
-        _vectorWidth = stoi(vec_F->getFnAttribute("simd-size").getValueAsString().str());
+        Function *vecFoo =
+            M.getFunction("__vectorized__pacxx_block__" + F->getName().str());
+        _vectorWidth =
+            stoi(vec_F->getFnAttribute("simd-size").getValueAsString().str());
         vecFoo->eraseFromParent();
       }
     }
@@ -129,7 +135,8 @@ bool KernelLinker::runOnModule(Module &M) {
   return true;
 }
 
-Function *KernelLinker::getFooFunction(Function *kernel, bool vectorized, bool barrier) {
+Function *KernelLinker::getFooFunction(Function *kernel, bool vectorized,
+                                       bool barrier) {
 
   __verbose("Getting correct pacxx block function");
 
@@ -138,18 +145,19 @@ Function *KernelLinker::getFooFunction(Function *kernel, bool vectorized, bool b
   Function *origFoo = M->getFunction("__pacxx_block");
   Function *pacxx_block = nullptr;
 
-
   // if the kernel has been vectorized
   if (vectorized && !barrier) {
-    pacxx_block = M->getFunction("__vectorized__pacxx_block__" + kernel->getName().str());
+    pacxx_block =
+        M->getFunction("__vectorized__pacxx_block__" + kernel->getName().str());
   }
   // if the kernel has a barrier use a special pacxx block function
   if (barrier) {
-    pacxx_block = M->getFunction("__barrier__pacxx_block__" + kernel->getName().str());
+    pacxx_block =
+        M->getFunction("__barrier__pacxx_block__" + kernel->getName().str());
   }
-  //if the kernel has not been vectorized and contains no barriers
+  // if the kernel has not been vectorized and contains no barriers
   if (!vectorized && !barrier) {
-    SmallVector < Type * , 8 > Params;
+    SmallVector<Type *, 8> Params;
     for (auto &arg : origFoo->args()) {
       Params.push_back(arg.getType());
     }
@@ -165,21 +173,20 @@ Function *KernelLinker::getFooFunction(Function *kernel, bool vectorized, bool b
       DestI->setName(I->getName());
       VMap[cast<Value>(I)] = cast<Value>(DestI++);
     }
-    SmallVector < ReturnInst * , 8 > returns;
+    SmallVector<ReturnInst *, 8> returns;
     CloneFunctionInto(pacxx_block, origFoo, VMap, true, returns);
   }
   return pacxx_block;
 }
 
-Function *KernelLinker::createWrapper(Function *kernel,
-                                           TerminatorInst **term,
-                                           SmallVector<Value *, 8> &wrapperArgs) {
+Function *KernelLinker::createWrapper(Function *kernel, TerminatorInst **term,
+                                      SmallVector<Value *, 8> &wrapperArgs) {
   Module *M = kernel->getParent();
   LLVMContext &ctx = M->getContext();
 
-  SmallVector < Type * , 8 > Params;
+  SmallVector<Type *, 8> Params;
 
-  //block id
+  // block id
   Params.push_back(IntegerType::getInt32Ty(ctx));
   Params.push_back(IntegerType::getInt32Ty(ctx));
   Params.push_back(IntegerType::getInt32Ty(ctx));
@@ -194,16 +201,18 @@ Function *KernelLinker::createWrapper(Function *kernel,
   Params.push_back(IntegerType::getInt32Ty(ctx));
   Params.push_back(IntegerType::getInt32Ty(ctx));
 
-  //shared memory
+  // shared memory
   Params.push_back(IntegerType::getInt32Ty(ctx));
 
-  //arguments
+  // arguments
   Params.push_back(PointerType::getInt8PtrTy(ctx));
 
-  // we can always use void, because we work with valid cuda kernels and they need to return void
+  // we can always use void, because we work with valid cuda kernels and they
+  // need to return void
   FunctionType *FTy = FunctionType::get(Type::getVoidTy(ctx), Params, false);
-  auto wrappedF = Function::Create(FTy, GlobalValue::LinkageTypes::ExternalLinkage,
-                                   std::string("__wrapped__") + kernel->getName().str(), M);
+  auto wrappedF =
+      Function::Create(FTy, GlobalValue::LinkageTypes::ExternalLinkage,
+                       std::string("__wrapped__") + kernel->getName().str(), M);
 
   auto wrappedArgs = wrappedF->arg_begin();
   (wrappedArgs++)->setName("bidx");
@@ -232,10 +241,13 @@ Function *KernelLinker::createWrapper(Function *kernel,
   return wrappedF;
 }
 
-SmallVector<Value *, 8> KernelLinker::createKernelArgs(Function *wrapper, Function *kernel,
-                                                            Value3 &blockId, Value3 &maxBlock, Value3 &maxId) {
+SmallVector<Value *, 8> KernelLinker::createKernelArgs(Function *wrapper,
+                                                       Function *kernel,
+                                                       Value3 &blockId,
+                                                       Value3 &maxBlock,
+                                                       Value3 &maxId) {
 
-  SmallVector < Value * , 8 > kernelArgs;
+  SmallVector<Value *, 8> kernelArgs;
 
   Module *M = wrapper->getParent();
   LLVMContext &ctx = M->getContext();
@@ -249,7 +261,7 @@ SmallVector<Value *, 8> KernelLinker::createKernelArgs(Function *wrapper, Functi
   // create the arguments from the char*
   auto argIt = wrapper->arg_begin();
 
-  //blockids
+  // blockids
   bidx = &*argIt;
   ++argIt;
   bidy = &*argIt;
@@ -263,14 +275,14 @@ SmallVector<Value *, 8> KernelLinker::createKernelArgs(Function *wrapper, Functi
   ++argIt;
   maxblockz = &*argIt;
   ++argIt;
-  //max threads
+  // max threads
   maxidx = &*argIt;
   ++argIt;
   maxidy = &*argIt;
   ++argIt;
   maxidz = &*argIt;
   ++argIt;
-  //shared memory
+  // shared memory
   ++argIt;
 
   blockId = Value3(bidx, bidy, bidz);
@@ -278,15 +290,17 @@ SmallVector<Value *, 8> KernelLinker::createKernelArgs(Function *wrapper, Functi
   maxId = Value3(maxidx, maxidy, maxidz);
 
   // construct the kernel arguments from the char*
-  BasicBlock *constructKernelArgs = BasicBlock::Create(ctx, "constructArgs", wrapper, entry);
+  BasicBlock *constructKernelArgs =
+      BasicBlock::Create(ctx, "constructArgs", wrapper, entry);
 
   auto int8ptr_type = Type::getInt8PtrTy(ctx);
   auto int8ptr_align = M->getDataLayout().getPrefTypeAlignment(int8ptr_type);
 
-  auto *alloc_args = new AllocaInst(int8ptr_type, 0, nullptr, int8ptr_align, (&*argIt)->getName(),
-                                    constructKernelArgs);
+  auto *alloc_args = new AllocaInst(int8ptr_type, 0, nullptr, int8ptr_align,
+                                    (&*argIt)->getName(), constructKernelArgs);
   new StoreInst(&*argIt, alloc_args, false, int8ptr_align, constructKernelArgs);
-  auto *args_load = new LoadInst(alloc_args, "args", false, int8ptr_align, constructKernelArgs);
+  auto *args_load = new LoadInst(alloc_args, "args", false, int8ptr_align,
+                                 constructKernelArgs);
 
   size_t offset = 0;
 
@@ -299,14 +313,17 @@ SmallVector<Value *, 8> KernelLinker::createKernelArgs(Function *wrapper, Functi
 
     auto arg_offset = (offset + arg_alignment - 1) & ~(arg_alignment - 1);
     // consider offset in char array
-    auto *elem_ptr = GetElementPtrInst::CreateInBounds(Type::getInt8Ty(ctx), args_load,
-                                                       ConstantInt::get(Type::getInt64Ty(ctx), arg_offset),
-                                                       "", constructKernelArgs);
+    auto *elem_ptr = GetElementPtrInst::CreateInBounds(
+        Type::getInt8Ty(ctx), args_load,
+        ConstantInt::get(Type::getInt64Ty(ctx), arg_offset), "",
+        constructKernelArgs);
     // Cast to apropriate size
-    auto *casted = new BitCastInst(elem_ptr, PointerType::getUnqual(A.getType()), "", constructKernelArgs);
-    auto *casted_load = new LoadInst(casted, A.getName(), false,
-                                     M->getDataLayout().getPrefTypeAlignment(casted->getType()),
-                                     constructKernelArgs);
+    auto *casted = new BitCastInst(
+        elem_ptr, PointerType::getUnqual(A.getType()), "", constructKernelArgs);
+    auto *casted_load =
+        new LoadInst(casted, A.getName(), false,
+                     M->getDataLayout().getPrefTypeAlignment(casted->getType()),
+                     constructKernelArgs);
 
     kernelArgs.push_back(casted_load);
 
@@ -319,9 +336,9 @@ SmallVector<Value *, 8> KernelLinker::createKernelArgs(Function *wrapper, Functi
   return kernelArgs;
 }
 
-void KernelLinker::replaceDummyWithKernelIfNeeded(Function *wrapper, Function *kernel,
-                                                       SmallVector<Value *, 8> &kernelArgs,
-                                                       bool vectorized, bool barrier) {
+void KernelLinker::replaceDummyWithKernelIfNeeded(
+    Function *wrapper, Function *kernel, SmallVector<Value *, 8> &kernelArgs,
+    bool vectorized, bool barrier) {
 
   Module *M = wrapper->getParent();
   CallInst *CI = nullptr;
@@ -350,7 +367,8 @@ void KernelLinker::replaceDummyWithKernelIfNeeded(Function *wrapper, Function *k
   }
 }
 
-void KernelLinker::removeDeadCalls(Function *wrapper, Value3 &blockId, Value3 &maxBlock, Value3 &maxId) {
+void KernelLinker::removeDeadCalls(Function *wrapper, Value3 &blockId,
+                                   Value3 &maxBlock, Value3 &maxId) {
 
   __verbose("replacing dead calls \n");
   vector<CallInst *> dead_calls;
@@ -426,7 +444,8 @@ void KernelLinker::removeDeadCalls(Function *wrapper, Value3 &blockId, Value3 &m
             dead_calls.push_back(CI);
             break;
           }
-          default: break;
+          default:
+            break;
           }
         }
       }
@@ -441,12 +460,12 @@ void KernelLinker::removeDeadCalls(Function *wrapper, Value3 &blockId, Value3 &m
 AllocaInst *KernelLinker::getCorrectAlloca(Instruction *intrinsic, IdType id) {
 
   AllocaInst *alloca = nullptr;
-  SmallSet < BasicBlock * , 8 > visited;
+  SmallSet<BasicBlock *, 8> visited;
 
   // first check if we find the alloca in the same basic block
   auto BB = intrinsic->getParent();
   for (auto I = intrinsic->getIterator(), IE = BB->begin(); I != IE; --I) {
-    if (AllocaInst * current = dyn_cast<AllocaInst>(&*I))
+    if (AllocaInst *current = dyn_cast<AllocaInst>(&*I))
       if (isCorrectId(current, id))
         return current;
   }
@@ -456,8 +475,9 @@ AllocaInst *KernelLinker::getCorrectAlloca(Instruction *intrinsic, IdType id) {
   return alloca;
 }
 
-void KernelLinker::recursiveFindAlloca(BasicBlock *BB, SmallSet<BasicBlock *, 8> &visited,
-                                            AllocaInst *&alloca, IdType id) {
+void KernelLinker::recursiveFindAlloca(BasicBlock *BB,
+                                       SmallSet<BasicBlock *, 8> &visited,
+                                       AllocaInst *&alloca, IdType id) {
 
   if (visited.count(BB) != 0)
     return;
@@ -467,7 +487,7 @@ void KernelLinker::recursiveFindAlloca(BasicBlock *BB, SmallSet<BasicBlock *, 8>
   for (auto I = pred_begin(BB), IE = pred_end(BB); I != IE; ++I) {
     BasicBlock *pred = *I;
     for (auto &inst : *pred) {
-      if (AllocaInst * current = dyn_cast<AllocaInst>(&inst))
+      if (AllocaInst *current = dyn_cast<AllocaInst>(&inst))
         if (isCorrectId(current, id)) {
           alloca = current;
           return;
@@ -479,17 +499,21 @@ void KernelLinker::recursiveFindAlloca(BasicBlock *BB, SmallSet<BasicBlock *, 8>
 
 bool KernelLinker::isCorrectId(Instruction *inst, IdType id) {
   switch (id) {
-  case X:return inst->getMetadata("pacxx_read_tid_x") != nullptr;
-  case Y:return inst->getMetadata("pacxx_read_tid_y") != nullptr;
-  case Z:return inst->getMetadata("pacxx_read_tid_z") != nullptr;
+  case X:
+    return inst->getMetadata("pacxx_read_tid_x") != nullptr;
+  case Y:
+    return inst->getMetadata("pacxx_read_tid_y") != nullptr;
+  case Z:
+    return inst->getMetadata("pacxx_read_tid_z") != nullptr;
   }
-  return false; 
+  return false;
 }
 
-void KernelLinker::markWrapperAsKernel(Module &M, Function *wrapper, bool vectorized) {
+void KernelLinker::markWrapperAsKernel(Module &M, Function *wrapper,
+                                       bool vectorized) {
   LLVMContext &ctx = M.getContext();
   NamedMDNode *MD = M.getOrInsertNamedMetadata("pacxx.kernel");
-  SmallVector < Metadata * , 1 > MDVals;
+  SmallVector<Metadata *, 1> MDVals;
   MDVals.push_back(ConstantAsMetadata::get(wrapper));
 
   if (vectorized)
@@ -499,11 +523,11 @@ void KernelLinker::markWrapperAsKernel(Module &M, Function *wrapper, bool vector
 }
 
 char KernelLinker::ID = 0;
-static RegisterPass <KernelLinker>
+static RegisterPass<KernelLinker>
     X("pacxx_native", "Inlines functions into kernels", false, false);
 
-}
+} // namespace
 
 namespace pacxx {
 llvm::Pass *createKernelLinkerPass() { return new KernelLinker(); }
-}
+} // namespace pacxx

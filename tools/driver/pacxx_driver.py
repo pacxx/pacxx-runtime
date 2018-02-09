@@ -91,12 +91,14 @@ class Context:
     def insert_include(self, path):
         if path:
             self.includes.append("-I")
-            self.includes.append(path+"/include")
+            self.includes.append(path + "/include")
 
     def insert_libdir(self, path, suffix):
         if path:
             self.libs.append("-L")
-            self.libs.append(path+"/lib"+(suffix or ''))
+            self.libs.append(path + "/lib" + (suffix or ''))
+            self.libs.append("-Wl,-rpath")
+            self.libs.append("-Wl," + path + "/lib")
     
     def parse_args(self, args):
         for s in args:

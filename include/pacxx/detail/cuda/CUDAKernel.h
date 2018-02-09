@@ -32,20 +32,15 @@ public:
 
   virtual void configurate(KernelConfiguration config) override;
   virtual void launch() override;
-  virtual void profile() override;
-
-  CUDARuntime &getRuntime();
 
 private:
   void overrideFptr(CUfunction fptr) { _fptr = fptr; }
 
 private:
-  CUDARuntime &_runtime;
   std::vector<void *> _launch_args;
   CUfunction _fptr;
-
 };
-}
-}
+} // namespace v2
+} // namespace pacxx
 
 #endif // PACXX_V2_CUDAKERNEL_H

@@ -44,6 +44,13 @@ option(PACXX_USE_OpenMP "use OpenMP instead of TBB" ${ENABLE_OPENMP})
 option(PACXX_USE_CUDA "Build the CUDA backend" ${CUDA_FOUND})
 option(PACXX_USE_HIP "Build the ROCM/HIP backend" ${HIP_FOUND})
 option(PACXX_USE_REMOTE "Build the remote backend" OFF)
+option(PACXX_USE_PAPI "Use PAPI for native execution profiling" ${PAPI_FOUND})
+
+if (PACXX_USE_PAPI)
+    set (PACXX_HAS_PAPI 1)
+else()
+    set (PACXX_HAS_PAPI 0)
+endif()
 
 if(PACXX_USE_OpenMP)
     add_compile_options(-fopenmp)
@@ -99,8 +106,11 @@ set(SOURCE_FILES
         lib/native/NativeDeviceBuffer.cpp
         lib/native/NativeBackend.cpp
         lib/native/NativeRuntime.cpp
-        lib/native/PAPIProfiler.cpp
         lib/native/NativeEvent.cpp)
+
+if (PACXX_USE_PAPI)
+    set (PAPI_SOURCE_FILES lib/native/PAPIProfiler.cpp)
+endif()
 
 if (PACXX_USE_CUDA)
     find_package(CUDA REQUIRED)
@@ -294,7 +304,7 @@ execute_process(COMMAND ${CMAKE_BINARY_DIR}/bin/llvm-config --ldflags
 set(CMAKE_SHARED_LINKER_FLAGS "-Wl,--allow-shlib-undefined")
 
 # main runtime lib
-add_library(${PROJECT_NAME} ${SOURCE_FILES} ${REMOTE_SOURCE_FILES})
+add_library(${PROJECT_NAME} ${SOURCE_FILES} ${PAPI_SOURCE_FILES} ${REMOTE_SOURCE_FILES})
 target_link_libraries(${PROJECT_NAME} PUBLIC PACXXTransforms PUBLIC ${PACXX_LLVM_LIBS} PUBLIC ${PACXX_LLVM_SYS_LIBS} PUBLIC ${PAPI_LIBRARIES} PUBLIC ${TBB_LIBRARIES} PUBLIC ${nadbFile})
 
 #cuda device back end

@@ -12,11 +12,11 @@
 
 #include "pacxx/detail/Kernel.h"
 #include "pacxx/detail/KernelConfiguration.h"
+#include <algorithm>
 #include <functional>
 #include <map>
-#include <string>
 #include <numeric>
-#include <algorithm>
+#include <string>
 
 namespace pacxx {
 
@@ -36,21 +36,17 @@ public:
 
   virtual void configurate(KernelConfiguration config) override;
   virtual void launch() override;
-  virtual void profile() override;
-
-  NativeRuntime &getRuntime();
 
 private:
   void overrideFptr(void *fptr) { _fptr = fptr; }
 
 private:
-  NativeRuntime &_runtime;
   void *_fptr;
   unsigned _runs;
 };
 
-} // v2 namespace
+} // namespace v2
 
-} // pacxx namespace
+} // namespace pacxx
 
 #endif // PACXX_V2_NATIVEKERNEL_H

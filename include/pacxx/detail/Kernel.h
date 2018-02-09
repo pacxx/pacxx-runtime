@@ -11,10 +11,10 @@
 #define PACXX_V2_KERNEL_H
 
 #include "KernelConfiguration.h"
-#include <vector>
-#include <map>
 #include <functional>
-#include <string> 
+#include <map>
+#include <string>
+#include <vector>
 
 namespace pacxx {
 namespace v2 {
@@ -37,13 +37,13 @@ public:
   virtual const std::string &getName() const;
   virtual void launch() = 0;
 
-  virtual void profile() {
-    return;
-  }
+  virtual void profile();
+
+  virtual Runtime& getRuntime() { return _runtime; }
 
   virtual void setCallback(std::function<void()> callback);
 
-  virtual void setLambdaPtr(const void* ptr, size_t size) {
+  virtual void setLambdaPtr(const void *ptr, size_t size) {
     _lambdaPtr = ptr;
     _lambdaSize = size;
   };
@@ -51,7 +51,7 @@ public:
   virtual const void *getLambdaPtr() { return _lambdaPtr; };
 
 protected:
-  Runtime &_runtime_ref;
+  Runtime &_runtime;
   KernelConfiguration _config;
   std::map<int, long long> _staged_values;
   bool _staged_values_changed;
@@ -62,7 +62,7 @@ protected:
   const void *_lambdaPtr;
   size_t _lambdaSize;
 };
-}
-}
+} // namespace v2
+} // namespace pacxx
 
 #endif // PACXX_V2_KERNEL_H

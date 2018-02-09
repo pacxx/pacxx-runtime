@@ -8,11 +8,11 @@
 //===----------------------------------------------------------------------===//
 
 #include "pacxx/detail/native/NativeKernel.h"
+#include "pacxx/detail/Profiler.h"
 #include "pacxx/detail/common/Exceptions.h"
 #include "pacxx/detail/common/Log.h"
 #include "pacxx/detail/common/Timing.h"
 #include "pacxx/detail/native/NativeRuntime.h"
-#include "pacxx/detail/native/PAPIProfiler.h"
 #include <llvm/IR/Module.h>
 
 #ifndef PACXX_DISABLE_TBB
@@ -27,7 +27,7 @@ namespace pacxx {
 namespace v2 {
 
 NativeKernel::NativeKernel(NativeRuntime &runtime, void *fptr, std::string name)
-    : Kernel(runtime, name), _runtime(runtime), _fptr(fptr), _runs(1) {
+    : Kernel(runtime, name), _fptr(fptr), _runs(1) {
   auto runs = common::GetEnv("PACXX_NATIVE_KERNEL_RUNS");
   if (runs != "")
     _runs = std::stoul(runs);
@@ -39,10 +39,6 @@ void NativeKernel::configurate(KernelConfiguration config) {
   if (_config != config) {
     _config = config;
   }
-}
-
-NativeRuntime &NativeKernel::getRuntime() {
-	return _runtime;
 }
 
 void NativeKernel::launch() {
@@ -69,18 +65,20 @@ void NativeKernel::launch() {
   std::vector<unsigned> times(_runs);
 
 #ifdef __PACXX_OMP
-  for(unsigned i = 0; i < _runs; ++i) {
+  for (unsigned i = 0; i < _runs; ++i) {
     start = std::chrono::high_resolution_clock::now();
-    #pragma omp parallel for collapse(3)
-    for(unsigned bidz = 0; bidz < _config.blocks.z; ++bidz)
-      for(unsigned bidy = 0; bidy < _config.blocks.y; ++bidy)
-        for(unsigned bidx = 0; bidx < _config.blocks.x; ++bidx)
+#pragma omp parallel for collapse(3)
+    for (unsigned bidz = 0; bidz < _config.blocks.z; ++bidz)
+      for (unsigned bidy = 0; bidy < _config.blocks.y; ++bidy)
+        for (unsigned bidx = 0; bidx < _config.blocks.x; ++bidx)
           functor(bidx, bidy, bidz, _config.blocks.x, _config.blocks.y,
                   _config.blocks.z, _config.threads.x, _config.threads.y,
                   _config.threads.z, _config.sm_size, _lambdaPtr);
 
     end = std::chrono::high_resolution_clock::now();
-    times[i] = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
+    times[i] =
+        std::chrono::duration_cast<std::chrono::microseconds>(end - start)
+            .count();
   }
 #else
   for (unsigned i = 0; i < _runs; ++i) {
@@ -95,7 +93,9 @@ void NativeKernel::launch() {
       });
     });
     end = std::chrono::high_resolution_clock::now();
-    times[i] = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
+    times[i] =
+        std::chrono::duration_cast<std::chrono::microseconds>(end - start)
+            .count();
   }
 #endif
 
@@ -103,14 +103,5 @@ void NativeKernel::launch() {
     _callback();
 }
 
-void NativeKernel::profile() {
-  PAPIProfiler* ptr = static_cast<PAPIProfiler*>(_runtime.getProfiler());
-  if (!ptr->enabled()) return;
-  ptr->updateKernel(this);
-  ptr->dryrun();
-  ptr->profile();
-}
-
-
-}
-}
+} // namespace v2
+} // namespace pacxx
