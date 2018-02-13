@@ -4,8 +4,9 @@ project(pacxxrt2)
 find_package(CUDA)
 
 if (NOT WIN32)
-include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/pacxx/FindTBB.cmake)
-include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/pacxx/FindPAPI.cmake)
+  list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake/pacxx)
+  find_package(TBB)
+  find_package(PAPI)
 endif()
 
 if (EXISTS /opt/rocm)
@@ -88,7 +89,9 @@ lib/common/transforms/AddressSpaceTransform.cpp
 lib/cuda/transforms/NVPTXPrepair.cpp
 lib/rocm/transforms/AMDGCNPrepair.cpp)
 
-include_directories(${PAPI_INCLUDE_DIRS})
+if(${PACXX_USE_PAPI})
+  include_directories(${PAPI_INCLUDE_DIRS})
+endif()
 
 set(SOURCE_FILES
         lib/CoreInitializer.cpp
@@ -305,7 +308,10 @@ set(CMAKE_SHARED_LINKER_FLAGS "-Wl,--allow-shlib-undefined")
 
 # main runtime lib
 add_library(${PROJECT_NAME} ${SOURCE_FILES} ${PAPI_SOURCE_FILES} ${REMOTE_SOURCE_FILES})
-target_link_libraries(${PROJECT_NAME} PUBLIC PACXXTransforms PUBLIC ${PACXX_LLVM_LIBS} PUBLIC ${PACXX_LLVM_SYS_LIBS} PUBLIC ${PAPI_LIBRARIES} PUBLIC ${TBB_LIBRARIES} PUBLIC ${nadbFile})
+target_link_libraries(${PROJECT_NAME} PUBLIC PACXXTransforms PUBLIC ${PACXX_LLVM_LIBS} PUBLIC ${PACXX_LLVM_SYS_LIBS} PUBLIC ${TBB_LIBRARIES} PUBLIC ${nadbFile})
+if(${PACXX_USE_PAPI})
+  target_link_libraries(${PROJECT_NAME} PUBLIC ${PAPI_LIBRARIES})
+endif()
 
 #cuda device back end
 if (PACXX_USE_CUDA)
