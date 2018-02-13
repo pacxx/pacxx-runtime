@@ -1,4 +1,3 @@
-#pragma once
 #include <pacxx/detail/common/ExecutorHelper.h>
 
 namespace pacxx {

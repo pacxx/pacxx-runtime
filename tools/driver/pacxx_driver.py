@@ -137,44 +137,37 @@ class Context:
                 original_output = "a.out"
             for file in self.input_files:
                 filename_only = os.path.basename(file)
-                header_name = self.workingdir+ "/" + filename_only + "_integration.cpp"
-                bc_name = self.workingdir+ "/" + filename_only + ".bc"
-                kernel_name = self.workingdir+ "/" + filename_only + "_kernel.bc"
-                host_name = self.workingdir+ "/" + filename_only + "_host.bc"
-                kernel_object_name = self.workingdir+ "/" + filename_only + "_kernel.bc"
-                host_object_name = self.workingdir+ "/" + filename_only + "_host.o"
-                merged_object_name = self.workingdir+ "/" + filename_only + ".o"
+                integration_file = self.workingdir+ "/" + filename_only + "_integration.cpp"
+                ir_module = self.workingdir+ "/" + filename_only + ".bc"
+                kernel_module = self.workingdir+ "/" + filename_only + "_kernel.bc"
+                host_module = self.workingdir+ "/" + filename_only + "_host.bc"
+                integration_module = self.workingdir+ "/" + filename_only + "_kernel_integration.bc"
+                host_object = self.workingdir+ "/" + filename_only + "_host.o"
+
                 dev_args = ["-pacxx", "-emit-llvm", "-c", "-Wno-unused-command-line-argument"]
 
                 #compile the device code to llvm bitcode
-                execute([ self.clang ] + dev_args + self.includes + remove_opt_level(args) + [file] + ["-o", bc_name])
-                execute([ self.opt ] + ["-load=libPACXXTransforms.so", "-pacxx-codegen-prepare", "-simplifycfg", "-inline", bc_name, "-o", kernel_name])
-                execute([ self.opt ] + ["-load=libPACXXTransforms.so", "-pacxx-kernel-eraser", bc_name, "-o", host_name])
-                output = check_output([self.nm, kernel_name])
+                execute([ self.clang ] + dev_args + self.includes + remove_opt_level(args) + [file] + ["-o", ir_module])
+                execute([ self.opt ] + ["-load=libPACXXTransforms.so", "-pacxx-codegen-prepare", "-simplifycfg", "-inline", ir_module, "-o", kernel_module])
+                execute([ self.opt ] + ["-load=libPACXXTransforms.so", "-pacxx-kernel-eraser", ir_module, "-o", host_module])
+                output = check_output([self.nm, kernel_module])
                 num_kernels = len(output.split('\n')) - 1
-                integration_header = []
                 if num_kernels:
                     #encode the kernel.bc file to a char array and include it into the integration header
-                    encoded = xxd(kernel_name, "kernel")
-                    with open(self.llvm_dir + "/include/pacxx/detail/ModuleIntegration.h", 'r') as include_header:
+                    encoded = xxd(kernel_module, "kernel")
+                    with open(self.llvm_dir + "/include/pacxx/detail/ModuleIntegration.inc", 'r') as include_header:
                         data = include_header.read().replace('/*FILECONTENT*/', encoded)
-                        with open(header_name, "w") as integration_header_file:
+                        with open(integration_file, "w") as integration_header_file:
                             integration_header_file.write(data)
-                    #integration_header = ["--include", header_name]
-                    shutil.copyfile(header_name, "./integration.h")
-                    execute([ self.clang ] + self.includes + self.flags + [header_name, "-c", "-emit-llvm", "-o", kernel_object_name])
-                    #object_files.append(kernel_object_name)   
-                #compile the host code with the integration header to an object file 
-                execute([ self.link, kernel_object_name, host_name, "-o", "merged.bc"])
-                execute([ self.llc ] + ["merged.bc", "-filetype=obj", "-o", host_object_name])
-                object_files.append(host_object_name)
-                #execute([ self.clang ] + ["-Wl,-Ur"] + object_files + ["-nostdlib", "-o", merged_object_name])
+                    execute([ self.clang ] + self.includes + self.flags + [integration_file, "-c", "-emit-llvm", "-o", integration_module])
+                    execute([ self.link, integration_module, host_module, "-o", host_module])
+                execute([ self.llc ] + [host_module, "-filetype=obj", "-o", host_object])
     
             #compile objects to the desired output
             if self.mode == 0: 
-                execute([ self.clang ] + object_files  + self.libs + ["-o", original_output])
+                execute([ self.clang ] + [host_object]  + self.libs + ["-o", original_output])
             elif self.mode == 1: 
-                shutil.copyfile(merged_object_name, original_output)
+                shutil.copyfile(host_object, original_output)
         else:
             if len(self.flags) > 0:
                 execute([ self.clang ] + self.includes + self.flags + self.libs)
