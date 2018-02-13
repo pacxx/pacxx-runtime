@@ -147,7 +147,7 @@ class Context:
                 dev_args = ["-pacxx", "-emit-llvm", "-c", "-Wno-unused-command-line-argument"]
 
                 #compile the device code to llvm bitcode
-                execute([ self.clang ] + dev_args + self.includes + remove_opt_level(args) + [file] + ["-o", ir_module])
+                execute([ self.clang ] + dev_args + self.includes + args + [file] + ["-o", ir_module])
                 execute([ self.opt ] + ["-load=libPACXXTransforms.so", "-pacxx-codegen-prepare", "-simplifycfg", "-inline", ir_module, "-o", kernel_module])
                 execute([ self.opt ] + ["-load=libPACXXTransforms.so", "-pacxx-kernel-eraser", ir_module, "-o", host_module])
                 output = check_output([self.nm, kernel_module])

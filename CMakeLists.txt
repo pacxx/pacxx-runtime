@@ -41,7 +41,7 @@ if (TBB_FOUND)
     set(ENABLE_OPENMP OFF)
 endif ()
 
-option(PACXX_USE_OpenMP "use OpenMP instead of TBB" ${ENABLE_OPENMP})
+option(PACXX_USE_OpenMP "Use OpenMP instead of TBB" ${ENABLE_OPENMP})
 option(PACXX_USE_CUDA "Build the CUDA backend" ${CUDA_FOUND})
 option(PACXX_USE_HIP "Build the ROCM/HIP backend" ${HIP_FOUND})
 option(PACXX_USE_REMOTE "Build the remote backend" OFF)
