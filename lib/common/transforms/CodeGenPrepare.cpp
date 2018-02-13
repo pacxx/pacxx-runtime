@@ -81,6 +81,33 @@ struct PACXXCodeGenPrepare : public ModulePass {
 
   virtual bool runOnModule(Module &M) {
 
+    auto kernels = pacxx::getKernels(&M);
+
+    struct InvokeInstVisitor : public InstVisitor<InvokeInstVisitor> {
+      SmallVector<Instruction*, 8> dead;
+      void visitInvokeInst(InvokeInst &II) {
+        SmallVector<Value*, 8> args(II.arg_begin(), II.arg_end());
+        auto CI = CallInst::Create(II.getCalledValue(), args, "", &II);
+        Value* retValue = nullptr; 
+        if (CI->getType() != Type::getVoidTy(CI->getContext()))
+          retValue = CI;
+        ReturnInst::Create(CI->getContext(), retValue, &II);
+        dead.push_back(II.getLandingPadInst());
+
+        II.replaceAllUsesWith(CI);
+        dead.push_back(&II);
+      }
+    } invokes;
+
+    for (auto& F : kernels){
+      invokes.visit(F);
+    }
+
+    for (auto& I : invokes.dead){
+      I->replaceAllUsesWith(UndefValue::get(I->getType()));
+      I->eraseFromParent();
+    }
+
     auto visitor = make_CallVisitor([&](CallInst *I) {
       if (!I && I->isInlineAsm())
         return;
@@ -114,12 +141,26 @@ struct PACXXCodeGenPrepare : public ModulePass {
       }
     });
 
-    auto kernels = pacxx::getKernels(&M);
+    struct StoreInstVisitor : public InstVisitor<StoreInstVisitor> {
+      SmallVector<Instruction*, 8> dead;
+      void visitStoreInst(StoreInst &SI) {
+        auto V = SI.getValueOperand(); 
+        if (auto GEP = dyn_cast<ConstantExpr>(V))
+          V = GEP->getOperand(0);
+
+        if (V->getName().startswith("__PACXX_FUNCTION__"))
+          dead.push_back(&SI);
+      }
+    } names;
+
     for (auto &F : kernels){
       visitor.visit(F);
-      if (F->hasFnAttribute(llvm::Attribute::OptimizeNone))
-        F->removeFnAttr(llvm::Attribute::OptimizeNone);
+      names.visit(F);
+      F->setPersonalityFn(nullptr);
     }
+
+    for (auto SI : names.dead)
+      SI->eraseFromParent();
 
     cleanupDeadCode(&M);
 

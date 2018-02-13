@@ -36,6 +36,8 @@ template <typename T> void ReplaceUnsafe(T *from, T *to) {
   from->eraseFromParent();
 }
 
+bool isPACXXIntrinsic(Intrinsic::ID id);
+
 void cleanupDeadCode(Module *M);
 
 bool isOpenCLFunction(StringRef name);

@@ -263,7 +263,10 @@ struct AddressSpaceTransform : public ModulePass {
       auto &BB = F->getBasicBlockList().front();
       auto II = &BB.getInstList().front();
       bool mutate = false;
+      auto numArgs = std::distance(F->arg_begin(), F->arg_end()) - 1; 
       for (auto &arg : F->args()) {
+        if (numArgs == 0)
+          break;
         if (arg.getType()->isPointerTy()) {
           if (arg.getType()->getPointerAddressSpace() == 0) {
             auto AL = new AllocaInst(arg.getType(), 0, "", II);
@@ -283,6 +286,7 @@ struct AddressSpaceTransform : public ModulePass {
             mutate = true;
           }
         }
+        numArgs--;
       }
 
       if (mutate) {

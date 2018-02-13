@@ -1,6 +1,33 @@
 #include "pacxx/detail/common/transforms/ModuleHelper.h"
 
 namespace pacxx{
+bool isPACXXIntrinsic(Intrinsic::ID id) {
+  switch (id) {
+  case Intrinsic::pacxx_barrier0:
+  case Intrinsic::pacxx_read_ntid_x:
+  case Intrinsic::pacxx_read_ntid_y:
+  case Intrinsic::pacxx_read_ntid_z:
+  case Intrinsic::pacxx_read_ntid_w:
+  case Intrinsic::pacxx_read_tid_x:
+  case Intrinsic::pacxx_read_tid_y:
+  case Intrinsic::pacxx_read_tid_z:
+  case Intrinsic::pacxx_read_tid_w:
+  case Intrinsic::pacxx_read_ctaid_x:
+  case Intrinsic::pacxx_read_ctaid_y:
+  case Intrinsic::pacxx_read_ctaid_z:
+  case Intrinsic::pacxx_read_ctaid_w:
+  case Intrinsic::pacxx_read_nctaid_x:
+  case Intrinsic::pacxx_read_nctaid_y:
+  case Intrinsic::pacxx_read_nctaid_z:
+  case Intrinsic::pacxx_read_nctaid_w:
+  case Intrinsic::pacxx_backend_id:
+    return true;
+  default:
+    break;
+  }
+  return false;
+}
+
 void cleanupDeadCode(Module *M) {
 
   auto kernels = getKernels(M);

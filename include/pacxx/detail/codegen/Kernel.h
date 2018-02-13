@@ -156,13 +156,13 @@ void kernelBody(L &&callable) {
 
 template<typename L>
 PACXX_KERNEL void genericKernel(L callable, const char** name) noexcept {
-  #ifdef __device_code__
-    kernelBody(callable);
-  #else
+  try{
     #ifdef __PACXX__
+      kernelBody(callable);
       *name = __PACXX_FUNCTION__;
     #endif
-  #endif
+  }
+  catch(...){}
 }
 
 

@@ -43,7 +43,8 @@ def remove_opt_level(args):
             new_args.append(s)
     return new_args
 
-
+def handle_pacxx_args(args):
+    return
 
 class Context:
     includes = []
@@ -54,6 +55,7 @@ class Context:
     llvm_libs= []
     sys_libs = []
     clang = ""
+    llc = ""
     opt = ""
     nm = ""
     input_files = []
@@ -74,6 +76,8 @@ class Context:
         self.llvm_libs= check_output([self.pacxx_dir + "/llvm-config", "--libs"]).decode("utf-8").rstrip().split(" ")
         self.sys_libs = check_output([self.pacxx_dir + "/llvm-config", "--system-libs"]).decode("utf-8").rstrip().split(" ")
         self.clang = self.llvm_dir + "/bin/clang++"
+        self.llc = self.llvm_dir + "/bin/llc"
+        self.link = self.llvm_dir + "/bin/llvm-link"
         self.opt = self.llvm_dir + "/bin/opt"
         self.nm = self.llvm_dir + "/bin/llvm-nm"
 
@@ -133,14 +137,19 @@ class Context:
                 original_output = "a.out"
             for file in self.input_files:
                 filename_only = os.path.basename(file)
-                header_name = self.workingdir+ "/" + filename_only + "_integration.h"
+                header_name = self.workingdir+ "/" + filename_only + "_integration.cpp"
+                bc_name = self.workingdir+ "/" + filename_only + ".bc"
                 kernel_name = self.workingdir+ "/" + filename_only + "_kernel.bc"
-                object_name = self.workingdir+ "/" + filename_only + ".o"
-                dev_args = ["-pacxx", "-emit-llvm", "-c"]
+                host_name = self.workingdir+ "/" + filename_only + "_host.bc"
+                kernel_object_name = self.workingdir+ "/" + filename_only + "_kernel.bc"
+                host_object_name = self.workingdir+ "/" + filename_only + "_host.o"
+                merged_object_name = self.workingdir+ "/" + filename_only + ".o"
+                dev_args = ["-pacxx", "-emit-llvm", "-c", "-Wno-unused-command-line-argument"]
 
                 #compile the device code to llvm bitcode
-                execute([ self.clang ] + dev_args + self.includes + remove_opt_level(args) + [file] + ["-o", kernel_name])
-                execute([ self.opt ] + ["-load=libPACXXTransforms.so", "-pacxx-codegen-prepare", "-inline", kernel_name, "-o", kernel_name])
+                execute([ self.clang ] + dev_args + self.includes + remove_opt_level(args) + [file] + ["-o", bc_name])
+                execute([ self.opt ] + ["-load=libPACXXTransforms.so", "-pacxx-codegen-prepare", "-simplifycfg", "-inline", bc_name, "-o", kernel_name])
+                execute([ self.opt ] + ["-load=libPACXXTransforms.so", "-pacxx-kernel-eraser", bc_name, "-o", host_name])
                 output = check_output([self.nm, kernel_name])
                 num_kernels = len(output.split('\n')) - 1
                 integration_header = []
@@ -151,17 +160,21 @@ class Context:
                         data = include_header.read().replace('/*FILECONTENT*/', encoded)
                         with open(header_name, "w") as integration_header_file:
                             integration_header_file.write(data)
-                    integration_header = ["--include", header_name]
-
+                    #integration_header = ["--include", header_name]
+                    shutil.copyfile(header_name, "./integration.h")
+                    execute([ self.clang ] + self.includes + self.flags + [header_name, "-c", "-emit-llvm", "-o", kernel_object_name])
+                    #object_files.append(kernel_object_name)   
                 #compile the host code with the integration header to an object file 
-                object_files.append(object_name)   
-                execute([ self.clang ] + integration_header + self.includes + self.flags + [file, "-c", "-o", object_name])
+                execute([ self.link, kernel_object_name, host_name, "-o", "merged.bc"])
+                execute([ self.llc ] + ["merged.bc", "-filetype=obj", "-o", host_object_name])
+                object_files.append(host_object_name)
+                #execute([ self.clang ] + ["-Wl,-Ur"] + object_files + ["-nostdlib", "-o", merged_object_name])
     
             #compile objects to the desired output
             if self.mode == 0: 
                 execute([ self.clang ] + object_files  + self.libs + ["-o", original_output])
             elif self.mode == 1: 
-                shutil.copyfile(object_files[0], original_output)
+                shutil.copyfile(merged_object_name, original_output)
         else:
             if len(self.flags) > 0:
                 execute([ self.clang ] + self.includes + self.flags + self.libs)
@@ -169,9 +182,19 @@ class Context:
                 execute([ self.clang ])
 
 def main(argv):
+    clang_args = []
+    pacxx_args = []
+    try:
+        index = argv.index("--")
+        clang_args = argv[0:index]
+        pacxx_args = argv[index+1:]
+        handle_pacxx_args(pacxx_args)
+    except:
+        clang_args = argv
+
     ctx = Context()
     try:
-        ctx.parse_args(argv)
+        ctx.parse_args(clang_args)
         ctx.compile()
     except KeyboardInterrupt:
         pass

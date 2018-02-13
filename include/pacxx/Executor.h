@@ -131,7 +131,7 @@ public:
     try {
       initializeModule(instance);
     } catch (common::generic_exception ex) {
-      __exception(ex.what());
+      __error(ex.what());
       __error("Module initialization failed!");
     }
     return instance;

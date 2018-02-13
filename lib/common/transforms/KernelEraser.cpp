@@ -41,19 +41,56 @@ struct KernelEraserPass : public ModulePass {
 
 private:
   void cleanFromKernels(Module &M);
+  void cleanFromPACXXIntrinsics(Module &M);
 };
 
 bool KernelEraserPass::runOnModule(Module &M) { 
     cleanFromKernels(M);
+    cleanFromPACXXIntrinsics(M);
+
     return true; 
+}
+
+void KernelEraserPass::cleanFromPACXXIntrinsics(Module &M){
+  SmallVector<Function*, 8> dead;
+  for (auto& F : M) {
+    if (F.isIntrinsic()){
+      if (isPACXXIntrinsic(F.getIntrinsicID())){
+        dead.push_back(&F);
+      }
+    }
+  }
+
+  for (auto F : dead){
+    SmallVector<Instruction*, 8> dead_users; 
+    for (auto U : F->users()){
+      U->replaceAllUsesWith(ConstantInt::get(U->getType(), 0, false));
+      dead_users.push_back(cast<Instruction>(U));
+    }
+    for (auto U: dead_users)
+      U->eraseFromParent();
+    //F->replaceAllUsesWith(UndefValue::get(F->getType()));
+    F->eraseFromParent();
+  }
+
 }
 
 void KernelEraserPass::cleanFromKernels(Module &M) {
   auto kernels = pacxx::getKernels(&M);
 
+    struct CallInstVisitor : public InstVisitor<CallInstVisitor> {
+      SmallVector<Instruction*, 8> dead;
+      void visitCallInst(CallInst &CI) {
+        dead.push_back(&CI);
+      }
+    } calls;
+
   for (auto F : kernels) {
-    F->replaceAllUsesWith(UndefValue::get(F->getType()));
-    F->eraseFromParent();
+    calls.visit(F);
+  }
+  for (auto CI : calls.dead){
+    CI->replaceAllUsesWith(UndefValue::get(CI->getType()));
+    CI->eraseFromParent();
   }
 }
 
