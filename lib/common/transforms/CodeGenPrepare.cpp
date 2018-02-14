@@ -156,6 +156,8 @@ struct PACXXCodeGenPrepare : public ModulePass {
     for (auto &F : kernels){
       visitor.visit(F);
       names.visit(F);
+      if (F->hasFnAttribute(llvm::Attribute::OptimizeNone))
+        F->removeFnAttr(llvm::Attribute::OptimizeNone);
       F->setPersonalityFn(nullptr);
     }
 

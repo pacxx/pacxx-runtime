@@ -42,13 +42,29 @@ struct KernelEraserPass : public ModulePass {
 private:
   void cleanFromKernels(Module &M);
   void cleanFromPACXXIntrinsics(Module &M);
+  void cleanFromSharedMemory(Module &M);
 };
 
 bool KernelEraserPass::runOnModule(Module &M) {
   cleanFromKernels(M);
+  cleanFromSharedMemory(M);
   cleanFromPACXXIntrinsics(M);
 
   return true;
+}
+
+void KernelEraserPass::cleanFromSharedMemory(Module &M){
+  SmallVector<GlobalValue*, 8> sm;
+  for (auto &GV : M.global_values()){
+    if (auto GVar = dyn_cast<GlobalVariable>(&GV)){
+      if (GVar->hasMetadata() && GVar->getMetadata("pacxx.as.shared") != nullptr){
+        GV.replaceAllUsesWith(UndefValue::get(GV.getType()));
+        sm.push_back(&GV);
+      }
+    }
+  }
+  for (auto& GV : sm)
+    GV->eraseFromParent();
 }
 
 void KernelEraserPass::cleanFromPACXXIntrinsics(Module &M) {
@@ -67,8 +83,6 @@ void KernelEraserPass::cleanFromPACXXIntrinsics(Module &M) {
       if (isa<IntegerType>(U->getType())) {
         U->replaceAllUsesWith(ConstantInt::get(U->getType(), 0, false));
       } 
-      else
-        U->dump();
       dead_users.push_back(cast<Instruction>(U));
     }
     for (auto U : dead_users)
@@ -82,16 +96,34 @@ void KernelEraserPass::cleanFromKernels(Module &M) {
   auto kernels = pacxx::getKernels(&M);
 
   struct CallInstVisitor : public InstVisitor<CallInstVisitor> {
-    SmallVector<Instruction *, 8> dead;
-    void visitCallInst(CallInst &CI) { dead.push_back(&CI); }
-  } calls;
+    SmallVector<CallInst *, 1> calls;
+    SmallVector<InvokeInst *, 1> invokes;
+    void visitCallInst(CallInst &CI) { calls.push_back(&CI); }
+    void visitInvokeInst(InvokeInst &II) { invokes.push_back(&II); }
+  } dead;
 
   for (auto F : kernels) {
-    calls.visit(F);
+    dead.visit(F);
   }
-  for (auto CI : calls.dead) {
+  for (auto CI : dead.calls) {
     CI->replaceAllUsesWith(UndefValue::get(CI->getType()));
     CI->eraseFromParent();
+  }
+
+  for (auto II : dead.invokes) {
+    // branch if no execption was catched
+    BranchInst::Create(II->getNormalDest(), II);
+
+    II->replaceAllUsesWith(UndefValue::get(II->getType()));
+    auto LP = II->getLandingPadInst();
+    LP->replaceAllUsesWith(UndefValue::get(LP->getType()));
+    LP->eraseFromParent();
+    II->getParent()->getParent()->setPersonalityFn(nullptr);
+    II->eraseFromParent();
+  }
+
+  for (auto F : kernels) {
+    F->dump();
   }
 }
 
