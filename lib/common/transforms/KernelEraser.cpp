@@ -121,10 +121,6 @@ void KernelEraserPass::cleanFromKernels(Module &M) {
     II->getParent()->getParent()->setPersonalityFn(nullptr);
     II->eraseFromParent();
   }
-
-  for (auto F : kernels) {
-    F->dump();
-  }
 }
 
 char KernelEraserPass::ID = 0;

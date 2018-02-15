@@ -13,6 +13,7 @@
 
 #include "pacxx/detail/CoreInitializer.h"
 #include "pacxx/detail/common/Log.h"
+#include "pacxx/detail/common/TearDown.h"
 
 using namespace llvm;
 
@@ -34,6 +35,7 @@ void CoreInitializer::initializeCore() {
     InitializeAllAsmPrinters();
     InitializeAllAsmParsers();
     _initialized = true;
+    std::atexit(v2::pacxxTearDown);
     __verbose("Core components initialized!");
   }
 }
