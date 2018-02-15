@@ -19,7 +19,7 @@ HIPRawDeviceBuffer::HIPRawDeviceBuffer(size_t size, HIPRuntime *runtime)
 : _size(size), _runtime(runtime) {
   SEC_HIP_CALL(hipMalloc((void **) &_buffer, _size));
   __debug("Allocating ", _size, "b");
-  if (_runtime->getProfiler()->enabled())
+  if (_runtime->getProfiler() && _runtime->getProfiler()->enabled())
   {
     count_shadow = _size;
     src_shadow = new char[_size];
@@ -29,7 +29,7 @@ HIPRawDeviceBuffer::HIPRawDeviceBuffer(size_t size, HIPRuntime *runtime)
 HIPRawDeviceBuffer::~HIPRawDeviceBuffer() {
   if (_buffer) {
     SEC_HIP_CALL(hipFree(_buffer));
-    if (_runtime->getProfiler()->enabled())
+    if (_runtime->getProfiler() && _runtime->getProfiler()->enabled())
     {
       if (src_shadow) delete[] src_shadow;
       else __warning("(decon)shadow double clean");
@@ -45,7 +45,7 @@ HIPRawDeviceBuffer::HIPRawDeviceBuffer(HIPRawDeviceBuffer &&rhs) {
   _size = rhs._size;
   rhs._size = 0;
 
-  if (_runtime->getProfiler()->enabled())
+  if (_runtime->getProfiler() && _runtime->getProfiler()->enabled())
   {
     src_shadow = rhs.src_shadow;
     rhs.src_shadow = nullptr;
@@ -62,7 +62,7 @@ HIPRawDeviceBuffer &HIPRawDeviceBuffer::operator=(HIPRawDeviceBuffer &&rhs) {
   _size = rhs._size;
   rhs._size = 0;
 
-  if (_runtime->getProfiler()->enabled())
+  if (_runtime->getProfiler() && _runtime->getProfiler()->enabled())
   {
     src_shadow = rhs.src_shadow;
     rhs.src_shadow = nullptr;
@@ -100,7 +100,7 @@ void HIPRawDeviceBuffer::downloadAsync(void *dest, size_t bytes,
 }
 
 void HIPRawDeviceBuffer::enshadow() {
-  if (_runtime->getProfiler()->enabled())
+  if (_runtime->getProfiler() && _runtime->getProfiler()->enabled())
   {
     __debug("Storing ", count_shadow, "b");
     if (count_shadow) SEC_HIP_CALL(
@@ -110,7 +110,7 @@ void HIPRawDeviceBuffer::enshadow() {
 }
 
 void HIPRawDeviceBuffer::restore() {
-  if (_runtime->getProfiler()->enabled())
+  if (_runtime->getProfiler() && _runtime->getProfiler()->enabled())
   {
     __debug("Restoring ", count_shadow, "b");
     if (count_shadow) SEC_HIP_CALL(
