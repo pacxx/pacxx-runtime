@@ -45,7 +45,7 @@ private:
 
   inline auto get_global_id(unsigned int dimindx) {
     switch (dimindx) {
-#ifdef __device_code__
+#ifdef __PACXX__
     case 0:
       return __pacxx_read_ntid_x() *
           __pacxx_read_ctaid_x() +
@@ -65,7 +65,7 @@ private:
 
   inline auto get_local_id(unsigned int dimindx) {
     switch (dimindx) {
-#ifdef __device_code__
+#ifdef __PACXX__
     case 0:return __pacxx_read_tid_x();
     case 1:return __pacxx_read_tid_y();
     case 2:return __pacxx_read_tid_z();
@@ -76,7 +76,7 @@ private:
 
   inline auto get_group_id(unsigned int dimindx) {
     switch (dimindx) {
-    #ifdef __device_code__
+    #ifdef __PACXX__
     case 0:return __pacxx_read_ctaid_x();
     case 1:return __pacxx_read_ctaid_y();
     case 2:return __pacxx_read_ctaid_z();
@@ -87,7 +87,7 @@ private:
 
   inline auto get_local_size(unsigned int dimindx) {
     switch (dimindx) {
-    #ifdef __device_code__
+    #ifdef __PACXX__
     case 0:return __pacxx_read_ntid_x();
     case 1:return __pacxx_read_ntid_y();
     case 2:return __pacxx_read_ntid_z();
@@ -98,7 +98,7 @@ private:
 
   inline auto get_num_groups(unsigned int dimindx) {
     switch (dimindx) {
-    #ifdef __device_code__
+    #ifdef __PACXX__
     case 0:return __pacxx_read_nctaid_x();
     case 1:return __pacxx_read_nctaid_y();
     case 2:return __pacxx_read_nctaid_z();
@@ -109,7 +109,7 @@ private:
 
   inline auto _get_grid_size(unsigned int dimindx) {
     switch (dimindx) {
-    #ifdef __device_code__
+    #ifdef __PACXX__
     case 0:return __pacxx_read_ntid_x() * __pacxx_read_nctaid_x();
     case 1:return __pacxx_read_ntid_y() * __pacxx_read_nctaid_y();
     case 2:return __pacxx_read_ntid_z() * __pacxx_read_nctaid_z();
@@ -132,7 +132,7 @@ public:
   auto get_num_blocks(unsigned int dim) { return get_num_groups(dim); }
   auto get_grid_size(unsigned int dim)  { return _get_grid_size(dim); }
   auto synchronize() {
-#ifdef __device_code__
+#ifdef __PACXX__
     __pacxx_barrier();
 #endif
   }
@@ -144,7 +144,7 @@ void kernelBody(L &&callable) {
   callable(thread);
 }
 
-#ifdef __device_code__
+#ifdef __PACXX__
 #define PACXX_KERNEL [[pacxx::kernel]]
 #define PACXX_SHARED [[pacxx::shared]]
 #define PACXX_CONSTANT [[pacxx::constant]]

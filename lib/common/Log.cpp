@@ -65,12 +65,15 @@ void Log::printDiagnositc(const std::string &program,
     break;
   }
 
-  SMDiagnostic msg(file_line.str(), kind, msg_str);
+  SMDiagnostic diag(file_line.str(), kind, msg_str);
+  std::string message;
+  raw_string_ostream os(message);
+  diag.print(program.c_str(), os);
 
   if (kind == SourceMgr::DiagKind::DK_Error)
-    msg.print(program.c_str(), errs());
-  else
-    msg.print(program.c_str(), outs());
+    std::cerr << os.str(); 
+  else 
+    std::cout << os.str(); 
 }
 } // namespace common
 } // namespace pacxx

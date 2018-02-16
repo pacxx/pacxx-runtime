@@ -110,16 +110,12 @@ namespace common {
 void dumpToLog(const llvm::Value &V, std::string prefix = "",
                const char *file = "", int line = 0);
 
-//  static void intializeLogging();
-//  static void shutdownLogging();
-
 class Log {
 public:
   static Log &get();
 
 private:
-  //  friend void intializeLogging();
-  //  friend void shutdownLogging();
+  friend void pacxx::v2::pacxxTearDown();
 
   Log();
   virtual ~Log();

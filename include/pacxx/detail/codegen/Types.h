@@ -26,11 +26,7 @@ public:
       typename std::enable_if<!std::is_void<U>::value &&
           __sm_size == 0>::type * = nullptr>
   shared_memory() {
-#ifdef __device_code__
     [[pacxx::shared]] extern T ptr[];
-#else
-    T *ptr = nullptr;
-#endif
     sm_ptr = reinterpret_cast<decltype(sm_ptr)>(ptr);
   }
 

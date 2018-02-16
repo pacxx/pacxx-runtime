@@ -44,18 +44,14 @@ auto reverse(T &&t) -> decltype(
 } // namespace meta
 namespace nvidia {
 template <typename... Args> void printf(const char *str, Args... args) {
-#ifdef __device_code__
   std::tuple<typename extend_type<Args>::type..., int> tpl(args..., 0);
   auto rev = meta::reverse(tpl);
   _printf(str, reinterpret_cast<void *>(&rev));
-#endif
 }
 } // namespace nvidia
 namespace native {
 template <typename... Args> void printf(const char *str, Args &&... args) {
-#ifdef __device_code__
   ::printf(str, std::forward<Args>(args)...);
-#endif
 }
 } // namespace native
 
