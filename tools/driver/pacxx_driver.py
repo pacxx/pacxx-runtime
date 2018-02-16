@@ -148,7 +148,7 @@ class Context:
 
                 #compile the device code to llvm bitcode
                 execute([ self.clang ] + dev_args + self.includes + args + [file] + ["-o", ir_module])
-                execute([ self.opt ] + ["-load=libPACXXTransforms.so", "-pacxx-codegen-prepare", "-simplifycfg", "-inline", ir_module, "-o", kernel_module])
+                execute([ self.opt ] + ["-load=libPACXXTransforms.so", "-strip-debug", "-pacxx-codegen-prepare", "-simplifycfg", "-inline", ir_module, "-o", kernel_module])
                 execute([ self.opt ] + ["-load=libPACXXTransforms.so", "-pacxx-kernel-eraser", ir_module, "-o", host_module])
                 output = check_output([self.nm, kernel_module])
                 num_kernels = len(output.split('\n')) - 1
