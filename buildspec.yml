@@ -1,0 +1,42 @@
+version: 0.2
+
+#env:
+#  variables:
+#    JAVA_HOME: "/usr/lib/jvm/java-8-openjdk-amd64"
+#  parameter-store:
+#    LOGIN_PASSWORD: "dockerLoginPassword"
+
+phases:
+#  install:
+#    commands:
+#      - echo Entered the install phase...
+#      - apt-get update -y
+#      - apt-get install -y maven
+  pre_build:
+    commands:
+      - echo Entered the pre_build phase...
+      - mkdir pacxx ; cd pacxx
+      - repo init -u https://github.com/pacxx/pacxx
+      - repo sync
+      - repo start master `repo forall -c 'echo "$REPO_PATH"'`
+      - repo status 
+  build:
+    commands:
+      - echo Entered the build phase...
+      - echo Build started on `date`
+      - mkdir -p build
+      - cd build
+      - cmake ../llvm -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=ON -DLLVM_ENABLE_RTTI=ON -DLLVM_ENABLE_CXX1Y=ON -DCMAKE_CXX_FLAGS_RELEASE="-O3" -DCMAKE_INSTALL_PREFIX=$PWD/../local
+      - make -j"$(nproc)" install
+#  post_build:
+#    commands:
+#      - echo Entered the post_build phase...
+#      - echo Build completed on `date`
+#artifacts:
+#  files:
+#    - target/messageUtil-1.0.jar
+#  discard-paths: yes
+#cache:
+#  paths:
+#    - '/root/.m2/**/*'
+
