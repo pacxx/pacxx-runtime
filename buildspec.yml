@@ -15,7 +15,8 @@ phases:
   pre_build:
     commands:
       - echo Entered the pre_build phase...
-      - mkdir pacxx ; cd pacxx
+      - cd $HOME
+      - mkdir -p pacxx ; cd pacxx
       - repo init -u https://github.com/pacxx/pacxx
       - repo sync
       - repo start master `repo forall -c 'echo "$REPO_PATH"'`
@@ -32,12 +33,12 @@ phases:
     commands:
       - echo Entered the post_build phase...
       - echo Build completed on `date`
-      - tar czf ../pacxx.tar.gz $PWD/../local
+      - tar czf $HOME/pacxx.tar.gz $PWD/../local
 artifacts:
   files:
-    - ../pacxx.tar.gz
-#  discard-paths: yes
+    - $HOME/pacxx.tar.gz
+  discard-paths: yes
 cache:
   paths:
-    - '/root/build/**/*'
+    - '$HOME/pacxx/build/**/*'
 
