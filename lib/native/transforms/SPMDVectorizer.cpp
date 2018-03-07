@@ -175,6 +175,7 @@ bool SPMDVectorizer::runOnModule(Module &M) {
 
     config.useSLEEF = true;
     config.enableStructOpt = false;
+    config.enableHeuristicBOSCC = true;
     config.enableIRPolish = false;
 
     //config.print(outs());
