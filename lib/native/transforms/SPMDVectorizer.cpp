@@ -15,6 +15,7 @@
 #include "llvm/Analysis/LoopPass.h"
 #include "llvm/Analysis/MemoryDependenceAnalysis.h"
 #include "llvm/Analysis/ScalarEvolution.h"
+#include "llvm/Analysis/BranchProbabilityInfo.h"
 #include "llvm/Analysis/TargetTransformInfo.h"
 #include "llvm/Analysis/ValueTracking.h"
 
@@ -99,6 +100,7 @@ void SPMDVectorizer::getAnalysisUsage(AnalysisUsage &AU) const {
   AU.addRequired<MemoryDependenceWrapperPass>();
   AU.addRequired<TargetLibraryInfoWrapperPass>();
   AU.addRequired<TargetTransformInfoWrapperPass>();
+  AU.addRequired<BranchProbabilityInfoWrapperPass>();
   AU.addRequired<LoopInfoWrapperPass>();
 }
 
@@ -175,6 +177,7 @@ bool SPMDVectorizer::runOnModule(Module &M) {
 
     config.useSLEEF = true;
     config.enableStructOpt = false;
+    config.enableHeuristicBOSCC = true;
     config.enableIRPolish = false;
 
     //config.print(outs());
@@ -203,7 +206,7 @@ bool SPMDVectorizer::runOnModule(Module &M) {
         &getAnalysis<ScalarEvolutionWrapperPass>(*scalarCopy).getSE();
     MemoryDependenceResults *MDR =
         &getAnalysis<MemoryDependenceWrapperPass>(*scalarCopy).getMemDep();
-
+    llvm::BranchProbabilityInfo *pbInfo = &getAnalysis<BranchProbabilityInfoWrapperPass>(*scalarCopy).getBPI();
     // Dominance Frontier Graph
     rv::DFG dfg(domTree);
     dfg.create(*scalarCopy);
@@ -271,7 +274,7 @@ bool SPMDVectorizer::runOnModule(Module &M) {
     vectorizer.analyze(vecInfo, cdg, dfg, loopInfo);
 
     // mask generator
-    vectorizer.linearize(vecInfo, cdg, dfg, loopInfo, postDomTree, domTree);
+    vectorizer.linearize(vecInfo, cdg, dfg, loopInfo, postDomTree, domTree, pbInfo);
 
 #if 0
     // control conversion
@@ -690,6 +693,7 @@ INITIALIZE_PASS_DEPENDENCY(MemoryDependenceWrapperPass)
 INITIALIZE_PASS_DEPENDENCY(TargetLibraryInfoWrapperPass)
 INITIALIZE_PASS_DEPENDENCY(TargetTransformInfoWrapperPass)
 INITIALIZE_PASS_DEPENDENCY(LoopInfoWrapperPass)
+INITIALIZE_PASS_DEPENDENCY(BranchProbabilityInfoWrapperPass)
 INITIALIZE_PASS_END(SPMDVectorizer, "spmd", "SPMD vectorizer", true, true)
 
 namespace pacxx {
