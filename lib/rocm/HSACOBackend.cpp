@@ -88,7 +88,6 @@ std::unique_ptr<llvm::Module> HSACOBackend::prepareModule(llvm::Module &M) {
   PM.add(createPromoteMemoryToRegisterPass());
   PM.add(createLoopRotatePass());
   PM.add(createCFGSimplificationPass());
-  PM.add(createCodeGenPreparePass());
   PM.add(createSROAPass());
   PM.add(createEarlyCSEPass());
   PM.add(createLazyValueInfoPass());

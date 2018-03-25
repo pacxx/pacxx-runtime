@@ -5,6 +5,7 @@ import os
 from subprocess import call, check_output
 import tempfile
 import shutil
+import time; 
 
 def execute(command):
     if "PACXX_FE_VERBOSE" in os.environ:
@@ -33,6 +34,7 @@ def xxd(file_path, name):
                 length += 1
         output += "\n};\n"
         output += "unsigned int %s_len = %d;" % (name, length)
+	output += "static __module_registrator __reger(%s, %s_len);" % (name, name)
         return output
 
 
@@ -42,6 +44,15 @@ def remove_opt_level(args):
         if not s.startswith("-O"):
             new_args.append(s)
     return new_args
+
+def remove_target(args):
+    new_args = []
+    for s in args:
+        if not s.startswith("-target") and not s.startswith("nvptx"):
+            new_args.append(s)
+    return new_args
+
+
 
 def handle_pacxx_args(args):
     return
@@ -59,6 +70,7 @@ class Context:
     opt = ""
     nm = ""
     input_files = []
+    object_files = []
     mode = 0
     flags = []
 
@@ -112,7 +124,9 @@ class Context:
                 self.input_files.append(s)
             if s.endswith(".cc"):
                 self.input_files.append(s)
-        self.flags = [x for x in args[1:] if x not in self.input_files]
+            if s.endswith(".o"): 
+		self.object_files.append(s)
+        self.flags = [x for x in args[1:] if x not in self.input_files and x not in self.object_files]
         if not "-c" in self.flags:
             self.libs = self.libs + ["-Wl,--start-group", "-lpacxxrt2", "-lPACXXTransforms", "-lRV"] + self.llvm_libs + self.sys_libs
             if os.path.exists(self.llvm_dir + "/lib/libPACXXBeROCm.so"):
@@ -126,7 +140,6 @@ class Context:
     def compile(self):
         if len(self.input_files) > 0:
             args = self.flags
-            object_files = []
             original_output = []
             if "-o" in args:
                 index = args.index("-o")
@@ -154,18 +167,18 @@ class Context:
                 num_kernels = len(output.split('\n')) - 1
                 if num_kernels:
                     #encode the kernel.bc file to a char array and include it into the integration header
-                    encoded = xxd(kernel_module, "kernel")
+                    encoded = xxd(kernel_module, "kernel" + str(time.time()).replace(".", ""))
                     with open(self.llvm_dir + "/include/pacxx/detail/ModuleIntegration.inc", 'r') as include_header:
                         data = include_header.read().replace('/*FILECONTENT*/', encoded)
                         with open(integration_file, "w") as integration_header_file:
                             integration_header_file.write(data)
-                    execute([ self.clang ] + self.includes + self.flags + [integration_file, "-c", "-emit-llvm", "-o", integration_module])
+                    execute([ self.clang ] + self.includes + remove_target(self.flags) + [integration_file, "-c", "-emit-llvm", "-o", integration_module])
                     execute([ self.link, integration_module, host_module, "-o", host_module])
                 execute([ self.llc ] + [host_module, "-filetype=obj", "-o", host_object])
     
             #compile objects to the desired output
             if self.mode == 0: 
-                execute([ self.clang ] + [host_object]  + self.libs + ["-o", original_output])
+                execute([ self.clang ] + [host_object] + self.object_files  + self.libs + ["-o", original_output])
             elif self.mode == 1: 
                 shutil.copyfile(host_object, original_output)
         else:

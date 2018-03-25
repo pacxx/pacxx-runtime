@@ -89,7 +89,7 @@ std::unique_ptr<llvm::Module> PTXBackend::prepareModule(llvm::Module &M) {
   PM.add(createPromoteMemoryToRegisterPass());
   PM.add(createLoopRotatePass());
   PM.add(createCFGSimplificationPass());
-  PM.add(createCodeGenPreparePass());
+  //PM.add(createCodeGenPreparePass());
   PM.add(createPostOrderFunctionAttrsLegacyPass());
   PM.add(createSROAPass());
   PM.add(createEarlyCSEPass());
