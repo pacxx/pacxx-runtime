@@ -81,7 +81,10 @@ struct NVPTXPrepair : public ModulePass {
     auto kernels = pacxx::getKernels(&M);
 
     for (auto &F : kernels) {
-      F->setCallingConv(CallingConv::PTX_Kernel);
+      if(F->getReturnType()->isVoidTy())
+      	F->setCallingConv(CallingConv::PTX_Kernel);
+      else 
+	F->setCallingConv(CallingConv::PTX_Device); 
       F->setLinkage(GlobalValue::LinkageTypes::ExternalLinkage);
       F->setVisibility(GlobalValue::VisibilityTypes::DefaultVisibility);
     }

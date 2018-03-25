@@ -175,10 +175,11 @@ class Context:
                     execute([ self.clang ] + self.includes + remove_target(self.flags) + [integration_file, "-c", "-emit-llvm", "-o", integration_module])
                     execute([ self.link, integration_module, host_module, "-o", host_module])
                 execute([ self.llc ] + [host_module, "-filetype=obj", "-o", host_object])
+		self.object_files.append(host_object);
     
             #compile objects to the desired output
             if self.mode == 0: 
-                execute([ self.clang ] + [host_object] + self.object_files  + self.libs + ["-o", original_output])
+                execute([ self.clang ] + self.object_files  + self.libs + ["-o", original_output])
             elif self.mode == 1: 
                 shutil.copyfile(host_object, original_output)
         else:
